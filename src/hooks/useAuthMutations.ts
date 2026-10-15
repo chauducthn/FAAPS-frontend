@@ -1,35 +1,28 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { useGoogleLogin } from '@react-oauth/google';
+import axios from 'axios';
 import { authService } from '../services/authService';
-import { LoginFormValues } from '../validations/auth.schema';
+import type { LoginFormValues } from '../validations/auth.schema';
 
 export const useAuthMutations = () => {
-  const navigate = useNavigate();
   const [globalError, setGlobalError] = useState<string | null>(null);
 
-  const loginAdmin = async (data: LoginFormValues) => {
+  const loginAdmin = async (credentials: LoginFormValues) => {
     setGlobalError(null);
     try {
-      await authService.loginAdmin(data);
-      window.location.href = '/admin';
-    } catch (error: any) {
-      setGlobalError(error.message || 'Invalid credentials.');
+      const user = await authService.loginAdmin(credentials);
+      window.location.assign(`/${user.role.toLowerCase()}`);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        setGlobalError('Invalid email or password.');
+      } else {
+        setGlobalError('Could not sign in. Please try again.');
+      }
     }
   };
 
-  const loginGoogle = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      setGlobalError(null);
-      try {
-        await authService.loginGoogle(tokenResponse.access_token);
-        window.location.href = '/student';
-      } catch (error: any) {
-        setGlobalError('Google sign-in error.');
-      }
-    },
-    onError: () => setGlobalError('Google sign-in failed.'),
-  });
+  const loginGoogle = () => {
+    window.location.assign('/oauth2/authorization/google');
+  };
 
   return {
     loginAdmin,

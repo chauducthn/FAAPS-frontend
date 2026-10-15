@@ -1,19 +1,21 @@
-import { Outlet, useNavigate } from "react-router";
+import { useState } from "react";
+import { Outlet } from "react-router";
 import { useAuth } from "../../stores/useAuth";
 import { authService } from "../../services/authService";
 
 export default function DashboardLayout() {
   const { user, logout: clearStore } = useAuth();
-  const navigate = useNavigate();
+  const [logoutError, setLogoutError] = useState(false);
 
   const handleLogout = async () => {
+    setLogoutError(false);
     try {
       await authService.logout();
-    } catch (error) {
-      console.error("Sign-out error", error);
-    } finally {
       clearStore();
       window.location.href = "/";
+    } catch (error) {
+      console.error("Sign-out error", error);
+      setLogoutError(true);
     }
   };
 
@@ -31,6 +33,7 @@ export default function DashboardLayout() {
         </div>
 
         <div className="flex items-center gap-4">
+          {logoutError && <span className="text-sm text-red-600">Could not sign out. Try again.</span>}
           <span className="text-sm text-gray-700 font-medium">
             {user?.fullName}
           </span>

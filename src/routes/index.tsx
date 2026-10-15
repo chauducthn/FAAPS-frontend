@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router';
 import { ProtectedRoute } from './ProtectedRoute';
 import Login from '../pages/auth/Login';
+import AuthCallback from '../pages/auth/AuthCallback';
 import LandingPage from '../pages/landing';
 import DashboardLayout from '../components/layout/DashboardLayout';
 
@@ -11,6 +12,7 @@ const AdvisorPortal = () => <div className="bg-white p-6 rounded shadow">Advisor
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <Login /> },
+  { path: '/auth/callback', element: <AuthCallback /> },
   {
     element: <DashboardLayout />,
     children: [

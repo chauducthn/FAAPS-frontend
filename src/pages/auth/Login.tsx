@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { Logo } from '@/components/common/Logo';
 import { ArrowLeft } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -8,6 +8,8 @@ import { useAuthMutations } from '../../hooks/useAuthMutations';
 
 export default function Login() {
   const { loginAdmin, loginGoogle, globalError } = useAuthMutations();
+  const [searchParams] = useSearchParams();
+  const error = searchParams.get('error');
   
   const {
     register,
@@ -34,15 +36,16 @@ export default function Login() {
           <p className="mt-2 text-sm text-gray-500">Academic Advising & Planning System</p>
         </div>
 
-        {globalError && (
+        {(globalError || error) && (
           <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm text-center border border-red-100">
-            {globalError}
+            {globalError || 'Google sign-in could not be completed. Please try again.'}
           </div>
         )}
 
         {/* Google sign-in button */}
         <div className="mt-8">
           <button
+            type="button"
             onClick={() => loginGoogle()}
             className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all"
           >
@@ -64,11 +67,11 @@ export default function Login() {
 
         <form onSubmit={handleSubmit(loginAdmin)} className="mt-8 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Admin username or email</label>
             <input
               {...register('email')}
               className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 sm:text-sm transition-all"
-              placeholder="admin@fpt.edu.vn"
+              placeholder="admin"
             />
             {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
           </div>
