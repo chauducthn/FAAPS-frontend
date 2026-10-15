@@ -1,15 +1,15 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormValues } from '../../validations/auth.schema';
-import { useAuthMutations } from '../../hooks/useAuthMutations';
+import { useAuthMutations } from '@/hooks/mutations/useAuthMutations';
 
 export default function Login() {
-  const { loginAdmin, loginGoogle, globalError } = useAuthMutations();
-  
+  const { loginAdmin, loginGoogle, isAdminLoading, adminError } = useAuthMutations();
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
@@ -17,7 +17,6 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-10 shadow-sm border border-gray-200">
-        
         <div className="text-center">
           <div className="flex justify-center items-center gap-2 mb-2">
             <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center text-white font-bold text-xl">
@@ -28,17 +27,17 @@ export default function Login() {
           <p className="mt-2 text-sm text-gray-500">Academic Advising & Planning System</p>
         </div>
 
-        {globalError && (
+        {adminError && (
           <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm text-center border border-red-100">
-            {globalError}
+            {adminError}
           </div>
         )}
 
-        {/* Nút đăng nhập Google */}
         <div className="mt-8">
           <button
+            type="button"
             onClick={() => loginGoogle()}
-            className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all"
+            className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
           >
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5" />
             Đăng nhập bằng FPT Email
@@ -56,7 +55,7 @@ export default function Login() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit(loginAdmin)} className="mt-8 space-y-5">
+        <form onSubmit={handleSubmit((data) => loginAdmin(data))} className="mt-8 space-y-5">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
             <input
@@ -80,10 +79,10 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isAdminLoading}
             className="flex w-full justify-center rounded-lg bg-orange-600 py-2.5 px-4 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:bg-orange-400 transition-all"
           >
-            {isSubmitting ? 'Đang xử lý...' : 'Đăng nhập Admin'}
+            {isAdminLoading ? 'Đang xử lý...' : 'Đăng nhập Admin'}
           </button>
         </form>
       </div>

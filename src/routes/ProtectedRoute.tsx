@@ -2,23 +2,20 @@ import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../stores/useAuth';
 import { RoleCode } from '../types/auth';
 
-interface ProtectedRouteProps {
-  allowedRoles: RoleCode[];
-}
+export const ProtectedRoute = ({ allowedRoles }: { allowedRoles: RoleCode[] }) => {
+  const { user, isAuthenticated, isCheckingAuth } = useAuth();
 
-export const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
-  const { user, isAuthenticated } = useAuth();
+  if (isCheckingAuth) {
+    return <div className="flex h-screen items-center justify-center">Đang kiểm tra quyền...</div>;
+  }
 
-  if (!isAuthenticated || !user) {
+  if (!isAuthenticated || !user || !user.role) {
     return <Navigate to="/login" replace />;
   }
 
-  if (user.status !== 'ACTIVE') {
-    return <Navigate to="/login" replace state={{ error: 'ACCOUNT_RESTRICTED' }} />;
-  }
-
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to={`/${user.role.toLowerCase()}`} replace />;
+    const redirectPath = user.role ? user.role.toLowerCase() : 'login';
+    return <Navigate to={`/${redirectPath}`} replace />;
   }
 
   return <Outlet />;
