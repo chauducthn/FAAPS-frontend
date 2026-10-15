@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-gray-50">
         <div className="text-lg font-medium text-gray-600 animate-pulse">
-          Đang xác thực phiên đăng nhập...
+          Verifying your session...
         </div>
       </div>
     );

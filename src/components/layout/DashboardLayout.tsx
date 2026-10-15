@@ -10,7 +10,7 @@ export default function DashboardLayout() {
     try {
       await authService.logout();
     } catch (error) {
-      console.error("Lỗi đăng xuất", error);
+      console.error("Sign-out error", error);
     } finally {
       clearStore();
       window.location.href = "/";
@@ -38,7 +38,7 @@ export default function DashboardLayout() {
             onClick={handleLogout}
             className="text-sm bg-red-50 text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-100 transition-colors"
           >
-            Đăng xuất
+            Sign out
           </button>
         </div>
       </header>

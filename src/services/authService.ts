@@ -11,7 +11,7 @@ export const authService = {
           localStorage.setItem('mock_session', 'true'); 
           resolve({ success: true });
         } else {
-          reject(new Error('Sai mật khẩu hoặc email'));
+          reject(new Error('Incorrect email or password'));
         }
       }, 1000);
     });

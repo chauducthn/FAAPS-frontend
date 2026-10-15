@@ -1,3 +1,6 @@
+import { Link } from 'react-router';
+import { Logo } from '@/components/common/Logo';
+import { ArrowLeft } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormValues } from '../../validations/auth.schema';
@@ -16,15 +19,18 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
+      <div className="w-full max-w-md">
+        <Link
+          to="/"
+          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-orange-600"
+        >
+          <ArrowLeft className="size-4" />
+          Back to home
+        </Link>
       <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-10 shadow-sm border border-gray-200">
         
         <div className="text-center">
-          <div className="flex justify-center items-center gap-2 mb-2">
-            <div className="w-8 h-8 bg-orange-600 rounded flex items-center justify-center text-white font-bold text-xl">
-              F
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">FAAPS</h2>
-          </div>
+          <Logo className="mb-2 justify-center" />
           <p className="mt-2 text-sm text-gray-500">Academic Advising & Planning System</p>
         </div>
 
@@ -34,14 +40,14 @@ export default function Login() {
           </div>
         )}
 
-        {/* Nút đăng nhập Google */}
+        {/* Google sign-in button */}
         <div className="mt-8">
           <button
             onClick={() => loginGoogle()}
             className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 transition-all"
           >
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5" />
-            Đăng nhập bằng FPT Email
+            Sign in with Google
           </button>
         </div>
 
@@ -51,7 +57,7 @@ export default function Login() {
           </div>
           <div className="relative flex justify-center text-sm">
             <span className="bg-white px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
-              Hoặc dành cho Quản trị viên
+              Or sign in with email
             </span>
           </div>
         </div>
@@ -68,7 +74,7 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
             <input
               type="password"
               {...register('password')}
@@ -83,9 +89,10 @@ export default function Login() {
             disabled={isSubmitting}
             className="flex w-full justify-center rounded-lg bg-orange-600 py-2.5 px-4 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:bg-orange-400 transition-all"
           >
-            {isSubmitting ? 'Đang xử lý...' : 'Đăng nhập Admin'}
+            {isSubmitting ? 'Processing...' : 'Sign in'}
           </button>
         </form>
+      </div>
       </div>
     </div>
   );

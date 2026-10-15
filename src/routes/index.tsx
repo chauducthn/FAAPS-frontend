@@ -4,9 +4,9 @@ import Login from '../pages/auth/Login';
 import LandingPage from '../pages/landing';
 import DashboardLayout from '../components/layout/DashboardLayout';
 
-const AdminDashboard = () => <div className="bg-white p-6 rounded shadow">Khu vực dành riêng cho Admin</div>;
-const StudentPortal = () => <div className="bg-white p-6 rounded shadow">Bảng điểm và Lộ trình của Sinh viên</div>;
-const AdvisorPortal = () => <div className="bg-white p-6 rounded shadow">Quản lý Ticket và Hỗ trợ Tư vấn</div>;
+const AdminDashboard = () => <div className="bg-white p-6 rounded shadow">Admin area</div>;
+const StudentPortal = () => <div className="bg-white p-6 rounded shadow">Student transcript and study roadmap</div>;
+const AdvisorPortal = () => <div className="bg-white p-6 rounded shadow">Advisor ticket management and advising support</div>;
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },

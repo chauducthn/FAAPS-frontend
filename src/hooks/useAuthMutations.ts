@@ -14,7 +14,7 @@ export const useAuthMutations = () => {
       await authService.loginAdmin(data);
       window.location.href = '/admin';
     } catch (error: any) {
-      setGlobalError(error.message || 'Sai thông tin đăng nhập.');
+      setGlobalError(error.message || 'Invalid credentials.');
     }
   };
 
@@ -25,10 +25,10 @@ export const useAuthMutations = () => {
         await authService.loginGoogle(tokenResponse.access_token);
         window.location.href = '/student';
       } catch (error: any) {
-        setGlobalError('Lỗi đăng nhập Google.');
+        setGlobalError('Google sign-in error.');
       }
     },
-    onError: () => setGlobalError('Đăng nhập Google thất bại.'),
+    onError: () => setGlobalError('Google sign-in failed.'),
   });
 
   return {
