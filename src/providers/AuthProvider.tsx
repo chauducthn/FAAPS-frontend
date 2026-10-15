@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAuth } from '../stores/useAuth';
-import { authService } from '../services/authService';
+import { authService } from '@/services/authService';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { setUser, setCheckingAuth, isCheckingAuth } = useAuth();
@@ -8,8 +8,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const user = await authService.getMe();
-        setUser(user);
+        setUser(await authService.getMe());
       } catch (error) {
         setUser(null);
       } finally {
