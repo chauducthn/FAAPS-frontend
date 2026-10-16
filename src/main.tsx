@@ -1,21 +1,25 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import { RouterProvider } from 'react-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from './providers/AuthProvider';
-import { router } from './routes';
-import './index.css';
-import { Toaster } from './components/ui/sonner';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { RouterProvider } from "react-router";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+import { Toaster } from "./components/ui/sonner";
+import { AuthProvider } from "./providers/AuthProvider";
+import { router } from "./routes";
+import "./index.css";
 
 const queryClient = new QueryClient();
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouterProvider router={router} />
-        <Toaster position="top-right" richColors />
-      </AuthProvider>
-    </QueryClientProvider>
-  </StrictMode>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <RouterProvider router={router} />
+          <Toaster position="top-right" duration={4000} />
+        </AuthProvider>
+      </QueryClientProvider>
+    </GoogleOAuthProvider>
+  </StrictMode>,
 );
