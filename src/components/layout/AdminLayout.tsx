@@ -134,7 +134,17 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f7f8fa] font-sans">
+    <div className="flex min-h-screen bg-[#f7f8fa] font-sans">
+      <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col border-r border-[#e5e7eb] bg-white lg:flex">
+        <div className="flex h-16 shrink-0 items-center border-b border-[#e5e7eb] px-4">
+          <Logo to="/admin" />
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
+          <SidebarNav />
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[#e5e7eb] bg-white px-4 sm:px-6">
         <button
           type="button"
@@ -184,13 +194,7 @@ export default function AdminLayout() {
         </div>
       </header>
 
-      <div className="flex flex-1">
-        <aside className="hidden w-[248px] shrink-0 border-r border-[#e5e7eb] bg-white p-4 lg:block">
-          <Logo className="mb-4" to="/admin" />
-          <SidebarNav />
-        </aside>
-
-        {menuOpen && (
+      {menuOpen && (
           <div className="fixed inset-0 z-40 lg:hidden">
             <div className="absolute inset-0 bg-black/40" onClick={() => setMenuOpen(false)} />
             <aside className="absolute inset-y-0 left-0 w-[260px] overflow-y-auto bg-white p-4 shadow-xl">

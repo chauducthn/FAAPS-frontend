@@ -6,5 +6,6 @@ export const apiErrorMessage = (error: unknown, fallback = 'Something went wrong
     const data = error.response?.data as { error?: string; message?: string } | undefined;
     return data?.error ?? data?.message ?? fallback;
   }
+  if (error instanceof Error && error.message) return error.message;
   return fallback;
 };

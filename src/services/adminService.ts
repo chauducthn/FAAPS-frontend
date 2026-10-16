@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { apiClient } from '../lib/apiClient';
 import { getCsrfHeaders } from '../lib/csrf';
 import type {
@@ -84,10 +85,18 @@ export const adminService = {
   uploadAvatar: async (id: string, file: File): Promise<string> => {
     const form = new FormData();
     form.append('file', file);
-    const { data } = await apiClient.post<{ avatarUrl: string }>(`/admin/users/${id}/avatar`, form, {
-      headers: { ...(await getCsrfHeaders()), 'Content-Type': 'multipart/form-data' },
-    });
-    return data.avatarUrl;
+    try {
+      const { data } = await apiClient.post<{ avatarUrl: string }>(`/admin/users/${id}/avatar`, form, {
+        headers: { ...(await getCsrfHeaders()), 'Content-Type': 'multipart/form-data' },
+      });
+      return data.avatarUrl;
+    } catch (error) {
+      // The backend only registers this endpoint when avatar storage (S3) is enabled.
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        throw new Error('Avatar upload is not available on this server.');
+      }
+      throw error;
+    }
   },
 
   changeUserStatus: async (id: string, status: 'ACTIVE' | 'SUSPENDED'): Promise<AdminUserDetail> => {
