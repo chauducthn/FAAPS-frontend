@@ -6,6 +6,8 @@ import {
   BookOpen,
   CalendarCheck,
   Briefcase,
+  FolderOpen,
+  GraduationCap,
   ChevronDown,
   Cpu,
   LayoutDashboard,
@@ -46,6 +48,13 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
       { label: 'Curriculum', icon: BookOpen },
       { label: 'Courses', icon: Book },
       { label: 'Import History', icon: Upload },
+    ],
+  },
+  {
+    title: 'Academic Structure',
+    items: [
+      { label: 'Majors', to: '/admin/majors', icon: GraduationCap },
+      { label: 'Cohorts', icon: FolderOpen },
     ],
   },
   { title: 'Reports', items: [{ label: 'Appointments', to: '/admin/appointments', icon: CalendarCheck }] },

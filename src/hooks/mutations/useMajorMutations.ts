@@ -11,8 +11,8 @@ export const useMajorMutations = () => {
   const createMajorMutation = useMutation({
     mutationFn: (data: CreateMajorDto) => majorService.createMajor(data),
     onSuccess: (newMajor) => {
-      toast.success('Tạo ngành học mới thành công!', {
-        description: `Ngành ${newMajor.code} - ${newMajor.name} đã được thêm vào hệ thống.`,
+      toast.success('Major created successfully.', {
+        description: `${newMajor.code} - ${newMajor.name} has been added.`,
       });
       // Invalidate cache để tự động load lại danh sách mới nhất
       queryClient.invalidateQueries({ queryKey: MAJOR_QUERY_KEYS.all });
@@ -24,7 +24,7 @@ export const useMajorMutations = () => {
     mutationFn: ({ id, data }: { id: string; data: UpdateMajorDto }) =>
       majorService.updateMajor(id, data),
     onSuccess: () => {
-      toast.success('Cập nhật thông tin ngành thành công!');
+      toast.success('Major updated successfully.');
       queryClient.invalidateQueries({ queryKey: MAJOR_QUERY_KEYS.all });
     },
   });
@@ -33,7 +33,7 @@ export const useMajorMutations = () => {
   const deleteMajorMutation = useMutation({
     mutationFn: (id: string) => majorService.deleteMajor(id),
     onSuccess: () => {
-      toast.success('Đã xóa ngành học!');
+      toast.success('Major deleted.');
       queryClient.invalidateQueries({ queryKey: MAJOR_QUERY_KEYS.all });
     },
   });

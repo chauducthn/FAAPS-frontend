@@ -21,7 +21,7 @@ export const majorService = {
   getMajorById: async (id: string): Promise<Major> => {
     const response = await apiClient.get<ApiResponse<Major>>(`/admin/majors/${id}`);
     if (!response.data.data) {
-      throw new Error('Không tìm thấy dữ liệu ngành học');
+      throw new Error('Major not found');
     }
     return response.data.data;
   },
@@ -29,7 +29,7 @@ export const majorService = {
   createMajor: async (data: CreateMajorDto): Promise<Major> => {
     const response = await apiClient.post<ApiResponse<Major>>('/admin/majors', data);
     if (!response.data.data) {
-      throw new Error('Không thể tạo ngành học mới');
+      throw new Error('Could not create the major');
     }
     return response.data.data;
   },
@@ -37,7 +37,7 @@ export const majorService = {
   updateMajor: async (id: string, data: UpdateMajorDto): Promise<Major> => {
     const response = await apiClient.put<ApiResponse<Major>>(`/admin/majors/${id}`, data);
     if (!response.data.data) {
-      throw new Error('Không thể cập nhật thông tin ngành học');
+      throw new Error('Could not update the major');
     }
     return response.data.data;
   },

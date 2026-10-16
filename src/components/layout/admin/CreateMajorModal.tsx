@@ -36,7 +36,7 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit }: CreateMa
             </div>
             <div>
               <h3 className="font-bold text-gray-900 text-sm">Create New Major</h3>
-              <p className="text-[11px] text-gray-400">Thêm ngành học mới vào hệ thống Master Data</p>
+              <p className="text-[11px] text-gray-400">Add a new major to the master data</p>
             </div>
           </div>
           <button
@@ -84,7 +84,7 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit }: CreateMa
             </label>
             <input
               type="text"
-              placeholder="VD: Kỹ thuật Phần mềm"
+              placeholder="e.g. Software Engineering"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21] transition-all"
@@ -110,7 +110,7 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit }: CreateMa
             <label className="block font-bold text-gray-700 uppercase mb-1">Description</label>
             <textarea
               rows={3}
-              placeholder="Nhập mô tả về ngành học..."
+              placeholder="Describe the major..."
               value={formData.description || ''}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21] transition-all resize-none"

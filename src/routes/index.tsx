@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, Navigate } from 'react-router';
 import { ProtectedRoute } from './ProtectedRoute';
 import Login from '../pages/auth/Login';
 import AuthCallback from '../pages/auth/AuthCallback';
@@ -7,6 +7,7 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import AdminLayout from '../components/layout/AdminLayout';
 import AdminDashboard from '../pages/admin/Dashboard';
 import UserAccounts from '../pages/admin/UserAccounts';
+import MajorsPage from '../pages/admin/Majors';
 import Appointments from '../pages/admin/Appointments';
 import AiReports from '../pages/admin/AiReports';
 import AiReportDetail from '../pages/admin/AiReportDetail';
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/admin', element: <AdminDashboard /> },
           { path: '/admin/users', element: <UserAccounts /> },
+          { path: '/admin/majors', element: <MajorsPage /> },
           { path: '/admin/appointments', element: <Appointments /> },
           { path: '/admin/ai-reports', element: <AiReports /> },
           { path: '/admin/ai-reports/:id', element: <AiReportDetail /> },
@@ -53,5 +55,6 @@ export const router = createBrowserRouter([
         children: [{ path: '/advisor', element: <AdvisorPortal /> }],
       }
     ]
-  }
+  },
+  { path: '*', element: <Navigate to="/login" replace /> },
 ]);

@@ -47,7 +47,7 @@ export default function MajorsPage() {
 
   const handleDeleteSelected = () => {
     setData(data.filter((d) => !selectedIds.includes(d.id)));
-    toast.success(`Đã xóa ${selectedIds.length} ngành học!`);
+    toast.success(`Deleted ${selectedIds.length} major${selectedIds.length === 1 ? '' : 's'}.`);
     setSelectedIds([]);
   };
 
@@ -64,8 +64,8 @@ export default function MajorsPage() {
     setData([newMajor, ...data]);
     setIsCreateModalOpen(false);
 
-    toast.success('Tạo ngành học mới thành công!', {
-      description: `Ngành ${newMajor.code} - ${newMajor.name} đã được thêm vào hệ thống.`,
+    toast.success('Major created successfully.', {
+      description: `${newMajor.code} - ${newMajor.name} has been added.`,
     });
   };
 
@@ -76,7 +76,7 @@ export default function MajorsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold text-gray-900 tracking-tight">Majors by Cohort</h1>
-          <p className="text-xs text-gray-500 mt-0.5">Quản lý các ngành học theo từng khóa đào tạo</p>
+          <p className="text-xs text-gray-500 mt-0.5">Manage academic majors for each training cohort</p>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
@@ -115,7 +115,7 @@ export default function MajorsPage() {
         selectedIds={selectedIds}
         onSelectAll={handleSelectAll}
         onSelectRow={handleSelectRow}
-        onEditMajor={(item) => toast.info(`Đang mở chỉnh sửa ngành: ${item.code}`)}
+        onEditMajor={(item) => toast.info(`Editing major: ${item.code}`)}
       />
 
       {/* MODAL TẠO NGÀNH HỌC */}
