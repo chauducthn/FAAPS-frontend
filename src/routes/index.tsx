@@ -6,6 +6,7 @@ import LandingPage from '../pages/landing';
 import DashboardLayout from '../components/layout/DashboardLayout';
 import AdminLayout from '../components/layout/AdminLayout';
 import AdminDashboard from '../pages/admin/Dashboard';
+import UserAccounts from '../pages/admin/UserAccounts';
 
 const StudentPortal = () => <div className="bg-white p-6 rounded shadow">Student transcript and study roadmap</div>;
 const AdvisorPortal = () => <div className="bg-white p-6 rounded shadow">Advisor ticket management and advising support</div>;
@@ -19,7 +20,10 @@ export const router = createBrowserRouter([
     children: [
       {
         element: <AdminLayout />,
-        children: [{ path: '/admin', element: <AdminDashboard /> }],
+        children: [
+          { path: '/admin', element: <AdminDashboard /> },
+          { path: '/admin/users', element: <UserAccounts /> },
+        ],
       },
     ],
   },

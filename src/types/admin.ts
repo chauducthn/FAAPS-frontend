@@ -30,3 +30,39 @@ export interface AiReportSummary {
   flaggedCount: number;
   createdAt: string;
 }
+
+export type AdminUserRole = 'STUDENT' | 'ADVISOR' | 'ADMIN';
+export type AdminUserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'LOCKED';
+
+export interface AdminUserSummary {
+  id: string;
+  userId: string;
+  fullName: string;
+  email: string;
+  avatarUrl: string | null;
+  role: AdminUserRole;
+  status: AdminUserStatus;
+  createdAt: string;
+}
+
+export interface AdminUserDetail {
+  id: string;
+  userId: string;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  avatarUrl: string | null;
+  role: AdminUserRole;
+  status: AdminUserStatus;
+  createdAt: string;
+  updatedAt: string;
+  majorId: string | null;
+  majorName: string | null;
+  curriculumVersionId: string | null;
+  curriculumCode: string | null;
+  currentSemester: number | null;
+  academicStatus: string | null;
+  advisorCode: string | null;
+}
+
+export type UserSort = 'createdAt,desc' | 'createdAt,asc' | 'fullName,asc' | 'fullName,desc' | 'userId,asc' | 'userId,desc';

@@ -6,7 +6,7 @@ export const ProtectedRoute = ({ allowedRoles }: { allowedRoles: RoleCode[] }) =
   const { user, isAuthenticated, isCheckingAuth } = useAuth();
 
   if (isCheckingAuth) {
-    return <div className="flex h-screen items-center justify-center">Đang kiểm tra quyền...</div>;
+    return <div className="flex h-screen items-center justify-center">Checking permissions...</div>;
   }
 
   if (!isAuthenticated || !user || !user.role) {

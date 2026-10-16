@@ -20,30 +20,32 @@ export const handleApiError = (error: unknown) => {
       return errorData;
     }
 
-    if (errorData?.message) {
-      toast.error(errorData.message);
+    // Spring endpoints reply with { error }, the shared contract uses { message }.
+    const serverMessage = errorData?.message ?? (errorData as { error?: string } | undefined)?.error;
+    if (serverMessage) {
+      toast.error(serverMessage);
       return errorData;
     }
 
     switch (status) {
       case 401:
-        toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+        toast.error('Your session has expired. Please sign in again.');
         window.location.href = '/login';
         break;
       case 403:
-        toast.error('Bạn không có quyền thực hiện thao tác này.');
+        toast.error('You do not have permission to do this.');
         break;
       case 404:
-        toast.error('Không tìm thấy tài nguyên hệ thống.');
+        toast.error('Resource not found.');
         break;
       case 500:
-        toast.error('Lỗi máy chủ nội bộ (500). Vui lòng thử lại sau.');
+        toast.error('Server error (500). Please try again later.');
         break;
       default:
-        toast.error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.');
+        toast.error('Cannot reach the server. Please check your connection.');
     }
     return;
   }
 
-  toast.error('Đã có lỗi không mong muốn xảy ra.');
+  toast.error('An unexpected error occurred.');
 };
