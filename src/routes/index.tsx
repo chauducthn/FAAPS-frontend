@@ -8,6 +8,8 @@ import AdminLayout from '../components/layout/AdminLayout';
 import AdminDashboard from '../pages/admin/Dashboard';
 import UserAccounts from '../pages/admin/UserAccounts';
 import Appointments from '../pages/admin/Appointments';
+import AiReports from '../pages/admin/AiReports';
+import AiReportDetail from '../pages/admin/AiReportDetail';
 import AssignmentsOverview from '../pages/admin/assignments/AssignmentsOverview';
 import AdvisorDetails from '../pages/admin/assignments/AdvisorDetails';
 import CohortDetails from '../pages/admin/assignments/CohortDetails';
@@ -29,6 +31,8 @@ export const router = createBrowserRouter([
           { path: '/admin', element: <AdminDashboard /> },
           { path: '/admin/users', element: <UserAccounts /> },
           { path: '/admin/appointments', element: <Appointments /> },
+          { path: '/admin/ai-reports', element: <AiReports /> },
+          { path: '/admin/ai-reports/:id', element: <AiReportDetail /> },
           { path: '/admin/assignments', element: <AssignmentsOverview /> },
           { path: '/admin/assignments/advisors/:advisorId', element: <AdvisorDetails /> },
           { path: '/admin/assignments/cohorts/:cohort', element: <CohortDetails /> },

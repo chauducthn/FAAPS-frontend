@@ -7,6 +7,7 @@ import type {
   AdminUserRole,
   AdminUserStatus,
   AdminUserSummary,
+  AiReportDetail,
   AiReportSummary,
   DashboardAccounts,
   MonthlyCount,
@@ -35,6 +36,21 @@ export const adminService = {
     size?: number;
   }): Promise<AdminPage<AiReportSummary>> => {
     const { data } = await apiClient.get<AdminPage<AiReportSummary>>('/admin/ai-reports', { params });
+    return data;
+  },
+
+  getAiReport: async (id: string): Promise<AiReportDetail> => {
+    const { data } = await apiClient.get<AiReportDetail>(`/admin/ai-reports/${id}`);
+    return data;
+  },
+
+  resolveAiReport: async (
+    id: string,
+    body: { status: 'RESOLVED' | 'DISMISSED'; resolutionNote: string }
+  ): Promise<AiReportDetail> => {
+    const { data } = await apiClient.post<AiReportDetail>(`/admin/ai-reports/${id}/resolve`, body, {
+      headers: await getCsrfHeaders(),
+    });
     return data;
   },
 

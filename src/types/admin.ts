@@ -31,6 +31,44 @@ export interface AiReportSummary {
   createdAt: string;
 }
 
+export interface AiReportHeader {
+  id: string;
+  conversationId: string;
+  studentId: string;
+  studentName: string;
+  studentCode: string | null;
+  reason: string;
+  studentNote: string | null;
+  status: AiReportStatus;
+  resolutionNote: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+}
+
+export interface AiReportMessage {
+  id: string;
+  sender: string;
+  content: string;
+  createdAt: string;
+  reported: boolean;
+  studentNote: string | null;
+}
+
+export interface AiReportSource {
+  messageId: string;
+  relevanceScore: number | null;
+  quotedText: string | null;
+  rankPosition: number | null;
+  sectionTitle: string | null;
+  documentTitle: string | null;
+}
+
+export interface AiReportDetail {
+  report: AiReportHeader;
+  messages: AiReportMessage[];
+  sources: AiReportSource[];
+}
+
 export type AdminUserRole = 'STUDENT' | 'ADVISOR' | 'ADMIN';
 export type AdminUserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'LOCKED';
 
