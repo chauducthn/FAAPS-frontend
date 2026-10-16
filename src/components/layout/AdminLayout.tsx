@@ -4,6 +4,7 @@ import {
   Activity,
   Book,
   BookOpen,
+  CalendarCheck,
   Briefcase,
   ChevronDown,
   Cpu,
@@ -47,6 +48,7 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
       { label: 'Import History', icon: Upload },
     ],
   },
+  { title: 'Reports', items: [{ label: 'Appointments', to: '/admin/appointments', icon: CalendarCheck }] },
   { title: 'Academic Rules', items: [{ label: 'Academic Rules', icon: Shield }] },
   {
     title: 'AI',

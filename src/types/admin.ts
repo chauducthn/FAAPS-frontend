@@ -109,6 +109,29 @@ export interface AutoAssignPreview {
   allocation: Record<string, number>;
 }
 
+export type AppointmentStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
+
+export interface Appointment {
+  id: string;
+  studentId: string;
+  studentName: string;
+  advisorId: string;
+  advisorName: string;
+  scheduledAt: string | null;
+  endedAt: string | null;
+  location: string | null;
+  agenda: string | null;
+  status: AppointmentStatus;
+}
+
+export interface AppointmentSummary {
+  total: number;
+  scheduled: number;
+  completed: number;
+  cancelled: number;
+  noShow: number;
+}
+
 export interface AutoAssignResult {
   assigned: number;
   allocation: Record<string, number>;

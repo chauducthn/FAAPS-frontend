@@ -271,7 +271,7 @@ export default function UserAccounts() {
         )}
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left">
+          <table className="w-full min-w-[800px] text-left">
             <thead className="bg-[rgba(240,243,255,0.7)]">
               <tr>
                 <th className="w-12 px-4 py-3.5">
@@ -288,6 +288,7 @@ export default function UserAccounts() {
                   </button>
                 </th>
                 <th className="px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Email</th>
+                <th className="px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Created</th>
                 <th className="px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Status</th>
                 <th className="px-3 py-3.5 text-right text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Actions</th>
               </tr>
@@ -296,14 +297,14 @@ export default function UserAccounts() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="border-t border-[#e7eefe]">
-                    <td colSpan={6} className="px-4 py-5">
+                    <td colSpan={7} className="px-4 py-5">
                       <div className="h-4 animate-pulse rounded bg-gray-100" />
                     </td>
                   </tr>
                 ))
               ) : isError ? (
                 <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-[#555f6f]">
+                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     Could not load accounts.{' '}
                     <button type="button" onClick={() => refetch()} className="font-semibold text-orange-600 hover:underline">
                       Retry
@@ -312,7 +313,7 @@ export default function UserAccounts() {
                 </tr>
               ) : items.length === 0 ? (
                 <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-[#555f6f]">
+                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     {hasFilters ? 'No accounts match your filters.' : 'No accounts yet.'}
                   </td>
                 </tr>
@@ -330,6 +331,9 @@ export default function UserAccounts() {
                       </button>
                     </td>
                     <td className="px-3 py-3.5 text-[13px] text-[#555f6f]">{u.email}</td>
+                    <td className="whitespace-nowrap px-3 py-3.5 text-[13px] text-[#555f6f]">
+                      {new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}
+                    </td>
                     <td className="px-3 py-3.5">
                       <StatusBadge status={u.status} />
                     </td>

@@ -7,6 +7,7 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import AdminLayout from '../components/layout/AdminLayout';
 import AdminDashboard from '../pages/admin/Dashboard';
 import UserAccounts from '../pages/admin/UserAccounts';
+import Appointments from '../pages/admin/Appointments';
 import AssignmentsOverview from '../pages/admin/assignments/AssignmentsOverview';
 import AdvisorDetails from '../pages/admin/assignments/AdvisorDetails';
 import CohortDetails from '../pages/admin/assignments/CohortDetails';
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/admin', element: <AdminDashboard /> },
           { path: '/admin/users', element: <UserAccounts /> },
+          { path: '/admin/appointments', element: <Appointments /> },
           { path: '/admin/assignments', element: <AssignmentsOverview /> },
           { path: '/admin/assignments/advisors/:advisorId', element: <AdvisorDetails /> },
           { path: '/admin/assignments/cohorts/:cohort', element: <CohortDetails /> },
