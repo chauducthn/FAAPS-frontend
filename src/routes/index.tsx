@@ -7,6 +7,10 @@ import DashboardLayout from '../components/layout/DashboardLayout';
 import AdminLayout from '../components/layout/AdminLayout';
 import AdminDashboard from '../pages/admin/Dashboard';
 import UserAccounts from '../pages/admin/UserAccounts';
+import AssignmentsOverview from '../pages/admin/assignments/AssignmentsOverview';
+import AdvisorDetails from '../pages/admin/assignments/AdvisorDetails';
+import CohortDetails from '../pages/admin/assignments/CohortDetails';
+import StudentHistory from '../pages/admin/assignments/StudentHistory';
 
 const StudentPortal = () => <div className="bg-white p-6 rounded shadow">Student transcript and study roadmap</div>;
 const AdvisorPortal = () => <div className="bg-white p-6 rounded shadow">Advisor ticket management and advising support</div>;
@@ -23,6 +27,10 @@ export const router = createBrowserRouter([
         children: [
           { path: '/admin', element: <AdminDashboard /> },
           { path: '/admin/users', element: <UserAccounts /> },
+          { path: '/admin/assignments', element: <AssignmentsOverview /> },
+          { path: '/admin/assignments/advisors/:advisorId', element: <AdvisorDetails /> },
+          { path: '/admin/assignments/cohorts/:cohort', element: <CohortDetails /> },
+          { path: '/admin/assignments/students/:studentId/history', element: <StudentHistory /> },
         ],
       },
     ],

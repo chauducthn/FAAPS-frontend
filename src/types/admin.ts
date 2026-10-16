@@ -66,3 +66,50 @@ export interface AdminUserDetail {
 }
 
 export type UserSort = 'createdAt,desc' | 'createdAt,asc' | 'fullName,asc' | 'fullName,desc' | 'userId,asc' | 'userId,desc';
+
+export interface AssignmentAdvisor {
+  id: string;
+  advisorCode: string;
+  fullName: string;
+  maxAdvisees: number | null;
+  activeStudents: number;
+}
+
+export interface AssignmentCohort {
+  cohort: string;
+  students: number;
+}
+
+export interface AssignmentStudent {
+  id: string;
+  studentCode: string;
+  fullName: string;
+  cohort: string;
+  advisorId: string | null;
+  advisorName: string | null;
+}
+
+export interface AdvisorAssignmentDetail {
+  advisor: AssignmentAdvisor;
+  students: AssignmentStudent[];
+}
+
+export interface AssignmentHistoryRecord {
+  id: string;
+  advisorId: string;
+  advisorName: string;
+  assignedDate: string; // yyyy-MM-dd
+  endDate: string | null;
+  status: string;
+}
+
+export interface AutoAssignPreview {
+  cohort: string;
+  unassignedStudents: number;
+  allocation: Record<string, number>;
+}
+
+export interface AutoAssignResult {
+  assigned: number;
+  allocation: Record<string, number>;
+}
