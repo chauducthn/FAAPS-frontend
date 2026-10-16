@@ -1,4 +1,3 @@
-// src/lib/errorHandler.ts
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import { ApiErrorResponse } from '../types/api';
@@ -12,7 +11,9 @@ export const handleApiError = (error: unknown) => {
     const errorData = axiosError.response?.data;
     const requestUrl = axiosError.config?.url;
 
-    if (status === 401 && requestUrl?.startsWith('/auth/')) {
+    const isAuthMe = requestUrl?.includes('/auth/me');
+
+    if (isAuthMe && (status === 401 || !axiosError.response || axiosError.code === 'ERR_NETWORK')) {
       return;
     }
 
@@ -37,10 +38,12 @@ export const handleApiError = (error: unknown) => {
         toast.error('Không tìm thấy tài nguyên hệ thống.');
         break;
       case 500:
-        toast.error('Lỗi máy chủ nội bộ (500). Vui lòng thử lại sau.');
+        toast.error('Lỗi máy chủ nội bộ. Vui lòng thử lại sau.');
         break;
       default:
-        toast.error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.');
+        if (!isAuthMe) {
+          toast.error('Không thể kết nối đến máy chủ. Vui lòng kiểm tra mạng.');
+        }
     }
     return;
   }
