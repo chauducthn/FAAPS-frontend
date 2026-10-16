@@ -8,13 +8,14 @@ import { cn } from '@/lib/utils';
 
 const PAGE_SIZE = 10;
 
-type SortKey = 'id' | 'studentCode' | 'studentName' | 'reason' | 'createdAt';
+type SortKey = 'id' | 'studentCode' | 'studentName' | 'reason' | 'flaggedCount' | 'createdAt';
 
 const COLUMNS: { key: SortKey; label: string; className?: string }[] = [
   { key: 'id', label: 'Report ID' },
   { key: 'studentCode', label: 'Student ID (MSSV)' },
   { key: 'studentName', label: 'Student Name' },
   { key: 'reason', label: 'Reason' },
+  { key: 'flaggedCount', label: 'Flagged' },
   { key: 'createdAt', label: 'Date' },
 ];
 
@@ -47,9 +48,10 @@ export function PendingReportsTable() {
     const items = [...(data?.items ?? [])];
     const { key, dir } = sort;
     items.sort((a: AiReportSummary, b: AiReportSummary) => {
-      const av = (a[key] ?? '') as string;
-      const bv = (b[key] ?? '') as string;
-      return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+      const av = a[key] ?? '';
+      const bv = b[key] ?? '';
+      const cmp = typeof av === 'number' && typeof bv === 'number' ? av - bv : String(av).localeCompare(String(bv));
+      return dir === 'asc' ? cmp : -cmp;
     });
     return items;
   }, [data, sort]);
@@ -86,7 +88,7 @@ export function PendingReportsTable() {
       </label>
 
       <div className="overflow-x-auto rounded-xl border border-[#e7eefe]">
-        <table className="w-full min-w-[760px] text-left">
+        <table className="w-full min-w-[820px] text-left">
           <thead className="bg-[rgba(240,243,255,0.7)]">
             <tr>
               {COLUMNS.map((c) => {
@@ -113,14 +115,14 @@ export function PendingReportsTable() {
             {isLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <tr key={i} className="border-t border-[#e7eefe]">
-                  <td colSpan={7} className="px-3 py-5">
+                  <td colSpan={8} className="px-3 py-5">
                     <div className="h-4 animate-pulse rounded bg-gray-100" />
                   </td>
                 </tr>
               ))
             ) : isError ? (
               <tr className="border-t border-[#e7eefe]">
-                <td colSpan={7} className="px-3 py-10 text-center text-sm text-[#555f6f]">
+                <td colSpan={8} className="px-3 py-10 text-center text-sm text-[#555f6f]">
                   Could not load reports.{' '}
                   <button type="button" onClick={() => refetch()} className="font-semibold text-orange-600 hover:underline">
                     Retry
@@ -129,7 +131,7 @@ export function PendingReportsTable() {
               </tr>
             ) : rows.length === 0 ? (
               <tr className="border-t border-[#e7eefe]">
-                <td colSpan={7} className="px-3 py-10 text-center text-sm text-[#555f6f]">
+                <td colSpan={8} className="px-3 py-10 text-center text-sm text-[#555f6f]">
                   {debouncedSearch ? 'No pending reports match your search.' : 'No pending reports.'}
                 </td>
               </tr>
@@ -144,6 +146,7 @@ export function PendingReportsTable() {
                   <td className="max-w-[240px] px-3 py-4 text-[13px] text-[#555f6f]">
                     <p className="line-clamp-2">{r.reason}</p>
                   </td>
+                  <td className="px-3 py-4 text-[13px] font-medium text-[#555f6f]">{r.flaggedCount}</td>
                   <td className="whitespace-nowrap px-3 py-4 text-[13px] font-medium text-[#555f6f]">{formatDate(r.createdAt)}</td>
                   <td className="px-3 py-4">
                     <span className="rounded-full bg-[#fef2f2] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em] text-[#b91c1c]">
