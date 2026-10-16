@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate, useSearchParams } from 'react-router';
 import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusBadge } from '../../components/admin/StatusBadge';
 import { UserAvatar } from '../../components/admin/UserAvatar';
 import { UserDetailModal } from '../../components/admin/UserDetailModal';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
+import { Pagination } from '../../components/admin/Pagination';
 import { useAdminUsers, useChangeUserStatus, useRoleCount } from '../../hooks/queries/useAdminUsers';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useAuth } from '../../stores/useAuth';
 import type { AdminUserRole, AdminUserStatus, AdminUserSummary, UserSort } from '../../types/admin';
 import { cn } from '@/lib/utils';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 const TABS: { role: AdminUserRole; label: string }[] = [
   { role: 'STUDENT', label: 'Student' },
   { role: 'ADVISOR', label: 'Advisor' },
@@ -46,25 +49,53 @@ function RowMenu({
   onView,
   onEdit,
   onToggle,
+  onAssignments,
 }: {
   user: AdminUserSummary;
   isSelf: boolean;
   onView: () => void;
   onEdit: () => void;
   onToggle: () => void;
+  onAssignments?: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ top?: number; bottom?: number; right: number } | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // The menu is rendered in a portal with fixed positioning so the table's
+  // scroll container can neither clip it nor grow extra scrollable space.
+  const toggle = () => {
+    if (open) return setOpen(false);
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const MENU_HEIGHT = 180;
+    const right = window.innerWidth - rect.right;
+    setPos(
+      window.innerHeight - rect.bottom < MENU_HEIGHT
+        ? { bottom: window.innerHeight - rect.top + 4, right }
+        : { top: rect.bottom + 4, right }
+    );
+    setOpen(true);
+  };
 
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => ref.current && !ref.current.contains(e.target as Node) && setOpen(false);
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false);
+    const close = () => setOpen(false);
+    const onDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (!menuRef.current?.contains(target) && !buttonRef.current?.contains(target)) close();
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
+    window.addEventListener('resize', close);
+    window.addEventListener('scroll', close, true); // capture: also fires for the table's own scroll
     return () => {
       document.removeEventListener('mousedown', onDown);
       document.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', close);
+      window.removeEventListener('scroll', close, true);
     };
   }, [open]);
 
@@ -72,44 +103,64 @@ function RowMenu({
   const item = 'block w-full px-3 py-2 text-left text-[13px] font-medium hover:bg-gray-50';
 
   return (
-    <div ref={ref} className="relative inline-block">
+    <>
       <button
+        ref={buttonRef}
         type="button"
         aria-label={`Actions for ${user.fullName}`}
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        onClick={toggle}
         className="rounded-md p-1.5 text-[#555f6f] hover:bg-gray-100"
       >
         <MoreHorizontal className="size-5" />
       </button>
-      {open && (
-        <div className="absolute right-0 z-20 mt-1 w-44 overflow-hidden rounded-lg border border-[#e5e7eb] bg-white py-1 shadow-md">
-          <button type="button" className={cn(item, 'text-[#151c27]')} onClick={() => { setOpen(false); onView(); }}>
-            View details
-          </button>
-          <button type="button" className={cn(item, 'text-[#151c27]')} onClick={() => { setOpen(false); onEdit(); }}>
-            Edit
-          </button>
-          {(user.status === 'ACTIVE' || suspended) && (
-            <button
-              type="button"
-              disabled={isSelf && !suspended}
-              title={isSelf && !suspended ? 'You cannot suspend your own account' : undefined}
-              className={cn(item, suspended ? 'text-[#047857]' : 'text-[#b91c1c]', 'disabled:cursor-not-allowed disabled:opacity-40')}
-              onClick={() => { setOpen(false); onToggle(); }}
-            >
-              {suspended ? 'Activate account' : 'Suspend account'}
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            style={{ position: 'fixed', top: pos.top, bottom: pos.bottom, right: pos.right }}
+            className="z-50 w-44 overflow-hidden rounded-lg border border-[#e5e7eb] bg-white py-1 shadow-md"
+          >
+            <button type="button" role="menuitem" className={cn(item, 'text-[#151c27]')} onClick={() => { setOpen(false); onView(); }}>
+              View details
             </button>
-          )}
-        </div>
-      )}
-    </div>
+            <button type="button" role="menuitem" className={cn(item, 'text-[#151c27]')} onClick={() => { setOpen(false); onEdit(); }}>
+              Edit
+            </button>
+            {onAssignments && (
+              <button type="button" role="menuitem" className={cn(item, 'text-[#151c27]')} onClick={() => { setOpen(false); onAssignments(); }}>
+                View assignments
+              </button>
+            )}
+            {(user.status === 'ACTIVE' || suspended) && (
+              <button
+                type="button"
+                role="menuitem"
+                disabled={isSelf && !suspended}
+                title={isSelf && !suspended ? 'You cannot suspend your own account' : undefined}
+                className={cn(item, suspended ? 'text-[#047857]' : 'text-[#b91c1c]', 'disabled:cursor-not-allowed disabled:opacity-40')}
+                onClick={() => { setOpen(false); onToggle(); }}
+              >
+                {suspended ? 'Activate account' : 'Suspend account'}
+              </button>
+            )}
+          </div>,
+          document.body
+        )}
+    </>
   );
 }
 
 export default function UserAccounts() {
   const me = useAuth((s) => s.user);
-  const [role, setRole] = useState<AdminUserRole>('STUDENT');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const roleParam = searchParams.get('role');
+  const role: AdminUserRole = TABS.some((t) => t.role === roleParam) ? (roleParam as AdminUserRole) : 'STUDENT';
+  const setRole = (next: AdminUserRole) => setSearchParams(next === 'STUDENT' ? {} : { role: next }, { replace: true });
   const [status, setStatus] = useState<AdminUserStatus | ''>('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -131,9 +182,6 @@ export default function UserAccounts() {
 
   const items = useMemo(() => data?.items ?? [], [data]);
   const total = data?.totalElements ?? 0;
-  const totalPages = data?.totalPages ?? 0;
-  const from = total === 0 ? 0 : page * PAGE_SIZE + 1;
-  const to = Math.min((page + 1) * PAGE_SIZE, total);
 
   // Selection only makes sense for the rows currently shown.
   useEffect(() => setSelected(new Set()), [role, status, debouncedSearch, page, sort]);
@@ -302,7 +350,7 @@ export default function UserAccounts() {
                     </td>
                   </tr>
                 ))
-              ) : isError ? (
+              ) : isError && !data ? (
                 <tr className="border-t border-[#e7eefe]">
                   <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     Could not load accounts.{' '}
@@ -343,6 +391,7 @@ export default function UserAccounts() {
                         isSelf={u.id === me?.id}
                         onView={() => setDetail({ id: u.id, edit: false })}
                         onEdit={() => setDetail({ id: u.id, edit: true })}
+                        onAssignments={u.role === 'ADVISOR' ? () => navigate(`/admin/assignments/advisors/${u.id}`) : undefined}
                         onToggle={() =>
                           setConfirm({
                             ids: [u.id],
@@ -359,20 +408,7 @@ export default function UserAccounts() {
           </table>
         </div>
 
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-[#e7eefe] bg-[#f7f8fa]/60 px-4 py-3 sm:flex-row">
-          <p className="text-[13px] text-[#555f6f]">
-            Showing {from}–{to} of {total} accounts · {PAGE_SIZE} per page
-          </p>
-          <div className="flex items-center gap-1">
-            <button type="button" disabled={page === 0} onClick={() => setPage((p) => p - 1)} className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#555f6f] hover:bg-gray-100 disabled:opacity-40">
-              Previous
-            </button>
-            <span className="flex size-8 items-center justify-center rounded-lg bg-[#f37021] text-xs font-bold text-white">{page + 1}</span>
-            <button type="button" disabled={page + 1 >= totalPages} onClick={() => setPage((p) => p + 1)} className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#555f6f] hover:bg-gray-100 disabled:opacity-40">
-              Next
-            </button>
-          </div>
-        </div>
+        <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun="accounts" onChange={setPage} />
       </section>
 
       <UserDetailModal userId={detail?.id ?? null} startInEdit={detail?.edit} onClose={() => setDetail(null)} />

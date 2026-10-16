@@ -12,7 +12,7 @@ import {
 } from '../../../hooks/queries/useAdminAssignments';
 import { cn } from '@/lib/utils';
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 const th = 'px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]';
 
 type AssignFilter = '' | 'ASSIGNED' | 'UNASSIGNED';
@@ -263,7 +263,7 @@ export default function CohortDetails() {
                     </td>
                   </tr>
                 ))
-              ) : studentsQuery.isError ? (
+              ) : studentsQuery.isError && !studentsQuery.data ? (
                 <tr className="border-t border-[#e7eefe]">
                   <td colSpan={6} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     Could not load students.{' '}

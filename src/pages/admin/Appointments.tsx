@@ -7,7 +7,7 @@ import { useAppointmentSummary, useAppointments } from '../../hooks/queries/useA
 import { useDebounce } from '../../hooks/useDebounce';
 import type { AppointmentStatus } from '../../types/admin';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 const STATUSES = Object.keys(APPOINTMENT_STATUS_LABEL) as AppointmentStatus[];
 const th = 'px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]';
 
@@ -143,7 +143,7 @@ export default function Appointments() {
                     </td>
                   </tr>
                 ))
-              ) : list.isError ? (
+              ) : list.isError && !list.data ? (
                 <tr className="border-t border-[#e7eefe]">
                   <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     Could not load appointments.{' '}

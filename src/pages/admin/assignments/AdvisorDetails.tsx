@@ -7,7 +7,7 @@ import { Pagination } from '../../../components/admin/Pagination';
 import { useAdvisorAssignment } from '../../../hooks/queries/useAdminAssignments';
 import { useAdminUser } from '../../../hooks/queries/useAdminUsers';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 const th = 'px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]';
 
 function InfoTile({ label, children }: { label: string; children: React.ReactNode }) {
@@ -39,9 +39,9 @@ export default function AdvisorDetails() {
   );
 
   const back = (
-    <Link to="/admin/assignments" className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
+    <Link to="/admin/users?role=ADVISOR" className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
       <ChevronLeft className="size-4" />
-      Back to Advisor Assignments
+      Back to User Accounts <span className="text-[#98a2b3]">· Advisor tab</span>
     </Link>
   );
 

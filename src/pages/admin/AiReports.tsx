@@ -128,7 +128,7 @@ export default function AiReports() {
                     </td>
                   </tr>
                 ))
-              ) : list.isError ? (
+              ) : list.isError && !list.data ? (
                 <tr className="border-t border-[#e7eefe]">
                   <td colSpan={8} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     Could not load reports.{' '}

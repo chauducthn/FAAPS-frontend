@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { ArrowDown, ArrowUp, ArrowUpDown, Search } from 'lucide-react';
+import { Pagination } from './Pagination';
 import { useAiReports } from '../../hooks/queries/useAdminDashboard';
 import { useDebounce } from '../../hooks/useDebounce';
 import type { AiReportSummary } from '../../types/admin';
@@ -60,9 +61,6 @@ export function PendingReportsTable() {
     setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }));
 
   const total = data?.totalElements ?? 0;
-  const totalPages = data?.totalPages ?? 0;
-  const from = total === 0 ? 0 : page * PAGE_SIZE + 1;
-  const to = Math.min((page + 1) * PAGE_SIZE, total);
 
   return (
     <section className="flex flex-col gap-5 rounded-xl bg-white p-4 shadow-sm sm:p-6">
@@ -120,7 +118,7 @@ export function PendingReportsTable() {
                   </td>
                 </tr>
               ))
-            ) : isError ? (
+            ) : isError && !data ? (
               <tr className="border-t border-[#e7eefe]">
                 <td colSpan={8} className="px-3 py-10 text-center text-sm text-[#555f6f]">
                   Could not load reports.{' '}
@@ -168,32 +166,7 @@ export function PendingReportsTable() {
         </table>
       </div>
 
-      <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
-        <p className="text-[13px] text-[#555f6f]">
-          Showing {from}–{to} of {total} pending reports
-        </p>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            disabled={page === 0}
-            onClick={() => setPage((p) => p - 1)}
-            className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#555f6f] hover:bg-gray-50 disabled:opacity-40"
-          >
-            Previous
-          </button>
-          <span className="flex size-8 items-center justify-center rounded-lg bg-[#f37021] text-xs font-bold text-white">
-            {page + 1}
-          </span>
-          <button
-            type="button"
-            disabled={page + 1 >= totalPages}
-            onClick={() => setPage((p) => p + 1)}
-            className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#555f6f] hover:bg-gray-50 disabled:opacity-40"
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun="pending reports" onChange={setPage} bare />
     </section>
   );
 }

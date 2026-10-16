@@ -1,13 +1,22 @@
+import { useEffect } from 'react';
+
 interface PaginationProps {
   page: number; // zero-based
   pageSize: number;
   total: number;
   noun: string;
   onChange: (page: number) => void;
+  /** No border/background, for use inside a card that already has padding. */
+  bare?: boolean;
 }
 
-export function Pagination({ page, pageSize, total, noun, onChange }: PaginationProps) {
+export function Pagination({ page, pageSize, total, noun, onChange, bare }: PaginationProps) {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  // If the list shrinks (filters, deletions) while on a later page, step back to the last valid page.
+  useEffect(() => {
+    if (page > 0 && page >= totalPages) onChange(totalPages - 1);
+  }, [page, totalPages, onChange]);
+
   const from = total === 0 ? 0 : page * pageSize + 1;
   const to = Math.min((page + 1) * pageSize, total);
 
@@ -17,7 +26,13 @@ export function Pagination({ page, pageSize, total, noun, onChange }: Pagination
   );
 
   return (
-    <div className="flex flex-col items-center justify-between gap-3 border-t border-[#e7eefe] bg-[#f7f8fa]/60 px-4 py-3 sm:flex-row">
+    <div
+      className={
+        bare
+          ? 'flex flex-col items-center justify-between gap-3 sm:flex-row'
+          : 'flex flex-col items-center justify-between gap-3 border-t border-[#e7eefe] bg-[#f7f8fa]/60 px-4 py-3 sm:flex-row'
+      }
+    >
       <p className="text-[13px] text-[#555f6f]">
         Showing {from}–{to} of {total} {noun} · {pageSize} per page
       </p>

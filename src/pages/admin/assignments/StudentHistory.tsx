@@ -82,7 +82,7 @@ export default function StudentHistory() {
                     <div className="h-4 animate-pulse rounded bg-gray-100" />
                   </td>
                 </tr>
-              ) : isError ? (
+              ) : isError && !history ? (
                 <tr className="border-t border-[#e7eefe]">
                   <td colSpan={4} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     Could not load the history.{' '}

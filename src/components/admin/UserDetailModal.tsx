@@ -62,7 +62,7 @@ export function UserDetailModal({ userId, startInEdit = false, onClose }: UserDe
           )}
         </div>
       ) : editing ? (
-        <EditForm user={user} onCancel={() => setEditing(false)} onSaved={() => setEditing(false)} />
+        <EditForm user={user} onCancel={onClose} onSaved={() => setEditing(false)} />
       ) : (
         <ViewPanel user={user} onEdit={() => setEditing(true)} onClose={onClose} />
       )}
