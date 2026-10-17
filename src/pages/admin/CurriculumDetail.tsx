@@ -4,7 +4,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import { ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
 import {
   SemesterPlanner,
   CoursePickerModal,
@@ -79,7 +78,9 @@ export default function CurriculumDetailPage() {
           setPickerSemester(semesterNumber);
           setPickerOpen(true);
         }}
-        onEditCourse={(c) => toast.info(`Edit row for ${c.courseCode} coming soon`)}
+        onEditCourse={() => {
+          /* per-row edit not implemented yet */
+        }}
         onRemoveCourse={(c, sn) => setRemoving({ curriculumCourseId: c.curriculumCourseId, semesterNumber: sn })}
       />
 

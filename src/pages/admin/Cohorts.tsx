@@ -1,7 +1,6 @@
 // src/pages/admin/Cohorts.tsx
 import { useMemo, useState } from 'react';
 import { Plus, X } from 'lucide-react';
-import { toast } from 'sonner';
 import { CohortTable, CohortFilterBar, CohortFormModal } from '../../components/admin/cohorts';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
 import { useCohortsQuery } from '../../hooks/queries/useCohortsQuery';
@@ -95,9 +94,9 @@ export default function CohortsPage() {
             setModalOpen(true);
           }}
           onDelete={(c) => setDeleting(c)}
-          onOpenDetail={(c) =>
-            toast.info(`Detail page coming soon for ${c.code}`)
-          }
+          onOpenDetail={() => {
+            /* detail page is not implemented yet */
+          }}
         />
       )}
 
