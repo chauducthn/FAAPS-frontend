@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router";
-import { useAuth } from "../../stores/useAuth";
-import { authService } from "../../services/authService";
+import { useAuth } from "../../../stores/useAuth";
+import { authService } from "../../../services/authService";
 
 export default function DashboardLayout() {
   const { user, logout: clearStore } = useAuth();
