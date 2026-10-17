@@ -22,9 +22,9 @@ import {
 } from 'lucide-react';
 import { Logo } from '@/components/common/Logo';
 import { cn } from '@/lib/utils';
-import { useAuth } from '../../stores/useAuth';
-import { authService } from '../../services/authService';
-import { useAiReports } from '../../hooks/queries/useAdminDashboard';
+import { useAuth } from '../../../stores/useAuth';
+import { authService } from '../../../services/authService';
+import { useAiReports } from '../../../hooks/queries/useAdminDashboard';
 
 interface NavItem {
   label: string;
@@ -45,25 +45,25 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
   {
     title: 'Academic Data',
     items: [
-      { label: 'Curriculum', icon: BookOpen },
-      { label: 'Courses', icon: Book },
-      { label: 'Import History', icon: Upload },
+      { label: 'Curriculum', to: '/admin/curriculum', icon: BookOpen },
+      { label: 'Courses', to: '/admin/courses', icon: Book },
+      { label: 'Import History', to: '/admin/import-history', icon: Upload },
     ],
   },
   {
     title: 'Academic Structure',
     items: [
       { label: 'Majors', to: '/admin/majors', icon: GraduationCap },
-      { label: 'Cohorts', icon: FolderOpen },
+      { label: 'Cohorts', to: '/admin/cohorts', icon: FolderOpen },
     ],
   },
   { title: 'Reports', items: [{ label: 'Appointments', to: '/admin/appointments', icon: CalendarCheck }] },
-  { title: 'Academic Rules', items: [{ label: 'Academic Rules', icon: Shield }] },
+  { title: 'Academic Rules', items: [{ label: 'Academic Rules', to: '/admin/rules', icon: Shield }] },
   {
     title: 'AI',
     items: [
-      { label: 'AI Configuration', icon: Cpu },
-      { label: 'AI Performance', icon: Activity },
+      { label: 'AI Configuration', to: '/admin/ai-config', icon: Cpu },
+      { label: 'AI Performance', to: '/admin/ai-performance', icon: Activity },
       { label: 'Reported AI Responses', to: '/admin/ai-reports', icon: MessageSquare, badge: true },
     ],
   },

@@ -1,8 +1,8 @@
 // src/components/layout/AdminHeader.tsx
 import { useState } from 'react';
 import { Bell, ChevronDown, LogOut } from 'lucide-react';
-import { useAuth } from '../../stores/useAuth';
-import { authService } from '../../services/authService';
+import { useAuth } from '../../../stores/useAuth';
+import { authService } from '../../../services/authService';
 
 export default function AdminHeader() {
   const { user, logout: clearStore } = useAuth();
