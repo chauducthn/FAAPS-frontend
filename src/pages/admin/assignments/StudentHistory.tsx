@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router';
 import { ChevronLeft } from 'lucide-react';
 import { StatusBadge } from '../../../components/admin/StatusBadge';
+import { useBackTarget } from '../../../lib/backLink';
 import { useStudentHistory } from '../../../hooks/queries/useAdminAssignments';
 import { useAdminUser } from '../../../hooks/queries/useAdminUsers';
 import { cn } from '@/lib/utils';
@@ -26,14 +27,17 @@ export default function StudentHistory() {
   const { data: student } = useAdminUser(studentId ?? null);
 
   const current = history?.find((h) => h.endDate === null && h.status === 'ACTIVE');
-  const cohortLink = student?.curriculumVersionId ? `/admin/assignments/cohorts/${student.curriculumVersionId}` : '/admin/assignments';
+  const backTarget = useBackTarget(
+    student?.curriculumVersionId ? `/admin/assignments/cohorts/${student.curriculumVersionId}` : '/admin/assignments',
+    student?.curriculumVersionId ? 'Cohort Assignment Details' : 'Advisor Assignments'
+  );
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <div>
-        <Link to={cohortLink} className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
+        <Link to={backTarget.to} className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
           <ChevronLeft className="size-4" />
-          Back to {student?.curriculumVersionId ? 'Cohort Assignment Details' : 'Advisor Assignments'}
+          Back to {backTarget.label}
         </Link>
         <h1 className="mt-3 text-2xl font-semibold text-[#151c27]">Student Assignment History</h1>
         <p className="mt-1 text-sm text-[#555f6f]">

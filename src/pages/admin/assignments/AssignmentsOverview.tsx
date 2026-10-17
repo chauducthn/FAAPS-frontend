@@ -6,6 +6,7 @@ import { AutoAssignModal } from '../../../components/admin/AutoAssignModal';
 import { CohortAssignModal } from '../../../components/admin/CohortAssignModal';
 import { CohortPoolModal } from '../../../components/admin/CohortPoolModal';
 import { LoadBadge } from '../../../components/admin/LoadBadge';
+import { backState } from '../../../lib/backLink';
 import { Pagination } from '../../../components/admin/Pagination';
 import {
   useAdvisorCohortRows,
@@ -383,7 +384,7 @@ export default function AssignmentsOverview() {
                           <button type="button" className={btn} onClick={() => setAssignCohortFor({ advisorId: a.id })}>
                             Assign cohort
                           </button>
-                          <Link to={`/admin/assignments/advisors/${a.id}`} className={btn}>
+                          <Link to={`/admin/assignments/advisors/${a.id}`} state={backState('/admin/assignments?tab=advisors', 'Advisor Assignments · Advisors tab')} className={btn}>
                             Details
                           </Link>
                         </div>
@@ -435,7 +436,7 @@ export default function AssignmentsOverview() {
                           <button type="button" className={btn} onClick={() => setAssignStudents([{ id: s.id, name: s.fullName }])}>
                             Assign
                           </button>
-                          <Link to={`/admin/assignments/students/${s.id}/history`} className={btn}>
+                          <Link to={`/admin/assignments/students/${s.id}/history`} state={backState('/admin/assignments?tab=unassigned', 'Advisor Assignments · Unassigned students')} className={btn}>
                             History
                           </Link>
                         </div>

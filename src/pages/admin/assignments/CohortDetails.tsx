@@ -6,6 +6,7 @@ import { AutoAssignModal } from '../../../components/admin/AutoAssignModal';
 import { CohortAssignModal } from '../../../components/admin/CohortAssignModal';
 import { CohortPoolModal } from '../../../components/admin/CohortPoolModal';
 import { LoadBadge } from '../../../components/admin/LoadBadge';
+import { backState } from '../../../lib/backLink';
 import { Pagination } from '../../../components/admin/Pagination';
 import {
   useAssignmentAdvisors,
@@ -122,7 +123,7 @@ export default function CohortDetails() {
           <ul className="mt-3 flex flex-col gap-2">
             {pool.data?.map((a) => (
               <li key={a.advisorId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#f7f8fa] px-4 py-3 text-sm">
-                <Link to={`/admin/assignments/advisors/${a.advisorId}`} className="font-semibold text-[#151c27] hover:text-orange-600">
+                <Link to={`/admin/assignments/advisors/${a.advisorId}`} state={backState(`/admin/assignments/cohorts/${cohortId}`, `Cohort ${title}`)} className="font-semibold text-[#151c27] hover:text-orange-600">
                   {a.fullName} <span className="font-normal text-[#555f6f]">· {a.advisorCode}</span>
                 </Link>
                 <span className="flex items-center gap-3 text-[#555f6f]">
@@ -251,7 +252,7 @@ export default function CohortDetails() {
                         <button type="button" className={btn} onClick={() => setAssignStudents([{ id: s.id, name: s.fullName }])}>
                           Assign
                         </button>
-                        <Link to={`/admin/assignments/students/${s.id}/history`} className={btn}>
+                        <Link to={`/admin/assignments/students/${s.id}/history`} state={backState(`/admin/assignments/cohorts/${cohortId}`, `Cohort ${title}`)} className={btn}>
                           History
                         </Link>
                       </div>

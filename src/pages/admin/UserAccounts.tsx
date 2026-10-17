@@ -8,6 +8,7 @@ import { UserAvatar } from '../../components/admin/UserAvatar';
 import { UserDetailModal } from '../../components/admin/UserDetailModal';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
 import { Pagination } from '../../components/admin/Pagination';
+import { backState } from '../../lib/backLink';
 import { useAdminUsers, useChangeUserStatus, useRoleCount } from '../../hooks/queries/useAdminUsers';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useAuth } from '../../stores/useAuth';
@@ -391,7 +392,7 @@ export default function UserAccounts() {
                         isSelf={u.id === me?.id}
                         onView={() => setDetail({ id: u.id, edit: false })}
                         onEdit={() => setDetail({ id: u.id, edit: true })}
-                        onAssignments={u.role === 'ADVISOR' ? () => navigate(`/admin/assignments/advisors/${u.id}`) : undefined}
+                        onAssignments={u.role === 'ADVISOR' ? () => navigate(`/admin/assignments/advisors/${u.id}`, { state: backState('/admin/users?role=ADVISOR', 'User Accounts · Advisor tab') }) : undefined}
                         onToggle={() =>
                           setConfirm({
                             ids: [u.id],

@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { AssignAdvisorModal } from '../../../components/admin/AssignAdvisorModal';
 import { CohortAssignModal } from '../../../components/admin/CohortAssignModal';
 import { LoadBadge } from '../../../components/admin/LoadBadge';
+import { backState, useBackTarget } from '../../../lib/backLink';
 import { Pagination } from '../../../components/admin/Pagination';
 import { StatusBadge } from '../../../components/admin/StatusBadge';
 import { UserAvatar } from '../../../components/admin/UserAvatar';
@@ -24,6 +25,7 @@ const th = 'px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] te
 
 export default function AdvisorDetails() {
   const { advisorId } = useParams();
+  const backTarget = useBackTarget('/admin/assignments?tab=advisors', 'Advisor Assignments · Advisors tab');
   const { data, isLoading, isError, refetch } = useAdvisorAssignment(advisorId);
   const { data: profile } = useAdminUser(advisorId ?? null);
   const cohortRows = useAdvisorCohortRows();
@@ -64,9 +66,9 @@ export default function AdvisorDetails() {
     });
 
   const back = (
-    <Link to="/admin/users?role=ADVISOR" className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
+    <Link to={backTarget.to} className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
       <ChevronLeft className="size-4" />
-      Back to User Accounts <span className="text-[#98a2b3]">· Advisor tab</span>
+      Back to {backTarget.label}
     </Link>
   );
 
@@ -292,7 +294,7 @@ export default function AdvisorDetails() {
                           <button type="button" onClick={() => setReassign([{ id: s.id, name: s.fullName }])} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50">
                             Reassign
                           </button>
-                          <Link to={`/admin/assignments/students/${s.id}/history`} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50">
+                          <Link to={`/admin/assignments/students/${s.id}/history`} state={backState(`/admin/assignments/advisors/${advisorId}`, `Advisor ${data?.advisor.fullName ?? 'details'}`)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50">
                             History
                           </Link>
                         </div>
