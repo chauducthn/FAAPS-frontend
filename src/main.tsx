@@ -17,7 +17,7 @@ createRoot(document.getElementById("root")!).render(
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <RouterProvider router={router} />
-          <Toaster position="top-right" duration={4000} />
+          <Toaster />
         </AuthProvider>
       </QueryClientProvider>
     </GoogleOAuthProvider>

@@ -1,7 +1,6 @@
 // src/pages/admin/Curriculum.tsx
 import { useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { toast } from 'sonner';
 import {
   CurriculumList,
   CurriculumFilterBar,
@@ -160,7 +159,9 @@ export default function CurriculumPage() {
           onArchive={async (c) => {
             await archive(c.id);
           }}
-          onOpenDetail={(c) => toast.info(`Detail page coming soon for ${c.name}`)}
+          onOpenDetail={() => {
+            /* detail page is not implemented yet */
+          }}
         />
       )}
 

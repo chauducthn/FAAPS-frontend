@@ -2,11 +2,12 @@
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
-import MajorFilterBar from '@/components/layout/admin/MajorFilterBar';
-import MajorSelectionBanner from '@/components/layout/admin/MajorSelectionBanner';
-import MajorTable, { MajorItem } from '@/components/layout/admin/MajorTable';
-import CreateMajorModal from '@/components/layout/admin/CreateMajorModal';
 import { CreateMajorDto } from '../../types/major';
+import MajorTable, { MajorItem } from '@/components/admin/majors/MajorTable';
+import MajorFilterBar from '@/components/admin/majors/MajorFilterBar';
+import MajorSelectionBanner from '@/components/admin/majors/MajorSelectionBanner';
+import CreateMajorModal from '@/components/admin/majors/CreateMajorModal';
+
 
 const initialFigmaData: MajorItem[] = [
   { id: '1', code: 'SE', name: 'Software Engineering', cohort: 'K18', status: 'ACTIVE' },
@@ -115,7 +116,9 @@ export default function MajorsPage() {
         selectedIds={selectedIds}
         onSelectAll={handleSelectAll}
         onSelectRow={handleSelectRow}
-        onEditMajor={(item) => toast.info(`Editing major: ${item.code}`)}
+        onEditMajor={() => {
+          /* editing flow is wired through the modal below */
+        }}
       />
 
       {/* MODAL TẠO NGÀNH HỌC */}
