@@ -24,6 +24,7 @@ import { Logo } from '@/components/common/Logo';
 import { cn } from '@/lib/utils';
 import { useAuth } from '../../../stores/useAuth';
 import { authService } from '../../../services/authService';
+import { NotificationBell } from './NotificationBell';
 import { useAiReports } from '../../../hooks/queries/useAdminDashboard';
 
 interface NavItem {
@@ -165,7 +166,8 @@ export default function AdminLayout() {
         </button>
         <div className="hidden lg:block" />
 
-        <div className="relative flex items-center gap-4">
+        <div className="relative flex items-center gap-2 sm:gap-4">
+          <NotificationBell />
           {logoutError && <span className="text-sm text-red-600">Could not sign out. Try again.</span>}
           <button
             type="button"

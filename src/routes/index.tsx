@@ -55,7 +55,7 @@ export const router = createBrowserRouter([
           { path: '/admin/ai-reports/:id', element: <AiReportDetail /> },
           { path: '/admin/assignments', element: <AssignmentsOverview /> },
           { path: '/admin/assignments/advisors/:advisorId', element: <AdvisorDetails /> },
-          { path: '/admin/assignments/cohorts/:cohort', element: <CohortDetails /> },
+          { path: '/admin/assignments/cohorts/:cohortId', element: <CohortDetails /> },
           { path: '/admin/assignments/students/:studentId/history', element: <StudentHistory /> },
         ],
       },
