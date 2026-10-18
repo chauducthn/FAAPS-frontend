@@ -9,6 +9,8 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:8080',
       '/oauth2': 'http://localhost:8080',
+      // Admin notifications arrive over STOMP/WebSocket on the backend's /ws endpoint.
+      '/ws': { target: 'http://localhost:8080', ws: true },
     },
   },
   resolve: {

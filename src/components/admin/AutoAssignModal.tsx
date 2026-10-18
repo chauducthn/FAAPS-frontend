@@ -23,6 +23,7 @@ export function AutoAssignModal({ open, cohort, pool, onClose, onConfigurePool }
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [response, setResponse] = useState<CohortAutoAssignResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notes, setNotes] = useState('');
   const previewMutation = usePreviewAutoAssign();
   const confirmMutation = useConfirmAutoAssign();
 
@@ -31,6 +32,7 @@ export function AutoAssignModal({ open, cohort, pool, onClose, onConfigurePool }
     setPhase('select');
     setResponse(null);
     setError(null);
+    setNotes('');
     // Reset only when the dialog is (re)opened.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -67,7 +69,7 @@ export function AutoAssignModal({ open, cohort, pool, onClose, onConfigurePool }
   const runConfirm = async () => {
     setError(null);
     try {
-      const res = await confirmMutation.mutateAsync({ cohortId: cohort.cohortId, advisorIds: ids });
+      const res = await confirmMutation.mutateAsync({ cohortId: cohort.cohortId, advisorIds: ids, notes: notes.trim() || undefined });
       setResponse(res);
       setPhase('done');
       toast.success(`Auto Assign complete: ${res.assigned} student${res.assigned === 1 ? '' : 's'} assigned.`);
@@ -128,6 +130,20 @@ export function AutoAssignModal({ open, cohort, pool, onClose, onConfigurePool }
           </>
         )}
 
+        {phase === 'preview' && (
+          <label className="flex flex-col gap-1 text-sm font-semibold text-[#151c27]">
+            Note <span className="font-normal text-[#555f6f]">(optional, saved in the assignment history)</span>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              maxLength={500}
+              rows={2}
+              placeholder="Why is this assignment being made?"
+              className="rounded-lg border border-[#e5e7eb] p-2 text-sm font-normal text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            />
+          </label>
+        )}
+
         {phase !== 'select' && response && (
           <>
             <div className="grid gap-3 sm:grid-cols-2">
@@ -159,7 +175,7 @@ export function AutoAssignModal({ open, cohort, pool, onClose, onConfigurePool }
                           {advisor?.fullName ?? row.advisorId}
                           <span className="block text-xs font-normal text-[#555f6f]">{advisor?.advisorCode}</span>
                         </td>
-                        <td className="px-4 py-3 text-[#151c27]">{row.totalAfter - row.assigned}</td>
+                        <td className="px-4 py-3 text-[#151c27]">{row.totalBefore}</td>
                         <td className="px-4 py-3 font-semibold text-[#f37021]">+{row.assigned}</td>
                         <td className="px-4 py-3">
                           <LoadBadge count={row.totalAfter} limit={advisor?.maxAdvisees ?? null} />

@@ -9,6 +9,9 @@ import { cn } from '@/lib/utils';
 const th = 'px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]';
 
 // Dates from the API are plain yyyy-MM-dd values; parse them as local dates.
+const formatDateTime = (value: string) =>
+  new Date(value).toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+
 const formatDate = (value: string) =>
   new Date(`${value}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
 
@@ -70,25 +73,27 @@ export default function StudentHistory() {
           <p className="text-[13px] text-[#555f6f]">{history?.length ?? 0} records · Newest first</p>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[560px] text-left">
+          <table className="w-full min-w-[820px] text-left">
             <thead className="bg-[rgba(240,243,255,0.7)]">
               <tr>
                 <th className={th}>Assigned advisor</th>
                 <th className={th}>Start date</th>
                 <th className={th}>End date</th>
                 <th className={th}>Status</th>
+                <th className={th}>Assigned by</th>
+                <th className={th}>Note</th>
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={4} className="px-4 py-8">
+                  <td colSpan={6} className="px-4 py-8">
                     <div className="h-4 animate-pulse rounded bg-gray-100" />
                   </td>
                 </tr>
               ) : isError && !history ? (
                 <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={4} className="px-4 py-12 text-center text-sm text-[#555f6f]">
+                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     Could not load the history.{' '}
                     <button type="button" onClick={() => refetch()} className="font-semibold text-orange-600 hover:underline">
                       Retry
@@ -97,19 +102,21 @@ export default function StudentHistory() {
                 </tr>
               ) : !history || history.length === 0 ? (
                 <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={4} className="px-4 py-12 text-center text-sm text-[#555f6f]">
+                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     This student has never been assigned an advisor.
                   </td>
                 </tr>
               ) : (
                 history.map((h) => (
                   <tr key={h.id} className="border-t border-[#e7eefe]">
-                    <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">{h.advisorName}</td>
-                    <td className="px-3 py-4 text-sm text-[#151c27]">{formatDate(h.assignedDate)}</td>
+                    <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">{h.advisorName}<span className="block text-xs font-normal text-[#555f6f]">{h.advisorCode}</span></td>
+                    <td className="px-3 py-4 text-sm text-[#151c27]">{h.assignedAt ? formatDateTime(h.assignedAt) : formatDate(h.assignedDate)}</td>
                     <td className="px-3 py-4 text-sm text-[#151c27]">{h.endDate ? formatDate(h.endDate) : 'Present'}</td>
                     <td className={cn('px-3 py-4 text-sm font-semibold', h.status === 'ACTIVE' ? 'text-[#047857]' : 'text-[#555f6f]')}>
                       {h.status}
                     </td>
+                    <td className="px-3 py-4 text-sm text-[#555f6f]">{h.assignedByName ?? '—'}</td>
+                    <td className="max-w-[220px] px-3 py-4 text-[13px] text-[#555f6f]">{h.notes?.trim() ? h.notes : '—'}</td>
                   </tr>
                 ))
               )}

@@ -25,6 +25,7 @@ export function AssignAdvisorModal({ open, onClose, students, advisors, excludeA
   const [advisorId, setAdvisorId] = useState('');
   const [preview, setPreview] = useState<AssignPreview | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [notes, setNotes] = useState('');
   const previewMutation = usePreviewAssign();
   const assignMutation = useAssignStudents();
 
@@ -33,6 +34,7 @@ export function AssignAdvisorModal({ open, onClose, students, advisors, excludeA
     setAdvisorId('');
     setPreview(null);
     setError(null);
+    setNotes('');
     // Reset only when the dialog is (re)opened.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -63,6 +65,7 @@ export function AssignAdvisorModal({ open, onClose, students, advisors, excludeA
         studentIds: ids,
         advisorId,
         acknowledge: (preview?.appointmentCount ?? 0) > 0,
+        notes: notes.trim() || undefined,
       });
       toast.success(`${res.assigned} student${res.assigned === 1 ? '' : 's'} assigned to ${advisor?.fullName}.`);
       if (res.warning) toast.warning(`${advisor?.fullName} is now ${res.overLimitBy} over the advisory limit.`);
@@ -114,6 +117,18 @@ export function AssignAdvisorModal({ open, onClose, students, advisors, excludeA
             This is {overBy} over the advisory limit of {advisor?.maxAdvisees}. You can still continue; the limit is a warning, not a block.
           </p>
         )}
+
+        <label className="flex flex-col gap-1 text-sm font-semibold text-[#151c27]">
+          Note <span className="font-normal text-[#555f6f]">(optional, saved in the assignment history)</span>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            maxLength={500}
+            rows={2}
+            placeholder="Why is this assignment being made?"
+            className="rounded-lg border border-[#e5e7eb] p-2 text-sm font-normal text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+          />
+        </label>
 
         {previewMutation.isPending && <p className="text-sm text-[#555f6f]">Checking appointments...</p>}
         {cancelling > 0 && preview && (

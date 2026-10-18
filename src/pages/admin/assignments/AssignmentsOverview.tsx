@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Bell, Search } from 'lucide-react';
 import { AssignAdvisorModal } from '../../../components/admin/AssignAdvisorModal';
@@ -7,6 +7,7 @@ import { CohortAssignModal } from '../../../components/admin/CohortAssignModal';
 import { CohortPoolModal } from '../../../components/admin/CohortPoolModal';
 import { LoadBadge } from '../../../components/admin/LoadBadge';
 import { backState } from '../../../lib/backLink';
+import { useDebounce } from '../../../hooks/useDebounce';
 import { Pagination } from '../../../components/admin/Pagination';
 import {
   useAdvisorCohortRows,
@@ -94,7 +95,15 @@ export default function AssignmentsOverview() {
   const summary = useAssignmentSummary();
   const advisors = useAssignmentAdvisors();
   const advisorRows = useAdvisorCohortRows();
-  const unassigned = useUnassignedStudents();
+  const debouncedSearch = useDebounce(search.trim());
+  // The unassigned list is searched, filtered and paged by the server.
+  const unassigned = useUnassignedStudents({
+    search: tab === 'unassigned' ? debouncedSearch || undefined : undefined,
+    cohortId: cohortFilter || undefined,
+    hasPendingRequest: pendingOnly ? true : undefined,
+    page,
+    size: PAGE_SIZE,
+  });
   const autoPool = useCohortPool(autoFor?.cohortId ?? poolFor?.cohortId);
 
   const cohorts = useMemo(() => summary.data?.cohorts ?? [], [summary.data]);
@@ -131,16 +140,13 @@ export default function AssignmentsOverview() {
   }, [advisorRows.data, term]);
   const loadOf = (id: string) => advisors.data?.find((a) => a.id === id)?.activeStudents ?? 0;
 
-  const unassignedRows = (unassigned.data ?? []).filter(
-    (s) =>
-      (!pendingOnly || s.hasPendingRequest) &&
-      (!cohortFilter || s.cohortId === cohortFilter) &&
-      (s.fullName.toLowerCase().includes(term) || s.studentCode.toLowerCase().includes(term))
-  );
+  const unassignedRows = useMemo(() => unassigned.data?.items ?? [], [unassigned.data]);
 
-  const total = tab === 'cohorts' ? cohortRows.length : tab === 'advisors' ? advisorList.length : unassignedRows.length;
+  const total = tab === 'cohorts' ? cohortRows.length : tab === 'advisors' ? advisorList.length : unassigned.data?.totalElements ?? 0;
   const start = page * PAGE_SIZE;
-  const pageIds = unassignedRows.slice(start, start + PAGE_SIZE).map((s) => s.id);
+  const pageIds = unassignedRows.map((s) => s.id);
+  // A selection only makes sense for the rows currently shown.
+  useEffect(() => setSelected(new Set()), [tab, debouncedSearch, cohortFilter, pendingOnly, page]);
   const allPageSelected = tab === 'unassigned' && pageIds.length > 0 && pageIds.every((id) => selected.has(id));
   const toggleOne = (id: string) =>
     setSelected((cur) => {
@@ -415,7 +421,7 @@ export default function AssignmentsOverview() {
                 {unassigned.isLoading || (unassigned.isError && !unassigned.data) || unassignedRows.length === 0 ? (
                   <TableState cols={7} loading={unassigned.isLoading} error={unassigned.isError && !unassigned.data} empty={hasFilter ? 'No students match your filters.' : 'Every student has an advisor.'} onRetry={() => unassigned.refetch()} />
                 ) : (
-                  unassignedRows.slice(start, start + PAGE_SIZE).map((s) => (
+                  unassignedRows.map((s) => (
                     <tr key={s.id} className={cn('border-t border-[#e7eefe] hover:bg-gray-50/60', selected.has(s.id) && 'bg-[#fff7ed]/50')}>
                       <td className="px-4 py-3.5">
                         <input type="checkbox" checked={selected.has(s.id)} onChange={() => toggleOne(s.id)} aria-label={`Select ${s.fullName}`} className="size-4 accent-[#f37021]" />

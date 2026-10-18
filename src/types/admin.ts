@@ -122,21 +122,43 @@ export interface AssignmentStudent {
   id: string;
   studentCode: string;
   fullName: string;
+  cohortId: string;
   cohort: string;
+  majorCode: string;
   advisorId: string | null;
   advisorName: string | null;
+  assignedDate: string | null; // yyyy-MM-dd
+}
+
+export interface CohortLite {
+  cohortId: string;
+  cohort: string;
+  majorCode: string;
+  students: number;
 }
 
 export interface AdvisorAssignmentDetail {
   advisor: AssignmentAdvisor;
+  email: string | null;
+  avatarUrl: string | null;
+  status: string;
   students: AssignmentStudent[];
+  /** Every cohort in the system. */
+  cohorts: CohortLite[];
+  /** Cohorts this advisor is configured for (counts are the cohort's total students). */
+  configuredCohorts: CohortLite[];
 }
 
 export interface AssignmentHistoryRecord {
   id: string;
   advisorId: string;
+  advisorCode: string;
   advisorName: string;
   assignedDate: string; // yyyy-MM-dd
+  assignedAt: string | null; // local date-time
+  assignedByUserId: string | null;
+  assignedByName: string | null;
+  notes: string | null;
   endDate: string | null;
   status: string;
 }
@@ -181,6 +203,9 @@ export interface AdvisorCohortRow {
   advisorCode: string;
   fullName: string;
   maxAdvisees: number | null;
+  email: string | null;
+  avatarUrl: string | null;
+  status: string;
   cohortId: string | null;
   cohort: string | null;
   majorCode: string | null;
@@ -215,6 +240,7 @@ export interface CohortAssignResult {
 export interface AutoAllocation {
   advisorId: string;
   assigned: number;
+  totalBefore: number;
   totalAfter: number;
   overLimitBy: number;
   warning: boolean;
@@ -260,8 +286,18 @@ export interface AdminNotification {
   message: string;
   actionUrl: string | null;
   relatedStudentId: string | null;
+  studentCode: string | null;
+  cohortId: string | null;
   resolvedAt: string | null;
   isRead: boolean;
+  createdAt: string;
+}
+
+/** Event pushed to /topic/admin/notifications when a student asks for an advisor. */
+export interface AdvisorRequestEvent {
+  type: 'ADVISOR_REQUEST';
+  studentCode: string;
+  cohortId: string;
   createdAt: string;
 }
 

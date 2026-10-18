@@ -11,13 +11,12 @@ import { StatusBadge } from '../../../components/admin/StatusBadge';
 import { UserAvatar } from '../../../components/admin/UserAvatar';
 import {
   useAdvisorAssignment,
-  useAdvisorCohortRows,
   useAssignmentAdvisors,
   useAssignmentSummary,
   useUpdateAdvisorLimit,
 } from '../../../hooks/queries/useAdminAssignments';
-import { useAdminUser } from '../../../hooks/queries/useAdminUsers';
 import { apiErrorMessage } from '../../../lib/apiError';
+import type { AdminUserStatus } from '../../../types/admin';
 import { cn } from '@/lib/utils';
 
 const PAGE_SIZE = 10;
@@ -27,8 +26,6 @@ export default function AdvisorDetails() {
   const { advisorId } = useParams();
   const backTarget = useBackTarget('/admin/assignments?tab=advisors', 'Advisor Assignments · Advisors tab');
   const { data, isLoading, isError, refetch } = useAdvisorAssignment(advisorId);
-  const { data: profile } = useAdminUser(advisorId ?? null);
-  const cohortRows = useAdvisorCohortRows();
   const advisors = useAssignmentAdvisors();
   const summary = useAssignmentSummary();
   const updateLimit = useUpdateAdvisorLimit();
@@ -43,7 +40,17 @@ export default function AdvisorDetails() {
   const [limitError, setLimitError] = useState<string | null>(null);
 
   const students = useMemo(() => data?.students ?? [], [data]);
-  const myCohorts = (cohortRows.data ?? []).filter((r) => r.advisorId === advisorId && r.cohortId);
+  // Cohorts the advisor is configured for plus every cohort they already have students in.
+  const myCohorts = useMemo(() => {
+    const map = new Map<string, { cohortId: string; label: string; students: number; configured: boolean }>();
+    (data?.configuredCohorts ?? []).forEach((c) => map.set(c.cohortId, { cohortId: c.cohortId, label: `${c.majorCode} ${c.cohort}`, students: 0, configured: true }));
+    students.forEach((s) => {
+      const entry = map.get(s.cohortId) ?? { cohortId: s.cohortId, label: `${s.majorCode} ${s.cohort}`, students: 0, configured: false };
+      entry.students += 1;
+      map.set(s.cohortId, entry);
+    });
+    return [...map.values()];
+  }, [data, students]);
   const term = search.trim().toLowerCase();
   const filtered = students.filter((s) => s.studentCode.toLowerCase().includes(term) || s.fullName.toLowerCase().includes(term));
   const pageRows = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -125,13 +132,13 @@ export default function AdvisorDetails() {
       <section className="rounded-xl bg-white p-5 shadow-sm sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <UserAvatar name={advisor.fullName} src={profile?.avatarUrl} className="size-12" />
+            <UserAvatar name={advisor.fullName} src={data.avatarUrl} className="size-12" />
             <div>
               <h2 className="text-xl font-semibold text-[#151c27]">{advisor.fullName}</h2>
-              <p className="text-sm text-[#555f6f]">{profile?.email ?? ' '}</p>
+              <p className="text-sm text-[#555f6f]">{data.email ?? ' '}</p>
             </div>
           </div>
-          {profile && <StatusBadge status={profile.status} />}
+          <StatusBadge status={data.status as AdminUserStatus} />
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg bg-[#f7f8fa] px-4 py-3">
@@ -205,11 +212,11 @@ export default function AdvisorDetails() {
             {myCohorts.map((c) => (
               <li key={c.cohortId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#f7f8fa] px-4 py-3 text-sm">
                 <Link to={`/admin/assignments/cohorts/${c.cohortId}`} className="font-semibold text-[#151c27] hover:text-orange-600">
-                  {c.majorCode} {c.cohort}
+                  {c.label}
                 </Link>
                 <span className="flex items-center gap-3 text-[#555f6f]">
-                  {c.studentCount} assigned student{c.studentCount === 1 ? '' : 's'}
-                  {c.inPool ? <span className="rounded-full bg-[#ecfdf5] px-2 py-0.5 text-[11px] font-semibold text-[#047857]">Configured</span> : <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-[#555f6f]">Not configured</span>}
+                  {c.students} assigned student{c.students === 1 ? '' : 's'}
+                  {c.configured ? <span className="rounded-full bg-[#ecfdf5] px-2 py-0.5 text-[11px] font-semibold text-[#047857]">Configured</span> : <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-[#555f6f]">Not configured</span>}
                 </span>
               </li>
             ))}
@@ -269,14 +276,16 @@ export default function AdvisorDetails() {
                   </th>
                   <th className={th}>Student ID</th>
                   <th className={th}>Name</th>
+                  <th className={th}>Major</th>
                   <th className={th}>Cohort</th>
+                  <th className={th}>Assigned</th>
                   <th className={cn(th, 'text-right')}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {pageRows.length === 0 ? (
                   <tr className="border-t border-[#e7eefe]">
-                    <td colSpan={5} className="px-4 py-12 text-center text-sm text-[#555f6f]">
+                    <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                       {search ? 'No students match your search.' : 'No assigned students.'}
                     </td>
                   </tr>
@@ -288,7 +297,9 @@ export default function AdvisorDetails() {
                       </td>
                       <td className="px-3 py-3.5 text-[13px] font-semibold text-[#151c27]">{s.studentCode}</td>
                       <td className="px-3 py-3.5 text-sm font-semibold text-[#151c27]">{s.fullName}</td>
+                      <td className="px-3 py-3.5 text-sm text-[#555f6f]">{s.majorCode}</td>
                       <td className="px-3 py-3.5 text-sm text-[#555f6f]">{s.cohort}</td>
+                      <td className="px-3 py-3.5 text-[13px] text-[#555f6f]">{s.assignedDate ? new Date(`${s.assignedDate}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }) : '—'}</td>
                       <td className="px-3 py-3.5">
                         <div className="flex justify-end gap-2">
                           <button type="button" onClick={() => setReassign([{ id: s.id, name: s.fullName }])} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50">

@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { Bell } from 'lucide-react';
-import { useAdminNotifications, useMarkNotificationRead } from '../../../hooks/queries/useAdminAssignments';
+import {
+  useAdminNotifications,
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useUnreadNotificationCount,
+} from '../../../hooks/queries/useAdminAssignments';
+import { useAdminNotificationSocket } from '../../../hooks/useAdminNotificationSocket';
 import { cn } from '@/lib/utils';
+
+const PAGE_SIZE = 10;
 
 const ago = (iso: string) => {
   const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
@@ -11,11 +19,15 @@ const ago = (iso: string) => {
   return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
 };
 
-/** Admin notifications. A student asking for an advisor shows up here and leads to the assignment screen. */
+/** Admin notifications, updated live over the WebSocket. A student asking for an advisor leads to the assignment screen. */
 export function NotificationBell() {
   const navigate = useNavigate();
-  const { data } = useAdminNotifications();
+  const live = useAdminNotificationSocket();
+  const [page, setPage] = useState(0);
+  const { data } = useAdminNotifications(page, PAGE_SIZE);
+  const { data: unread = 0 } = useUnreadNotificationCount();
   const markRead = useMarkNotificationRead();
+  const markAll = useMarkAllNotificationsRead();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -31,8 +43,9 @@ export function NotificationBell() {
     };
   }, [open]);
 
-  const items = data ?? [];
-  const unread = items.filter((n) => !n.isRead).length;
+  const items = data?.items ?? [];
+  const total = data?.totalElements ?? 0;
+  const lastPage = Math.max(0, Math.ceil(total / PAGE_SIZE) - 1);
 
   const openItem = (id: string, read: boolean, isAdvisorRequest: boolean) => {
     if (!read) markRead.mutate(id);
@@ -51,18 +64,35 @@ export function NotificationBell() {
       >
         <Bell className="size-5" />
         {unread > 0 && (
-          <span className="absolute right-0.5 top-0.5 flex min-w-4 items-center justify-center rounded-full bg-[#b91c1c] px-1 text-[10px] font-bold leading-4 text-white">
+          <span
+            data-testid="bell-badge"
+            className="absolute right-0.5 top-0.5 flex min-w-4 items-center justify-center rounded-full bg-[#b91c1c] px-1 text-[10px] font-bold leading-4 text-white"
+          >
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
       {open && (
         <div className="absolute right-0 top-full z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-[#e5e7eb] px-4 py-3">
-            <p className="text-sm font-semibold text-[#151c27]">Notifications</p>
-            <button type="button" onClick={() => { setOpen(false); navigate('/admin/assignments'); }} className="text-xs font-semibold text-orange-600 hover:underline">
-              Advisor assignments
-            </button>
+          <div className="flex items-center justify-between gap-2 border-b border-[#e5e7eb] px-4 py-3">
+            <p className="flex items-center gap-2 text-sm font-semibold text-[#151c27]">
+              Notifications
+              <span
+                data-testid="live-indicator"
+                title={live ? 'Live: new requests appear instantly' : 'Reconnecting... the list is reloaded when the connection is back'}
+                className={cn('size-2 rounded-full', live ? 'bg-[#16a34a]' : 'bg-[#f59e0b]')}
+              />
+            </p>
+            <div className="flex items-center gap-3">
+              {unread > 0 && (
+                <button type="button" onClick={() => markAll.mutate()} disabled={markAll.isPending} className="text-xs font-semibold text-orange-600 hover:underline disabled:opacity-60">
+                  Mark all as read
+                </button>
+              )}
+              <button type="button" onClick={() => { setOpen(false); navigate('/admin/assignments'); }} className="text-xs font-semibold text-[#555f6f] hover:underline">
+                Assignments
+              </button>
+            </div>
           </div>
           {items.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm text-[#555f6f]">No notifications.</p>
@@ -79,12 +109,30 @@ export function NotificationBell() {
                       <span className="text-[13px] font-semibold text-[#151c27]">{n.title}</span>
                       <span className="shrink-0 text-[11px] text-[#98a2b3]">{ago(n.createdAt)}</span>
                     </span>
-                    <span className="text-[13px] text-[#555f6f]">{n.message}</span>
+                    <span className="text-[13px] text-[#555f6f]">
+                      {n.studentCode ? `${n.studentCode}: ` : ''}
+                      {n.message}
+                    </span>
                     {n.type === 'ADVISOR_REQUEST' && n.resolvedAt && <span className="text-[11px] font-semibold text-[#047857]">Resolved</span>}
                   </button>
                 </li>
               ))}
             </ul>
+          )}
+          {total > PAGE_SIZE && (
+            <div className="flex items-center justify-between border-t border-[#e5e7eb] px-4 py-2 text-xs text-[#555f6f]">
+              <span>
+                {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
+              </span>
+              <span className="flex gap-3">
+                <button type="button" disabled={page === 0} onClick={() => setPage((p) => p - 1)} className="font-semibold hover:underline disabled:opacity-40">
+                  Newer
+                </button>
+                <button type="button" disabled={page >= lastPage} onClick={() => setPage((p) => p + 1)} className="font-semibold hover:underline disabled:opacity-40">
+                  Older
+                </button>
+              </span>
+            </div>
           )}
         </div>
       )}
