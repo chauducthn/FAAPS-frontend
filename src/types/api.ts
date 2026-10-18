@@ -16,6 +16,6 @@ export type PaginatedResponse<T> = ApiResponse<PaginatedData<T>>;
 
 export interface ApiErrorResponse {
   success: boolean;
-  errorCode: string;
+  code: string;
   message: string;
 }
