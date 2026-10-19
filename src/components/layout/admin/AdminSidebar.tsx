@@ -28,7 +28,6 @@ const navGroups: NavGroup[] = [
     items: [
       { name: 'Curriculum', path: '/admin/curriculum' },
       { name: 'Courses', path: '/admin/courses' },
-      { name: 'Import History', path: '/admin/import-history' },
     ],
   },
   {

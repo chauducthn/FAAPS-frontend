@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Filter } from 'lucide-react';
 import { useNewStudents } from '../../hooks/queries/useAdminDashboard';
+import { MonthPicker } from './MonthPicker';
 import { defaultMonthRange, formatMonthLabel, monthSpan, monthsBetween } from '../../lib/months';
 
 const MAX_MONTHS = 36;
@@ -45,26 +46,8 @@ export function NewStudentsChart() {
 
       {showFilters && (
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex flex-col gap-1 text-xs font-medium text-[#555f6f]">
-            Start month
-            <input
-              type="month"
-              value={startMonth}
-              max={endMonth}
-              onChange={(e) => e.target.value && setStartMonth(e.target.value)}
-              className="h-[38px] rounded-lg border border-[#e5e7eb] px-3 text-sm font-medium text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-xs font-medium text-[#555f6f]">
-            End month
-            <input
-              type="month"
-              value={endMonth}
-              min={startMonth}
-              onChange={(e) => e.target.value && setEndMonth(e.target.value)}
-              className="h-[38px] rounded-lg border border-[#e5e7eb] px-3 text-sm font-medium text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-            />
-          </label>
+          <MonthPicker label="Start month" value={startMonth} onChange={setStartMonth} />
+          <MonthPicker label="End month" value={endMonth} onChange={setEndMonth} />
         </div>
       )}
 

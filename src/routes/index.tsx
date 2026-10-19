@@ -19,8 +19,6 @@ import CohortsPage from '../pages/admin/Cohorts';
 import CurriculumPage from '../pages/admin/Curriculum';
 import CurriculumDetailPage from '../pages/admin/CurriculumDetail';
 import CoursesPage from '../pages/admin/Courses';
-import ImportHistoryPage from '../pages/admin/ImportHistory';
-import ImportDetailModal from '../pages/admin/ImportDetail';
 import AcademicRulesPage from '../pages/admin/AcademicRules';
 import AiConfigPage from '../pages/admin/AiConfig';
 import AiPerformancePage from '../pages/admin/AiPerformance';
@@ -45,8 +43,6 @@ export const router = createBrowserRouter([
           { path: '/admin/curriculum', element: <CurriculumPage /> },
           { path: '/admin/curriculum/:id', element: <CurriculumDetailPage /> },
           { path: '/admin/courses', element: <CoursesPage /> },
-          { path: '/admin/import-history', element: <ImportHistoryPage /> },
-          { path: '/admin/import-history/new', element: <ImportDetailModal open onClose={() => history.back()} /> },
           { path: '/admin/rules', element: <AcademicRulesPage /> },
           { path: '/admin/ai-config', element: <AiConfigPage /> },
           { path: '/admin/ai-performance', element: <AiPerformancePage /> },

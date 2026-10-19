@@ -15,7 +15,6 @@ import {
   Menu,
   MessageSquare,
   Shield,
-  Upload,
   User as UserIcon,
   X,
   type LucideIcon,
@@ -48,7 +47,6 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
     items: [
       { label: 'Curriculum', to: '/admin/curriculum', icon: BookOpen },
       { label: 'Courses', to: '/admin/courses', icon: Book },
-      { label: 'Import History', to: '/admin/import-history', icon: Upload },
     ],
   },
   {
