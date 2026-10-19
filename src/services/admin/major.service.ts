@@ -5,7 +5,7 @@ import { ApiResponse, PaginatedData } from '../../types/api';
 
 export const majorService = {
   getMajors: async (params?: MajorFilterParams): Promise<PaginatedData<Major>> => {
-    const response = await apiClient.get<ApiResponse<PaginatedData<Major>>>('/admin/majors', { params });
+    const response = await apiClient.get<ApiResponse<PaginatedData<Major>>>('/admin/majors/paged', { params });
     
     const defaultPaginatedData: PaginatedData<Major> = {
       items: [],
