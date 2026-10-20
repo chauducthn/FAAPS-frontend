@@ -40,11 +40,9 @@ export default function AdminHeader() {
             onClick={() => setIsProfileOpen(!isProfileOpen)}
             className="flex items-center gap-2.5 cursor-pointer pl-2 border-l border-gray-200 focus:outline-none"
           >
-            <img
-              src={user?.avatarUrl || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80"}
-              alt="Admin Avatar"
-              className="w-7 h-7 rounded-full object-cover border border-gray-200"
-            />
+            <span className="flex size-7 items-center justify-center rounded-full bg-orange-100 text-xs font-semibold text-orange-700">
+              {user?.fullName?.charAt(0).toUpperCase() ?? 'A'}
+            </span>
             <div className="text-left">
               <p className="text-xs font-bold text-gray-800 leading-none">{user?.fullName || 'Admin User'}</p>
               <p className="text-[10px] text-gray-400 leading-none mt-0.5">{user?.role || 'ADMIN'}</p>

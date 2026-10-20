@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { ChevronLeft, Search, Settings2, Sparkles } from 'lucide-react';
 import { AssignAdvisorModal } from '../../../components/admin/AssignAdvisorModal';
+import { UnassignAdvisorModal } from '../../../components/admin/UnassignAdvisorModal';
 import { AutoAssignModal } from '../../../components/admin/AutoAssignModal';
 import { CohortAssignModal } from '../../../components/admin/CohortAssignModal';
 import { CohortPoolModal } from '../../../components/admin/CohortPoolModal';
@@ -58,6 +59,7 @@ export default function CohortDetails() {
   const [autoOpen, setAutoOpen] = useState(false);
   const [poolOpen, setPoolOpen] = useState(false);
   const [assignStudents, setAssignStudents] = useState<{ id: string; name: string }[] | null>(null);
+  const [unassignStudents, setUnassignStudents] = useState<{ id: string; name: string }[] | null>(null);
 
   const debouncedSearch = useDebounce(search.trim());
   // All students of the cohort (assigned and unassigned), searched and paged by the server.
@@ -131,13 +133,16 @@ export default function CohortDetails() {
               <Settings2 className="size-4" />
               Configure advisors
             </button>
-            <button type="button" onClick={() => setAssignOpen(true)} disabled={!cohort || cohort.unassigned === 0} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-50 disabled:opacity-50">
-              Assign advisor
-            </button>
-            <button type="button" onClick={() => setAutoOpen(true)} disabled={!cohort || cohort.unassigned === 0} className="flex items-center gap-1.5 rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-50">
-              <Sparkles className="size-4" />
-              Auto Assign
-            </button>
+            {(cohort?.unassigned ?? 0) > 0 ? (
+              <>
+                <button type="button" onClick={() => setAssignOpen(true)} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-50">Assign advisor</button>
+                <button type="button" onClick={() => setAutoOpen(true)} className="flex items-center gap-1.5 rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15]">
+                  <Sparkles className="size-4" /> Auto Assign
+                </button>
+              </>
+            ) : (
+              <span className="text-sm text-[#555f6f]">All students are assigned. Use Reassign or Unassign in the student list below.</span>
+            )}
           </div>
         </div>
       </div>
@@ -246,6 +251,11 @@ export default function CohortDetails() {
               <button type="button" onClick={() => setAssignStudents(selectedStudents)} className="rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15]">
                 Assign / reassign
               </button>
+              {rows.some((student) => selected.has(student.id) && student.advisorName) && (
+                <button type="button" onClick={() => setUnassignStudents(rows.filter((student) => selected.has(student.id) && student.advisorName).map((student) => ({ id: student.id, name: student.fullName })))} className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700">
+                  Unassign selected
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -310,6 +320,7 @@ export default function CohortDetails() {
                         <button type="button" className={btn} onClick={() => setAssignStudents([{ id: s.id, name: s.fullName }])}>
                           {s.advisorName ? 'Reassign' : 'Assign'}
                         </button>
+                        {s.advisorName && <button type="button" className={btn} onClick={() => setUnassignStudents([{ id: s.id, name: s.fullName }])}>Unassign</button>}
                         <Link to={`/admin/assignments/students/${s.id}/history`} state={backState(`/admin/assignments/cohorts/${cohortId}`, `Cohort ${title}`)} className={btn}>
                           History
                         </Link>
@@ -337,6 +348,7 @@ export default function CohortDetails() {
       />
       <CohortPoolModal open={poolOpen} cohort={cohort} advisors={advisors.data ?? []} currentIds={(pool.data ?? []).map((a) => a.advisorId)} onClose={() => setPoolOpen(false)} />
       <AssignAdvisorModal open={!!assignStudents} onClose={() => setAssignStudents(null)} students={assignStudents ?? []} advisors={advisors.data ?? []} onDone={() => setSelected(new Set())} />
+      <UnassignAdvisorModal students={unassignStudents} onClose={() => setUnassignStudents(null)} onDone={() => setSelected(new Set())} />
     </div>
   );
 }

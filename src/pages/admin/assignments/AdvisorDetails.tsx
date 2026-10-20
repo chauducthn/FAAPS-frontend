@@ -3,12 +3,15 @@ import { Link, useParams } from 'react-router';
 import { AlertTriangle, ChevronLeft, Pencil, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { AssignAdvisorModal } from '../../../components/admin/AssignAdvisorModal';
+import { UnassignAdvisorModal } from '../../../components/admin/UnassignAdvisorModal';
 import { CohortAssignModal } from '../../../components/admin/CohortAssignModal';
 import { LoadBadge } from '../../../components/admin/LoadBadge';
 import { backState, useBackTarget } from '../../../lib/backLink';
 import { Pagination } from '../../../components/admin/Pagination';
 import { StatusBadge } from '../../../components/admin/StatusBadge';
 import { UserAvatar } from '../../../components/admin/UserAvatar';
+import { apiClient } from '../../../lib/apiClient';
+import { getCsrfHeaders } from '../../../lib/csrf';
 import {
   useAdvisorAssignment,
   useAssignmentAdvisors,
@@ -34,10 +37,25 @@ export default function AdvisorDetails() {
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [reassign, setReassign] = useState<{ id: string; name: string }[] | null>(null);
+  const [unassign, setUnassign] = useState<{ id: string; name: string }[] | null>(null);
   const [assignCohortOpen, setAssignCohortOpen] = useState(false);
   const [editingLimit, setEditingLimit] = useState(false);
   const [limitValue, setLimitValue] = useState('');
   const [limitError, setLimitError] = useState<string | null>(null);
+  const [workDays, setWorkDays] = useState<number[]>([]);
+  const [assignmentStartDate, setAssignmentStartDate] = useState('');
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!advisorId) return;
+    apiClient.get<{ workDays: number[]; assignmentStartDate: string | null }>(`/admin/advisors/${advisorId}/schedule`)
+      .then(({ data: schedule }) => {
+        setWorkDays(schedule.workDays);
+        setAssignmentStartDate(schedule.assignmentStartDate ?? '');
+        setScheduleError(null);
+      })
+      .catch(() => setScheduleError('Could not load work schedule. Apply the database migration first.'));
+  }, [advisorId]);
 
   const students = useMemo(() => data?.students ?? [], [data]);
   // Cohorts the advisor is configured for plus every cohort they already have students in.
@@ -130,9 +148,31 @@ export default function AdvisorDetails() {
       </div>
 
       <section className="rounded-xl bg-white p-5 shadow-sm sm:p-6">
+        <div className="mb-5 rounded-lg border border-[#e5e7eb] p-4">
+          <h3 className="text-sm font-semibold text-[#151c27]">Advisor working schedule</h3>
+          <div className="mt-3 flex flex-wrap gap-3">{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label, index) =>
+            <label key={label} className="flex items-center gap-1 text-sm">
+              <input type="checkbox" checked={workDays.includes(index + 1)} onChange={() => setWorkDays(days =>
+                days.includes(index + 1) ? days.filter(day => day !== index + 1) : [...days, index + 1])} />{label}
+            </label>)}</div>
+          <label className="mt-3 flex items-center gap-3 text-sm">Assignment start date
+            <input type="date" value={assignmentStartDate} onChange={event => setAssignmentStartDate(event.target.value)}
+              className="rounded-md border border-[#e5e7eb] p-1" /></label>
+          {scheduleError && <p className="mt-2 text-sm text-red-600">{scheduleError}</p>}
+          <button type="button" className="mt-3 rounded-md bg-[#f37021] px-3 py-1.5 text-sm font-semibold text-white"
+            onClick={async () => {
+              if (!workDays.length || !assignmentStartDate) return setScheduleError('Select work days and a start date.');
+              try {
+                await apiClient.put(`/admin/advisors/${advisorId}/schedule`, { workDays, assignmentStartDate },
+                  { headers: await getCsrfHeaders() });
+                setScheduleError(null);
+                toast.success('Advisor schedule saved.');
+              } catch (error) { setScheduleError(apiErrorMessage(error)); }
+            }}>Save schedule</button>
+        </div>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <UserAvatar name={advisor.fullName} src={data.avatarUrl} className="size-12" />
+            <UserAvatar name={advisor.fullName} className="size-12" />
             <div>
               <h2 className="text-xl font-semibold text-[#151c27]">{advisor.fullName}</h2>
               <p className="text-sm text-[#555f6f]">{data.email ?? ' '}</p>
@@ -264,6 +304,7 @@ export default function AdvisorDetails() {
                 >
                   Reassign
                 </button>
+                <button type="button" onClick={() => setUnassign(students.filter((student) => selected.has(student.id)).map((student) => ({ id: student.id, name: student.fullName })))} className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700">Unassign</button>
               </div>
             </div>
           )}
@@ -305,6 +346,7 @@ export default function AdvisorDetails() {
                           <button type="button" onClick={() => setReassign([{ id: s.id, name: s.fullName }])} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50">
                             Reassign
                           </button>
+                          <button type="button" onClick={() => setUnassign([{ id: s.id, name: s.fullName }])} className="rounded-lg border border-red-300 px-3 py-1.5 text-[13px] font-semibold text-red-700 hover:bg-red-50">Unassign</button>
                           <Link to={`/admin/assignments/students/${s.id}/history`} state={backState(`/admin/assignments/advisors/${advisorId}`, `Advisor ${data?.advisor.fullName ?? 'details'}`)} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50">
                             History
                           </Link>
@@ -321,6 +363,7 @@ export default function AdvisorDetails() {
       </div>
 
       <AssignAdvisorModal open={!!reassign} onClose={() => setReassign(null)} students={reassign ?? []} advisors={advisors.data ?? []} excludeAdvisorId={advisor.id} onDone={() => setSelected(new Set())} />
+      <UnassignAdvisorModal students={unassign} onClose={() => setUnassign(null)} onDone={() => setSelected(new Set())} />
       <CohortAssignModal open={assignCohortOpen} onClose={() => setAssignCohortOpen(false)} cohorts={summary.data?.cohorts ?? []} advisors={advisors.data ?? []} fixedAdvisorId={advisor.id} />
     </div>
   );

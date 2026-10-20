@@ -172,12 +172,17 @@ export default function AssignmentsOverview() {
         <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">Advisor Assignments</h1>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <StatCard label="Total students" value={summary.data?.total} />
-        <StatCard label="With an advisor" value={summary.data?.assigned} />
-        <StatCard label="Without an advisor" value={summary.data?.unassigned} onClick={() => setTab('unassigned')} />
         <StatCard label="Waiting for an advisor" value={pending} tone="warn" onClick={() => setTab('unassigned', { pending: '1' })} />
       </div>
+
+      {(summary.data?.missingAcademicProfile ?? 0) > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          {summary.data?.missingAcademicProfile} student account(s) have no academic profile yet, so they do not appear in a cohort or assignment list. Complete their student details in{' '}
+          <Link to="/admin/users?role=STUDENT" className="font-semibold underline">User Accounts</Link> before assigning an advisor.
+        </div>
+      )}
 
       {(pending ?? 0) > 0 && (
         <div className="flex flex-col items-start justify-between gap-3 rounded-xl border border-[#fde68a] bg-[#fffbeb] px-4 py-3 sm:flex-row sm:items-center">
@@ -331,12 +336,14 @@ export default function AssignmentsOverview() {
                       <td className="max-w-[220px] px-3 py-4 text-[13px] text-[#555f6f]">{poolByCohort.get(c.cohortId)?.join(', ') ?? <span className="text-[#98a2b3]">Not configured</span>}</td>
                       <td className="px-3 py-4">
                         <div className="flex flex-wrap justify-end gap-2">
-                          <button type="button" className={btn} onClick={() => setAssignCohortFor({ cohortId: c.cohortId })} disabled={c.unassigned === 0}>
-                            Assign advisor
-                          </button>
-                          <button type="button" className={btn} onClick={() => setAutoFor(c)} disabled={c.unassigned === 0}>
-                            Auto assign
-                          </button>
+                          {c.unassigned > 0 ? (
+                            <>
+                              <button type="button" className={btn} onClick={() => setAssignCohortFor({ cohortId: c.cohortId })}>Assign advisor</button>
+                              <button type="button" className={btn} onClick={() => setAutoFor(c)}>Auto assign</button>
+                            </>
+                          ) : (
+                            <Link to={`/admin/assignments/cohorts/${c.cohortId}`} className={btn}>Reassign / unassign</Link>
+                          )}
                           <Link to={`/admin/assignments/cohorts/${c.cohortId}`} className={btn}>
                             Manage
                           </Link>

@@ -30,30 +30,6 @@ export const useAdminUser = (id: string | null) =>
     enabled: !!id,
   });
 
-export const useUpdateUser = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (input: {
-      id: string;
-      fullName: string;
-      phone: string;
-      avatarFile?: File | null;
-      avatarUrl?: string | null;
-    }) => {
-      let avatarUrl = input.avatarUrl ?? null;
-      if (input.avatarFile) {
-        avatarUrl = await adminService.uploadAvatar(input.id, input.avatarFile);
-      }
-      return adminService.updateUser(input.id, {
-        fullName: input.fullName,
-        phone: input.phone.trim() || null,
-        avatarUrl,
-      });
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
-  });
-};
-
 export const useChangeUserStatus = () => {
   const qc = useQueryClient();
   return useMutation({

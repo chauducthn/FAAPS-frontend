@@ -173,13 +173,9 @@ export default function AdminLayout() {
             className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50"
             aria-expanded={profileOpen}
           >
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt="" className="size-8 rounded-full ring-1 ring-[#e5e7eb]" />
-            ) : (
               <span className="flex size-8 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-700 ring-1 ring-[#e5e7eb]">
                 {user?.fullName?.charAt(0).toUpperCase() ?? 'A'}
               </span>
-            )}
             <span className="hidden text-left sm:block">
               <span className="block text-sm font-semibold leading-[19px] text-[#151c27]">{user?.fullName}</span>
               <span className="block text-[11px] uppercase leading-4 tracking-[0.05em] text-[#555f6f]">

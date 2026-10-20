@@ -81,6 +81,12 @@ export const assignmentService = {
   assign: (studentIds: string[], advisorId: string, acknowledgeAppointmentCancellation: boolean, notes?: string) =>
     post<AssignResult>(`${BASE}/assign`, { studentIds, advisorId, acknowledgeAppointmentCancellation, notes: notes || undefined }),
 
+  previewUnassign: (studentIds: string[]) =>
+    post<AssignPreview>(`${BASE}/unassign/preview`, { studentIds }),
+
+  unassign: (studentIds: string[], acknowledgeAppointmentCancellation: boolean, notes?: string) =>
+    post<{ unassigned: number }>(`${BASE}/unassign`, { studentIds, acknowledgeAppointmentCancellation, notes: notes || undefined }),
+
   // ---- one advisor takes the unassigned students of a cohort
   previewCohortAssign: (cohortId: string, advisorId: string) =>
     post<CohortAssignPreview>(`${BASE}/cohorts/${cohortId}/preview`, { advisorId }),

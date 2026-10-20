@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { StatusBadge } from '../../components/admin/StatusBadge';
 import { UserAvatar } from '../../components/admin/UserAvatar';
 import { UserDetailModal } from '../../components/admin/UserDetailModal';
+import { AdminHandovers } from '../../components/admin/AdminHandovers';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
 import { Pagination } from '../../components/admin/Pagination';
 import { backState } from '../../lib/backLink';
@@ -21,7 +22,7 @@ const TABS: { role: AdminUserRole; label: string }[] = [
   { role: 'ADVISOR', label: 'Advisor' },
   { role: 'ADMIN', label: 'Admin' },
 ];
-const STATUSES: AdminUserStatus[] = ['ACTIVE', 'INACTIVE', 'SUSPENDED', 'LOCKED'];
+const STATUSES: AdminUserStatus[] = ['ACTIVE', 'SUSPENDED'];
 
 type SortField = 'userId' | 'fullName';
 
@@ -48,14 +49,12 @@ function RowMenu({
   user,
   isSelf,
   onView,
-  onEdit,
   onToggle,
   onAssignments,
 }: {
   user: AdminUserSummary;
   isSelf: boolean;
   onView: () => void;
-  onEdit: () => void;
   onToggle: () => void;
   onAssignments?: () => void;
 }) {
@@ -128,9 +127,6 @@ function RowMenu({
             <button type="button" role="menuitem" className={cn(item, 'text-[#151c27]')} onClick={() => { setOpen(false); onView(); }}>
               View details
             </button>
-            <button type="button" role="menuitem" className={cn(item, 'text-[#151c27]')} onClick={() => { setOpen(false); onEdit(); }}>
-              Edit
-            </button>
             {onAssignments && (
               <button type="button" role="menuitem" className={cn(item, 'text-[#151c27]')} onClick={() => { setOpen(false); onAssignments(); }}>
                 View assignments
@@ -167,7 +163,7 @@ export default function UserAccounts() {
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState<UserSort>('createdAt,desc');
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [detail, setDetail] = useState<{ id: string; edit: boolean } | null>(null);
+  const [detailId, setDetailId] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ ids: string[]; status: 'ACTIVE' | 'SUSPENDED'; label: string } | null>(null);
 
   const debouncedSearch = useDebounce(search.trim());
@@ -243,6 +239,7 @@ export default function UserAccounts() {
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <h1 className="text-2xl font-semibold text-[#151c27]">User Accounts</h1>
+      {role === 'ADMIN' && <AdminHandovers />}
 
       <section className="flex flex-col gap-4 rounded-xl bg-white p-4 shadow-sm sm:p-5">
         <div role="tablist" aria-label="Account type" className="flex gap-1">
@@ -337,7 +334,6 @@ export default function UserAccounts() {
                   </button>
                 </th>
                 <th className="px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Email</th>
-                <th className="px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Created</th>
                 <th className="px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Status</th>
                 <th className="px-3 py-3.5 text-right text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Actions</th>
               </tr>
@@ -346,14 +342,14 @@ export default function UserAccounts() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i} className="border-t border-[#e7eefe]">
-                    <td colSpan={7} className="px-4 py-5">
+                    <td colSpan={6} className="px-4 py-5">
                       <div className="h-4 animate-pulse rounded bg-gray-100" />
                     </td>
                   </tr>
                 ))
               ) : isError && !data ? (
                 <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#555f6f]">
+                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     Could not load accounts.{' '}
                     <button type="button" onClick={() => refetch()} className="font-semibold text-orange-600 hover:underline">
                       Retry
@@ -362,7 +358,7 @@ export default function UserAccounts() {
                 </tr>
               ) : items.length === 0 ? (
                 <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#555f6f]">
+                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-[#555f6f]">
                     {hasFilters ? 'No accounts match your filters.' : 'No accounts yet.'}
                   </td>
                 </tr>
@@ -374,15 +370,12 @@ export default function UserAccounts() {
                     </td>
                     <td className="px-3 py-3.5 text-[13px] font-semibold text-[#151c27]">{u.userId}</td>
                     <td className="px-3 py-3.5">
-                      <button type="button" onClick={() => setDetail({ id: u.id, edit: false })} className="flex items-center gap-2.5 text-left text-sm font-semibold text-[#151c27] hover:text-orange-600">
-                        <UserAvatar name={u.fullName} src={u.avatarUrl} />
+                      <button type="button" onClick={() => setDetailId(u.id)} className="flex items-center gap-2.5 text-left text-sm font-semibold text-[#151c27] hover:text-orange-600">
+                        <UserAvatar name={u.fullName} />
                         {u.fullName}
                       </button>
                     </td>
                     <td className="px-3 py-3.5 text-[13px] text-[#555f6f]">{u.email}</td>
-                    <td className="whitespace-nowrap px-3 py-3.5 text-[13px] text-[#555f6f]">
-                      {new Date(u.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })}
-                    </td>
                     <td className="px-3 py-3.5">
                       <StatusBadge status={u.status} />
                     </td>
@@ -390,8 +383,7 @@ export default function UserAccounts() {
                       <RowMenu
                         user={u}
                         isSelf={u.id === me?.id}
-                        onView={() => setDetail({ id: u.id, edit: false })}
-                        onEdit={() => setDetail({ id: u.id, edit: true })}
+                        onView={() => setDetailId(u.id)}
                         onAssignments={u.role === 'ADVISOR' ? () => navigate(`/admin/assignments/advisors/${u.id}`, { state: backState('/admin/users?role=ADVISOR', 'User Accounts · Advisor tab') }) : undefined}
                         onToggle={() =>
                           setConfirm({
@@ -412,7 +404,7 @@ export default function UserAccounts() {
         <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun="accounts" onChange={setPage} />
       </section>
 
-      <UserDetailModal userId={detail?.id ?? null} startInEdit={detail?.edit} onClose={() => setDetail(null)} />
+      <UserDetailModal userId={detailId} onClose={() => setDetailId(null)} />
 
       <ConfirmDialog
         open={!!confirm}

@@ -2,14 +2,10 @@ import { cn } from '@/lib/utils';
 
 interface UserAvatarProps {
   name: string;
-  src?: string | null;
   className?: string;
 }
 
-export function UserAvatar({ name, src, className }: UserAvatarProps) {
-  if (src) {
-    return <img src={src} alt="" className={cn('size-8 shrink-0 rounded-md object-cover', className)} />;
-  }
+export function UserAvatar({ name, className }: UserAvatarProps) {
   return (
     <span
       className={cn(

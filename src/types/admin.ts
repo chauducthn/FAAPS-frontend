@@ -98,9 +98,17 @@ export interface AdminUserDetail {
   majorName: string | null;
   curriculumVersionId: string | null;
   curriculumCode: string | null;
+  enrollmentSemesterId: string | null;
   currentSemester: number | null;
   academicStatus: string | null;
   advisorCode: string | null;
+}
+
+export interface UserEditOption { id: string; code: string; name: string; majorId: string | null }
+export interface UserEditOptions {
+  majors: UserEditOption[];
+  curricula: UserEditOption[];
+  semesters: UserEditOption[];
 }
 
 export type UserSort = 'createdAt,desc' | 'createdAt,asc' | 'fullName,asc' | 'fullName,desc' | 'userId,asc' | 'userId,desc';
@@ -183,6 +191,7 @@ export interface AssignmentSummary {
   total: number;
   assigned: number;
   unassigned: number;
+  missingAcademicProfile: number;
   pendingAdvisorRequests: number;
   cohorts: SummaryCohort[];
 }

@@ -72,6 +72,18 @@ export const useAssignStudents = () => {
   });
 };
 
+export const usePreviewUnassign = () =>
+  useMutation({ mutationFn: (studentIds: string[]) => assignmentService.previewUnassign(studentIds) });
+
+export const useUnassignStudents = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (input: { studentIds: string[]; acknowledge: boolean; notes?: string }) =>
+      assignmentService.unassign(input.studentIds, input.acknowledge, input.notes),
+    onSuccess: invalidate,
+  });
+};
+
 export const usePreviewCohortAssign = () =>
   useMutation({
     mutationFn: (input: { cohortId: string; advisorId: string }) => assignmentService.previewCohortAssign(input.cohortId, input.advisorId),
