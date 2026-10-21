@@ -9,7 +9,7 @@ import { LoadBadge } from '../../../components/admin/LoadBadge';
 import { backState, useBackTarget } from '../../../lib/backLink';
 import { Pagination } from '../../../components/admin/Pagination';
 import { StatusBadge } from '../../../components/admin/StatusBadge';
-import { UserAvatar } from '../../../components/admin/UserAvatar';
+import { UserInitials } from '../../../components/admin/UserInitials';
 import { apiClient } from '../../../lib/apiClient';
 import { getCsrfHeaders } from '../../../lib/csrf';
 import {
@@ -172,7 +172,7 @@ export default function AdvisorDetails() {
         </div>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
-            <UserAvatar name={advisor.fullName} className="size-12" />
+            <UserInitials name={advisor.fullName} className="size-12" />
             <div>
               <h2 className="text-xl font-semibold text-[#151c27]">{advisor.fullName}</h2>
               <p className="text-sm text-[#555f6f]">{data.email ?? ' '}</p>

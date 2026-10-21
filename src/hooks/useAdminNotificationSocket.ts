@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { AdvisorRequestEvent } from '../types/admin';
 
-const TOPIC = '/topic/admin/notifications';
+const TOPIC = '/user/queue/admin/notifications';
 
 /**
  * Live admin notifications over STOMP/WebSocket. The browser sends the session cookie with the handshake,

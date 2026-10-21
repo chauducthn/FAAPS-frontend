@@ -1,11 +1,19 @@
 import { cn } from '@/lib/utils';
 
-interface UserAvatarProps {
+interface UserInitialsProps {
   name: string;
   className?: string;
 }
 
-export function UserAvatar({ name, className }: UserAvatarProps) {
+export function UserInitials({ name, className }: UserInitialsProps) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(-2)
+    .map(part => part.charAt(0).toUpperCase())
+    .join('') || '?';
+
   return (
     <span
       className={cn(
@@ -14,7 +22,7 @@ export function UserAvatar({ name, className }: UserAvatarProps) {
       )}
       aria-hidden="true"
     >
-      {name.trim().charAt(0).toUpperCase() || '?'}
+      {initials}
     </span>
   );
 }

@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router';
 import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusBadge } from '../../components/admin/StatusBadge';
-import { UserAvatar } from '../../components/admin/UserAvatar';
+import { UserInitials } from '../../components/admin/UserInitials';
 import { UserDetailModal } from '../../components/admin/UserDetailModal';
 import { AdminHandovers } from '../../components/admin/AdminHandovers';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
@@ -371,7 +371,7 @@ export default function UserAccounts() {
                     <td className="px-3 py-3.5 text-[13px] font-semibold text-[#151c27]">{u.userId}</td>
                     <td className="px-3 py-3.5">
                       <button type="button" onClick={() => setDetailId(u.id)} className="flex items-center gap-2.5 text-left text-sm font-semibold text-[#151c27] hover:text-orange-600">
-                        <UserAvatar name={u.fullName} />
+                        <UserInitials name={u.fullName} />
                         {u.fullName}
                       </button>
                     </td>

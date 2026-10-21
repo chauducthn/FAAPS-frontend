@@ -77,7 +77,6 @@ export interface AdminUserSummary {
   userId: string;
   fullName: string;
   email: string;
-  avatarUrl: string | null;
   role: AdminUserRole;
   status: AdminUserStatus;
   createdAt: string;
@@ -89,7 +88,6 @@ export interface AdminUserDetail {
   fullName: string;
   email: string;
   phone: string | null;
-  avatarUrl: string | null;
   role: AdminUserRole;
   status: AdminUserStatus;
   createdAt: string;
@@ -148,7 +146,6 @@ export interface CohortLite {
 export interface AdvisorAssignmentDetail {
   advisor: AssignmentAdvisor;
   email: string | null;
-  avatarUrl: string | null;
   status: string;
   students: AssignmentStudent[];
   /** Every cohort in the system. */
@@ -213,7 +210,6 @@ export interface AdvisorCohortRow {
   fullName: string;
   maxAdvisees: number | null;
   email: string | null;
-  avatarUrl: string | null;
   status: string;
   cohortId: string | null;
   cohort: string | null;
@@ -302,7 +298,7 @@ export interface AdminNotification {
   createdAt: string;
 }
 
-/** Event pushed to /topic/admin/notifications when a student asks for an advisor. */
+/** Event pushed to the current admin's notification queue when a student asks for an advisor. */
 export interface AdvisorRequestEvent {
   type: 'ADVISOR_REQUEST';
   studentCode: string;

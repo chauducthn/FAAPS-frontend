@@ -5,10 +5,12 @@ import { getCsrfHeaders } from '../../lib/csrf';
 
 type AdminAccount = { id: string; fullName: string };
 type Handover = { id: string; fromAdminName: string; toAdminName: string; handoverDate: string };
+type CurrentAdmin = { id: string; fullName: string };
 
 export function AdminHandovers() {
   const [accounts, setAccounts] = useState<AdminAccount[]>([]);
   const [handovers, setHandovers] = useState<Handover[]>([]);
+  const [currentAdmin, setCurrentAdmin] = useState<CurrentAdmin | null>(null);
   const [fromAdminId, setFromAdminId] = useState('');
   const [toAdminId, setToAdminId] = useState('');
   const [handoverDate, setHandoverDate] = useState('');
@@ -19,21 +21,22 @@ export function AdminHandovers() {
     Promise.all([
       apiClient.get<{ items: AdminAccount[] }>('/admin/users', { params: { role: 'ADMIN', size: 100 } }),
       apiClient.get<Handover[]>('/admin/handovers'),
-    ]).then(([users, history]) => {
+      apiClient.get<CurrentAdmin>('/admin/handovers/current'),
+    ]).then(([users, history, current]) => {
       setAccounts(users.data.items);
       setHandovers(history.data);
+      setCurrentAdmin(current.data);
+      setFromAdminId(current.data.id);
     }).catch(() => setError('Could not load admin handovers. Apply the database migration first.'));
   }, []);
 
   return <section className="rounded-xl bg-white p-5 shadow-sm">
     <h2 className="text-lg font-semibold">Admin handovers</h2>
-    <p className="mt-1 text-sm text-[#555f6f]">Record the handover date; this does not automatically change account access.</p>
+    <p className="mt-1 text-sm text-[#555f6f]">Only the current admin can hand over access. Their existing session ends on the next request.</p>
     <div className="mt-4 flex flex-wrap gap-3">
-      <select aria-label="Outgoing admin" value={fromAdminId} onChange={event => setFromAdminId(event.target.value)} className="rounded-md border p-2 text-sm">
-        <option value="">Outgoing admin</option>{accounts.map(account => <option key={account.id} value={account.id}>{account.fullName}</option>)}
-      </select>
+      <span className="rounded-md border p-2 text-sm">Outgoing: {currentAdmin?.fullName ?? 'Loading...'}</span>
       <select aria-label="Incoming admin" value={toAdminId} onChange={event => setToAdminId(event.target.value)} className="rounded-md border p-2 text-sm">
-        <option value="">Incoming admin</option>{accounts.map(account => <option key={account.id} value={account.id}>{account.fullName}</option>)}
+        <option value="">Incoming admin</option>{accounts.filter(account => account.id !== fromAdminId).map(account => <option key={account.id} value={account.id}>{account.fullName}</option>)}
       </select>
       <input type="date" aria-label="Handover date" value={handoverDate} onChange={event => setHandoverDate(event.target.value)} className="rounded-md border p-2 text-sm" />
       <input aria-label="Handover notes" placeholder="Notes (optional)" value={notes} onChange={event => setNotes(event.target.value)} className="rounded-md border p-2 text-sm" />
@@ -42,6 +45,7 @@ export function AdminHandovers() {
         try {
           const { data: handover } = await apiClient.post<Handover>('/admin/handovers', { fromAdminId, toAdminId, handoverDate, notes }, { headers: await getCsrfHeaders() });
           setHandovers(current => [handover, ...current]); setError(''); setNotes(''); toast.success('Admin handover recorded.');
+          window.location.replace('/login');
         } catch { setError('Could not record handover. Check the admin accounts and database migration.'); }
       }}>Record handover</button>
     </div>

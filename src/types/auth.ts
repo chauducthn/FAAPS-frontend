@@ -7,5 +7,4 @@ export interface User {
   fullName: string;
   role: RoleCode;
   status: UserStatus;
-  avatarUrl?: string | null;
 }
