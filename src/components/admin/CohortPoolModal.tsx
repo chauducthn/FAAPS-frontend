@@ -69,7 +69,7 @@ export function CohortPoolModal({ open, cohort, advisors, currentIds, onClose }:
               <label className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50">
                 <input type="checkbox" checked={selected.has(a.id)} onChange={() => toggle(a.id)} className="size-4 accent-[#f37021]" />
                 <span className="flex-1 text-sm font-semibold text-[#151c27]">
-                  {a.fullName} <span className="font-normal text-[#555f6f]">· {a.advisorCode}</span>
+                  {a.fullName} <span className="font-normal text-[#555f6f]">· {a.email}</span>
                 </span>
                 <span className="text-xs text-[#555f6f]">
                   {a.activeStudents} / {a.maxAdvisees ?? 'no limit'} students

@@ -130,13 +130,13 @@ export default function AssignmentsOverview() {
 
   // One row per advisor; cohort chips collect the advisor's students and configured cohorts.
   const advisorList = useMemo(() => {
-    const map = new Map<string, { id: string; code: string; name: string; limit: number | null; chips: { key: string; text: string; inPool: boolean; students: number }[] }>();
+    const map = new Map<string, { id: string; email: string; name: string; limit: number | null; chips: { key: string; text: string; inPool: boolean; students: number }[] }>();
     (advisorRows.data ?? []).forEach((r) => {
-      const item = map.get(r.advisorId) ?? { id: r.advisorId, code: r.advisorCode, name: r.fullName, limit: r.maxAdvisees, chips: [] };
+      const item = map.get(r.advisorId) ?? { id: r.advisorId, email: r.email, name: r.fullName, limit: r.maxAdvisees, chips: [] };
       if (r.cohortId) item.chips.push({ key: r.cohortId, text: `${r.majorCode} ${r.cohort}`, inPool: r.inPool, students: r.studentCount });
       map.set(r.advisorId, item);
     });
-    return [...map.values()].filter((a) => a.name.toLowerCase().includes(term) || a.code.toLowerCase().includes(term));
+    return [...map.values()].filter((a) => a.name.toLowerCase().includes(term) || a.email.toLowerCase().includes(term));
   }, [advisorRows.data, term]);
   const loadOf = (id: string) => advisors.data?.find((a) => a.id === id)?.activeStudents ?? 0;
 
@@ -374,7 +374,7 @@ export default function AssignmentsOverview() {
                     <tr key={a.id} className="border-t border-[#e7eefe] hover:bg-gray-50/60">
                       <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">
                         {a.name}
-                        <span className="block text-xs font-normal text-[#555f6f]">{a.code}</span>
+                        <span className="block text-xs font-normal text-[#555f6f]">{a.email}</span>
                       </td>
                       <td className="px-3 py-4">
                         <LoadBadge count={loadOf(a.id)} limit={a.limit} />

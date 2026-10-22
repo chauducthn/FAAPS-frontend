@@ -99,7 +99,6 @@ export interface AdminUserDetail {
   enrollmentSemesterId: string | null;
   currentSemester: number | null;
   academicStatus: string | null;
-  advisorCode: string | null;
 }
 
 export interface UserEditOption { id: string; code: string; name: string; majorId: string | null }
@@ -113,7 +112,7 @@ export type UserSort = 'createdAt,desc' | 'createdAt,asc' | 'fullName,asc' | 'fu
 
 export interface AssignmentAdvisor {
   id: string;
-  advisorCode: string;
+  email: string;
   fullName: string;
   maxAdvisees: number | null;
   activeStudents: number;
@@ -157,7 +156,7 @@ export interface AdvisorAssignmentDetail {
 export interface AssignmentHistoryRecord {
   id: string;
   advisorId: string;
-  advisorCode: string;
+  advisorEmail: string;
   advisorName: string;
   assignedDate: string; // yyyy-MM-dd
   assignedAt: string | null; // local date-time
@@ -206,10 +205,9 @@ export interface UnassignedStudent {
 /** One row per advisor and cohort; advisors with no cohort come back with cohortId = null. */
 export interface AdvisorCohortRow {
   advisorId: string;
-  advisorCode: string;
+  email: string;
   fullName: string;
   maxAdvisees: number | null;
-  email: string | null;
   status: string;
   cohortId: string | null;
   cohort: string | null;
@@ -220,7 +218,7 @@ export interface AdvisorCohortRow {
 
 export interface CohortPoolAdvisor {
   advisorId: string;
-  advisorCode: string;
+  email: string;
   fullName: string;
   maxAdvisees: number | null;
   cohortStudents: number;

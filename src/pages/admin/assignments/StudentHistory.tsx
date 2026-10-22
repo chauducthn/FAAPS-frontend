@@ -109,7 +109,7 @@ export default function StudentHistory() {
               ) : (
                 history.map((h) => (
                   <tr key={h.id} className="border-t border-[#e7eefe]">
-                    <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">{h.advisorName}<span className="block text-xs font-normal text-[#555f6f]">{h.advisorCode}</span></td>
+                    <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">{h.advisorName}<span className="block text-xs font-normal text-[#555f6f]">{h.advisorEmail}</span></td>
                     <td className="px-3 py-4 text-sm text-[#151c27]">{h.assignedAt ? formatDateTime(h.assignedAt) : formatDate(h.assignedDate)}</td>
                     <td className="px-3 py-4 text-sm text-[#151c27]">{h.endDate ? formatDate(h.endDate) : 'Present'}</td>
                     <td className={cn('px-3 py-4 text-sm font-semibold', h.status === 'ACTIVE' ? 'text-[#047857]' : 'text-[#555f6f]')}>

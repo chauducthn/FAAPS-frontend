@@ -169,7 +169,7 @@ export default function CohortDetails() {
             {pool.data?.map((a) => (
               <li key={a.advisorId} className="flex flex-wrap items-center justify-between gap-2 rounded-lg bg-[#f7f8fa] px-4 py-3 text-sm">
                 <Link to={`/admin/assignments/advisors/${a.advisorId}`} state={backState(`/admin/assignments/cohorts/${cohortId}`, `Cohort ${title}`)} className="font-semibold text-[#151c27] hover:text-orange-600">
-                  {a.fullName} <span className="font-normal text-[#555f6f]">· {a.advisorCode}</span>
+                  {a.fullName} <span className="font-normal text-[#555f6f]">· {a.email}</span>
                 </Link>
                 <span className="flex items-center gap-3 text-[#555f6f]">
                   {a.cohortStudents} in this cohort

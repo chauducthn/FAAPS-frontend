@@ -143,7 +143,7 @@ export default function AdvisorDetails() {
         {back}
         <h1 className="mt-3 text-2xl font-semibold text-[#151c27]">Advisor Assignment Details</h1>
         <p className="mt-1 text-sm text-[#555f6f]">
-          Current student assignments for {advisor.fullName} · {advisor.advisorCode}
+          Current student assignments for {advisor.fullName} · {advisor.email}
         </p>
       </div>
 
@@ -182,8 +182,8 @@ export default function AdvisorDetails() {
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
           <div className="rounded-lg bg-[#f7f8fa] px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Advisor ID</p>
-            <p className="mt-1 text-base font-semibold text-[#151c27]">{advisor.advisorCode}</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Email</p>
+            <p className="mt-1 text-base font-semibold text-[#151c27]">{advisor.email}</p>
           </div>
           <div className="rounded-lg bg-[#f7f8fa] px-4 py-3">
             <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Students</p>
