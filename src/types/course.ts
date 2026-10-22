@@ -6,8 +6,8 @@
 //   course_categories (id, code, name)
 
 export type CourseStatus = 'ACTIVE' | 'INACTIVE';
-export type PrerequisiteType = 'PREREQUISITE' | 'CO_REQUISITE';
-export type RelationKind = 'PREREQUISITE' | 'CO_REQUISITE' | 'REPLACEMENT';
+export type PrerequisiteType = 'PREREQUISITE' | 'REPLACEMENT';
+export type RelationKind = PrerequisiteType;
 
 export interface CourseCategory {
   id: string;

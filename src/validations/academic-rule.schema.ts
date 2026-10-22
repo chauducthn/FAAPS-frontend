@@ -2,7 +2,6 @@
 import { z } from 'zod';
 
 export const POLICY_TYPES = [
-  'CO_REQUISITE',
   'ADVANCED_STUDY',
   'RETAKE',
   'MAX_CREDITS_PER_SEMESTER',

@@ -22,7 +22,7 @@ export const updateCourseSchema = createCourseSchema.partial().extend({
 });
 
 export const addCourseRelationSchema = z.object({
-  kind: z.enum(['PREREQUISITE', 'CO_REQUISITE', 'REPLACEMENT']),
+  kind: z.enum(['PREREQUISITE', 'REPLACEMENT']),
   groupNo: z.number().int().min(1).max(20),
   otherCourseId: uuid,
   minimumScore: z

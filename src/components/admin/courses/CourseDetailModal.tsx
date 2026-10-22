@@ -1,5 +1,5 @@
 // src/components/admin/courses/CourseDetailModal.tsx
-// Read-only detail + edit relations (prereq / co-req / replacement)
+// Read-only detail + edit course relations
 import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { Modal } from '../../ui/Modal';
@@ -66,17 +66,19 @@ export default function CourseDetailModal({
           </Section>
         )}
 
-        <Section title="Relations (prerequisite / co-requisite / replacement)">
+        <Section title="Relations (prerequisite / replacement)">
           <div className="grid grid-cols-5 gap-2 items-end mb-3 p-3 border border-gray-200 rounded-lg bg-gray-50/50">
             <div>
               <label className="block font-bold text-gray-700 uppercase mb-1">Kind</label>
               <select
                 value={kind}
-                onChange={(e) => setKind(e.target.value as RelationKind)}
+                onChange={(e) => {
+                  setKind(e.target.value as RelationKind);
+                  setMinScore('');
+                }}
                 className="w-full px-2 py-1.5 border border-gray-200 rounded-md"
               >
                 <option value="PREREQUISITE">Prerequisite</option>
-                <option value="CO_REQUISITE">Co-requisite</option>
                 <option value="REPLACEMENT">Replacement</option>
               </select>
             </div>
@@ -86,8 +88,9 @@ export default function CourseDetailModal({
                 type="number"
                 min={1}
                 max={20}
-                value={groupNo}
+                value={kind === 'REPLACEMENT' ? 1 : groupNo}
                 onChange={(e) => setGroupNo(Number(e.target.value))}
+                disabled={kind === 'REPLACEMENT'}
                 className="w-full px-2 py-1.5 border border-gray-200 rounded-md"
               />
             </div>
@@ -116,9 +119,9 @@ export default function CourseDetailModal({
                 onClick={() =>
                   onAddRelation({
                     kind,
-                    groupNo,
+                    groupNo: kind === 'REPLACEMENT' ? 1 : groupNo,
                     otherCourseId,
-                    minimumScore: minScore === '' ? null : Number(minScore),
+                    minimumScore: kind === 'REPLACEMENT' || minScore === '' ? null : Number(minScore),
                   })
                 }
                 className="w-full inline-flex items-center justify-center gap-1 px-3 py-1.5 bg-[#F26F21] hover:bg-[#e05f14] text-white font-bold rounded-md disabled:opacity-60"
@@ -135,8 +138,9 @@ export default function CourseDetailModal({
                 step="0.01"
                 min={0}
                 max={10}
-                value={minScore}
+                value={kind === 'REPLACEMENT' ? '' : minScore}
                 onChange={(e) => setMinScore(e.target.value)}
+                disabled={kind === 'REPLACEMENT'}
                 placeholder="e.g. 5.00"
                 className="w-full px-2 py-1.5 border border-gray-200 rounded-md"
               />

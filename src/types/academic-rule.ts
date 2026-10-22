@@ -7,7 +7,6 @@
 //                            min_credits, min_gpa, category_id, course_id, is_mandatory)
 
 export type AcademicRuleType =
-  | 'CO_REQUISITE'
   | 'ADVANCED_STUDY'
   | 'RETAKE'
   | 'MAX_CREDITS_PER_SEMESTER'
