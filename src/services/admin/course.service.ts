@@ -79,7 +79,7 @@ export const courseService = {
   },
 
   listCategories: async (): Promise<CourseCategory[]> => {
-    const { data } = await apiClient.get<CourseCategory[]>('/admin/courses/categories');
+    const { data } = await apiClient.get<CourseCategory[]>('/admin/course-categories');
     return data;
   },
 

@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router';
 interface NavItem {
   name: string;
   path: string;
-  badge?: number;
 }
 
 interface NavGroup {
@@ -46,7 +45,6 @@ const navGroups: NavGroup[] = [
     items: [
       { name: 'AI Configuration', path: '/admin/ai-config' },
       { name: 'AI Performance', path: '/admin/ai-performance' },
-      { name: 'Reported AI Responses', path: '/admin/ai-reports', badge: 6 },
     ],
   },
 ];
@@ -90,11 +88,6 @@ export default function AdminSidebar() {
                     }`}
                   >
                     <span>{item.name}</span>
-                    {item.badge && (
-                      <span className="text-[10px] bg-gray-100 text-gray-600 font-bold px-1.5 py-0.5 rounded-full">
-                        · {item.badge}
-                      </span>
-                    )}
                   </Link>
                 );
               })}

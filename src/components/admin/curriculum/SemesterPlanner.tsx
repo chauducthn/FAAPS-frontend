@@ -9,9 +9,9 @@ import type { CurriculumCourseItem, CurriculumSemester } from '../../../types/cu
 interface Props {
   semesters: CurriculumSemester[];
   readonly?: boolean;
-  onAddCourse: (semesterNumber: number) => void;
-  onEditCourse: (course: CurriculumCourseItem, semesterNumber: number) => void;
-  onRemoveCourse: (course: CurriculumCourseItem, semesterNumber: number) => void;
+  onAddCourse?: (semesterNumber: number) => void;
+  onEditCourse?: (course: CurriculumCourseItem, semesterNumber: number) => void;
+  onRemoveCourse?: (course: CurriculumCourseItem, semesterNumber: number) => void;
 }
 
 export default function SemesterPlanner({
@@ -24,12 +24,13 @@ export default function SemesterPlanner({
   const [open, setOpen] = useState<Record<number, boolean>>(() =>
     Object.fromEntries(semesters.map((s) => [s.semesterNumber, true])),
   );
+  const showActions = !readonly && (onEditCourse || onRemoveCourse);
 
   return (
     <div className="space-y-3">
       {semesters.length === 0 && (
         <p className="text-xs text-gray-500 italic">
-          No semesters yet. Add a course to start building this curriculum.
+          No courses are currently assigned to this curriculum.
         </p>
       )}
       {semesters.map((s) => (
@@ -51,7 +52,7 @@ export default function SemesterPlanner({
                 {s.courses.length} courses · {s.totalCredits} credits
               </span>
             </div>
-            {!readonly && (
+            {!readonly && onAddCourse && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -75,13 +76,13 @@ export default function SemesterPlanner({
                     <th className="p-3">Category</th>
                     <th className="p-3">Type</th>
                     <th className="p-3">Group</th>
-                    {!readonly && <th className="p-3 w-20 text-center">Actions</th>}
+                    {showActions && <th className="p-3 w-20 text-center">Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 text-xs">
                   {s.courses.length === 0 && (
                     <tr>
-                      <td colSpan={readonly ? 6 : 7} className="p-4 text-center text-gray-400">
+                      <td colSpan={showActions ? 7 : 6} className="p-4 text-center text-gray-400">
                         No courses in this semester yet.
                       </td>
                     </tr>
@@ -104,23 +105,27 @@ export default function SemesterPlanner({
                         </span>
                       </td>
                       <td className="p-3 text-gray-600">{c.groupName ?? '—'}</td>
-                      {!readonly && (
+                      {showActions && (
                         <td className="p-3 text-center">
                           <div className="inline-flex items-center gap-1">
-                            <button
-                              onClick={() => onEditCourse(c, s.semesterNumber)}
-                              className="p-1 text-gray-500 hover:text-gray-900"
-                              title="Edit"
-                            >
-                              <Edit3 className="size-3.5" />
-                            </button>
-                            <button
-                              onClick={() => onRemoveCourse(c, s.semesterNumber)}
-                              className="p-1 text-red-500 hover:text-red-700"
-                              title="Remove"
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
+                            {onEditCourse && (
+                              <button
+                                onClick={() => onEditCourse(c, s.semesterNumber)}
+                                className="p-1 text-gray-500 hover:text-gray-900"
+                                title="Edit"
+                              >
+                                <Edit3 className="size-3.5" />
+                              </button>
+                            )}
+                            {onRemoveCourse && (
+                              <button
+                                onClick={() => onRemoveCourse(c, s.semesterNumber)}
+                                className="p-1 text-red-500 hover:text-red-700"
+                                title="Remove"
+                              >
+                                <Trash2 className="size-3.5" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       )}

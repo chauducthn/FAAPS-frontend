@@ -1,7 +1,6 @@
 import { FolderOpen, GraduationCap, UserRound } from 'lucide-react';
 import { StatCard } from '../../components/admin/StatCard';
 import { NewStudentsChart } from '../../components/admin/NewStudentsChart';
-import { PendingReportsTable } from '../../components/admin/PendingReportsTable';
 import { useDashboardAccounts } from '../../hooks/queries/useAdminDashboard';
 
 export default function AdminDashboard() {
@@ -27,7 +26,6 @@ export default function AdminDashboard() {
       </div>
 
       <NewStudentsChart />
-      <PendingReportsTable />
     </div>
   );
 }

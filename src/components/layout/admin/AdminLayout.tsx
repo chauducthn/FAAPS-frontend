@@ -13,7 +13,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  MessageSquare,
   Shield,
   User as UserIcon,
   X,
@@ -24,13 +23,11 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '../../../stores/useAuth';
 import { authService } from '../../../services/authService';
 import { NotificationBell } from './NotificationBell';
-import { useAiReports } from '../../../hooks/queries/useAdminDashboard';
 
 interface NavItem {
   label: string;
   to?: string; // undefined = page not built yet
   icon: LucideIcon;
-  badge?: boolean;
 }
 
 const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
@@ -63,15 +60,11 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
     items: [
       { label: 'AI Configuration', to: '/admin/ai-config', icon: Cpu },
       { label: 'AI Performance', to: '/admin/ai-performance', icon: Activity },
-      { label: 'Reported AI Responses', to: '/admin/ai-reports', icon: MessageSquare, badge: true },
     ],
   },
 ];
 
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
-  const { data: pending } = useAiReports({ status: 'PENDING', page: 0, size: 1 });
-  const pendingCount = pending?.totalElements ?? 0;
-
   return (
     <nav className="flex flex-col gap-2" aria-label="Admin navigation">
       {NAV_SECTIONS.map((section, i) => (
@@ -81,7 +74,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
               {section.title}
             </p>
           )}
-          {section.items.map(({ label, to, icon: Icon, badge }) =>
+          {section.items.map(({ label, to, icon: Icon }) =>
             to ? (
               <NavLink
                 key={label}
@@ -99,11 +92,6 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
                   <Icon className="size-[18px]" />
                   {label}
                 </span>
-                {badge && pendingCount > 0 && (
-                  <span className="rounded-full border border-[#fde68a] bg-[#fffbeb] px-1.5 py-0.5 text-[11px] font-bold leading-none text-[#b45309]">
-                    {pendingCount}
-                  </span>
-                )}
               </NavLink>
             ) : (
               <span
