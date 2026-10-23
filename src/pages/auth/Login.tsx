@@ -1,15 +1,38 @@
+import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Logo } from '@/components/common/Logo';
-import { ArrowLeft } from 'lucide-react';
+import { AlertCircle, ArrowLeft, Info, X } from 'lucide-react';
+import { loginNoticeFromParam } from '@/lib/authErrors';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormValues } from '../../validations/auth.schema';
 import { useAuthMutations } from '@/hooks/mutations/useAuthMutations';
 
 export default function Login() {
-  const { loginAdmin, loginGoogle, isAdminLoading, adminError } = useAuthMutations();
-  const [searchParams] = useSearchParams();
-  const error = searchParams.get('error');
+  const { loginAdmin, loginGoogle, isAdminLoading, adminNotice, resetAdminError } = useAuthMutations();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const paramNotice = loginNoticeFromParam(searchParams.get('error'));
+  const [paramDismissed, setParamDismissed] = useState(false);
+  const notice = adminNotice ?? (paramDismissed ? null : paramNotice);
+
+  const clearErrorParam = () => {
+    if (!searchParams.has('error')) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete('error');
+    setSearchParams(next, { replace: true });
+  };
+
+  // A new sign-in attempt replaces the message that brought the user here.
+  useEffect(() => {
+    if (adminNotice) clearErrorParam();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adminNotice]);
+
+  const dismiss = () => {
+    resetAdminError();
+    setParamDismissed(true);
+    clearErrorParam();
+  };
   const {
     register,
     handleSubmit,
@@ -34,9 +57,22 @@ export default function Login() {
           <p className="mt-2 text-sm text-gray-500">Academic Advising & Planning System</p>
         </div>
 
-        {(adminError || error) && (
-          <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm text-center border border-red-100">
-            {adminError || 'Google sign-in could not be completed. Please try again.'}
+        {notice && (
+          <div
+            role="alert"
+            data-testid="login-notice"
+            className={`flex items-start gap-3 rounded-lg border p-3 text-left text-sm ${
+              notice.tone === 'info' ? 'border-blue-100 bg-blue-50 text-blue-800' : 'border-red-100 bg-red-50 text-red-700'
+            }`}
+          >
+            {notice.tone === 'info' ? <Info className="mt-0.5 size-4 shrink-0" /> : <AlertCircle className="mt-0.5 size-4 shrink-0" />}
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold">{notice.title}</p>
+              <p className="mt-0.5">{notice.message}</p>
+            </div>
+            <button type="button" onClick={dismiss} aria-label="Dismiss message" className="shrink-0 rounded p-0.5 opacity-70 hover:opacity-100">
+              <X className="size-4" />
+            </button>
           </div>
         )}
 

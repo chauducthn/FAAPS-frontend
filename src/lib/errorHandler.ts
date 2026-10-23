@@ -2,6 +2,7 @@
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import { ApiErrorResponse } from '../types/api';
+import { SESSION_EXPIRED_URL } from './authErrors';
 
 const SUPPRESSED_PATHS = ['/auth/me', '/auth/csrf'];
 
@@ -44,6 +45,14 @@ export const handleApiError = (error: unknown) => {
       return errorData;
     }
 
+    // The session ended and could not be refreshed: leave the screen and explain why on the login page.
+    if (status === 401) {
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.assign(SESSION_EXPIRED_URL);
+      }
+      return;
+    }
+
     // Spring endpoints reply with { error }, the shared contract uses { message }.
     const serverMessage = errorData?.message ?? (errorData as { error?: string } | undefined)?.error;
     if (serverMessage) {
@@ -52,10 +61,6 @@ export const handleApiError = (error: unknown) => {
     }
 
     switch (status) {
-      case 401:
-        showError('auth:401', 'Your session has expired. Please sign in again.');
-        window.location.href = '/login';
-        break;
       case 403:
         showError('auth:403', 'You do not have permission to do this.');
         break;

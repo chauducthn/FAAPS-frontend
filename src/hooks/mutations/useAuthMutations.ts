@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
 import { useAuth } from '@/stores/useAuth';
 import { authService } from '@/services/authService';
+import { adminLoginNotice } from '@/lib/authErrors';
 import type { LoginFormValues } from '@/validations/auth.schema';
 
 export const useAuthMutations = () => {
@@ -17,17 +17,13 @@ export const useAuthMutations = () => {
 
   const loginGoogle = () => window.location.assign('/oauth2/authorization/google');
 
-  const adminError = loginAdminMutation.error;
-  const adminErrorMessage = adminError
-    ? axios.isAxiosError(adminError) && adminError.response?.status === 401
-      ? 'Invalid email or password.'
-      : 'Could not sign in. Please try again.'
-    : null;
+  const adminNotice = loginAdminMutation.error ? adminLoginNotice(loginAdminMutation.error) : null;
 
   return {
-    loginAdmin: loginAdminMutation.mutateAsync,
+    loginAdmin: (credentials: LoginFormValues) => loginAdminMutation.mutate(credentials),
     isAdminLoading: loginAdminMutation.isPending,
-    adminError: adminErrorMessage,
+    adminNotice,
+    resetAdminError: loginAdminMutation.reset,
 
     loginGoogle,
   };
