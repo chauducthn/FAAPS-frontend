@@ -1,121 +1,63 @@
 // src/services/admin/curriculum.service.ts
+// /admin/curriculums and /admin/cohorts are two URLs onto the same backend records, so one factory serves both.
 import { apiClient } from '../../lib/apiClient';
-import { ApiResponse, PaginatedData } from '../../types/api';
+import type { ApiResponse } from '../../types/api';
 import type {
-  CurriculumDetail,
-  CurriculumSummary,
+  AddCurriculumCoursesInput,
+  CurriculumCourseItem,
   CurriculumFilterParams,
-  CreateCurriculumDto,
-  UpdateCurriculumDto,
-  AddCurriculumCourseDto,
-  UpdateCurriculumCourseDto,
-  CurriculumBulkRequest,
+  CurriculumInput,
+  CurriculumItem,
+  CurriculumPage,
+  CurriculumStatus,
 } from '../../types/curriculum';
 
-export const curriculumService = {
-  list: async (params?: CurriculumFilterParams): Promise<PaginatedData<CurriculumSummary>> => {
-    const { data } = await apiClient.get<ApiResponse<PaginatedData<CurriculumSummary>>>(
-      '/admin/curriculums',
-      { params },
-    );
-    return (
-      data.data ?? {
-        items: [],
-        page: params?.page ?? 0,
-        pageSize: params?.size ?? 20,
-        totalItems: 0,
-        totalPages: 0,
-      }
-    );
+const unwrap = <T>(response: ApiResponse<T>, message: string): T => {
+  if (response.data === undefined || response.data === null) throw new Error(message);
+  return response.data;
+};
+
+export const createCurriculumApi = (base: '/admin/curriculums' | '/admin/cohorts') => ({
+  list: async (params?: CurriculumFilterParams): Promise<CurriculumPage> => {
+    const { data } = await apiClient.get<CurriculumPage>(base, { params });
+    return data;
   },
 
-  getById: async (id: string): Promise<CurriculumDetail> => {
-    const { data } = await apiClient.get<ApiResponse<CurriculumDetail>>(
-      `/admin/curriculums/${id}`,
-    );
-    if (!data.data) throw new Error('Curriculum not found');
-    return data.data;
+  getById: async (id: string): Promise<CurriculumItem> => {
+    const { data } = await apiClient.get<ApiResponse<CurriculumItem>>(`${base}/${id}`);
+    return unwrap(data, 'Not found');
   },
 
-  create: async (body: CreateCurriculumDto): Promise<CurriculumSummary> => {
-    const { data } = await apiClient.post<ApiResponse<CurriculumSummary>>(
-      '/admin/curriculums',
-      body,
-    );
-    if (!data.data) throw new Error('Could not create the curriculum');
-    return data.data;
+  create: async (body: CurriculumInput): Promise<CurriculumItem> => {
+    const { data } = await apiClient.post<ApiResponse<CurriculumItem>>(base, body);
+    return unwrap(data, 'Could not create');
   },
 
-  update: async (id: string, body: UpdateCurriculumDto): Promise<CurriculumSummary> => {
-    const { data } = await apiClient.put<ApiResponse<CurriculumSummary>>(
-      `/admin/curriculums/${id}`,
-      body,
-    );
-    if (!data.data) throw new Error('Could not update the curriculum');
-    return data.data;
-  },
-
-  publish: async (id: string): Promise<CurriculumSummary> => {
-    const { data } = await apiClient.post<ApiResponse<CurriculumSummary>>(
-      `/admin/curriculums/${id}/publish`,
-    );
-    if (!data.data) throw new Error('Could not publish the curriculum');
-    return data.data;
-  },
-
-  archive: async (id: string): Promise<CurriculumSummary> => {
-    const { data } = await apiClient.post<ApiResponse<CurriculumSummary>>(
-      `/admin/curriculums/${id}/archive`,
-    );
-    if (!data.data) throw new Error('Could not archive the curriculum');
-    return data.data;
+  update: async (id: string, body: CurriculumInput): Promise<CurriculumItem> => {
+    const { data } = await apiClient.put<ApiResponse<CurriculumItem>>(`${base}/${id}`, body);
+    return unwrap(data, 'Could not update');
   },
 
   remove: async (id: string): Promise<void> => {
-    await apiClient.delete(`/admin/curriculums/${id}`);
+    await apiClient.delete(`${base}/${id}`);
+  },
+});
+
+export const curriculumService = {
+  ...createCurriculumApi('/admin/curriculums'),
+
+  updateStatus: async (id: string, status: CurriculumStatus): Promise<CurriculumItem> => {
+    const { data } = await apiClient.patch<ApiResponse<CurriculumItem>>(`/admin/curriculums/${id}/status`, { status });
+    return unwrap(data, 'Could not change the status');
   },
 
-  addCourse: async (
-    curriculumId: string,
-    body: AddCurriculumCourseDto,
-  ): Promise<CurriculumDetail> => {
-    const { data } = await apiClient.post<ApiResponse<CurriculumDetail>>(
-      `/admin/curriculums/${curriculumId}/courses`,
-      body,
-    );
-    if (!data.data) throw new Error('Could not add course to curriculum');
-    return data.data;
+  listCourses: async (id: string): Promise<CurriculumCourseItem[]> => {
+    const { data } = await apiClient.get<ApiResponse<CurriculumCourseItem[]>>(`/admin/curriculums/${id}/courses`);
+    return data.data ?? [];
   },
 
-  updateCourse: async (
-    curriculumId: string,
-    curriculumCourseId: string,
-    body: UpdateCurriculumCourseDto,
-  ): Promise<CurriculumDetail> => {
-    const { data } = await apiClient.put<ApiResponse<CurriculumDetail>>(
-      `/admin/curriculums/${curriculumId}/courses/${curriculumCourseId}`,
-      body,
-    );
-    if (!data.data) throw new Error('Could not update curriculum course');
-    return data.data;
-  },
-
-  removeCourse: async (
-    curriculumId: string,
-    curriculumCourseId: string,
-  ): Promise<CurriculumDetail> => {
-    const { data } = await apiClient.delete<ApiResponse<CurriculumDetail>>(
-      `/admin/curriculums/${curriculumId}/courses/${curriculumCourseId}`,
-    );
-    if (!data.data) throw new Error('Could not remove curriculum course');
-    return data.data;
-  },
-
-  bulk: async (body: CurriculumBulkRequest): Promise<{ affected: number }> => {
-    const { data } = await apiClient.post<ApiResponse<{ affected: number }>>(
-      '/admin/curriculums/bulk',
-      body,
-    );
-    return data.data ?? { affected: 0 };
+  addCourses: async (id: string, body: AddCurriculumCoursesInput): Promise<CurriculumCourseItem[]> => {
+    const { data } = await apiClient.post<ApiResponse<CurriculumCourseItem[]>>(`/admin/curriculums/${id}/courses`, body);
+    return data.data ?? [];
   },
 };

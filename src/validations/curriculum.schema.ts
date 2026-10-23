@@ -1,40 +1,18 @@
 // src/validations/curriculum.schema.ts
 import { z } from 'zod';
 
-const uuid = z.string().uuid();
+const id = (message: string) =>
+  z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, message);
 
-export const createCurriculumSchema = z.object({
-  majorId: uuid,
-  version: z
-    .string()
-    .min(1, 'Version is required')
-    .max(50)
-    .regex(/^[A-Za-z0-9._-]+$/, 'Only letters, numbers, dot, dash, underscore'),
-  name: z.string().min(3, 'Name is required').max(255),
-  effectiveFromSemesterId: uuid,
-  effectiveToSemesterId: uuid.optional().nullable(),
-  description: z.string().max(2000).optional().nullable(),
-  isCurrent: z.boolean().optional(),
+export const curriculumFormSchema = z.object({
+  majorId: id('Select a major'),
+  version: z.string().trim().min(1, 'Cohort / version is required (e.g. K19)').max(50, 'At most 50 characters'),
+  name: z.string().trim().min(2, 'Name is required').max(255, 'At most 255 characters'),
+  effectiveFromSemesterId: id('Select the first semester'),
+  effectiveToSemesterId: z.string().optional(),
+  description: z.string().max(2000, 'At most 2000 characters').optional(),
+  isCurrent: z.boolean(),
+  status: z.enum(['ACTIVE', 'INACTIVE']),
 });
 
-export const updateCurriculumSchema = createCurriculumSchema.partial().extend({
-  status: z.enum(['DRAFT', 'ACTIVE', 'ARCHIVED']).optional(),
-});
-
-export const addCurriculumCourseSchema = z.object({
-  courseId: uuid,
-  semesterNumber: z.number().int().min(1).max(20),
-  isMandatory: z.boolean().default(true),
-  groupName: z.string().max(100).optional(),
-});
-
-export const updateCurriculumCourseSchema = z.object({
-  semesterNumber: z.number().int().min(1).max(20).optional(),
-  isMandatory: z.boolean().optional(),
-  groupName: z.string().max(100).nullable().optional(),
-});
-
-export type CreateCurriculumFormValues = z.infer<typeof createCurriculumSchema>;
-export type UpdateCurriculumFormValues = z.infer<typeof updateCurriculumSchema>;
-export type AddCurriculumCourseFormValues = z.infer<typeof addCurriculumCourseSchema>;
-export type UpdateCurriculumCourseFormValues = z.infer<typeof updateCurriculumCourseSchema>;
+export type CurriculumFormValues = z.infer<typeof curriculumFormSchema>;

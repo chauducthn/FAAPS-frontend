@@ -1,65 +1,17 @@
 // src/services/admin/cohort.service.ts
+// A cohort is the same backend record as a curriculum (major + version); only the URL differs.
 import { apiClient } from '../../lib/apiClient';
-import { ApiResponse, PaginatedData } from '../../types/api';
-import type {
-  Cohort,
-  CohortFilterParams,
-  CreateCohortDto,
-  UpdateCohortDto,
-  CohortMajorLink,
-} from '../../types/cohort';
+import type { ApiResponse } from '../../types/api';
+import type { CurriculumItem, CurriculumStatus } from '../../types/curriculum';
+import { createCurriculumApi } from './curriculum.service';
 
 export const cohortService = {
-  list: async (params?: CohortFilterParams): Promise<PaginatedData<Cohort>> => {
-    const { data } = await apiClient.get<ApiResponse<PaginatedData<Cohort>>>('/admin/cohorts', { params });
-    return (
-      data.data ?? {
-        items: [],
-        page: params?.page ?? 0,
-        pageSize: params?.size ?? 20,
-        totalItems: 0,
-        totalPages: 0,
-      }
-    );
-  },
+  ...createCurriculumApi('/admin/cohorts'),
 
-  getById: async (id: string): Promise<Cohort> => {
-    const { data } = await apiClient.get<ApiResponse<Cohort>>(`/admin/cohorts/${id}`);
-    if (!data.data) throw new Error('Cohort not found');
+  // There is no /cohorts/{id}/status endpoint; the curriculum one acts on the same record.
+  updateStatus: async (id: string, status: CurriculumStatus): Promise<CurriculumItem> => {
+    const { data } = await apiClient.patch<ApiResponse<CurriculumItem>>(`/admin/curriculums/${id}/status`, { status });
+    if (!data.data) throw new Error('Could not change the status');
     return data.data;
-  },
-
-  getMajors: async (cohortId: string): Promise<CohortMajorLink[]> => {
-    const { data } = await apiClient.get<ApiResponse<CohortMajorLink[]>>(`/admin/cohorts/${cohortId}/majors`);
-    return data.data ?? [];
-  },
-
-  create: async (body: CreateCohortDto): Promise<Cohort> => {
-    const { data } = await apiClient.post<ApiResponse<Cohort>>('/admin/cohorts', body);
-    if (!data.data) throw new Error('Could not create the cohort');
-    return data.data;
-  },
-
-  update: async (id: string, body: UpdateCohortDto): Promise<Cohort> => {
-    const { data } = await apiClient.put<ApiResponse<Cohort>>(`/admin/cohorts/${id}`, body);
-    if (!data.data) throw new Error('Could not update the cohort');
-    return data.data;
-  },
-
-  remove: async (id: string): Promise<void> => {
-    await apiClient.delete(`/admin/cohorts/${id}`);
-  },
-
-  attachMajor: async (cohortId: string, majorId: string): Promise<CohortMajorLink> => {
-    const { data } = await apiClient.post<ApiResponse<CohortMajorLink>>(
-      `/admin/cohorts/${cohortId}/majors`,
-      { majorId },
-    );
-    if (!data.data) throw new Error('Could not attach major to cohort');
-    return data.data;
-  },
-
-  detachMajor: async (cohortId: string, majorId: string): Promise<void> => {
-    await apiClient.delete(`/admin/cohorts/${cohortId}/majors/${majorId}`);
   },
 };

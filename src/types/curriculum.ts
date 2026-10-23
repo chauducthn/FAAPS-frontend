@@ -1,93 +1,81 @@
 // src/types/curriculum.ts
-// DBML reference:
-//   curriculum_versions (id, major_id, version, name, effective_from_semester_id,
-//                        effective_to_semester_id, description, is_current, status)
-//   curriculum_courses (curriculum_version_id, course_id, semester_number,
-//                       is_mandatory, group_name)
+// Mirrors the backend AdminCurriculumService records. In the backend a "cohort" and a "curriculum" are the
+// same record (curriculum_versions: one major + one version such as K19), exposed under two URLs.
 
-export type CurriculumStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
+export type CurriculumStatus = 'ACTIVE' | 'INACTIVE';
 
-export interface CurriculumSummary {
+export interface CurriculumItem {
   id: string;
   majorId: string;
   majorCode: string;
   majorName: string;
-  version: string;          // e.g. "K18", "K19"
-  name: string;             // e.g. "Software Engineering Curriculum 2024"
+  version: string; // e.g. "K19"
+  name: string;
   effectiveFromSemesterId: string;
-  effectiveFromSemesterCode: string; // e.g. "SP2026"
+  effectiveFromSemesterCode: string;
+  effectiveFromDate: string | null;
   effectiveToSemesterId: string | null;
   effectiveToSemesterCode: string | null;
-  totalCourses: number;
-  totalCredits: number;
+  effectiveToDate: string | null;
+  description: string | null;
   isCurrent: boolean;
   status: CurriculumStatus;
+  courseCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface CurriculumDetail extends CurriculumSummary {
-  description: string | null;
-  // Grouped by semester_number so FE can render an accordion per semester
-  semesters: CurriculumSemester[];
-}
-
-export interface CurriculumSemester {
-  semesterNumber: number;
-  totalCredits: number;
-  courses: CurriculumCourseItem[];
-}
-
 export interface CurriculumCourseItem {
-  curriculumCourseId: string; // curriculum_courses.id
+  id: string; // curriculum_courses.id
+  curriculumId: string;
   courseId: string;
   courseCode: string;
   courseName: string;
   credits: number;
-  categoryCode: string;
+  courseStatus: string;
+  semesterNumber: number;
   isMandatory: boolean;
   groupName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CurriculumPage {
+  items: CurriculumItem[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 }
 
 export interface CurriculumFilterParams {
   search?: string;
   majorId?: string;
-  status?: CurriculumStatus | 'ALL';
-  isCurrent?: boolean | 'ALL';
+  status?: CurriculumStatus;
   page?: number;
   size?: number;
-  sort?: 'version,asc' | 'version,desc' | 'createdAt,desc' | 'createdAt,asc';
 }
 
-export interface CreateCurriculumDto {
+export interface CurriculumInput {
   majorId: string;
   version: string;
   name: string;
   effectiveFromSemesterId: string;
-  effectiveToSemesterId?: string | null;
-  description?: string | null;
-  isCurrent?: boolean;
+  effectiveToSemesterId: string | null;
+  description: string | null;
+  isCurrent: boolean;
+  status: CurriculumStatus;
 }
 
-export interface UpdateCurriculumDto extends Partial<CreateCurriculumDto> {
-  status?: CurriculumStatus;
-}
-
-export interface AddCurriculumCourseDto {
-  courseId: string;
+export interface AddCurriculumCoursesInput {
+  courseIds: string[];
   semesterNumber: number;
   isMandatory: boolean;
-  groupName?: string;
 }
 
-export interface UpdateCurriculumCourseDto {
-  semesterNumber?: number;
-  isMandatory?: boolean;
-  groupName?: string | null;
-}
-
-export type CurriculumBulkAction = 'PUBLISH' | 'ARCHIVE' | 'DELETE';
-export interface CurriculumBulkRequest {
-  curriculumIds: string[];
-  action: CurriculumBulkAction;
+/** A semester the form can pick; the backend has no semester list API, so these come from existing records. */
+export interface SemesterOption {
+  id: string;
+  code: string;
+  startDate: string | null;
 }

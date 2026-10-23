@@ -1,107 +1,60 @@
 // src/hooks/mutations/useCurriculumMutations.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { toastBadRequest } from '../../lib/apiError';
+import { cohortService } from '../../services/admin/cohort.service';
 import { curriculumService } from '../../services/admin/curriculum.service';
-import type {
-  AddCurriculumCourseDto,
-  CreateCurriculumDto,
-  CurriculumBulkRequest,
-  UpdateCurriculumCourseDto,
-  UpdateCurriculumDto,
-} from '../../types/curriculum';
-import { CURRICULUM_QUERY_KEYS } from '../queries/useCurriculumsQuery';
+import type { AddCurriculumCoursesInput, CurriculumInput, CurriculumStatus } from '../../types/curriculum';
+import { CURRICULUM_QUERY_KEYS, serviceFor, type CurriculumKind } from '../queries/useCurriculumsQuery';
 
-export const useCurriculumMutations = () => {
+export const useCurriculumMutations = (kind: CurriculumKind) => {
   const qc = useQueryClient();
+  const noun = kind === 'cohort' ? 'Cohort' : 'Curriculum';
+  const refresh = () => qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.all });
 
   const create = useMutation({
-    mutationFn: (body: CreateCurriculumDto) => curriculumService.create(body),
+    onError: toastBadRequest,
+    mutationFn: (body: CurriculumInput) => serviceFor(kind).create(body),
     onSuccess: (created) => {
-      toast.success('Curriculum created', { description: created.name });
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.all });
+      toast.success(`${noun} created`, { description: `${created.majorCode} ${created.version} - ${created.name}` });
+      refresh();
     },
   });
 
   const update = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateCurriculumDto }) =>
-      curriculumService.update(id, body),
+    onError: toastBadRequest,
+    mutationFn: ({ id, body }: { id: string; body: CurriculumInput }) => serviceFor(kind).update(id, body),
     onSuccess: () => {
-      toast.success('Curriculum updated');
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.all });
-    },
-  });
-
-  const publish = useMutation({
-    mutationFn: (id: string) => curriculumService.publish(id),
-    onSuccess: () => {
-      toast.success('Curriculum published');
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.all });
-    },
-  });
-
-  const archive = useMutation({
-    mutationFn: (id: string) => curriculumService.archive(id),
-    onSuccess: () => {
-      toast.success('Curriculum archived');
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.all });
+      toast.success(`${noun} updated`);
+      refresh();
     },
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) => curriculumService.remove(id),
+    onError: toastBadRequest,
+    mutationFn: (id: string) => serviceFor(kind).remove(id),
     onSuccess: () => {
-      toast.success('Curriculum deleted');
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.all });
+      toast.success(`${noun} deleted`);
+      refresh();
     },
   });
 
-  const addCourse = useMutation({
-    mutationFn: ({ curriculumId, body }: { curriculumId: string; body: AddCurriculumCourseDto }) =>
-      curriculumService.addCourse(curriculumId, body),
+  const updateStatus = useMutation({
+    onError: toastBadRequest,
+    mutationFn: ({ id, status }: { id: string; status: CurriculumStatus }) =>
+      (kind === 'cohort' ? cohortService : curriculumService).updateStatus(id, status),
     onSuccess: (_data, vars) => {
-      toast.success('Course added to curriculum');
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.detail(vars.curriculumId) });
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.all });
+      toast.success(vars.status === 'ACTIVE' ? `${noun} activated` : `${noun} deactivated`);
+      refresh();
     },
   });
 
-  const updateCourse = useMutation({
-    mutationFn: ({
-      curriculumId,
-      curriculumCourseId,
-      body,
-    }: {
-      curriculumId: string;
-      curriculumCourseId: string;
-      body: UpdateCurriculumCourseDto;
-    }) => curriculumService.updateCourse(curriculumId, curriculumCourseId, body),
-    onSuccess: (_data, vars) => {
-      toast.success('Curriculum course updated');
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.detail(vars.curriculumId) });
-    },
-  });
-
-  const removeCourse = useMutation({
-    mutationFn: ({
-      curriculumId,
-      curriculumCourseId,
-    }: {
-      curriculumId: string;
-      curriculumCourseId: string;
-    }) => curriculumService.removeCourse(curriculumId, curriculumCourseId),
-    onSuccess: (_data, vars) => {
-      toast.success('Course removed from curriculum');
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.detail(vars.curriculumId) });
-    },
-  });
-
-  const bulk = useMutation({
-    mutationFn: (body: CurriculumBulkRequest) => curriculumService.bulk(body),
-    onSuccess: (result) => {
-      toast.success(`Bulk action completed`, {
-        description: `${result.affected} curriculum(s) updated.`,
-      });
-      qc.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.all });
+  const addCourses = useMutation({
+    onError: toastBadRequest,
+    mutationFn: ({ id, body }: { id: string; body: AddCurriculumCoursesInput }) => curriculumService.addCourses(id, body),
+    onSuccess: (added) => {
+      toast.success(`Added ${added.length} course${added.length === 1 ? '' : 's'} to the curriculum`);
+      refresh();
     },
   });
 
@@ -110,19 +63,11 @@ export const useCurriculumMutations = () => {
     isCreating: create.isPending,
     update: update.mutateAsync,
     isUpdating: update.isPending,
-    publish: publish.mutateAsync,
-    isPublishing: publish.isPending,
-    archive: archive.mutateAsync,
-    isArchiving: archive.isPending,
     remove: remove.mutateAsync,
     isRemoving: remove.isPending,
-    addCourse: addCourse.mutateAsync,
-    isAddingCourse: addCourse.isPending,
-    updateCourse: updateCourse.mutateAsync,
-    isUpdatingCourse: updateCourse.isPending,
-    removeCourse: removeCourse.mutateAsync,
-    isRemovingCourse: removeCourse.isPending,
-    bulk: bulk.mutateAsync,
-    isBulk: bulk.isPending,
+    updateStatus: updateStatus.mutateAsync,
+    isUpdatingStatus: updateStatus.isPending,
+    addCourses: addCourses.mutateAsync,
+    isAddingCourses: addCourses.isPending,
   };
 };
