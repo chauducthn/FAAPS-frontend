@@ -20,6 +20,11 @@ export const adminService = {
     return data;
   },
 
+  getMajorOptions: async (): Promise<{ id: string; code: string; name: string }[]> => {
+    const { data } = await apiClient.get<{ id: string; code: string; name: string }[]>('/admin/majors');
+    return data;
+  },
+
   getNewStudents: async (params: {
     startMonth: string;
     endMonth: string;

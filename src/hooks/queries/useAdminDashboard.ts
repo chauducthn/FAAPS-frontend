@@ -8,10 +8,17 @@ export const useDashboardAccounts = () =>
     queryFn: adminService.getDashboardAccounts,
   });
 
-export const useNewStudents = (startMonth: string, endMonth: string, enabled = true) =>
+export const useMajorOptions = () =>
   useQuery({
-    queryKey: ['admin', 'dashboard', 'new-students', startMonth, endMonth],
-    queryFn: () => adminService.getNewStudents({ startMonth, endMonth }),
+    queryKey: ['admin', 'majors', 'options'],
+    queryFn: adminService.getMajorOptions,
+    staleTime: 5 * 60_000,
+  });
+
+export const useNewStudents = (startMonth: string, endMonth: string, enabled = true, majorId?: string) =>
+  useQuery({
+    queryKey: ['admin', 'dashboard', 'new-students', startMonth, endMonth, majorId ?? null],
+    queryFn: () => adminService.getNewStudents({ startMonth, endMonth, majorId: majorId || undefined }),
     enabled,
     placeholderData: keepPreviousData,
   });

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Filter } from 'lucide-react';
-import { useNewStudents } from '../../hooks/queries/useAdminDashboard';
+import { useMajorOptions, useNewStudents } from '../../hooks/queries/useAdminDashboard';
 import { MonthPicker } from './MonthPicker';
 import { defaultMonthRange, formatMonthLabel, monthSpan, monthsBetween } from '../../lib/months';
 
@@ -11,13 +11,15 @@ export function NewStudentsChart() {
   const initial = useMemo(() => defaultMonthRange(12), []);
   const [startMonth, setStartMonth] = useState(initial.start);
   const [endMonth, setEndMonth] = useState(initial.end);
+  const [majorId, setMajorId] = useState('');
   const [showFilters, setShowFilters] = useState(true);
+  const majors = useMajorOptions();
 
   const span = monthSpan(startMonth, endMonth);
   const rangeError =
     span === 0 ? 'Start month must not be after end month.' : span > MAX_MONTHS ? 'Range can be at most 36 months.' : null;
 
-  const { data, isLoading, isError, refetch } = useNewStudents(startMonth, endMonth, !rangeError);
+  const { data, isLoading, isError, refetch } = useNewStudents(startMonth, endMonth, !rangeError, majorId);
 
   // The API only returns months that have data; fill the gaps with 0.
   const chartData = useMemo(() => {
@@ -45,9 +47,25 @@ export function NewStudentsChart() {
       </div>
 
       {showFilters && (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-3">
           <MonthPicker label="Start month" value={startMonth} onChange={setStartMonth} />
           <MonthPicker label="End month" value={endMonth} onChange={setEndMonth} />
+          <div className="flex flex-col gap-1 text-xs font-medium text-[#555f6f]">
+            Major
+            <select
+              value={majorId}
+              onChange={(e) => setMajorId(e.target.value)}
+              aria-label="Major"
+              className="h-[38px] rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            >
+              <option value="">All majors</option>
+              {(majors.data ?? []).map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.code} - {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       )}
 
