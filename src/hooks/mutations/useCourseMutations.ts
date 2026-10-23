@@ -8,12 +8,14 @@ import type {
   UpdateCourseDto,
   UpdateCourseRelationDto,
 } from '../../types/course';
+import { toastBadRequest } from '../../lib/apiError';
 import { COURSE_QUERY_KEYS } from '../queries/useCoursesQuery';
 
 export const useCourseMutations = () => {
   const qc = useQueryClient();
 
   const create = useMutation({
+    onError: toastBadRequest,
     mutationFn: (body: CreateCourseDto) => courseService.create(body),
     onSuccess: (created) => {
       toast.success('Course created', { description: `${created.code} - ${created.name}` });
@@ -22,6 +24,7 @@ export const useCourseMutations = () => {
   });
 
   const update = useMutation({
+    onError: toastBadRequest,
     mutationFn: ({ id, body }: { id: string; body: UpdateCourseDto }) =>
       courseService.update(id, body),
     onSuccess: (_data, vars) => {
@@ -32,6 +35,7 @@ export const useCourseMutations = () => {
   });
 
   const remove = useMutation({
+    onError: toastBadRequest,
     mutationFn: (id: string) => courseService.remove(id),
     onSuccess: () => {
       toast.success('Course deleted');
@@ -40,15 +44,18 @@ export const useCourseMutations = () => {
   });
 
   const addRelation = useMutation({
+    onError: toastBadRequest,
     mutationFn: ({ courseId, body }: { courseId: string; body: AddCourseRelationDto }) =>
       courseService.addRelation(courseId, body),
     onSuccess: (_data, vars) => {
       toast.success('Relation added');
       qc.invalidateQueries({ queryKey: COURSE_QUERY_KEYS.detail(vars.courseId) });
+      qc.invalidateQueries({ queryKey: [...COURSE_QUERY_KEYS.all, 'list'] });
     },
   });
 
   const updateRelation = useMutation({
+    onError: toastBadRequest,
     mutationFn: ({
       courseId,
       relationId,
@@ -65,15 +72,28 @@ export const useCourseMutations = () => {
   });
 
   const removeRelation = useMutation({
+    onError: toastBadRequest,
     mutationFn: ({ courseId, relationId }: { courseId: string; relationId: string }) =>
       courseService.removeRelation(courseId, relationId),
     onSuccess: (_data, vars) => {
       toast.success('Relation removed');
       qc.invalidateQueries({ queryKey: COURSE_QUERY_KEYS.detail(vars.courseId) });
+      qc.invalidateQueries({ queryKey: [...COURSE_QUERY_KEYS.all, 'list'] });
+    },
+  });
+
+  const bulkRemove = useMutation({
+    onError: toastBadRequest,
+    mutationFn: (ids: string[]) => courseService.bulkRemove(ids),
+    onSuccess: (count) => {
+      toast.success(`Deleted ${count} course${count === 1 ? '' : 's'}`);
+      qc.invalidateQueries({ queryKey: COURSE_QUERY_KEYS.all });
     },
   });
 
   return {
+    bulkRemove: bulkRemove.mutateAsync,
+    isBulkRemoving: bulkRemove.isPending,
     create: create.mutateAsync,
     isCreating: create.isPending,
     update: update.mutateAsync,

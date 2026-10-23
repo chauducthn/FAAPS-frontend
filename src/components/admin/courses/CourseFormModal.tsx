@@ -8,12 +8,14 @@ import {
   createCourseSchema,
   type CreateCourseFormValues,
 } from '../../../validations/course.schema';
-import type { CourseCategory, CourseSummary } from '../../../types/course';
+import type { CourseCategory, CourseDetail } from '../../../types/course';
 
 interface Props {
   open: boolean;
   mode: 'create' | 'edit';
-  initial?: CourseSummary | null;
+  /** Full course (the list rows do not carry description, objectives or outcomes). */
+  initial?: CourseDetail | null;
+  isLoadingInitial?: boolean;
   categories: CourseCategory[];
   isLoading?: boolean;
   onClose: () => void;
@@ -26,6 +28,7 @@ export default function CourseFormModal({
   initial,
   categories,
   isLoading,
+  isLoadingInitial,
   onClose,
   onSubmit,
 }: Props) {
@@ -44,11 +47,12 @@ export default function CourseFormModal({
           name: initial.name,
           credits: initial.credits,
           categoryId: initial.categoryId,
-          description: '',
-          objectives: '',
-          learningOutcomes: '',
+          description: initial.description ?? '',
+          objectives: initial.objectives ?? '',
+          learningOutcomes: initial.learningOutcomes ?? '',
+          status: initial.status,
         }
-      : { code: '', name: '', credits: 3, categoryId: categories[0]?.id ?? '' },
+      : { code: '', name: '', credits: 3, categoryId: '' },
   });
 
   useEffect(() => {
@@ -59,18 +63,19 @@ export default function CourseFormModal({
         name: initial.name,
         credits: initial.credits,
         categoryId: initial.categoryId,
-        description: '',
-        objectives: '',
-        learningOutcomes: '',
+        description: initial.description ?? '',
+        objectives: initial.objectives ?? '',
+        learningOutcomes: initial.learningOutcomes ?? '',
+        status: initial.status,
       });
     } else {
-      reset({ code: '', name: '', credits: 3, categoryId: categories[0]?.id ?? '' });
+      reset({ code: '', name: '', credits: 3, categoryId: '' });
     }
-  }, [open, initial, categories, reset]);
+  }, [open, initial, reset]);
 
   return (
     <Modal open={open} onClose={onClose} title={isCreate ? 'Create Course' : 'Edit Course'}>
-      <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 text-xs">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4 text-xs">
         <div className="flex items-center gap-2 text-gray-700">
           <BookText className="size-4 text-[#F26F21]" />
           <span className="font-bold uppercase">Course Information</span>
@@ -87,7 +92,7 @@ export default function CourseFormModal({
           <Field label="Credits" required error={errors.credits?.message}>
             <input
               type="number"
-              min={0}
+              min={1}
               max={20}
               {...register('credits', { valueAsNumber: true })}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#F26F21]"
@@ -98,7 +103,7 @@ export default function CourseFormModal({
               {...register('categoryId')}
               className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#F26F21]"
             >
-              <option value="">Select...</option>
+              <option value="">Select a category...</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.code} - {c.name}
@@ -107,6 +112,18 @@ export default function CourseFormModal({
             </select>
           </Field>
         </div>
+
+        {!isCreate && (
+          <Field label="Status" error={errors.status?.message}>
+            <select
+              {...register('status')}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#F26F21]"
+            >
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </Field>
+        )}
 
         <Field label="Name" required error={errors.name?.message}>
           <input
@@ -150,10 +167,10 @@ export default function CourseFormModal({
           </button>
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isLoadingInitial}
             className="px-4 py-2 bg-[#F26F21] hover:bg-[#e05f14] text-white font-bold rounded-lg disabled:opacity-60"
           >
-            {isLoading ? 'Saving...' : isCreate ? 'Create Course' : 'Save Changes'}
+            {isLoadingInitial ? 'Loading...' : isLoading ? 'Saving...' : isCreate ? 'Create Course' : 'Save Changes'}
           </button>
         </div>
       </form>

@@ -105,6 +105,11 @@ export const courseService = {
     await apiClient.delete(`/admin/courses/${id}`);
   },
 
+  bulkRemove: async (ids: string[]): Promise<number> => {
+    const { data } = await apiClient.post<{ deletedCount: number }>('/admin/courses/bulk-delete', { ids });
+    return data.deletedCount;
+  },
+
   listRelations: async (courseId: string): Promise<CourseRelation[]> => {
     const { data } = await apiClient.get<ApiResponse<CourseRelation[]>>(
       `/admin/courses/${courseId}/relations`,

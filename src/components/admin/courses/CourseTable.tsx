@@ -1,8 +1,7 @@
 // src/components/admin/courses/CourseTable.tsx
-import { useState } from 'react';
-import { MoreHorizontal } from 'lucide-react';
 import type { CourseSummary } from '../../../types/course';
 import { StatusBadge } from '../../admin/StatusBadge';
+import { RowActionMenu } from '../RowActionMenu';
 
 interface Props {
   data: CourseSummary[];
@@ -23,7 +22,6 @@ export default function CourseTable({
   onEdit,
   onDelete,
 }: Props) {
-  const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const allSelected = data.length > 0 && selectedIds.length === data.length;
 
   return (
@@ -93,22 +91,15 @@ export default function CourseTable({
                   <td className="p-4">
                     <StatusBadge status={c.status} />
                   </td>
-                  <td className="p-4 text-center relative">
-                    <button
-                      onClick={() => setActiveMenuId(activeMenuId === c.id ? null : c.id)}
-                      className="p-1 text-gray-400 hover:text-gray-700 rounded-md hover:bg-gray-100"
-                    >
-                      <MoreHorizontal className="size-4" />
-                    </button>
-                    {activeMenuId === c.id && (
-                      <div className="absolute right-6 top-10 w-44 bg-white rounded-lg border border-gray-200 shadow-xl p-1 z-30">
-                        <MenuItem onClick={() => { onView(c); setActiveMenuId(null); }}>View Detail</MenuItem>
-                        <MenuItem onClick={() => { onEdit(c); setActiveMenuId(null); }}>Edit Course</MenuItem>
-                        <MenuItem onClick={() => { onDelete(c); setActiveMenuId(null); }} danger>
-                          Delete Course
-                        </MenuItem>
-                      </div>
-                    )}
+                  <td className="p-4 text-center">
+                    <RowActionMenu
+                      label={`Actions for ${c.code}`}
+                      actions={[
+                        { label: 'View detail', onSelect: () => onView(c) },
+                        { label: 'Edit course', onSelect: () => onEdit(c) },
+                        { label: 'Delete course', onSelect: () => onDelete(c), danger: true },
+                      ]}
+                    />
                   </td>
                 </tr>
               );
@@ -117,26 +108,5 @@ export default function CourseTable({
         </table>
       </div>
     </div>
-  );
-}
-
-function MenuItem({
-  children,
-  onClick,
-  danger,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-md ${
-        danger ? 'text-red-600 hover:bg-red-50' : 'text-gray-700 hover:bg-gray-50'
-      }`}
-    >
-      {children}
-    </button>
   );
 }

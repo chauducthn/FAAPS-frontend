@@ -1,12 +1,14 @@
 // src/pages/admin/Courses.tsx
 import { useMemo, useState } from 'react';
-import { Plus, Search, ChevronDown } from 'lucide-react';
+import { Plus, Search, ChevronDown, Trash2 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   CourseTable,
   CourseFormModal,
   CourseDetailModal,
 } from '../../components/admin/courses';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
+import { Pagination } from '../../components/admin/Pagination';
 import {
   useCoursesQuery,
   useCourse,
@@ -19,6 +21,8 @@ import type {
   CourseSummary,
   CourseFilterParams,
 } from '../../types/course';
+
+const PAGE_SIZE = 10;
 import type { CreateCourseFormValues } from '../../validations/course.schema';
 
 export default function CoursesPage() {
@@ -32,6 +36,7 @@ export default function CoursesPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CourseSummary | null>(null);
   const [deleting, setDeleting] = useState<CourseSummary | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
 
   const params: CourseFilterParams = useMemo(
@@ -40,7 +45,7 @@ export default function CoursesPage() {
       status: status === 'ALL' ? undefined : (status as 'ACTIVE' | 'INACTIVE'),
       categoryId: categoryId === 'ALL' ? undefined : categoryId,
       page,
-      size: 20,
+      size: PAGE_SIZE,
     }),
     [debouncedSearch, status, categoryId, page],
   );
@@ -48,6 +53,7 @@ export default function CoursesPage() {
   const { data, isLoading, isError } = useCoursesQuery(params);
   const categoriesQuery = useCourseCategoriesQuery();
   const viewingQuery = useCourse(viewingId);
+  const editingQuery = useCourse(formOpen && editing ? editing.id : null);
 
   const {
     create,
@@ -56,18 +62,19 @@ export default function CoursesPage() {
     isUpdating,
     remove,
     isRemoving,
+    bulkRemove,
+    isBulkRemoving,
+    updateRelation,
     addRelation,
     isAddingRelation,
+    isUpdatingRelation,
     removeRelation,
     isRemovingRelation,
   } = useCourseMutations();
 
   const items = data?.items ?? [];
-  const totalPages = data?.totalPages ?? 0;
+  const totalItems = data?.totalItems ?? 0;
   const categories = categoriesQuery.data ?? [];
-
-  // For the picker dropdown in CourseDetailModal
-  const allCoursesQuery = useCoursesQuery({ size: 200 });
 
   return (
     <div className="w-full space-y-6">
@@ -97,14 +104,22 @@ export default function CoursesPage() {
               type="text"
               placeholder="Search by code or name..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+                setSelectedIds([]);
+              }}
               className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-[#F26F21]"
             />
           </div>
           <div className="relative">
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPage(0);
+                setSelectedIds([]);
+              }}
               className="appearance-none border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-xs font-medium"
             >
               <option value="ALL">Status: All</option>
@@ -116,7 +131,11 @@ export default function CoursesPage() {
           <div className="relative">
             <select
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
+              onChange={(e) => {
+                setCategoryId(e.target.value);
+                setPage(0);
+                setSelectedIds([]);
+              }}
               className="appearance-none border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-xs font-medium"
             >
               <option value="ALL">Category: All</option>
@@ -130,6 +149,31 @@ export default function CoursesPage() {
           </div>
         </div>
       </div>
+
+      {selectedIds.length > 0 && (
+        <div className="flex items-center justify-between rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-xs">
+          <span className="font-semibold text-gray-800">{selectedIds.length} selected</span>
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setSelectedIds([])} className="rounded-lg px-3 py-1.5 font-semibold text-gray-600 hover:bg-white">
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                const blocked = items.filter((c) => selectedIds.includes(c.id) && c.usedInCurriculumCount > 0);
+                if (blocked.length > 0) {
+                  toast.error(`Cannot delete ${blocked.map((c) => c.code).join(', ')}: still used in a curriculum. Unselect them first.`);
+                  return;
+                }
+                setBulkDeleting(true);
+              }}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 font-bold text-white hover:bg-red-700"
+            >
+              <Trash2 className="size-3.5" /> Delete selected
+            </button>
+          </div>
+        </div>
+      )}
 
       {isLoading && <p className="text-xs text-gray-500">Loading courses...</p>}
       {isError && (
@@ -150,69 +194,62 @@ export default function CoursesPage() {
             setEditing(c);
             setFormOpen(true);
           }}
-          onDelete={(c) => setDeleting(c)}
+          onDelete={(c) => {
+            // The backend answers 500 for a course that is still in a curriculum, so say why before asking.
+            if (c.usedInCurriculumCount > 0) {
+              toast.error(`${c.code} is used in ${c.usedInCurriculumCount} curriculum${c.usedInCurriculumCount === 1 ? '' : 's'}. Remove it from them first.`);
+              return;
+            }
+            setDeleting(c);
+          }}
         />
       )}
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>
-            Page {page + 1} of {totalPages}
-          </span>
-          <div className="flex items-center gap-1">
-            <button
-              disabled={page === 0}
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              className="px-2.5 py-1 hover:text-gray-700 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              disabled={page + 1 >= totalPages}
-              onClick={() => setPage((p) => p + 1)}
-              className="px-2.5 py-1 hover:text-gray-700 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+      {!isLoading && !isError && (
+        <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-white">
+          <Pagination
+            page={page}
+            pageSize={PAGE_SIZE}
+            total={totalItems}
+            noun="courses"
+            onChange={(p) => {
+              setPage(p);
+              setSelectedIds([]);
+            }}
+          />
         </div>
       )}
 
       <CourseFormModal
         open={formOpen}
         mode={editing ? 'edit' : 'create'}
-        initial={editing}
+        initial={editing ? (editingQuery.data ?? null) : null}
+        isLoadingInitial={!!editing && editingQuery.isLoading}
         categories={categories}
         isLoading={isCreating || isUpdating}
         onClose={() => setFormOpen(false)}
         onSubmit={async (values: CreateCourseFormValues) => {
-          if (editing) {
-            await update({ id: editing.id, body: values });
-          } else {
-            await create(values);
+          try {
+            if (editing) {
+              await update({ id: editing.id, body: values });
+            } else {
+              await create(values);
+            }
+            setFormOpen(false);
+          } catch {
+            // The error toast is shown by the mutation / global handler; keep the form open to correct it.
           }
-          setFormOpen(false);
         }}
       />
 
       <CourseDetailModal
         open={!!viewingId}
         course={(viewingQuery.data as CourseDetail | undefined) ?? null}
-        availableCourses={(allCoursesQuery.data?.items ?? []).map((c) => ({
-          id: c.id,
-          code: c.code,
-          name: c.name,
-        }))}
-        isSubmitting={isAddingRelation || isRemovingRelation}
+        isSubmitting={isAddingRelation || isRemovingRelation || isUpdatingRelation}
         onClose={() => setViewingId(null)}
-        onAddRelation={(rel) =>
-          viewingId &&
-          addRelation({ courseId: viewingId, body: rel })
-        }
-        onRemoveRelation={(relationId) =>
-          viewingId &&
-          removeRelation({ courseId: viewingId, relationId })
-        }
+        onAddRelation={(rel) => addRelation({ courseId: viewingId as string, body: rel })}
+        onUpdateRelation={(relationId, body) => updateRelation({ courseId: viewingId as string, relationId, body })}
+        onRemoveRelation={(relationId) => removeRelation({ courseId: viewingId as string, relationId })}
       />
 
       <ConfirmDialog
@@ -229,8 +266,31 @@ export default function CoursesPage() {
         onCancel={() => setDeleting(null)}
         onConfirm={async () => {
           if (!deleting) return;
-          await remove(deleting.id);
+          try {
+            await remove(deleting.id);
+          } catch {
+            // toast shown by the error handler (e.g. course is still used in a curriculum)
+          }
           setDeleting(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={bulkDeleting}
+        title="Delete selected courses?"
+        message={`Delete ${selectedIds.length} selected course${selectedIds.length === 1 ? '' : 's'}? Courses used in a curriculum or required by another course cannot be deleted.`}
+        confirmLabel="Delete"
+        destructive
+        isLoading={isBulkRemoving}
+        onCancel={() => setBulkDeleting(false)}
+        onConfirm={async () => {
+          try {
+            await bulkRemove(selectedIds);
+            setSelectedIds([]);
+          } catch {
+            // toast shown by the error handler
+          }
+          setBulkDeleting(false);
         }}
       />
     </div>
