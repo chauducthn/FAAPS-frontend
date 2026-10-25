@@ -26,7 +26,7 @@ export const appointmentService = {
     await post<void>('/advisor/availability', body);
   },
 
-  /** Student only: 30-minute slots that are still free on the given date. */
+  /** Student only: slots that are still free on the given date. */
   getAvailableSlots: async (date: string, advisorId?: string): Promise<AvailableSlot[]> => {
     const { data } = await apiClient.get<AvailableSlot[]>('/appointments/available-slots', {
       params: { date, ...(advisorId ? { advisorId } : {}) },

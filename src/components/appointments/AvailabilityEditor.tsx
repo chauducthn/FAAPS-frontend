@@ -13,7 +13,7 @@ interface AvailabilityEditorProps {
   initialSlots?: AvailabilitySlot[];
 }
 
-/** Configure the weekly availability published to students (30-minute grid). */
+/** Configure the weekly availability published to students. */
 export function AvailabilityEditor({ initialSlots }: AvailabilityEditorProps) {
   const [slots, setSlots] = useState<AvailabilitySlot[]>(initialSlots ?? []);
   const mutation = useConfigureAvailabilityMutation();
@@ -43,7 +43,7 @@ export function AvailabilityEditor({ initialSlots }: AvailabilityEditorProps) {
         <div>
           <h2 className="text-sm font-semibold text-[#151c27]">Weekly availability</h2>
           <p className="mt-0.5 text-[13px] text-[#555f6f]">
-            Publish the time slots students can book. Each block is 30 minutes.
+            Publish the time slots students can book.
           </p>
         </div>
         <button

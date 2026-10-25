@@ -54,6 +54,19 @@ export const formatTime = (date: Date): string => date.toLocaleTimeString('en-US
 /** "09:00" for an ISO string. */
 export const formatIsoTime = (iso: string): string => formatTime(new Date(iso));
 
+/** Minutes between two ISO date-times (rounded). Null when invalid. */
+export const slotDurationMinutes = (startIso: string, endIso: string): number | null => {
+  const ms = new Date(endIso).getTime() - new Date(startIso).getTime();
+  if (!Number.isFinite(ms) || ms <= 0) return null;
+  return Math.round(ms / 60000);
+};
+
+/** "09:00 – 09:30" for a slot. Falls back to just the start when the end is missing. */
+export const formatSlotRange = (startIso: string, endIso?: string): string => {
+  if (!endIso) return formatIsoTime(startIso);
+  return `${formatIsoTime(startIso)} – ${formatIsoTime(endIso)}`;
+};
+
 const dayFmt: Intl.DateTimeFormatOptions = { weekday: 'short', month: 'short', day: '2-digit' };
 
 /** "Oct 25, 2026" for a Date. */

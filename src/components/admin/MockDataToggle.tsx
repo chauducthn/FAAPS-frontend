@@ -1,18 +1,37 @@
 // src/components/admin/MockDataToggle.tsx
-// Nút bật/tắt dữ liệu giả cho khu vực quản trị AI. Khi BẬT, các trang AI dùng dữ liệu
-// từ src/mocks/ai.ts nên không cần backend; khi TẮT, chúng gọi API thật.
+// Nút bật/tắt dữ liệu giả. Khi BẬT, các trang dùng scope đó đọc dữ liệu từ src/mocks/*
+// nên không cần backend; khi TẮT, chúng gọi API thật.
+//
+// scope='ai'     → khu vực quản trị AI (src/mocks/ai.ts), biến môi trường VITE_MOCK_AI.
+// scope='portal' → Student Portal / Advisor Portal (src/mocks/advising.ts), VITE_MOCK_PORTAL.
 
 import { FlaskConical, Wifi } from 'lucide-react';
-import { useMockAi, toggleMockAi } from '../../mocks';
+import {
+  toggleMockAi,
+  toggleMockPortal,
+  useMockAi,
+  useMockPortal,
+  type MockScope,
+} from '../../mocks';
 import { cn } from '@/lib/utils';
 
-export function MockDataToggle({ className }: { className?: string }) {
-  const enabled = useMockAi();
+export function MockDataToggle({
+  className,
+  scope = 'ai',
+}: {
+  className?: string;
+  scope?: MockScope;
+}) {
+  // Gọi cả hai hook ở mọi lần render để không vi phạm rules of hooks,
+  // rồi chọn giá trị theo scope.
+  const aiEnabled = useMockAi();
+  const portalEnabled = useMockPortal();
+  const enabled = scope === 'portal' ? portalEnabled : aiEnabled;
 
   return (
     <button
       type="button"
-      onClick={toggleMockAi}
+      onClick={scope === 'portal' ? toggleMockPortal : toggleMockAi}
       aria-pressed={enabled}
       title={
         enabled
@@ -34,8 +53,10 @@ export function MockDataToggle({ className }: { className?: string }) {
 }
 
 /** Banner hiển thị ở đầu trang khi đang chạy với dữ liệu giả. */
-export function MockDataBanner({ className }: { className?: string }) {
-  const enabled = useMockAi();
+export function MockDataBanner({ className, scope = 'ai' }: { className?: string; scope?: MockScope }) {
+  const aiEnabled = useMockAi();
+  const portalEnabled = useMockPortal();
+  const enabled = scope === 'portal' ? portalEnabled : aiEnabled;
   if (!enabled) return null;
 
   return (

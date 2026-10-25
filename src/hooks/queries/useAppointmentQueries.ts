@@ -14,7 +14,7 @@ export const APPOINTMENT_QUERY_KEYS = {
 };
 
 /**
- * Free 30-minute slots for one day. Disabled until a date is chosen.
+ * Free slots for one day. Disabled until a date is chosen.
  * The advisor is optional: without it the backend falls back to the student's assigned advisor.
  */
 export const useAvailableSlots = (date: string | null, advisorId?: string) =>

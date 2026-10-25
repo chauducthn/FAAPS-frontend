@@ -3,7 +3,6 @@ import { ProtectedRoute } from './ProtectedRoute';
 import Login from '../pages/auth/Login';
 import AuthCallback from '../pages/auth/AuthCallback';
 import LandingPage from '../pages/landing';
-import DashboardLayout from '../components/layout/admin/DashboardLayout';
 import AdminLayout from '../components/layout/admin/AdminLayout';
 import AdminDashboard from '../pages/admin/Dashboard';
 import UserAccounts from '../pages/admin/UserAccounts';
@@ -22,10 +21,14 @@ import CoursesPage from '../pages/admin/Courses';
 import AcademicRulesPage from '../pages/admin/AcademicRules';
 import AiConfigPage from '../pages/admin/AiConfig';
 import AiPerformancePage from '../pages/admin/AiPerformance';
+import StudentLayout from '../components/layout/student/StudentLayout';
+import AdvisorLayout from '../components/layout/advisor/AdvisorLayout';
 import StudentBookAppointment from '../pages/student/BookAppointment';
 import StudentPortal from '../pages/student/StudentPortal';
+import StudentAdvisingRequests from '../pages/student/AdvisingRequests';
 import AdvisorAppointments from '../pages/advisor/AdvisorAppointments';
 import AdvisorPortal from '../pages/advisor/AdvisorPortal';
+import AdvisorAdvisingRequests from '../pages/advisor/AdvisorAdvisingRequests';
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -59,23 +62,30 @@ export const router = createBrowserRouter([
     ],
   },
   {
-    element: <DashboardLayout />,
+    element: <StudentLayout />,
     children: [
       {
         element: <ProtectedRoute allowedRoles={['STUDENT']} />,
         children: [
           { path: '/student', element: <StudentPortal /> },
+          { path: '/student/advising-requests', element: <StudentAdvisingRequests /> },
           { path: '/student/appointments', element: <StudentBookAppointment /> },
         ],
       },
+    ],
+  },
+  {
+    element: <AdvisorLayout />,
+    children: [
       {
         element: <ProtectedRoute allowedRoles={['ADVISOR']} />,
         children: [
           { path: '/advisor', element: <AdvisorPortal /> },
+          { path: '/advisor/advising-requests', element: <AdvisorAdvisingRequests /> },
           { path: '/advisor/appointments', element: <AdvisorAppointments /> },
         ],
-      }
-    ]
+      },
+    ],
   },
   { path: '*', element: <Navigate to="/login" replace /> },
 ]);
