@@ -1,6 +1,9 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { adminService } from '../../services/adminService';
-import type { AiReportStatus } from '../../types/admin';
+
+// The AI report queries live in useAdminAiReports; re-exported here so the dashboard
+// table and the reports page share one cache entry.
+export { useAiReports } from './useAdminAiReports';
 
 export const useDashboardAccounts = () =>
   useQuery({
@@ -20,17 +23,5 @@ export const useNewStudents = (startMonth: string, endMonth: string, enabled = t
     queryKey: ['admin', 'dashboard', 'new-students', startMonth, endMonth, majorId ?? null],
     queryFn: () => adminService.getNewStudents({ startMonth, endMonth, majorId: majorId || undefined }),
     enabled,
-    placeholderData: keepPreviousData,
-  });
-
-export const useAiReports = (params: {
-  status?: AiReportStatus;
-  search?: string;
-  page?: number;
-  size?: number;
-}) =>
-  useQuery({
-    queryKey: ['admin', 'ai-reports', params],
-    queryFn: () => adminService.getAiReports(params),
     placeholderData: keepPreviousData,
   });

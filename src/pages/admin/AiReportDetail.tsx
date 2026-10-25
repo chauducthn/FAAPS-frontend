@@ -4,11 +4,23 @@ import { ArrowLeft, ArrowRight, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
 import { ReportStatusBadge, formatDateTime, shortReportId } from '../../components/admin/AiReportBits';
+import { MockDataBanner, MockDataToggle } from '../../components/admin/MockDataToggle';
 import { useAiReport, useResolveAiReport } from '../../hooks/queries/useAdminAiReports';
 import { apiErrorMessage } from '../../lib/apiError';
 import { cn } from '@/lib/utils';
 
 const MAX_NOTE = 2000;
+
+/** Nhãn tiếng Việt cho lý do report (backend trả mã enum). */
+const REASON_LABEL: Record<string, string> = {
+  HALLUCINATION: 'Hallucination',
+  OUTDATED_CURRICULUM: 'Outdated curriculum',
+  IRRELEVANT_ANSWER: 'Irrelevant answer',
+  INCOMPLETE_INFORMATION: 'Incomplete information',
+  WRONG_COURSE_CODE: 'Wrong course code',
+  MISSING_SOURCE: 'Missing source',
+  POLICY_MISREAD: 'Policy misread',
+};
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -104,6 +116,8 @@ export default function AiReportDetail() {
         <h1 className="mt-3 text-2xl font-semibold text-[#151c27]">Report Details</h1>
       </div>
 
+      <MockDataBanner />
+
       <section className="rounded-xl bg-white p-5 shadow-sm sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -127,7 +141,7 @@ export default function AiReportDetail() {
           <Field label="Student name">{report.studentName}</Field>
           <Field label="Reported at">{formatDateTime(report.createdAt)}</Field>
           <Field label="Reported responses">{flagged.length}</Field>
-          <Field label="Reason">{report.reason}</Field>
+          <Field label="Reason">{REASON_LABEL[report.reason] ?? report.reason}</Field>
         </div>
       </section>
 
@@ -140,7 +154,7 @@ export default function AiReportDetail() {
               {report.studentCode ? ` (${report.studentCode})` : ''}
             </p>
             <span className="mt-2 inline-block rounded bg-[#fef2f2] px-2 py-0.5 text-[11px] font-bold uppercase text-[#b91c1c]">
-              {report.reason}
+              {REASON_LABEL[report.reason] ?? report.reason}
             </span>
             <div className="mt-3 rounded-lg bg-[#eef2ff]/70 p-3 text-[13px] text-[#151c27]">
               <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Student note</p>
