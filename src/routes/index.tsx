@@ -26,6 +26,8 @@ import AdvisorLayout from '../components/layout/advisor/AdvisorLayout';
 import StudentBookAppointment from '../pages/student/BookAppointment';
 import StudentPortal from '../pages/student/StudentPortal';
 import StudentAdvisingRequests from '../pages/student/AdvisingRequests';
+import StudentAiChat from '../pages/student/AiChat';
+import StudentAiRoadmap from '../pages/student/AiRoadmap';
 import AdvisorAppointments from '../pages/advisor/AdvisorAppointments';
 import AdvisorPortal from '../pages/advisor/AdvisorPortal';
 import AdvisorAdvisingRequests from '../pages/advisor/AdvisorAdvisingRequests';
@@ -68,6 +70,8 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute allowedRoles={['STUDENT']} />,
         children: [
           { path: '/student', element: <StudentPortal /> },
+          { path: '/student/ai-chat', element: <StudentAiChat /> },
+          { path: '/student/ai-roadmap', element: <StudentAiRoadmap /> },
           { path: '/student/advising-requests', element: <StudentAdvisingRequests /> },
           { path: '/student/appointments', element: <StudentBookAppointment /> },
         ],

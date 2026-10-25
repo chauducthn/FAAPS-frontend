@@ -2,7 +2,7 @@
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import { ApiErrorResponse } from '../types/api';
-// import { SESSION_EXPIRED_URL } from './authErrors'; // DEV MODE: tạm comment redirect về /login
+import { SESSION_EXPIRED_URL } from './authErrors';
 
 const SUPPRESSED_PATHS = ['/auth/me', '/auth/csrf'];
 
@@ -46,17 +46,11 @@ export const handleApiError = (error: unknown) => {
     }
 
     // The session ended and could not be refreshed: leave the screen and explain why on the login page.
-    // DEV MODE: redirect bị comment để không bị đẩy về /login?error=session-expired khi backend chưa chạy.
-    // Khôi phục lại khi backend hoạt động:
-    //
-    // if (status === 401) {
-    //   if (!window.location.pathname.startsWith('/login')) {
-    //     window.location.assign(SESSION_EXPIRED_URL);
-    //   }
-    //   return errorData;
-    // }
     if (status === 401) {
-      return errorData;
+      if (!window.location.pathname.startsWith('/login')) {
+        window.location.assign(SESSION_EXPIRED_URL);
+      }
+      return;
     }
 
     // Spring endpoints reply with { error }, the shared contract uses { message }.
@@ -79,7 +73,7 @@ export const handleApiError = (error: unknown) => {
       default:
         showError('http:network', 'Cannot reach the server. Please check your connection.');
     }
-    return errorData;
+    return;
   }
 
   showError('http:unknown', 'An unexpected error occurred.');

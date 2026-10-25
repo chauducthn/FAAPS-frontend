@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { CalendarClock, MessageSquareText } from 'lucide-react';
+import { BotMessageSquare, CalendarClock, MessageSquareText, Route } from 'lucide-react';
 import { useAuth } from '../../stores/useAuth';
 import { useMyAdvisor, useMyProfile } from '../../hooks/queries/useStudentQueries';
 import { AdvisorInfoCard } from '../../components/student/AdvisorInfoCard';
@@ -72,6 +72,40 @@ export default function StudentPortal() {
 
       {/* Lối tắt */}
       <div className="grid gap-4 sm:grid-cols-2">
+        <Link
+          to="/student/ai-chat"
+          className="flex items-center justify-between rounded-xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-lg bg-orange-100 text-[#F26F21]">
+              <BotMessageSquare className="size-5" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-[#151c27]">Chat với AI</p>
+              <p className="text-[13px] text-[#555f6f]">
+                Hỏi về môn học, quy chế và lộ trình học tập.
+              </p>
+            </div>
+          </div>
+          <span className="text-[13px] font-semibold text-[#F26F21]">Mở</span>
+        </Link>
+
+        <Link
+          to="/student/ai-roadmap"
+          className="flex items-center justify-between rounded-xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+        >
+          <div className="flex items-center gap-3">
+            <span className="flex size-10 items-center justify-center rounded-lg bg-orange-100 text-[#F26F21]">
+              <Route className="size-5" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-[#151c27]">Lộ trình học</p>
+              <p className="text-[13px] text-[#555f6f]">Timeline từng học kỳ do AI sinh.</p>
+            </div>
+          </div>
+          <span className="text-[13px] font-semibold text-[#F26F21]">Mở</span>
+        </Link>
+
         <Link
           to="/student/advising-requests"
           className="flex items-center justify-between rounded-xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md"

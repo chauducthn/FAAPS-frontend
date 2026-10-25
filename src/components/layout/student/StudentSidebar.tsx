@@ -1,7 +1,7 @@
 // src/components/layout/student/StudentSidebar.tsx
 // Menu điều hướng riêng cho Sinh viên.
 
-import { CalendarClock, LayoutDashboard, MessageSquareText } from 'lucide-react';
+import { BotMessageSquare, CalendarClock, LayoutDashboard, MessageSquareText, Route } from 'lucide-react';
 import {
   PortalSidebar,
   type PortalNavSection,
@@ -12,6 +12,14 @@ export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
     items: [{ label: 'Trang chủ', to: '/student', icon: LayoutDashboard, end: true }],
   },
   {
+    title: 'Học tập',
+    items: [
+      { label: 'Chat AI', to: '/student/ai-chat', icon: BotMessageSquare },
+      { label: 'Lộ trình học', to: '/student/ai-roadmap', icon: Route },
+    ],
+  },
+  {
+    title: 'Tư vấn',
     items: [
       { label: 'Yêu cầu tư vấn', to: '/student/advising-requests', icon: MessageSquareText },
       { label: 'Đặt lịch hẹn', to: '/student/appointments', icon: CalendarClock },
