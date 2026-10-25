@@ -40,13 +40,6 @@ const navGroups: NavGroup[] = [
       { name: 'Cohorts', path: '/admin/cohorts' },
     ],
   },
-  {
-    title: 'AI',
-    items: [
-      { name: 'AI Configuration', path: '/admin/ai-config' },
-      { name: 'AI Performance', path: '/admin/ai-performance' },
-    ],
-  },
 ];
 
 export default function AdminSidebar() {

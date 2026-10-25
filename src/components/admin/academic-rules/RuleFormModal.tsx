@@ -1,6 +1,6 @@
 // src/components/admin/academic-rules/RuleFormModal.tsx
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Modal } from '../../ui/Modal';
 import {
@@ -33,6 +33,7 @@ export default function RuleFormModal({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     formState: { errors },
@@ -120,38 +121,21 @@ export default function RuleFormModal({
           required
           error={errors.condition?.message as string | undefined}
         >
-          <textarea
-            rows={4}
-            placeholder='{"min_gpa": 5.0, "min_credits": 30}'
-            {...register('condition', {
-              setValueAs: (v) => {
-                try {
-                  return typeof v === 'string' && v.trim() ? JSON.parse(v) : {};
-                } catch {
-                  return v;
-                }
-              },
-            })}
-            className="w-full px-3 py-2 font-mono border border-gray-200 rounded-lg focus:outline-none focus:border-[#F26F21]"
-          />
+          <Controller name="condition" control={control} render={({ field }) => (
+            <textarea rows={4} placeholder='{"min_gpa": 5.0, "min_credits": 30}'
+              value={jsonText(field.value)} onBlur={field.onBlur}
+              onChange={(event) => field.onChange(parseJson(event.target.value, false))}
+              className="w-full px-3 py-2 font-mono border border-gray-200 rounded-lg focus:outline-none focus:border-[#F26F21]" />
+          )} />
         </Field>
 
         <Field label="Restriction (JSON, optional)">
-          <textarea
-            rows={3}
-            placeholder='{"block_registration": true}'
-            {...register('restriction', {
-              setValueAs: (v) => {
-                if (typeof v !== 'string' || !v.trim()) return undefined;
-                try {
-                  return JSON.parse(v);
-                } catch {
-                  return v;
-                }
-              },
-            })}
-            className="w-full px-3 py-2 font-mono border border-gray-200 rounded-lg focus:outline-none focus:border-[#F26F21]"
-          />
+          <Controller name="restriction" control={control} render={({ field }) => (
+            <textarea rows={3} placeholder='{"block_registration": true}'
+              value={jsonText(field.value)} onBlur={field.onBlur}
+              onChange={(event) => field.onChange(parseJson(event.target.value, true))}
+              className="w-full px-3 py-2 font-mono border border-gray-200 rounded-lg focus:outline-none focus:border-[#F26F21]" />
+          )} />
         </Field>
 
         <div className="grid grid-cols-3 gap-4">
@@ -208,6 +192,19 @@ export default function RuleFormModal({
       </form>
     </Modal>
   );
+}
+
+function jsonText(value: unknown): string {
+  return value == null ? '' : typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+}
+
+function parseJson(value: string, optional: boolean): unknown {
+  if (!value.trim()) return optional ? undefined : {};
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
 }
 
 function Field({

@@ -31,6 +31,13 @@ import StudentAiRoadmap from '../pages/student/AiRoadmap';
 import AdvisorAppointments from '../pages/advisor/AdvisorAppointments';
 import AdvisorPortal from '../pages/advisor/AdvisorPortal';
 import AdvisorAdvisingRequests from '../pages/advisor/AdvisorAdvisingRequests';
+import StudentOverview from '../pages/student/StudentOverview';
+import StudentProfile from '../pages/student/StudentProfile';
+import StudentTranscript from '../pages/student/StudentTranscript';
+import StudentCourses from '../pages/student/StudentCourses';
+import StudentPlans from '../pages/student/StudentPlans';
+import StudentAdvising from '../pages/student/StudentAdvising';
+import AdvisorConversationWorkspace from '../pages/advisor/AdvisorConversationWorkspace';
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -74,6 +81,12 @@ export const router = createBrowserRouter([
           { path: '/student/ai-roadmap', element: <StudentAiRoadmap /> },
           { path: '/student/advising-requests', element: <StudentAdvisingRequests /> },
           { path: '/student/appointments', element: <StudentBookAppointment /> },
+          { path: '/student/academic-overview', element: <StudentOverview /> },
+          { path: '/student/profile', element: <StudentProfile /> },
+          { path: '/student/transcript', element: <StudentTranscript /> },
+          { path: '/student/courses', element: <StudentCourses /> },
+          { path: '/student/plans', element: <StudentPlans /> },
+          { path: '/student/advising', element: <StudentAdvising /> },
         ],
       },
     ],
@@ -87,6 +100,7 @@ export const router = createBrowserRouter([
           { path: '/advisor', element: <AdvisorPortal /> },
           { path: '/advisor/advising-requests', element: <AdvisorAdvisingRequests /> },
           { path: '/advisor/appointments', element: <AdvisorAppointments /> },
+          { path: '/advisor/conversations', element: <AdvisorConversationWorkspace /> },
         ],
       },
     ],

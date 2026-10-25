@@ -22,7 +22,7 @@ export default function MajorFilterBar({
   return (
     <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-2xs space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-bold text-gray-800">Cohort {selectedCohort}</h3>
+        <h3 className="text-xs font-bold text-gray-800">Cohort {selectedCohort === 'ALL' ? 'All' : selectedCohort}</h3>
         <button
           onClick={onClearContext}
           className="text-xs font-semibold text-[#F26F21] hover:underline cursor-pointer"
@@ -52,9 +52,8 @@ export default function MajorFilterBar({
               onChange={(e) => onCohortChange(e.target.value)}
               className="appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-xs font-medium text-gray-700 focus:outline-none focus:border-[#F26F21] cursor-pointer"
             >
-              <option value="K18">Cohort: K18</option>
-              <option value="K19">Cohort: K19</option>
-              <option value="K20">Cohort: K20</option>
+              <option value="ALL">Cohort: All</option>
+              <option value="K99DEMO">Cohort: K99DEMO</option>
             </select>
             <ChevronDown className="size-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
@@ -67,6 +66,7 @@ export default function MajorFilterBar({
             >
               <option value="ALL">Status: All</option>
               <option value="ACTIVE">Status: Active</option>
+              <option value="INACTIVE">Status: Inactive</option>
               <option value="DRAFT">Status: Draft</option>
             </select>
             <ChevronDown className="size-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />

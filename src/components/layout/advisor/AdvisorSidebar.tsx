@@ -1,7 +1,7 @@
 // src/components/layout/advisor/AdvisorSidebar.tsx
 // Menu điều hướng riêng cho Cố vấn.
 
-import { CalendarDays, Inbox, LayoutDashboard } from 'lucide-react';
+import { CalendarDays, Inbox, LayoutDashboard, MessageSquareText } from 'lucide-react';
 import {
   PortalSidebar,
   type PortalNavSection,
@@ -14,6 +14,7 @@ export const ADVISOR_NAV_SECTIONS: PortalNavSection[] = [
   {
     items: [
       { label: 'Yêu cầu tư vấn', to: '/advisor/advising-requests', icon: Inbox },
+      { label: 'Trao đổi tư vấn', to: '/advisor/conversations', icon: MessageSquareText },
       { label: 'Lịch hẹn', to: '/advisor/appointments', icon: CalendarDays },
     ],
   },

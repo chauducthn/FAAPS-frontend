@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X, BookOpen } from 'lucide-react';
 import { CreateMajorDto } from '../../../types/major';
 
@@ -6,9 +6,11 @@ interface CreateMajorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreateMajorDto) => void;
+  initialData?: CreateMajorDto;
+  isSaving?: boolean;
 }
 
-export default function CreateMajorModal({ isOpen, onClose, onSubmit }: CreateMajorModalProps) {
+export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialData, isSaving = false }: CreateMajorModalProps) {
   const [formData, setFormData] = useState<CreateMajorDto>({
     code: '',
     name: '',
@@ -17,12 +19,15 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit }: CreateMa
     durationYears: 3.5,
   });
 
+  useEffect(() => {
+    if (isOpen) setFormData(initialData ?? { code: '', name: '', description: '', totalCredits: 144, durationYears: 3.5 });
+  }, [isOpen, initialData?.code, initialData?.name, initialData?.description, initialData?.totalCredits, initialData?.durationYears]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
-    setFormData({ code: '', name: '', description: '', totalCredits: 144, durationYears: 3.5 });
   };
 
   return (
@@ -35,8 +40,8 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit }: CreateMa
               <BookOpen className="size-4" />
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 text-sm">Create New Major</h3>
-              <p className="text-[11px] text-gray-400">Add a new major to the master data</p>
+              <h3 className="font-bold text-gray-900 text-sm">{initialData ? 'Edit Major' : 'Create New Major'}</h3>
+              <p className="text-[11px] text-gray-400">{initialData ? 'Update major details' : 'Add a new major to the master data'}</p>
             </div>
           </div>
           <button
@@ -128,9 +133,10 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit }: CreateMa
             </button>
             <button
               type="submit"
+              disabled={isSaving}
               className="px-4 py-2 bg-[#F26F21] hover:bg-[#e05f14] text-white font-bold rounded-lg transition-colors cursor-pointer shadow-xs"
             >
-              Create Major
+              {isSaving ? 'Saving...' : initialData ? 'Save Changes' : 'Create Major'}
             </button>
           </div>
         </form>

@@ -6,7 +6,7 @@ export interface MajorItem {
   code: string;
   name: string;
   cohort: string;
-  status: 'ACTIVE' | 'DRAFT';
+  status: 'ACTIVE' | 'INACTIVE' | 'DRAFT';
 }
 
 interface MajorTableProps {
@@ -15,6 +15,10 @@ interface MajorTableProps {
   onSelectAll: (checked: boolean) => void;
   onSelectRow: (id: string) => void;
   onEditMajor: (item: MajorItem) => void;
+  page: number;
+  totalItems: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
 }
 
 export default function MajorTable({
@@ -23,6 +27,10 @@ export default function MajorTable({
   onSelectAll,
   onSelectRow,
   onEditMajor,
+  page,
+  totalItems,
+  totalPages,
+  onPageChange,
 }: MajorTableProps) {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
@@ -116,15 +124,15 @@ export default function MajorTable({
 
       {/* Pagination Footer */}
       <div className="p-4 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-        <span>Showing 1-6 of 6 · 20 per page</span>
+        <span>Showing {totalItems === 0 ? 0 : page * 20 + 1}-{Math.min((page + 1) * 20, totalItems)} of {totalItems}</span>
         <div className="flex items-center gap-1 font-medium">
-          <button className="px-2.5 py-1 text-gray-400 hover:text-gray-700 disabled:opacity-50">
+          <button disabled={page === 0} onClick={() => onPageChange(page - 1)} className="px-2.5 py-1 text-gray-400 hover:text-gray-700 disabled:opacity-50">
             Previous
           </button>
           <button className="w-6 h-6 bg-[#F26F21] text-white rounded-md text-xs font-bold flex items-center justify-center shadow-2xs">
-            1
+            {page + 1}
           </button>
-          <button className="px-2.5 py-1 text-gray-400 hover:text-gray-700">Next ›</button>
+          <button disabled={page + 1 >= totalPages} onClick={() => onPageChange(page + 1)} className="px-2.5 py-1 text-gray-400 hover:text-gray-700 disabled:opacity-50">Next ›</button>
         </div>
       </div>
     </div>

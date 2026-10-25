@@ -4,6 +4,7 @@ import { Plus, Search, ChevronDown } from 'lucide-react';
 import { RuleTable, RuleFormModal } from '../../components/admin/academic-rules';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
 import { useAcademicRulesQuery } from '../../hooks/queries/useAcademicRulesQuery';
+import { useCurriculumsQuery } from '../../hooks/queries/useCurriculumsQuery';
 import { useAcademicRuleMutations } from '../../hooks/mutations/useAcademicRuleMutations';
 import { useDebounce } from '../../hooks/useDebounce';
 import type {
@@ -12,12 +13,6 @@ import type {
 } from '../../types/academic-rule';
 import { POLICY_TYPES } from '../../validations/academic-rule.schema';
 import type { CreateAcademicRuleFormValues } from '../../validations/academic-rule.schema';
-
-// In real impl: curriculums dropdown comes from BE
-const FAKE_CURRICULUMS = [
-  { id: '11111111-1111-1111-1111-111111111111', name: 'SE Curriculum K18' },
-  { id: '22222222-2222-2222-2222-222222222222', name: 'AI Curriculum K19' },
-];
 
 export default function AcademicRulesPage() {
   const [search, setSearch] = useState('');
@@ -42,6 +37,7 @@ export default function AcademicRulesPage() {
   );
 
   const { data, isLoading } = useAcademicRulesQuery(params);
+  const curriculums = useCurriculumsQuery('curriculum', { page: 0, size: 100 });
   const {
     create,
     isCreating,
@@ -144,7 +140,10 @@ export default function AcademicRulesPage() {
         open={formOpen}
         mode={editing ? 'edit' : 'create'}
         initial={editing}
-        curriculums={FAKE_CURRICULUMS}
+        curriculums={(curriculums.data?.items ?? []).map((item) => ({
+          id: item.id,
+          name: `${item.majorCode}_${item.version} - ${item.name}`,
+        }))}
         isLoading={isCreating || isUpdating}
         onClose={() => setFormOpen(false)}
         onSubmit={async (values: CreateAcademicRuleFormValues) => {

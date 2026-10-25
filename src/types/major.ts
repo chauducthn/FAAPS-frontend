@@ -1,4 +1,4 @@
-export type MajorStatus = 'ACTIVE' | 'INACTIVE';
+export type MajorStatus = 'ACTIVE' | 'INACTIVE' | 'DRAFT';
 
 export interface Major {
   id: string;
@@ -8,11 +8,13 @@ export interface Major {
   totalCredits: number;
   durationYears: number;
   status: MajorStatus;
+  cohort: string;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface MajorFilterParams {
+  cohort?: string;
   search?: string;
   status?: MajorStatus | 'ALL';
   page?: number;
