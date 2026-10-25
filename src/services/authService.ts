@@ -1,16 +1,14 @@
 import axios from 'axios';
 import { apiClient } from '../lib/apiClient';
+import { getCsrfHeaders } from '../lib/csrf';
 import type { User } from '../types/auth';
-
-const csrfHeaders = async () => {
-  const { data } = await apiClient.get<{ headerName: string; token: string }>('/auth/csrf');
-  return { [data.headerName]: data.token };
-};
 
 export const authService = {
   loginAdmin: async (credentials: { email: string; password: string }): Promise<User> => {
+    // Backend flow: GET /auth/csrf sets the XSRF-TOKEN cookie and returns
+    // { headerName, token } -> POST login carries the token in that header.
     const { data } = await apiClient.post<User>('/auth/admin/login', credentials, {
-      headers: await csrfHeaders(),
+      headers: await getCsrfHeaders(),
     });
     return data;
   },
@@ -28,6 +26,6 @@ export const authService = {
   },
 
   logout: async (): Promise<void> => {
-    await apiClient.post('/auth/logout', null, { headers: await csrfHeaders() });
+    await apiClient.post('/auth/logout', null, { headers: await getCsrfHeaders() });
   },
 };

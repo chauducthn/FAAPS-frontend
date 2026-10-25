@@ -1,18 +1,54 @@
+// src/services/appointmentService.ts
 import { apiClient } from '../lib/apiClient';
-import type { AdminPage, Appointment, AppointmentStatus, AppointmentSummary } from '../types/admin';
+import { getCsrfHeaders } from '../lib/csrf';
+import type {
+  AdvisorAppointment,
+  AvailabilitySlot,
+  AvailableSlot,
+  BookAppointmentDto,
+  BookedAppointment,
+  ConfigureAvailabilityDto,
+  UpdateAppointmentStatusDto,
+} from '../types/appointment';
+
+const post = async <T>(url: string, body: unknown): Promise<T> =>
+  (await apiClient.post<T>(url, body, { headers: await getCsrfHeaders() })).data;
 
 export const appointmentService = {
-  getAppointments: async (params: {
-    status?: AppointmentStatus;
-    search?: string;
-    page?: number;
-    size?: number;
-  }): Promise<AdminPage<Appointment>> =>
-    (await apiClient.get<AdminPage<Appointment>>('/admin/appointments', { params })).data,
+  /** Advisor only: the current weekly availability template. */
+  getAvailability: async (): Promise<AvailabilitySlot[]> => {
+    const { data } = await apiClient.get<AvailabilitySlot[]>('/advisor/availability');
+    return data ?? [];
+  },
 
-  getSummary: async (): Promise<AppointmentSummary> =>
-    (await apiClient.get<AppointmentSummary>('/admin/appointments/summary')).data,
+  /** Advisor only: replace the weekly availability template. */
+  configureAvailability: async (body: ConfigureAvailabilityDto): Promise<void> => {
+    await post<void>('/advisor/availability', body);
+  },
 
-  getAppointment: async (id: string): Promise<Appointment> =>
-    (await apiClient.get<Appointment>(`/admin/appointments/${id}`)).data,
+  /** Student only: 30-minute slots that are still free on the given date. */
+  getAvailableSlots: async (date: string, advisorId?: string): Promise<AvailableSlot[]> => {
+    const { data } = await apiClient.get<AvailableSlot[]>('/appointments/available-slots', {
+      params: { date, ...(advisorId ? { advisorId } : {}) },
+    });
+    return data ?? [];
+  },
+
+  /** Student only: book one slot. */
+  bookAppointment: async (body: BookAppointmentDto): Promise<BookedAppointment> =>
+    post<BookedAppointment>('/student/appointments', body),
+
+  /** Advisor only: accept or reject a pending appointment. */
+  updateAppointmentStatus: async (id: string, body: UpdateAppointmentStatusDto): Promise<BookedAppointment> =>
+    (
+      await apiClient.put<BookedAppointment>(`/advisor/appointments/${id}/status`, body, {
+        headers: await getCsrfHeaders(),
+      })
+    ).data,
+
+  /** Advisor only: the advisor's own appointments, for the weekly calendar. */
+  getAdvisorAppointments: async (params: { from: string; to: string }): Promise<AdvisorAppointment[]> => {
+    const { data } = await apiClient.get<AdvisorAppointment[]>('/advisor/appointments', { params });
+    return data ?? [];
+  },
 };

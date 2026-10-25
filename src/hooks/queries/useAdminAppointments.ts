@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { appointmentService } from '../../services/appointmentService';
+import { adminAppointmentService } from '../../services/admin/appointment.service';
 import type { AppointmentStatus } from '../../types/admin';
 
 export const useAppointments = (params: {
@@ -10,16 +10,16 @@ export const useAppointments = (params: {
 }) =>
   useQuery({
     queryKey: ['admin', 'appointments', 'list', params],
-    queryFn: () => appointmentService.getAppointments(params),
+    queryFn: () => adminAppointmentService.getAppointments(params),
     placeholderData: keepPreviousData,
   });
 
 export const useAppointmentSummary = () =>
-  useQuery({ queryKey: ['admin', 'appointments', 'summary'], queryFn: appointmentService.getSummary });
+  useQuery({ queryKey: ['admin', 'appointments', 'summary'], queryFn: adminAppointmentService.getSummary });
 
 export const useAppointment = (id: string | null) =>
   useQuery({
     queryKey: ['admin', 'appointments', 'detail', id],
-    queryFn: () => appointmentService.getAppointment(id as string),
+    queryFn: () => adminAppointmentService.getAppointment(id as string),
     enabled: !!id,
   });

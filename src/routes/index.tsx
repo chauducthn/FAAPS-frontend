@@ -22,9 +22,10 @@ import CoursesPage from '../pages/admin/Courses';
 import AcademicRulesPage from '../pages/admin/AcademicRules';
 import AiConfigPage from '../pages/admin/AiConfig';
 import AiPerformancePage from '../pages/admin/AiPerformance';
-
-const StudentPortal = () => <div className="bg-white p-6 rounded shadow">Student transcript and study roadmap</div>;
-const AdvisorPortal = () => <div className="bg-white p-6 rounded shadow">Advisor ticket management and advising support</div>;
+import StudentBookAppointment from '../pages/student/BookAppointment';
+import StudentPortal from '../pages/student/StudentPortal';
+import AdvisorAppointments from '../pages/advisor/AdvisorAppointments';
+import AdvisorPortal from '../pages/advisor/AdvisorPortal';
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -62,11 +63,17 @@ export const router = createBrowserRouter([
     children: [
       {
         element: <ProtectedRoute allowedRoles={['STUDENT']} />,
-        children: [{ path: '/student', element: <StudentPortal /> }],
+        children: [
+          { path: '/student', element: <StudentPortal /> },
+          { path: '/student/appointments', element: <StudentBookAppointment /> },
+        ],
       },
       {
         element: <ProtectedRoute allowedRoles={['ADVISOR']} />,
-        children: [{ path: '/advisor', element: <AdvisorPortal /> }],
+        children: [
+          { path: '/advisor', element: <AdvisorPortal /> },
+          { path: '/advisor/appointments', element: <AdvisorAppointments /> },
+        ],
       }
     ]
   },
