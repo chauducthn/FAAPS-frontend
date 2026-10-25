@@ -54,7 +54,7 @@ export default function BookAppointment() {
         <p className="text-xs text-[#555f6f]">Appointments / Book a session</p>
         <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">Book an Advisor Appointment</h1>
         <p className="mt-1 text-sm text-[#555f6f]">
-          Pick a date and a free 30-minute slot, then tell your advisor what you would like to discuss.
+          Pick a date and a free slot, then tell your advisor what you would like to discuss.
         </p>
         {user?.fullName && (
           <p className="mt-1 text-[13px] font-medium text-[#98a2b3]">Booking as {user.fullName}</p>

@@ -14,7 +14,7 @@ export type AppointmentDecision = 'ACCEPTED' | 'REJECTED';
 /** ISO weekday index used by the availability configuration: 1 = Monday ... 7 = Sunday. */
 export type IsoWeekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
-/** A 30-minute bookable window. Times are ISO-8601 date-times. */
+/** A bookable window. Times are ISO-8601 date-times. Duration comes from the backend (startTime/endTime). */
 export interface AvailableSlot {
   startTime: string;
   endTime: string;
