@@ -2,7 +2,7 @@
 // Trang "Lộ trình học" của sinh viên: form sinh roadmap + timeline đồ họa từ JSON AI trả về.
 
 import { RoadmapPanel } from '../../components/ai/RoadmapPanel';
-import { MockDataBanner } from '../../components/admin/MockDataToggle';
+
 
 export default function StudentAiRoadmap() {
   return (
@@ -15,7 +15,7 @@ export default function StudentAiRoadmap() {
         </p>
       </div>
 
-      <MockDataBanner scope="portal" />
+
 
       <RoadmapPanel />
     </div>

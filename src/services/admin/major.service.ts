@@ -45,4 +45,9 @@ export const majorService = {
   deleteMajor: async (id: string): Promise<void> => {
     await apiClient.delete(`/admin/majors/${id}`);
   },
+
+  bulkRemove: async (ids: string[]): Promise<number> => {
+    const { data } = await apiClient.post<{ deletedCount: number }>('/admin/majors/bulk-delete', { ids });
+    return data.deletedCount;
+  },
 };

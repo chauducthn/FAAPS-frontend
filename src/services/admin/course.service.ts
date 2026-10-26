@@ -11,6 +11,7 @@ import type {
   AddCourseRelationDto,
   UpdateCourseRelationDto,
   CourseCategory,
+  CourseImportPreview,
 } from '../../types/course';
 
 interface BackendCoursePage {
@@ -108,6 +109,19 @@ export const courseService = {
   bulkRemove: async (ids: string[]): Promise<number> => {
     const { data } = await apiClient.post<{ deletedCount: number }>('/admin/courses/bulk-delete', { ids });
     return data.deletedCount;
+  },
+  previewImport: async (file: File): Promise<CourseImportPreview> => {
+    const body = new FormData(); body.append('file', file);
+    return (await apiClient.post<CourseImportPreview>('/admin/courses/import/preview', body,
+      { headers: { 'Content-Type': 'multipart/form-data' } })).data;
+  },
+  confirmImport: async (items: CourseImportPreview['items']): Promise<number> => {
+    const valid = items.filter((item) => item.errors.length === 0).map((item) => ({
+      code: item.code, name: item.name, credits: item.credits, categoryId: item.categoryId,
+      description: item.description, prerequisites: item.prerequisites,
+      objectives: item.objectives, learningOutcomes: item.learningOutcomes,
+    }));
+    return (await apiClient.post<{ importedCount: number }>('/admin/courses/import/confirm', { items: valid })).data.importedCount;
   },
 
   listRelations: async (courseId: string): Promise<CourseRelation[]> => {

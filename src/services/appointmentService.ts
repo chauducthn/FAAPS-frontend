@@ -51,4 +51,10 @@ export const appointmentService = {
     const { data } = await apiClient.get<AdvisorAppointment[]>('/advisor/appointments', { params });
     return data ?? [];
   },
+  getStudentAppointments: async (): Promise<BookedAppointment[]> =>
+    (await apiClient.get<BookedAppointment[]>('/student/appointments')).data ?? [],
+  cancelAppointment: async (id: string, reason: string): Promise<BookedAppointment> =>
+    (await apiClient.put<BookedAppointment>(`/appointments/${id}/cancel`, { reason }, { headers: await getCsrfHeaders() })).data,
+  rescheduleAppointment: async (id: string, startTime: string): Promise<BookedAppointment> =>
+    (await apiClient.put<BookedAppointment>(`/appointments/${id}/reschedule`, { startTime }, { headers: await getCsrfHeaders() })).data,
 };

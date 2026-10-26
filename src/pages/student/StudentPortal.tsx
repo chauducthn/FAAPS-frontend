@@ -9,7 +9,7 @@ import { useMyAdvisor, useMyProfile } from '../../hooks/queries/useStudentQuerie
 import { AdvisorInfoCard } from '../../components/student/AdvisorInfoCard';
 import { NotificationList } from '../../components/student/NotificationList';
 import { StudentProfileCard } from '../../components/student/StudentProfileCard';
-import { MockDataBanner } from '../../components/admin/MockDataToggle';
+
 
 export default function StudentPortal() {
   const user = useAuth((s) => s.user);
@@ -30,7 +30,7 @@ export default function StudentPortal() {
         </p>
       </div>
 
-      <MockDataBanner scope="portal" />
+
 
       {profileQuery.isError && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-800">

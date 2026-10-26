@@ -1,7 +1,8 @@
 // src/pages/admin/Courses.tsx
 import { useMemo, useState } from 'react';
-import { Plus, Search, ChevronDown, Trash2 } from 'lucide-react';
+import { Plus, Search, ChevronDown, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
+import { courseService } from '../../services/admin/course.service';
 import {
   CourseTable,
   CourseFormModal,
@@ -38,6 +39,7 @@ export default function CoursesPage() {
   const [deleting, setDeleting] = useState<CourseSummary | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const params: CourseFilterParams = useMemo(
     () => ({
@@ -85,7 +87,16 @@ export default function CoursesPage() {
             Master catalogue of all courses the system knows about
           </p>
         </div>
-        <button
+        <div className="flex gap-2"><label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-4 py-2 text-xs font-bold">
+          <Upload className="size-4" /> Import XLSX
+          <input type="file" accept=".xlsx" className="hidden" disabled={importing} onChange={async (event) => {
+            const file = event.target.files?.[0]; if (!file) return; setImporting(true);
+            try { const preview = await courseService.previewImport(file);
+              if (preview.errorRows) toast.error(`${preview.errorRows} invalid row(s). Fix the spreadsheet and retry.`);
+              else { const count = await courseService.confirmImport(preview.items); toast.success(`Imported ${count} course(s)`); window.location.reload(); }
+            } finally { setImporting(false); event.target.value = ''; }
+          }} />
+        </label><button
           onClick={() => {
             setEditing(null);
             setFormOpen(true);
@@ -93,7 +104,7 @@ export default function CoursesPage() {
           className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#F26F21] hover:bg-[#e05f14] text-white font-bold text-xs rounded-lg shadow-xs"
         >
           <Plus className="size-4" /> Create Course
-        </button>
+        </button></div>
       </div>
 
       <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-2xs">

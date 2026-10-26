@@ -21,5 +21,19 @@ export default defineConfig(({ mode }) => {
         "@": path.resolve(import.meta.dirname, "./src"),
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return undefined
+            if (id.includes('react') || id.includes('scheduler')) return 'react-vendor'
+            if (id.includes('@tanstack')) return 'query-vendor'
+            if (id.includes('recharts') || id.includes('d3-')) return 'charts-vendor'
+            if (id.includes('axios')) return 'http-vendor'
+            return 'vendor'
+          },
+        },
+      },
+    },
   }
 })

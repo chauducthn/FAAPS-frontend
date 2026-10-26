@@ -4,7 +4,6 @@
 
 import { Link } from 'react-router';
 import {
-  Briefcase,
   CalendarClock,
   Mail,
   MessageSquareText,
@@ -13,24 +12,12 @@ import {
   Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { ISO_WEEKDAY_LABELS } from '@/lib/appointmentDate';
 import type { AdvisorInfo } from '@/types/advising';
 
 const STATUS_STYLES: Record<AdvisorInfo['status'], { label: string; className: string }> = {
   ACTIVE: { label: 'Đang hoạt động', className: 'bg-green-100 text-green-800 ring-green-200' },
   INACTIVE: { label: 'Ngừng hoạt động', className: 'bg-gray-100 text-gray-700 ring-gray-200' },
   ON_LEAVE: { label: 'Đang nghỉ phép', className: 'bg-amber-100 text-amber-800 ring-amber-200' },
-};
-
-/** "1,2,3,4,5" (ISO weekday) → "Mon, Tue, Wed, Thu, Fri". */
-const formatWorkDays = (workDays: string | null) => {
-  if (!workDays) return 'Chưa cập nhật';
-  const days = workDays
-    .split(',')
-    .map((d) => Number(d.trim()))
-    .filter((d) => d >= 1 && d <= 7)
-    .map((d) => ISO_WEEKDAY_LABELS[d - 1]);
-  return days.length > 0 ? days.join(', ') : 'Chưa cập nhật';
 };
 
 /** "2024-09-01" → "01/09/2024". */
@@ -123,12 +110,7 @@ export function AdvisorInfoCard({ advisor }: { advisor: AdvisorInfo | null | und
           label="Điện thoại"
           value={advisor.phone ?? 'Chưa cập nhật'}
         />
-        <AdvisorRow
-          icon={Briefcase}
-          label="Chuyên môn"
-          value={advisor.specialization ?? 'Chưa cập nhật'}
-        />
-        <AdvisorRow icon={CalendarClock} label="Ngày làm việc" value={formatWorkDays(advisor.workDays)} />
+        <AdvisorRow icon={CalendarClock} label="Ngày bắt đầu phụ trách" value={formatDate(advisor.assignmentStartDate)} />
         <AdvisorRow icon={Users} label="Số SV tối đa" value={`${advisor.maxAdvisees} sinh viên`} />
         <AdvisorRow
           icon={UserRound}

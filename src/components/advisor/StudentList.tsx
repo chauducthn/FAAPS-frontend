@@ -8,6 +8,8 @@ import { useAdviseeStudents } from '../../hooks/queries/useAdvisorQueries';
 import { useDebounce } from '../../hooks/useDebounce';
 import { cn } from '@/lib/utils';
 import type { AcademicStatus } from '../../types/advising';
+import { advisorService, type AdvisorStudentDetail } from '../../services/advisorService';
+import { Modal } from '../ui/Modal';
 
 const PAGE_SIZE = 10;
 const th = 'px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]';
@@ -77,6 +79,7 @@ function TableState({
 export function StudentList() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
+  const [detail, setDetail] = useState<AdvisorStudentDetail | null>(null);
   const debouncedSearch = useDebounce(search.trim());
 
   const { data, isLoading, isError, refetch } = useAdviseeStudents({
@@ -140,7 +143,9 @@ export function StudentList() {
                 return (
                   <tr key={s.id} className="border-t border-[#e7eefe] hover:bg-gray-50/60">
                     <td className="px-3 py-3.5 text-[13px] font-semibold text-[#151c27]">{s.studentCode}</td>
-                    <td className="px-3 py-3.5 text-sm font-semibold text-[#151c27]">{s.fullName}</td>
+                    <td className="px-3 py-3.5 text-sm font-semibold text-[#151c27]">{s.fullName}
+                      <button type="button" className="ml-2 text-xs text-orange-700 underline" onClick={async () => setDetail(await advisorService.getStudentDetail(s.id))}>View detail</button>
+                    </td>
                     <td className="px-3 py-3.5 text-sm text-[#555f6f]">{s.curriculumVersion}</td>
                     <td className="px-3 py-3.5 text-sm text-[#555f6f]">
                       {s.majorCode}
@@ -171,6 +176,13 @@ export function StudentList() {
       </div>
 
       <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun="students" onChange={setPage} />
+      <Modal open={detail !== null} onClose={() => setDetail(null)} title="Student academic detail" className="max-w-3xl">
+        {detail && <div className="max-h-[70vh] space-y-5 overflow-auto p-5 text-sm">
+          <div className="grid gap-3 rounded-lg bg-gray-50 p-4 sm:grid-cols-2"><p><strong>Name:</strong> {detail.profile.fullName}</p><p><strong>Student ID:</strong> {detail.profile.studentCode ?? '—'}</p><p><strong>Major:</strong> {detail.profile.majorName ?? '—'}</p><p><strong>Cohort:</strong> {detail.profile.cohort ?? '—'}</p><p><strong>Semester:</strong> {detail.profile.currentSemester ?? '—'}</p><p><strong>Academic status:</strong> {detail.profile.academicStatus ?? '—'}</p></div>
+          <div className="grid gap-3 sm:grid-cols-3"><p><strong>GPA</strong><span className="block text-xl">{detail.progress.currentGpa?.toFixed(2) ?? '—'}</span></p><p><strong>Credits earned</strong><span className="block text-xl">{detail.progress.earnedCredits}/{detail.progress.requiredCredits}</span></p><p><strong>Courses completed</strong><span className="block text-xl">{detail.progress.completedCourses}/{detail.progress.curriculumCourses}</span></p></div>
+          <div><h3 className="font-semibold">Transcript</h3>{detail.transcript.length ? <div className="mt-2 overflow-x-auto"><table className="w-full"><thead><tr className="border-b"><th className="p-2 text-left">Course</th><th>Semester</th><th>Score</th><th>Status</th></tr></thead><tbody>{detail.transcript.map((row) => <tr key={row.id} className="border-b"><td className="p-2">{row.courseCode} · {row.courseName}</td><td className="text-center">{row.semesterCode}</td><td className="text-center">{row.finalScore ?? '—'}</td><td className="text-center">{row.status}</td></tr>)}</tbody></table></div> : <p className="mt-2 text-gray-500">No transcript records.</p>}</div>
+        </div>}
+      </Modal>
     </section>
   );
 }

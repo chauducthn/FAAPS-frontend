@@ -130,8 +130,8 @@ export default function CurriculumFormModal({ open, noun, initial, isSubmitting,
           </Field>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Effective from semester" required error={errors.effectiveFromSemesterId?.message}>
-              <select {...register('effectiveFromSemesterId')} className={field} aria-label="Effective from semester">
+            <Field label="Start semester" required error={errors.effectiveFromSemesterId?.message}>
+              <select {...register('effectiveFromSemesterId')} className={field} aria-label="Start semester">
                 <option value="">Select a semester...</option>
                 {semesterList.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -140,8 +140,8 @@ export default function CurriculumFormModal({ open, noun, initial, isSubmitting,
                 ))}
               </select>
             </Field>
-            <Field label="Effective until semester" error={errors.effectiveToSemesterId?.message}>
-              <select {...register('effectiveToSemesterId')} className={field} aria-label="Effective until semester">
+            <Field label="End semester" error={errors.effectiveToSemesterId?.message}>
+              <select {...register('effectiveToSemesterId')} className={field} aria-label="End semester">
                 <option value="">No end (still in use)</option>
                 {semesterList.map((s) => (
                   <option key={s.id} value={s.id}>

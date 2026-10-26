@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { ChatPanel } from '../../components/ai/ChatPanel';
-import { MockDataBanner } from '../../components/admin/MockDataToggle';
+
 
 export default function StudentAiChat() {
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -18,7 +18,7 @@ export default function StudentAiChat() {
         </p>
       </div>
 
-      <MockDataBanner scope="portal" />
+
 
       <ChatPanel activeId={activeId} onSelect={setActiveId} />
     </div>

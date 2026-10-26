@@ -27,7 +27,6 @@ export function UserDetailModal({ userId, onClose }: { userId: string | null; on
         <Field label={user.role === 'STUDENT' ? 'Roll Number' : 'User ID'} value={user.userId} />
         <Field label="Full Name" value={user.fullName} />
         <Field label="Email" value={user.email} />
-        <Field label="Phone" value={user.phone} />
         <Field label="Role" value={user.role} />
         <div className="rounded-lg bg-[#f7f8fa] px-3 py-2.5"><p className="text-[11px] font-semibold uppercase text-[#555f6f]">Status</p><StatusBadge status={user.status} /></div>
         <Field label="Created At" value={formatDate(user.createdAt)} />

@@ -13,6 +13,7 @@ export default function StudentTranscript() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [historyDetail, setHistoryDetail] = useState<ImportPreview | null>(null);
   const showPreview = async () => {
     if (!file) return;
     setBusy(true); setError(''); setNotice('');
@@ -63,7 +64,8 @@ export default function StudentTranscript() {
         <button disabled={busy || preview.errorCount > 0} onClick={confirm} className="rounded bg-orange-600 px-3 py-2 text-sm text-white disabled:opacity-50">Confirm import</button>
       </div>}
       <h3 className="mt-5 font-semibold">Import history</h3>
-      {history.isError ? <p className="text-sm text-red-700">Could not load import history.</p> : history.data?.length ? <ul className="mt-2 space-y-1 text-sm">{history.data.map((entry) => <li key={entry.id}>{entry.fileName} · {entry.status} · {entry.rowCount} rows · {entry.errorCount} errors · {new Date(entry.createdAt).toLocaleString()}</li>)}</ul> : <p className="mt-2 text-sm text-gray-600">No imports yet.</p>}
+      {history.isError ? <p className="text-sm text-red-700">Could not load import history.</p> : history.data?.length ? <ul className="mt-2 space-y-1 text-sm">{history.data.map((entry) => <li key={entry.id}>{entry.fileName} · {entry.status} · {entry.rowCount} rows · {entry.errorCount} errors · {new Date(entry.createdAt).toLocaleString()} <button className="text-orange-700 underline" onClick={async () => setHistoryDetail(await studentAcademicService.importDetail(entry.id))}>View detail</button></li>)}</ul> : <p className="mt-2 text-sm text-gray-600">No imports yet.</p>}
+      {historyDetail && <div className="mt-3 rounded border p-3"><button className="float-right text-sm underline" onClick={() => setHistoryDetail(null)}>Close</button><strong>Import detail · {historyDetail.rowCount} rows</strong><p className="text-sm text-gray-600">{historyDetail.errorCount} validation errors</p><div className="mt-3 max-h-72 overflow-auto"><table className="w-full text-left text-xs"><thead><tr className="border-b"><th className="p-2">Row</th><th>Course</th><th>Semester</th><th>Score</th><th>Status</th><th>Validation</th></tr></thead><tbody>{historyDetail.rows.map((row) => <tr key={row.rowNumber} className="border-b"><td className="p-2">{row.rowNumber}</td><td>{row.courseCode}</td><td>{row.semesterCode}</td><td>{row.finalScore ?? '—'}</td><td>{row.status}</td><td className={row.error ? 'text-red-600' : 'text-green-700'}>{row.error ?? 'Valid'}</td></tr>)}</tbody></table></div></div>}
     </section>
   </div>;
 }

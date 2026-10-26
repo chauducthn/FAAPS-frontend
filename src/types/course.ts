@@ -84,3 +84,10 @@ export interface UpdateCourseRelationDto {
   groupNo?: number;
   minimumScore?: number | null;
 }
+
+export interface CourseImportRow {
+  rowNumber: number; code: string; name: string; credits: number; categoryId: string;
+  categoryName: string; description: string; prerequisites: string; objectives: string;
+  learningOutcomes: string; status: string; errors: string[];
+}
+export interface CourseImportPreview { totalRows: number; validRows: number; errorRows: number; items: CourseImportRow[] }

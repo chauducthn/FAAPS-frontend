@@ -31,7 +31,7 @@ export default function CurriculumTable({ kind, data, onOpen, onEdit, onToggleSt
                   <th className={th}>Cohort</th>
                   <th className={th}>Major</th>
                   <th className={th}>Name</th>
-                  <th className={th}>Effective</th>
+                  <th className={th}>Start date</th>
                 </>
               ) : (
                 <>
@@ -43,7 +43,7 @@ export default function CurriculumTable({ kind, data, onOpen, onEdit, onToggleSt
               )}
               <th className={`${th} text-center`}>Courses</th>
               <th className={th}>Status</th>
-              {!isCohort && <th className={th}>Effective from</th>}
+              {!isCohort && <th className={th}>Start date</th>}
               <th className={`${th} text-center`}>Actions</th>
             </tr>
           </thead>
@@ -63,18 +63,16 @@ export default function CurriculumTable({ kind, data, onOpen, onEdit, onToggleSt
                 { label: active ? 'Deactivate' : 'Activate', onSelect: () => onToggleStatus(item) },
                 { label: 'Delete', onSelect: () => onDelete(item), danger: true },
               ];
-              const effective = `${item.effectiveFromSemesterCode} → ${item.effectiveToSemesterCode ?? 'now'}`;
               return (
                 <tr key={item.id} className="transition-colors hover:bg-gray-50/60">
                   {isCohort ? (
                     <>
                       <td className="px-4 py-4">
                         <span className={chip}>{item.version}</span>
-                        {item.isCurrent && <span className="ml-2 text-[10px] font-bold text-[#F26F21]">CURRENT</span>}
                       </td>
                       <td className="px-4 py-4 text-[#555f6f]">{item.majorCode} - {item.majorName}</td>
                       <td className="px-4 py-4 font-semibold">{item.name}</td>
-                      <td className="px-4 py-4 text-[#555f6f]">{effective}</td>
+                      <td className="px-4 py-4 text-[#555f6f]">{item.effectiveFromSemesterCode}</td>
                     </>
                   ) : (
                     <>
@@ -95,7 +93,6 @@ export default function CurriculumTable({ kind, data, onOpen, onEdit, onToggleSt
                   <td className="px-4 py-4 text-center">{item.courseCount}</td>
                   <td className="px-4 py-4">
                     <StatusBadge status={item.status} />
-                    {!isCohort && item.isCurrent && <span className="ml-2 text-[10px] font-bold text-[#F26F21]">CURRENT</span>}
                   </td>
                   {!isCohort && <td className="px-4 py-4 text-[#555f6f]">{item.effectiveFromSemesterCode}</td>}
                   <td className="px-4 py-4 text-center">

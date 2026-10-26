@@ -17,11 +17,6 @@ const LOGIN_PARAM_NOTICES: Record<string, LoginNotice> = {
     message: 'For your security you were signed out. Please sign in again to continue.',
     tone: 'info',
   },
-  'handover-complete': {
-    title: 'Admin access handed over',
-    message: 'The admin role now belongs to another account. Sign in with the new admin account.',
-    tone: 'info',
-  },
   'google-sign-in-failed': {
     title: 'Google sign-in did not finish',
     message: 'Google could not complete the sign-in, or it was cancelled. Please try again.',

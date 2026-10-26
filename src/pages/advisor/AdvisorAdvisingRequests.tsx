@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { RequestListTable } from '../../components/advisor/RequestListTable';
-import { MockDataBanner } from '../../components/admin/MockDataToggle';
+
 
 export default function AdvisorAdvisingRequests() {
   const [search, setSearch] = useState('');
@@ -19,7 +19,7 @@ export default function AdvisorAdvisingRequests() {
         </p>
       </div>
 
-      <MockDataBanner scope="portal" />
+
 
       <label className="flex h-[38px] w-full max-w-md items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-3 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500">
         <Search className="size-4 text-[#98a2b3]" />

@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../stores/useAuth';
 import { RoleCode } from '../types/auth';
+import { Suspense } from 'react';
 
 export const ProtectedRoute = ({ allowedRoles }: { allowedRoles: RoleCode[] }) => {
   const { user, isAuthenticated, isCheckingAuth } = useAuth();
@@ -18,5 +19,5 @@ export const ProtectedRoute = ({ allowedRoles }: { allowedRoles: RoleCode[] }) =
     return <Navigate to={`/${redirectPath}`} replace />;
   }
 
-  return <Outlet />;
+  return <Suspense fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}><Outlet /></Suspense>;
 };

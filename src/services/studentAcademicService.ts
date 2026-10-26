@@ -72,6 +72,7 @@ export const studentAcademicService = {
   studyPlans: () => get<CurriculumPlan[]>('/study-plans'),
   studyPlan: (id: string) => get<CurriculumPlan>(`/study-plans/${id}`),
   studyPlanVersions: (id: string) => get<CurriculumPlan[]>(`/study-plans/${id}/versions`),
+  validateStudyPlan: (id: string) => get<string[]>(`/study-plans/${id}/validate`),
   saveStudyPlan: (body: { semesterId: string; planType: string; courseIds: string[] }) => post<CurriculumPlan>('/study-plans', body),
   submitStudyPlan: (id: string) => post<CurriculumPlan>(`/study-plans/${id}/submit`),
   coursePlans: () => get<CoursePlan[]>('/course-learning-plans'),

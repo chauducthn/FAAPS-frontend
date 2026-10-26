@@ -3,13 +3,13 @@
 // (Phần khung header do PortalLayout dựng; component này gom các phần nội dung header vào một chỗ.)
 
 import { StudentNotificationBell } from './StudentNotificationBell';
-import { MockDataToggle } from '@/components/admin/MockDataToggle';
+
 
 /** Các phần nội dung bên phải của header sinh viên. */
 export function StudentHeaderExtra() {
   return (
     <>
-      <MockDataToggle scope="portal" />
+
       <StudentNotificationBell />
     </>
   );

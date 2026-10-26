@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { Check, Plus, Search, Sparkles, Trash2, Zap } from 'lucide-react';
 import { AiConfigForm } from '../../components/admin/ai-config';
 import { Modal } from '../../components/ui/Modal';
-import { MockDataBanner, MockDataToggle } from '../../components/admin/MockDataToggle';
+
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
 import { useAiConfigsQuery, useAiConfig, useAiPresetsQuery } from '../../hooks/queries/useAiConfigQuery';
 import { useAiConfigMutations } from '../../hooks/mutations/useAiConfigMutations';
@@ -65,7 +65,7 @@ export default function AiConfigPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <MockDataToggle />
+
           <button
             type="button"
             onClick={() => setCreatingOpen(true)}
@@ -77,7 +77,7 @@ export default function AiConfigPage() {
         </div>
       </div>
 
-      <MockDataBanner />
+
 
       <div className="grid gap-4 sm:grid-cols-3">
         <SummaryCard label="Total configurations" value={stats.total} icon={Sparkles} tone="orange" />

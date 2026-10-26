@@ -69,7 +69,7 @@ export interface AiReportDetail {
   sources: AiReportSource[];
 }
 
-export type AdminUserRole = 'STUDENT' | 'ADVISOR' | 'ADMIN';
+export type AdminUserRole = 'STUDENT' | 'ADVISOR';
 export type AdminUserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'LOCKED';
 
 export interface AdminUserSummary {
@@ -87,7 +87,6 @@ export interface AdminUserDetail {
   userId: string;
   fullName: string;
   email: string;
-  phone: string | null;
   role: AdminUserRole;
   status: AdminUserStatus;
   createdAt: string;

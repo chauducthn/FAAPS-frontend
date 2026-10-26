@@ -7,11 +7,13 @@ import type { CurriculumCourseItem } from '../../../types/curriculum';
 interface Props {
   courses: CurriculumCourseItem[];
   onAdd: (semesterNumber: number) => void;
+  onMove: (course: CurriculumCourseItem, semesterNumber: number) => void;
+  onRemove: (course: CurriculumCourseItem) => void;
 }
 
-const MIN_SEMESTERS = 8;
+const MIN_SEMESTERS = 9;
 
-export default function SemesterPlanner({ courses, onAdd }: Props) {
+export default function SemesterPlanner({ courses, onAdd, onMove, onRemove }: Props) {
   const semesters = useMemo(() => {
     const last = Math.max(MIN_SEMESTERS, ...courses.map((c) => c.semesterNumber));
     return Array.from({ length: last }, (_, i) => {
@@ -56,6 +58,12 @@ export default function SemesterPlanner({ courses, onAdd }: Props) {
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${course.isMandatory ? 'bg-orange-50 text-orange-700' : 'bg-blue-50 text-blue-700'}`}>
                       {course.isMandatory ? 'Mandatory' : 'Elective'}
                     </span>
+                    <select aria-label={`Move ${course.courseCode}`} value={semester.number}
+                      onChange={(event) => onMove(course, Number(event.target.value))}
+                      className="rounded border border-gray-200 bg-white px-1 py-0.5 text-[10px]">
+                      {Array.from({ length: 9 }, (_, index) => <option key={index + 1} value={index + 1}>Sem {index + 1}</option>)}
+                    </select>
+                    <button type="button" onClick={() => onRemove(course)} className="text-[10px] font-bold text-red-600">Remove</button>
                   </span>
                 </li>
               ))}

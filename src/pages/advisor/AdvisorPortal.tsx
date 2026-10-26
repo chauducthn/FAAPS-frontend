@@ -7,7 +7,7 @@ import { useAuth } from '../../stores/useAuth';
 import { useAdviseeStudents, useAdvisorAdvisingRequests } from '../../hooks/queries/useAdvisorQueries';
 import { StudentList } from '../../components/advisor/StudentList';
 import { RequestListTable } from '../../components/advisor/RequestListTable';
-import { MockDataBanner } from '../../components/admin/MockDataToggle';
+
 import { cn } from '@/lib/utils';
 
 const COUNT_SIZE = 50;
@@ -62,7 +62,7 @@ export default function AdvisorPortal() {
         </p>
       </div>
 
-      <MockDataBanner scope="portal" />
+
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Tổng SV được phân công" value={studentsQuery.data?.totalElements} />

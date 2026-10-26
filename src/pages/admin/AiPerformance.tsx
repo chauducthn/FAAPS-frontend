@@ -4,7 +4,7 @@ import { Activity, AlertTriangle, Clock, Gauge, TrendingUp, Zap } from 'lucide-r
 import { useAiPerformanceQuery } from '../../hooks/queries/useAiConfigQuery';
 import { useAiConfigsQuery } from '../../hooks/queries/useAiConfigQuery';
 import { AiPerformanceChart } from '../../components/admin/ai-config';
-import { MockDataBanner, MockDataToggle } from '../../components/admin/MockDataToggle';
+
 import type { AiPerformanceFilterParams, AiPurpose } from '../../types/ai-config';
 import { cn } from '@/lib/utils';
 
@@ -87,10 +87,10 @@ export default function AiPerformancePage() {
             Mức sử dụng, tỉ lệ thành công và lượng token tiêu thụ của từng cấu hình AI.
           </p>
         </div>
-        <MockDataToggle />
+
       </div>
 
-      <MockDataBanner />
+
 
       {/* Bộ lọc */}
       <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">

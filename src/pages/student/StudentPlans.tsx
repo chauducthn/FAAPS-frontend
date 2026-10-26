@@ -47,6 +47,7 @@ export default function StudentPlans() {
         <p>{plan.courses.map((course) => course.code).join(', ')}</p>
         {plan.issues.length > 0 && <ul className="mt-1 text-amber-700">{plan.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul>}
         <div className="mt-2 flex gap-3"><button className="text-orange-700 underline" onClick={() => setSelectedPlan(plan.header.id)}>Versions</button>
+          <button className="text-orange-700 underline" onClick={async () => { try { const issues = await studentAcademicService.validateStudyPlan(plan.header.id); setMessage(issues.length === 0 ? 'Plan is valid.' : issues.join(' · ')); } catch (error) { setMessage(apiMessage(error)); } }}>Validate</button>
           {plan.header.status === 'DRAFT' && <button disabled={busy || plan.issues.length > 0} className="text-orange-700 underline disabled:opacity-50" onClick={() => run(() => studentAcademicService.submitStudyPlan(plan.header.id), ['study-plans'])}>Submit</button>}</div>
       </li>)}</ul> : <p className="mt-2 text-sm text-gray-600">No study plans yet.</p>}
       {selectedPlan && <div className="mt-3 rounded bg-gray-50 p-3 text-sm"><button onClick={() => setSelectedPlan('')} className="float-right">Close</button><h4 className="font-semibold">Plan versions</h4>{versions.isError ? <p>Could not load versions.</p> : versions.data?.map((p) => <p key={p.header.id}>Version {p.header.version} · {p.header.status} · {p.courses.map((c) => c.code).join(', ')}</p>)}</div>}

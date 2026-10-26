@@ -40,3 +40,21 @@ export const useChangeUserStatus = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 };
+
+export const useChangeUserRole = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      id: string;
+      role: AdminUserRole;
+      studentCode?: string;
+      curriculumVersionId?: string;
+      enrollmentSemesterId?: string;
+      maxAdvisees?: number;
+    }) => {
+      const { id, ...body } = input;
+      return adminService.changeUserRole(id, body);
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
+  });
+};

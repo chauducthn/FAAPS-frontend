@@ -42,15 +42,13 @@ export default function AdvisorDetails() {
   const [editingLimit, setEditingLimit] = useState(false);
   const [limitValue, setLimitValue] = useState('');
   const [limitError, setLimitError] = useState<string | null>(null);
-  const [workDays, setWorkDays] = useState<number[]>([]);
   const [assignmentStartDate, setAssignmentStartDate] = useState('');
   const [scheduleError, setScheduleError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!advisorId) return;
-    apiClient.get<{ workDays: number[]; assignmentStartDate: string | null }>(`/admin/advisors/${advisorId}/schedule`)
+    apiClient.get<{ assignmentStartDate: string | null }>(`/admin/advisors/${advisorId}/schedule`)
       .then(({ data: schedule }) => {
-        setWorkDays(schedule.workDays);
         setAssignmentStartDate(schedule.assignmentStartDate ?? '');
         setScheduleError(null);
       })
@@ -149,26 +147,21 @@ export default function AdvisorDetails() {
 
       <section className="rounded-xl bg-white p-5 shadow-sm sm:p-6">
         <div className="mb-5 rounded-lg border border-[#e5e7eb] p-4">
-          <h3 className="text-sm font-semibold text-[#151c27]">Advisor working schedule</h3>
-          <div className="mt-3 flex flex-wrap gap-3">{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label, index) =>
-            <label key={label} className="flex items-center gap-1 text-sm">
-              <input type="checkbox" checked={workDays.includes(index + 1)} onChange={() => setWorkDays(days =>
-                days.includes(index + 1) ? days.filter(day => day !== index + 1) : [...days, index + 1])} />{label}
-            </label>)}</div>
-          <label className="mt-3 flex items-center gap-3 text-sm">Assignment start date
+          <h3 className="text-sm font-semibold text-[#151c27]">Assignment start date</h3>
+          <label className="mt-3 flex items-center gap-3 text-sm">Start date
             <input type="date" value={assignmentStartDate} onChange={event => setAssignmentStartDate(event.target.value)}
               className="rounded-md border border-[#e5e7eb] p-1" /></label>
           {scheduleError && <p className="mt-2 text-sm text-red-600">{scheduleError}</p>}
           <button type="button" className="mt-3 rounded-md bg-[#f37021] px-3 py-1.5 text-sm font-semibold text-white"
             onClick={async () => {
-              if (!workDays.length || !assignmentStartDate) return setScheduleError('Select work days and a start date.');
+              if (!assignmentStartDate) return setScheduleError('Select an assignment start date.');
               try {
-                await apiClient.put(`/admin/advisors/${advisorId}/schedule`, { workDays, assignmentStartDate },
+                await apiClient.put(`/admin/advisors/${advisorId}/schedule`, { assignmentStartDate },
                   { headers: await getCsrfHeaders() });
                 setScheduleError(null);
                 toast.success('Advisor schedule saved.');
               } catch (error) { setScheduleError(apiErrorMessage(error)); }
-            }}>Save schedule</button>
+            }}>Save date</button>
         </div>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">

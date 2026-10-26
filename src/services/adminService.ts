@@ -76,12 +76,41 @@ export const adminService = {
     return data;
   },
 
+  createUser: async (body: {
+    role: AdminUserRole;
+    email: string;
+    fullName: string;
+    studentCode?: string;
+    curriculumVersionId?: string;
+    enrollmentSemesterId?: string;
+    currentSemester?: number;
+    maxAdvisees?: number;
+  }): Promise<AdminUserDetail> => {
+    const { data } = await apiClient.post<AdminUserDetail>('/admin/users', body, {
+      headers: await getCsrfHeaders(),
+    });
+    return data;
+  },
+
   changeUserStatus: async (id: string, status: 'ACTIVE' | 'SUSPENDED'): Promise<AdminUserDetail> => {
     const { data } = await apiClient.patch<AdminUserDetail>(
       `/admin/users/${id}/status`,
       { status },
       { headers: await getCsrfHeaders() }
     );
+    return data;
+  },
+
+  changeUserRole: async (id: string, body: {
+    role: AdminUserRole;
+    studentCode?: string;
+    curriculumVersionId?: string;
+    enrollmentSemesterId?: string;
+    maxAdvisees?: number;
+  }): Promise<AdminUserDetail> => {
+    const { data } = await apiClient.patch<AdminUserDetail>(`/admin/users/${id}/role`, body, {
+      headers: await getCsrfHeaders(),
+    });
     return data;
   },
 

@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { AlertTriangle, CheckCircle2, Search, XCircle } from 'lucide-react';
 import { Pagination } from '../../components/admin/Pagination';
 import { ReportStatusBadge, formatDateTime, shortReportId } from '../../components/admin/AiReportBits';
-import { MockDataBanner, MockDataToggle } from '../../components/admin/MockDataToggle';
+
 import { useAiReports } from '../../hooks/queries/useAdminAiReports';
 import { useDebounce } from '../../hooks/useDebounce';
 import type { AiReportStatus } from '../../types/admin';
@@ -66,10 +66,10 @@ export default function AiReports() {
             </span>
           </p>
         </div>
-        <MockDataToggle />
+
       </div>
 
-      <MockDataBanner />
+
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatusCard

@@ -7,6 +7,9 @@ import { useAvailableSlots } from '../../hooks/queries/useAppointmentQueries';
 import { useBookAppointmentMutation } from '../../hooks/mutations/useAppointmentMutations';
 import { formatColumnDay, formatIsoTime, toDateKey } from '../../lib/appointmentDate';
 import { useAuth } from '../../stores/useAuth';
+import { useQuery } from '@tanstack/react-query';
+import { appointmentService } from '../../services/appointmentService';
+import { toast } from 'sonner';
 
 const MAX_REASON = 500;
 
@@ -20,6 +23,7 @@ export default function BookAppointment() {
 
   const slotsQuery = useAvailableSlots(date);
   const bookMutation = useBookAppointmentMutation();
+  const appointments = useQuery({ queryKey: ['appointments', 'student'], queryFn: appointmentService.getStudentAppointments });
 
   const reasonMissing = touched && reason.trim().length === 0;
   const canSubmit = !!slot && reason.trim().length > 0 && !bookMutation.isPending;
@@ -142,6 +146,15 @@ export default function BookAppointment() {
           </button>
         </form>
       </div>
+      <section className="rounded-xl border bg-white p-5"><h2 className="font-semibold">My appointments</h2>
+        {appointments.data?.length ? <div className="mt-3 space-y-2">{appointments.data.map((item) =>
+          <div key={item.id} className="rounded border p-3 text-sm"><strong>{item.advisorName}</strong> · {new Date(item.startTime).toLocaleString()} · {item.status}
+            {!['CANCELLED', 'COMPLETED'].includes(item.status) && <div className="mt-2 flex gap-3">
+              <button type="button" className="text-red-600 underline" onClick={async () => { const reason = window.prompt('Cancellation reason', 'Cancelled by student'); if (!reason) return; await appointmentService.cancelAppointment(item.id, reason); toast.success('Appointment cancelled'); appointments.refetch(); }}>Cancel</button>
+              <button type="button" className="text-orange-700 underline" onClick={async () => { const value = window.prompt('New start time (YYYY-MM-DDTHH:mm)', item.startTime.slice(0, 16)); if (!value) return; await appointmentService.rescheduleAppointment(item.id, value); toast.success('Appointment rescheduled'); appointments.refetch(); }}>Reschedule</button>
+            </div>}
+          </div>)}</div> : <p className="mt-2 text-sm text-gray-500">No appointments yet.</p>}
+      </section>
     </div>
   );
 }

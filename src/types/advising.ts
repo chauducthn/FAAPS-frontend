@@ -90,14 +90,10 @@ export interface AdvisorInfo {
   email: string;
   /** users.phone */
   phone: string | null;
-  /** advisors.specialization */
-  specialization: string | null;
   /** advisors.max_advisees */
   maxAdvisees: number;
   /** advisors.status */
   status: AdvisorStatus;
-  /** advisors.work_days — ISO weekday csv, vd "1,2,3,4,5" (1 = Monday) */
-  workDays: string | null;
   /** advisors.assignment_start_date — yyyy-MM-dd */
   assignmentStartDate: string | null;
   /** student_advisor_assignments.assigned_date — yyyy-MM-dd */

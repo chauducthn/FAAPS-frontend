@@ -33,8 +33,8 @@ export default function MajorsPage() {
   const handleDeleteSelected = async () => {
     if (!selectedIds.length || !window.confirm(`Delete ${selectedIds.length} selected major(s)?`)) return;
     try {
-      for (const id of selectedIds) await majorService.deleteMajor(id);
-      toast.success('Selected majors deleted.');
+      const deleted = await majorService.bulkRemove(selectedIds);
+      toast.success(`${deleted} major${deleted === 1 ? '' : 's'} deleted.`);
       await refresh();
     } catch (error) {
       toast.error(`Major could not be deleted: ${errorMessage(error)}`);

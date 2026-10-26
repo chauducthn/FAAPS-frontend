@@ -60,4 +60,21 @@ export const curriculumService = {
     const { data } = await apiClient.post<ApiResponse<CurriculumCourseItem[]>>(`/admin/curriculums/${id}/courses`, body);
     return data.data ?? [];
   },
+  updateCourse: async (id: string, courseId: string, body: { semesterNumber: number; isMandatory: boolean; groupName?: string | null }) => {
+    const { data } = await apiClient.patch<ApiResponse<CurriculumCourseItem>>(`/admin/curriculums/${id}/courses/${courseId}`, body);
+    if (!data.data) throw new Error('Could not update curriculum course');
+    return data.data;
+  },
+  removeCourse: async (id: string, courseId: string): Promise<void> => {
+    await apiClient.delete(`/admin/curriculums/${id}/courses/${courseId}`);
+  },
+  previewImport: async (id: string, file: File) => {
+    const body = new FormData(); body.append('file', file);
+    return (await apiClient.post<{
+      totalRows: number; validRows: number; errorRows: number;
+      items: { rowNumber: number; courseCode: string; courseId: string; semesterNumber: number; mandatory: boolean; groupName: string | null; errors: string[] }[];
+    }>(`/admin/curriculums/${id}/import/preview`, body, { headers: { 'Content-Type': 'multipart/form-data' } })).data;
+  },
+  confirmImport: async (id: string, preview: unknown): Promise<number> =>
+    (await apiClient.post<{ importedCount: number }>(`/admin/curriculums/${id}/import/confirm`, preview)).data.importedCount,
 };

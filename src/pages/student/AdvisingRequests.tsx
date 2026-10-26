@@ -6,7 +6,7 @@ import { AdvisingRequestForm } from '../../components/student/AdvisingRequestFor
 import { RequestStatusBadge } from '../../components/advising/RequestStatusBadge';
 import { RequestTypeLabel } from '../../components/advising/RequestTypeLabel';
 import { useMyAdvisingRequests } from '../../hooks/queries/useStudentQueries';
-import { MockDataBanner } from '../../components/admin/MockDataToggle';
+
 
 const formatDateTime = (iso: string) =>
   new Date(iso).toLocaleString('vi-VN', {
@@ -31,7 +31,7 @@ export default function StudentAdvisingRequests() {
         </p>
       </div>
 
-      <MockDataBanner scope="portal" />
+
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <AdvisingRequestForm />

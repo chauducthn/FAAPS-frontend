@@ -18,7 +18,7 @@ const PAGE_SIZE = 10;
 const COPY = {
   cohort: {
     title: 'Cohorts',
-    subtitle: 'Each cohort is one version of a major (for example SE K19) with its effective semesters',
+    subtitle: 'Each cohort is one version of a major (for example SE K19) with its starting semester',
     noun: 'Cohort' as const,
     create: 'Create cohort',
     search: 'Search by cohort, name, or major...',

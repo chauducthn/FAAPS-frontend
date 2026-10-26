@@ -57,6 +57,17 @@ export const useCurriculumMutations = (kind: CurriculumKind) => {
       refresh();
     },
   });
+  const updateCourse = useMutation({
+    onError: toastBadRequest,
+    mutationFn: ({ id, courseId, semesterNumber, isMandatory }: { id: string; courseId: string; semesterNumber: number; isMandatory: boolean }) =>
+      curriculumService.updateCourse(id, courseId, { semesterNumber, isMandatory }),
+    onSuccess: () => { toast.success('Course placement updated'); refresh(); },
+  });
+  const removeCourse = useMutation({
+    onError: toastBadRequest,
+    mutationFn: ({ id, courseId }: { id: string; courseId: string }) => curriculumService.removeCourse(id, courseId),
+    onSuccess: () => { toast.success('Course removed from curriculum'); refresh(); },
+  });
 
   return {
     create: create.mutateAsync,
@@ -69,5 +80,8 @@ export const useCurriculumMutations = (kind: CurriculumKind) => {
     isUpdatingStatus: updateStatus.isPending,
     addCourses: addCourses.mutateAsync,
     isAddingCourses: addCourses.isPending,
+    updateCourse: updateCourse.mutateAsync,
+    removeCourse: removeCourse.mutateAsync,
+    isUpdatingCourse: updateCourse.isPending || removeCourse.isPending,
   };
 };

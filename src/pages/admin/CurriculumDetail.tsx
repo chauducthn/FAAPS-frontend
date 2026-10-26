@@ -2,7 +2,9 @@
 // /admin/curriculum/:id - courses of one curriculum by semester, with a check-box picker to add more.
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, Upload } from 'lucide-react';
+import { toast } from 'sonner';
+import { curriculumService } from '../../services/admin/curriculum.service';
 import AddCoursesModal from '../../components/admin/curriculum/AddCoursesModal';
 import SemesterPlanner from '../../components/admin/curriculum/SemesterPlanner';
 import { StatusBadge } from '../../components/admin/StatusBadge';
@@ -14,8 +16,9 @@ export default function CurriculumDetailPage() {
   const { id = '' } = useParams<{ id: string }>();
   const curriculum = useCurriculum(id);
   const courses = useCurriculumCourses(id);
-  const { addCourses, isAddingCourses } = useCurriculumMutations('curriculum');
+  const { addCourses, isAddingCourses, updateCourse, removeCourse } = useCurriculumMutations('curriculum');
   const [picker, setPicker] = useState<{ semester: number } | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const list = courses.data ?? [];
   const placed = useMemo(() => new Map(list.map((c) => [c.courseId, c.semesterNumber])), [list]);
@@ -37,11 +40,21 @@ export default function CurriculumDetailPage() {
           </button>
           <h1 className="mt-1 text-xl font-bold tracking-tight text-gray-900">{data.name}</h1>
           <p className="mt-0.5 text-xs text-gray-500">
-            {data.majorCode} - {data.majorName} · Cohort {data.version} · {data.effectiveFromSemesterCode} → {data.effectiveToSemesterCode ?? 'now'}
+            {data.majorCode} - {data.majorName} · Cohort {data.version} · Start semester {data.effectiveFromSemesterCode}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <StatusBadge status={data.status} />
+          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-4 py-2 text-xs font-bold">
+            <Upload className="size-4" /> Import XLSX
+            <input type="file" accept=".xlsx" className="hidden" disabled={importing} onChange={async (event) => {
+              const file = event.target.files?.[0]; if (!file) return; setImporting(true);
+              try { const preview = await curriculumService.previewImport(id, file);
+                if (preview.errorRows) toast.error(`${preview.errorRows} invalid row(s). Fix the spreadsheet and retry.`);
+                else { const count = await curriculumService.confirmImport(id, preview); toast.success(`Imported ${count} curriculum course(s)`); await courses.refetch(); }
+              } finally { setImporting(false); event.target.value = ''; }
+            }} />
+          </label>
           <button
             type="button"
             onClick={() => setPicker({ semester: 1 })}
@@ -66,7 +79,9 @@ export default function CurriculumDetailPage() {
       ) : courses.isError ? (
         <p className="text-xs text-red-600">Could not load the courses of this curriculum.</p>
       ) : (
-        <SemesterPlanner courses={list} onAdd={(semester) => setPicker({ semester })} />
+        <SemesterPlanner courses={list} onAdd={(semester) => setPicker({ semester })}
+          onMove={(course, semesterNumber) => updateCourse({ id, courseId: course.courseId, semesterNumber, isMandatory: course.isMandatory })}
+          onRemove={(course) => removeCourse({ id, courseId: course.courseId })} />
       )}
 
       <AddCoursesModal

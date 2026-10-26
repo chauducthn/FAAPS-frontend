@@ -4,7 +4,7 @@ import { ArrowLeft, ArrowRight, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
 import { ReportStatusBadge, formatDateTime, shortReportId } from '../../components/admin/AiReportBits';
-import { MockDataBanner, MockDataToggle } from '../../components/admin/MockDataToggle';
+
 import { useAiReport, useResolveAiReport } from '../../hooks/queries/useAdminAiReports';
 import { apiErrorMessage } from '../../lib/apiError';
 import { cn } from '@/lib/utils';
@@ -116,7 +116,7 @@ export default function AiReportDetail() {
         <h1 className="mt-3 text-2xl font-semibold text-[#151c27]">Report Details</h1>
       </div>
 
-      <MockDataBanner />
+
 
       <section className="rounded-xl bg-white p-5 shadow-sm sm:p-6">
         <div className="flex items-start justify-between gap-4">
