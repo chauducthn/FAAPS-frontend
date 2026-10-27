@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { majorService } from '../../services/admin/major.service';
+import { majorService } from '../../services/management/major.service';
 import { CreateMajorDto, UpdateMajorDto } from '../../types/major';
 import { MAJOR_QUERY_KEYS } from '../queries/useMajorsQuery';
 

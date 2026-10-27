@@ -1,7 +1,7 @@
 // src/hooks/mutations/useAcademicRuleMutations.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { academicRuleService } from '../../services/admin/academic-rule.service';
+import { academicRuleService } from '../../services/management/academic-rule.service';
 import type {
   CreateAcademicRuleDto,
   ToggleAcademicRuleStatusDto,

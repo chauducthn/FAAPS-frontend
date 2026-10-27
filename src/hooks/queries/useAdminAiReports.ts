@@ -1,6 +1,6 @@
 // src/hooks/queries/useAdminAiReports.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { aiReportService } from '../../services/admin/ai-report.service';
+import { aiReportService } from '../../services/management/ai-report.service';
 import type { AiReportStatus } from '../../types/admin';
 
 export const AI_REPORT_QUERY_KEYS = {

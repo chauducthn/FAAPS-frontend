@@ -1,7 +1,7 @@
 // src/hooks/mutations/useCourseMutations.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { courseService } from '../../services/admin/course.service';
+import { courseService } from '../../services/management/course.service';
 import type {
   AddCourseRelationDto,
   CreateCourseDto,

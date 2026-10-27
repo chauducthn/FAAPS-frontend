@@ -14,8 +14,8 @@ const MAX_MESSAGE = 2000;
 const ago = (iso: string | null) => {
   if (!iso) return '';
   const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
-  if (minutes < 60) return `${minutes || 1} phút trước`;
-  if (minutes < 60 * 24) return `${Math.round(minutes / 60)} giờ trước`;
+  if (minutes < 60) return `${minutes || 1} minute(s) ago`;
+  if (minutes < 60 * 24) return `${Math.round(minutes / 60)} hour(s) ago`;
   return new Date(iso).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' });
 };
 
@@ -74,7 +74,7 @@ export function ChatPanel({
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#F26F21] px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-[#e05f14] disabled:opacity-60"
         >
           <MessageSquarePlus className="size-4" />
-          {createConversation.isPending ? 'Đang tạo...' : 'Hội thoại mới'}
+          {createConversation.isPending ? 'Creating...' : 'New Conversation'}
         </button>
 
         <div className="mt-3 flex min-h-0 flex-col gap-1 overflow-y-auto">
@@ -86,7 +86,7 @@ export function ChatPanel({
             </div>
           ) : conversations.length === 0 ? (
             <p className="px-2 py-6 text-center text-[13px] text-[#555f6f]">
-              Chưa có hội thoại nào. Bấm “Hội thoại mới” để bắt đầu.
+              No conversations yet. Select “New Conversation” to begin.
             </p>
           ) : (
             conversations.map((c) => (
@@ -104,12 +104,12 @@ export function ChatPanel({
                     className={cn('size-4 shrink-0', c.id === activeId ? 'text-[#F26F21]' : 'text-[#98a2b3]')}
                   />
                   <span className="truncate text-[13px] font-semibold text-[#151c27]">
-                    {c.title || 'Hội thoại mới'}
+                    {c.title || 'New Conversation'}
                   </span>
                 </span>
                 <span className="mt-0.5 block pl-6 text-[11px] text-[#98a2b3]">
-                  {c.messageCount} tin nhắn · {ago(c.lastMessageAt)}
-                  {c.status === 'CLOSED' ? ' · Đã đóng' : ''}
+                  {c.messageCount} message(s) · {ago(c.lastMessageAt)}
+                  {c.status === 'CLOSED' ? ' · Closed' : ''}
                 </span>
               </button>
             ))
@@ -124,9 +124,9 @@ export function ChatPanel({
             <span className="flex size-12 items-center justify-center rounded-full bg-orange-100 text-[#F26F21]">
               <MessageSquareText className="size-6" />
             </span>
-            <p className="text-sm font-semibold text-[#151c27]">Chọn một hội thoại để bắt đầu chat</p>
+            <p className="text-sm font-semibold text-[#151c27]">Select a conversation to start chatting</p>
             <p className="max-w-sm text-[13px] text-[#555f6f]">
-              Hỏi về chương trình đào tạo, môn tiên quyết, quy chế học tập hoặc nhờ AI sinh lộ trình học.
+              Ask about curricula, prerequisites, academic policies, or request a study roadmap.
             </p>
           </div>
         ) : (
@@ -146,20 +146,20 @@ export function ChatPanel({
                 </div>
               ) : messagesQuery.isError ? (
                 <div className="flex flex-col items-center gap-2 py-10 text-center">
-                  <p className="text-sm font-semibold text-[#151c27]">Không tải được tin nhắn</p>
+                  <p className="text-sm font-semibold text-[#151c27]">Unable to load messages</p>
                   <button
                     type="button"
                     onClick={() => messagesQuery.refetch()}
                     className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-1.5 text-[13px] font-semibold text-[#555f6f] hover:bg-gray-50"
                   >
-                    Thử lại
+                    Try again
                   </button>
                 </div>
               ) : messages.length === 0 ? (
                 <div className="flex flex-col items-center gap-2 py-10 text-center">
-                  <p className="text-sm font-semibold text-[#151c27]">Bắt đầu hội thoại mới</p>
+                  <p className="text-sm font-semibold text-[#151c27]">Start a New Conversation</p>
                   <p className="max-w-sm text-[13px] text-[#555f6f]">
-                    Ví dụ: “Gợi ý lộ trình 2 kỳ tới để ra trường đúng hạn” hoặc “PRJ301 có môn tiên quyết là gì?”.
+                    Example: “Suggest a two-semester roadmap for graduating on time” or “What are the prerequisites for PRJ301?”.
                   </p>
                 </div>
               ) : (
@@ -182,14 +182,14 @@ export function ChatPanel({
                   }}
                   rows={2}
                   maxLength={MAX_MESSAGE}
-                  placeholder="Hỏi AI về môn học, quy chế, lộ trình..."
-                  aria-label="Nhập tin nhắn cho AI"
+                  placeholder="Ask AI about courses, policies, or study roadmaps..."
+                  aria-label="Enter a message for AI"
                   className="max-h-32 min-h-[44px] flex-1 resize-none rounded-lg border border-[#e5e7eb] px-3 py-2 text-sm text-[#151c27] outline-none placeholder:text-[#98a2b3] focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]"
                 />
                 <button
                   type="submit"
                   disabled={draft.trim().length === 0 || sendMessage.isPending}
-                  aria-label="Gửi tin nhắn"
+                  aria-label="Send message"
                   className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-[#F26F21] text-white transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <SendHorizonal className="size-5" />

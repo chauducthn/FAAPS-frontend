@@ -14,24 +14,24 @@ import type {
 } from '../../types/ai-student';
 
 const SEMESTER_STYLES: Record<RoadmapSemesterStatus, { label: string; dot: string; badge: string }> = {
-  COMPLETED: { label: 'Đã hoàn thành', dot: 'bg-green-500', badge: 'bg-green-100 text-green-800 ring-green-200' },
-  IN_PROGRESS: { label: 'Đang học', dot: 'bg-[#F26F21]', badge: 'bg-orange-100 text-orange-800 ring-orange-200' },
-  PLANNED: { label: 'Kế hoạch', dot: 'bg-blue-500', badge: 'bg-blue-100 text-blue-800 ring-blue-200' },
-  SUGGESTED: { label: 'AI gợi ý', dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800 ring-purple-200' },
+  COMPLETED: { label: 'Completed', dot: 'bg-green-500', badge: 'bg-green-100 text-green-800 ring-green-200' },
+  IN_PROGRESS: { label: 'In Progress', dot: 'bg-[#F26F21]', badge: 'bg-orange-100 text-orange-800 ring-orange-200' },
+  PLANNED: { label: 'Planned', dot: 'bg-blue-500', badge: 'bg-blue-100 text-blue-800 ring-blue-200' },
+  SUGGESTED: { label: 'AI Suggested', dot: 'bg-purple-500', badge: 'bg-purple-100 text-purple-800 ring-purple-200' },
 };
 
 const COURSE_STYLES: Record<RoadmapCourseStatus, { label: string; icon: typeof CheckCircle2; className: string }> = {
-  PASSED: { label: 'Đã qua', icon: CheckCircle2, className: 'bg-green-100 text-green-700' },
-  IN_PROGRESS: { label: 'Đang học', icon: LoaderCircle, className: 'bg-orange-100 text-orange-700' },
-  PLANNED: { label: 'Kế hoạch', icon: Clock3, className: 'bg-blue-100 text-blue-700' },
-  SUGGESTED: { label: 'Gợi ý', icon: Sparkles, className: 'bg-purple-100 text-purple-700' },
-  FAILED: { label: 'Chưa qua', icon: CircleDashed, className: 'bg-red-100 text-red-700' },
+  PASSED: { label: 'Passed', icon: CheckCircle2, className: 'bg-green-100 text-green-700' },
+  IN_PROGRESS: { label: 'In Progress', icon: LoaderCircle, className: 'bg-orange-100 text-orange-700' },
+  PLANNED: { label: 'Planned', icon: Clock3, className: 'bg-blue-100 text-blue-700' },
+  SUGGESTED: { label: 'Suggested', icon: Sparkles, className: 'bg-purple-100 text-purple-700' },
+  FAILED: { label: 'Not Passed', icon: CircleDashed, className: 'bg-red-100 text-red-700' },
 };
 
 const PRIORITY_LABEL: Record<RoadmapCourse['priority'], string> = {
-  HIGH: 'Ưu tiên cao',
-  MEDIUM: 'Ưu tiên vừa',
-  LOW: 'Ưu tiên thấp',
+  HIGH: 'High priority',
+  MEDIUM: 'Medium priority',
+  LOW: 'Low priority',
 };
 
 function CourseCard({ course }: { course: RoadmapCourse }) {
@@ -48,9 +48,9 @@ function CourseCard({ course }: { course: RoadmapCourse }) {
             {course.courseName}
           </p>
           <p className="mt-0.5 text-[12px] text-[#555f6f]">
-            {course.credits} tín chỉ
+            {course.credits} credits
             {course.categoryName ? ` · ${course.categoryName}` : ''}
-            {course.isMandatory ? ' · Bắt buộc' : ' · Tự chọn'}
+            {course.isMandatory ? ' · Required' : ' · Elective'}
             {' · '}
             {PRIORITY_LABEL[course.priority]}
           </p>
@@ -62,13 +62,13 @@ function CourseCard({ course }: { course: RoadmapCourse }) {
       </div>
       {course.reason && (
         <p className="mt-1.5 text-[12px] leading-relaxed text-[#555f6f]">
-          <span className="font-semibold text-[#151c27]">Vì sao AI gợi ý: </span>
+          <span className="font-semibold text-[#151c27]">Why AI suggested this: </span>
           {course.reason}
         </p>
       )}
       {course.prerequisites.length > 0 && (
         <p className="mt-1 text-[11px] text-[#98a2b3]">
-          Tiên quyết: <span className="font-semibold text-[#555f6f]">{course.prerequisites.join(', ')}</span>
+          Prerequisites: <span className="font-semibold text-[#555f6f]">{course.prerequisites.join(', ')}</span>
         </p>
       )}
     </div>
@@ -98,11 +98,11 @@ function SemesterNode({ semester, isLast }: { semester: RoadmapSemester; isLast:
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h3 className="text-sm font-bold text-[#151c27]">
-              Kỳ {semester.semesterNumber} · {semester.title}
+              Semester {semester.semesterNumber} · {semester.title}
             </h3>
             <p className="mt-0.5 text-[12px] text-[#555f6f]">
               {semester.semesterCode ? `${semester.semesterCode} · ` : ''}
-              {semester.totalCredits} tín chỉ · {semester.courses.length} môn
+              {semester.totalCredits} credits · {semester.courses.length} courses
             </p>
           </div>
           <span className={cn('inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset', style.badge)}>
@@ -133,16 +133,16 @@ export function RoadmapTimeline({ roadmap }: { roadmap: StudyRoadmap }) {
       <div className="rounded-xl border border-orange-200 bg-[#fff7ed] p-4">
         <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[#b45309]">
           <Sparkles className="size-3.5" />
-          Tóm tắt từ AI {roadmap.modelName ? `· ${roadmap.modelName}` : ''}
-          {typeof roadmap.confidenceScore === 'number' ? ` · Tin cậy ${Math.round(roadmap.confidenceScore * 100)}%` : ''}
+          AI Summary {roadmap.modelName ? `· ${roadmap.modelName}` : ''}
+          {typeof roadmap.confidenceScore === 'number' ? ` · Confidence ${Math.round(roadmap.confidenceScore * 100)}%` : ''}
         </p>
         <p className="mt-1.5 text-[13px] leading-relaxed text-[#151c27]">{roadmap.summary}</p>
         <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[12px] font-semibold text-[#555f6f]">
           <span className="inline-flex items-center gap-1">
             <BookOpen className="size-3.5" />
-            {roadmap.totalSemesters} học kỳ · {roadmap.totalCredits} tín chỉ
+            {roadmap.totalSemesters} semesters · {roadmap.totalCredits} credits
           </span>
-          <span>Sinh lúc {new Date(roadmap.generatedAt).toLocaleString('vi-VN')}</span>
+          <span>Generated {new Date(roadmap.generatedAt).toLocaleString('en-GB')}</span>
         </p>
       </div>
 

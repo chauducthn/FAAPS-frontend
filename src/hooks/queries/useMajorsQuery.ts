@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { majorService } from '../../services/admin/major.service';
+import { majorService } from '../../services/management/major.service';
 import { MajorFilterParams } from '../../types/major';
 
 export const MAJOR_QUERY_KEYS = {

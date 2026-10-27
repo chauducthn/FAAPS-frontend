@@ -37,29 +37,29 @@ export function RoadmapPanel() {
       <section className="rounded-xl bg-white p-5 shadow-sm">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-[#151c27]">
           <Sparkles className="size-4 text-[#F26F21]" />
-          Sinh lộ trình học bằng AI
+          Generate an AI Study Roadmap
         </h2>
         <p className="mt-0.5 text-[13px] text-[#555f6f]">
-          AI phân tích GPA, tín chỉ đã tích lũy và chương trình đào tạo để gợi ý từng kỳ — trả về JSON cấu trúc hiển thị bên dưới.
+          AI analyzes your GPA, earned credits, and curriculum to recommend each semester.
         </p>
 
         <form onSubmit={handleGenerate} className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_auto]">
           <div>
             <label htmlFor="roadmap-goal" className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#555f6f]">
-              Mục tiêu học tập
+              Academic Goal
             </label>
             <input
               id="roadmap-goal"
               value={goal}
               onChange={(e) => setGoal(e.target.value)}
               maxLength={MAX_GOAL}
-              placeholder="VD: Ra trường đúng hạn, GPA >= 8.0"
+              placeholder="Example: Graduate on time with a GPA of at least 8.0"
               className={field}
             />
           </div>
           <div>
             <label htmlFor="roadmap-credits" className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#555f6f]">
-              Tín chỉ tối đa / kỳ
+              Maximum Credits per Semester
             </label>
             <input
               id="roadmap-credits"
@@ -77,7 +77,7 @@ export function RoadmapPanel() {
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-50 md:w-auto"
             >
               <Route className="size-4" />
-              {generate.isPending ? 'Đang sinh...' : roadmap ? 'Sinh lại' : 'Sinh lộ trình'}
+              {generate.isPending ? 'Generating...' : roadmap ? 'Regenerate' : 'Generate Roadmap'}
             </button>
           </div>
         </form>
@@ -85,7 +85,7 @@ export function RoadmapPanel() {
 
       {/* Kết quả */}
       {roadmapQuery.isLoading || generate.isPending ? (
-        <section className="rounded-xl bg-white p-5 shadow-sm" aria-label="Đang tải lộ trình">
+        <section className="rounded-xl bg-white p-5 shadow-sm" aria-label="Loading roadmap">
           <div className="h-4 w-48 animate-pulse rounded bg-gray-100" />
           <div className="mt-3 h-20 animate-pulse rounded-lg bg-gray-100" />
           <div className="mt-4 space-y-3">
@@ -96,14 +96,14 @@ export function RoadmapPanel() {
         </section>
       ) : roadmapQuery.isError ? (
         <section className="flex flex-col items-center gap-2 rounded-xl bg-white p-10 text-center shadow-sm">
-          <p className="text-sm font-semibold text-[#151c27]">Không tải được lộ trình học</p>
-          <p className="text-[13px] text-[#555f6f]">Đã có lỗi xảy ra khi tải dữ liệu.</p>
+          <p className="text-sm font-semibold text-[#151c27]">Unable to load the study roadmap</p>
+          <p className="text-[13px] text-[#555f6f]">An error occurred while loading data.</p>
           <button
             type="button"
             onClick={() => roadmapQuery.refetch()}
             className="mt-1 rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#555f6f] hover:bg-gray-50"
           >
-            Thử lại
+            Try again
           </button>
         </section>
       ) : !roadmap ? (
@@ -111,9 +111,9 @@ export function RoadmapPanel() {
           <span className="flex size-11 items-center justify-center rounded-full bg-orange-100 text-[#F26F21]">
             <Route className="size-5" />
           </span>
-          <p className="text-sm font-semibold text-[#151c27]">Chưa có lộ trình học nào</p>
+          <p className="text-sm font-semibold text-[#151c27]">No study roadmap yet</p>
           <p className="max-w-md text-[13px] text-[#555f6f]">
-            Nhập mục tiêu ở trên rồi bấm “Sinh lộ trình” để AI gợi ý timeline từng học kỳ cho bạn.
+            Enter your goal above, then select “Generate Roadmap” for an AI-generated semester timeline.
           </p>
         </section>
       ) : (
