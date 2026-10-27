@@ -1,6 +1,6 @@
 import { Navigate, Outlet } from 'react-router';
-import { useAuth } from '../stores/useAuth';
-import { RoleCode } from '../types/auth';
+import { useAuth } from '../modules/auth/stores/useAuth';
+import { RoleCode } from '../modules/auth/types/auth';
 import { Suspense } from 'react';
 
 export const ProtectedRoute = ({ allowedRoles }: { allowedRoles: RoleCode[] }) => {

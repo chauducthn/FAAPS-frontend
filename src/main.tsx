@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import { RouterProvider } from "react-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-import { Toaster } from "./components/ui/sonner";
-import { AuthProvider } from "./providers/AuthProvider";
+import { Toaster } from "./shared/components/ui/sonner";
+import { AuthProvider } from "./modules/auth/providers/AuthProvider";
 import { router } from "./routes";
 import "./index.css";
 
