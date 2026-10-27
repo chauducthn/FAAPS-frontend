@@ -106,6 +106,9 @@ export const notificationService = {
   list: async (params: { unreadOnly?: boolean; page?: number; size?: number } = {}): Promise<AdminPage<AdminNotification>> =>
     (await apiClient.get<AdminPage<AdminNotification>>('/admin/notifications', { params })).data,
 
+  unreadCount: async (): Promise<number> =>
+    (await apiClient.get<{ unreadCount: number }>('/admin/notifications/unread-count')).data.unreadCount,
+
   markRead: async (id: string): Promise<{ updated: boolean }> =>
     (await apiClient.patch<{ updated: boolean }>(`/admin/notifications/${id}/read`, null, { headers: await getCsrfHeaders() })).data,
 

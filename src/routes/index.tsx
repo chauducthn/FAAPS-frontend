@@ -39,6 +39,8 @@ const AdvisorAppointments = lazy(() => import('../modules/advising/pages/Advisor
 const AdvisorPortal = lazy(() => import('../modules/advising/pages/AdvisorPortal'));
 const AdvisorAdvisingRequests = lazy(() => import('../modules/advising/pages/AdvisorAdvisingRequests'));
 const AdvisorConversationWorkspace = lazy(() => import('../modules/advising/pages/AdvisorConversationWorkspace'));
+const AdvisorStudyPlans = lazy(() => import('../modules/advising/pages/AdvisorStudyPlans'));
+const AdvisorProfile = lazy(() => import('../modules/advising/pages/AdvisorProfile'));
 const suspense = (element: React.ReactNode) => <Suspense fallback={<p className="p-6 text-sm">Loading...</p>}>{element}</Suspense>;
 
 export const router = createBrowserRouter([
@@ -103,6 +105,8 @@ export const router = createBrowserRouter([
           { path: '/advisor/advising-requests', element: <AdvisorAdvisingRequests /> },
           { path: '/advisor/appointments', element: <AdvisorAppointments /> },
           { path: '/advisor/conversations', element: <AdvisorConversationWorkspace /> },
+          { path: '/advisor/study-plans', element: <AdvisorStudyPlans /> },
+          { path: '/advisor/profile', element: <AdvisorProfile /> },
         ],
       },
     ],

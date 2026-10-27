@@ -45,6 +45,7 @@ export default function StudentPlans() {
       {studyPlans.isError ? <p role="alert" className="text-red-700">Could not load plans.</p> : studyPlans.data?.length ? <ul className="mt-2 space-y-2">{studyPlans.data.map((plan) => <li key={plan.header.id} className="rounded border p-3 text-sm">
         <p><strong>{plan.header.semesterCode}</strong> · version {plan.header.version} · {plan.header.status} · {plan.header.totalCredits} credits</p>
         <p>{plan.courses.map((course) => course.code).join(', ')}</p>
+        {plan.header.reviewNotes && <p className="mt-1 rounded bg-blue-50 p-2 text-blue-900"><strong>Advisor feedback:</strong> {plan.header.reviewNotes}</p>}
         {plan.issues.length > 0 && <ul className="mt-1 text-amber-700">{plan.issues.map((issue) => <li key={issue}>{issue}</li>)}</ul>}
         <div className="mt-2 flex gap-3"><button className="text-orange-700 underline" onClick={() => setSelectedPlan(plan.header.id)}>Versions</button>
           <button className="text-orange-700 underline" onClick={async () => { try { const issues = await studentAcademicService.validateStudyPlan(plan.header.id); setMessage(issues.length === 0 ? 'Plan is valid.' : issues.join(' · ')); } catch (error) { setMessage(apiMessage(error)); } }}>Validate</button>
@@ -67,7 +68,18 @@ export default function StudentPlans() {
       <div className="mt-3 flex gap-2"><button disabled={tasks.length >= 100} className="rounded border px-3 py-2 text-sm disabled:opacity-50" onClick={() => setTasks((items) => [...items, emptyTask()])}>Add task</button>
         <button disabled={busy || !courseId || tasks.some((task) => !task.title.trim())} className="rounded bg-orange-600 px-3 py-2 text-sm text-white disabled:opacity-50" onClick={() => run(() => studentAcademicService.saveCoursePlan({ courseId, learningGoal: goal, tasks }), ['course-plans'])}>Save new version</button></div>
       <h3 className="mt-5 font-semibold">Current course plans</h3>
-      {coursePlans.isError ? <p role="alert" className="text-red-700">Could not load course plans.</p> : coursePlans.data?.length ? <ul className="mt-2 space-y-2">{coursePlans.data.map((plan) => <li key={plan.header.id} className="rounded border p-3 text-sm"><strong>{plan.header.courseCode}</strong> · {plan.header.courseName} · version {plan.header.version}<p>{plan.tasks.length} tasks · {plan.header.learningGoal || 'No goal'}</p><button className="mt-1 text-orange-700 underline" onClick={() => setSelectedCoursePlan(plan.header.id)}>Versions</button></li>)}</ul> : <p className="mt-2 text-sm text-gray-600">No course learning plans yet.</p>}
+      {coursePlans.isError ? <p role="alert" className="text-red-700">Could not load course plans.</p> : coursePlans.data?.length ? <ul className="mt-2 space-y-3">{coursePlans.data.map((plan) => {
+        const completed = plan.tasks.filter((task) => task.completed).length;
+        return <li key={plan.header.id} className="rounded border p-3 text-sm"><strong>{plan.header.courseCode}</strong> · {plan.header.courseName} · version {plan.header.version}
+          <p>{completed}/{plan.tasks.length} tasks completed · {plan.header.learningGoal || 'No goal'}</p>
+          <div className="mt-2 h-2 overflow-hidden rounded bg-gray-200"><div className="h-full bg-green-600" style={{ width: `${plan.tasks.length ? completed * 100 / plan.tasks.length : 0}%` }} /></div>
+          <ul className="mt-2 space-y-1">{plan.tasks.map((task) => <li key={task.id}><label className="flex items-start gap-2 rounded p-1 hover:bg-gray-50">
+            <input type="checkbox" className="mt-1" checked={task.completed} disabled={busy}
+              onChange={(event) => run(() => studentAcademicService.updateTask(plan.header.id, task.id, event.target.checked), ['course-plans', 'course-plan-versions'])} />
+            <span><strong className={task.completed ? 'line-through' : ''}>{task.title}</strong>{task.dueDate && <span className="text-gray-500"> · due {task.dueDate}</span>}</span>
+          </label></li>)}</ul>
+          <button className="mt-2 text-orange-700 underline" onClick={() => setSelectedCoursePlan(plan.header.id)}>Versions</button></li>;
+      })}</ul> : <p className="mt-2 text-sm text-gray-600">No course learning plans yet.</p>}
       {selectedCoursePlan && <div className="mt-3 rounded bg-gray-50 p-3 text-sm"><button className="float-right" onClick={() => setSelectedCoursePlan('')}>Close</button><h4 className="font-semibold">Course plan versions</h4>{courseVersions.isError ? <p>Could not load versions.</p> : courseVersions.data?.map((p) => <p key={p.header.id}>Version {p.header.version} · {p.tasks.map((t) => t.title).join(', ')}</p>)}</div>}
     </section>
     {message && <p role="status" className="rounded bg-white p-3 text-sm">{message}</p>}

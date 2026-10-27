@@ -21,6 +21,7 @@ import type {
   CourseDetail,
   CourseSummary,
   CourseFilterParams,
+  CourseImportPreview,
 } from '../../academic/types/course';
 
 const PAGE_SIZE = 10;
@@ -40,6 +41,7 @@ export default function CoursesPage() {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const [importPreview, setImportPreview] = useState<CourseImportPreview | null>(null);
 
   const params: CourseFilterParams = useMemo(
     () => ({
@@ -91,8 +93,8 @@ export default function CoursesPage() {
           <Upload className="size-4" /> Import XLSX
           <input type="file" accept=".xlsx" className="hidden" disabled={importing} onChange={async (event) => {
             const file = event.target.files?.[0]; if (!file) return; setImporting(true);
-            try { const preview = await courseService.previewImport(file);
-              if (preview.errorRows) toast.error(`${preview.errorRows} invalid row(s). Fix the spreadsheet and retry.`);
+            try { const preview = await courseService.previewImport(file); setImportPreview(preview);
+              if (preview.errorRows) toast.error(`${preview.errorRows} invalid row(s). Download the error report, fix the spreadsheet and retry.`);
               else { const count = await courseService.confirmImport(preview.items); toast.success(`Imported ${count} course(s)`); window.location.reload(); }
             } finally { setImporting(false); event.target.value = ''; }
           }} />
@@ -106,6 +108,16 @@ export default function CoursesPage() {
           <Plus className="size-4" /> Create Course
         </button></div>
       </div>
+
+      {importPreview?.errorRows ? <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-4 text-sm">
+        <span><strong>{importPreview.errorRows}</strong> invalid row(s) found in the course spreadsheet.</span>
+        <button type="button" className="font-semibold text-red-700 underline" onClick={async () => {
+          try {
+            const blob = await courseService.downloadImportErrors(importPreview.items);
+            download(blob, 'course-import-errors.xlsx');
+          } catch { toast.error('Unable to download the course error report.'); }
+        }}>Download error report</button>
+      </div> : null}
 
       <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-2xs">
         <div className="flex flex-col md:flex-row items-center gap-3">
@@ -306,4 +318,9 @@ export default function CoursesPage() {
       />
     </div>
   );
+}
+
+function download(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob); const anchor = document.createElement('a');
+  anchor.href = url; anchor.download = name; anchor.click(); URL.revokeObjectURL(url);
 }

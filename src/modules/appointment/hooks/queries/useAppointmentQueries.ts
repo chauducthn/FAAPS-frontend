@@ -11,7 +11,23 @@ export const APPOINTMENT_QUERY_KEYS = {
     [...APPOINTMENT_QUERY_KEYS.all, 'advisor-week', from, to, advisorId ?? null] as const,
   advisorAvailability: (advisorId?: string) =>
     [...APPOINTMENT_QUERY_KEYS.all, 'advisor-availability', advisorId ?? null] as const,
+  detail: (role: 'student' | 'advisor', id?: string) =>
+    [...APPOINTMENT_QUERY_KEYS.all, role, 'detail', id ?? null] as const,
 };
+
+export const useStudentAppointmentDetail = (id: string | null) =>
+  useQuery({
+    queryKey: APPOINTMENT_QUERY_KEYS.detail('student', id ?? undefined),
+    queryFn: () => appointmentService.getStudentAppointment(id as string),
+    enabled: !!id,
+  });
+
+export const useAdvisorAppointmentDetail = (id: string | null) =>
+  useQuery({
+    queryKey: APPOINTMENT_QUERY_KEYS.detail('advisor', id ?? undefined),
+    queryFn: () => appointmentService.getAdvisorAppointment(id as string),
+    enabled: !!id,
+  });
 
 /**
  * Free slots for one day. Disabled until a date is chosen.

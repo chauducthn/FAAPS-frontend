@@ -30,11 +30,9 @@ export function StudentNotificationBell() {
   const ref = useRef<HTMLDivElement>(null);
 
   const { data } = useStudentNotifications(0, PAGE_SIZE);
-  const { data: unreadData } = useUnreadStudentNotificationCount();
+  const { data: unread = 0 } = useUnreadStudentNotificationCount();
   const markRead = useMarkStudentNotificationRead();
   const markAll = useMarkAllStudentNotificationsRead();
-
-  const unread = unreadData?.totalElements ?? 0;
 
   useEffect(() => {
     if (!open) return;

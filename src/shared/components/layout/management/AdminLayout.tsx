@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import {
   Activity,
@@ -208,7 +208,9 @@ export default function AdminLayout() {
         )}
 
         <main className="min-w-0 flex-1 p-4 sm:p-8">
-          <Outlet />
+          <Suspense fallback={<p className="text-sm text-gray-500">Loading page...</p>}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

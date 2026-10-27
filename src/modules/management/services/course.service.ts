@@ -1,5 +1,6 @@
 // src/services/management/course.service.ts
 import { apiClient } from '../../../shared/lib/apiClient';
+import { getCsrfHeaders } from '../../../shared/lib/csrf';
 import { ApiResponse, PaginatedData } from '../../../shared/types/api';
 import type {
   CourseDetail,
@@ -123,6 +124,10 @@ export const courseService = {
     }));
     return (await apiClient.post<{ importedCount: number }>('/admin/courses/import/confirm', { items: valid })).data.importedCount;
   },
+  downloadImportErrors: async (items: CourseImportPreview['items']): Promise<Blob> =>
+    (await apiClient.post('/admin/courses/import/errors.xlsx', { items }, {
+      headers: await getCsrfHeaders(), responseType: 'blob',
+    })).data as Blob,
 
   listRelations: async (courseId: string): Promise<CourseRelation[]> => {
     const { data } = await apiClient.get<ApiResponse<CourseRelation[]>>(

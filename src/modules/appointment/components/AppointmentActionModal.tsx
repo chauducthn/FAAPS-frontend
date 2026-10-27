@@ -7,6 +7,7 @@ import { formatIsoDay, formatIsoTime } from '../../../shared/lib/appointmentDate
 import { useUpdateAppointmentStatusMutation } from '../hooks/mutations/useAppointmentMutations';
 import type { AdvisorAppointment } from '../types/appointment';
 import { cn } from '@/shared/lib/utils';
+import { useAdvisorAppointmentDetail } from '../hooks/queries/useAppointmentQueries';
 
 interface AppointmentActionModalProps {
   appointment: AdvisorAppointment | null;
@@ -22,6 +23,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
   const [rejectReason, setRejectReason] = useState('');
   const [touched, setTouched] = useState(false);
   const mutation = useUpdateAppointmentStatusMutation();
+  const detailQuery = useAdvisorAppointmentDetail(appointment?.id ?? null);
 
   useEffect(() => {
     if (!appointment) return;
@@ -32,7 +34,8 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
 
   if (!appointment) return null;
 
-  const isPending = appointment.status === 'PENDING';
+  const shown = detailQuery.data ?? appointment;
+  const isPending = shown.status === 'PENDING';
   const reasonMissing = rejecting && touched && rejectReason.trim().length === 0;
 
   const handleAccept = () => {
@@ -58,7 +61,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
           <h2 className="text-xl font-semibold text-[#151c27]">Appointment request</h2>
           <p className="mt-1 text-[13px] text-[#555f6f]">Review the request before responding.</p>
         </div>
-        <BookingStatusBadge status={appointment.status} />
+        <BookingStatusBadge status={shown.status} />
       </div>
 
       <div className="flex flex-col gap-5 overflow-y-auto p-6">
@@ -67,9 +70,9 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
             <User className="size-4 shrink-0 text-[#555f6f]" />
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[#98a2b3]">Student</p>
-              <p className="truncate text-sm font-semibold text-[#151c27]">{appointment.studentName}</p>
-              {appointment.studentCode && (
-                <p className="truncate text-[11px] text-[#555f6f]">{appointment.studentCode}</p>
+              <p className="truncate text-sm font-semibold text-[#151c27]">{shown.studentName}</p>
+              {shown.studentCode && (
+                <p className="truncate text-[11px] text-[#555f6f]">{shown.studentCode}</p>
               )}
             </div>
           </div>
@@ -77,7 +80,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
             <CalendarDays className="size-4 shrink-0 text-[#555f6f]" />
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[#98a2b3]">Date</p>
-              <p className="truncate text-sm font-semibold text-[#151c27]">{formatIsoDay(appointment.startTime)}</p>
+              <p className="truncate text-sm font-semibold text-[#151c27]">{formatIsoDay(shown.startTime)}</p>
             </div>
           </div>
         </div>
@@ -87,7 +90,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wide text-[#98a2b3]">Time</p>
             <p className="text-sm font-semibold text-[#151c27]">
-              {formatIsoTime(appointment.startTime)} – {formatIsoTime(appointment.endTime)}
+              {formatIsoTime(shown.startTime)} – {formatIsoTime(shown.endTime)}
             </p>
           </div>
         </div>
@@ -95,15 +98,15 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
         <div>
           <p className="text-sm font-semibold text-[#151c27]">Reason</p>
           <p className="mt-2 whitespace-pre-wrap rounded-lg bg-[#f7f8fa] px-4 py-3 text-sm text-[#151c27]">
-            {appointment.reason || 'No reason provided.'}
+            {shown.reason || 'No reason provided.'}
           </p>
         </div>
 
-        {appointment.decisionNote && (
+        {shown.decisionNote && (
           <div>
             <p className="text-sm font-semibold text-[#151c27]">Your note</p>
             <p className="mt-2 whitespace-pre-wrap rounded-lg bg-[#f7f8fa] px-4 py-3 text-sm text-[#555f6f]">
-              {appointment.decisionNote}
+              {shown.decisionNote}
             </p>
           </div>
         )}

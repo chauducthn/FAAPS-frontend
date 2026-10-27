@@ -74,3 +74,20 @@ export const useMarkAllStudentNotificationsRead = () => {
     },
   });
 };
+
+export const useMarkAdvisorNotificationRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: advisorService.markNotificationRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ADVISOR_QUERY_KEYS.notifications }),
+  });
+};
+
+export const useMarkAllAdvisorNotificationsRead = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: advisorService.markAllNotificationsRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ADVISOR_QUERY_KEYS.notifications }),
+    onError: (error) => toast.error(apiErrorMessage(error, 'Unable to update notifications.')),
+  });
+};

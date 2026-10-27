@@ -10,6 +10,7 @@ import { useAuth } from '../../auth/stores/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { appointmentService } from '../../appointment/services/appointmentService';
 import { toast } from 'sonner';
+import { StudentAppointmentDetailModal } from '../../appointment/components/StudentAppointmentDetailModal';
 
 const MAX_REASON = 500;
 
@@ -20,6 +21,7 @@ export default function BookAppointment() {
   const [slot, setSlot] = useState<string | null>(null);
   const [reason, setReason] = useState('');
   const [touched, setTouched] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   const slotsQuery = useAvailableSlots(date);
   const bookMutation = useBookAppointmentMutation();
@@ -149,12 +151,14 @@ export default function BookAppointment() {
       <section className="rounded-xl border bg-white p-5"><h2 className="font-semibold">My appointments</h2>
         {appointments.data?.length ? <div className="mt-3 space-y-2">{appointments.data.map((item) =>
           <div key={item.id} className="rounded border p-3 text-sm"><strong>{item.advisorName}</strong> · {new Date(item.startTime).toLocaleString()} · {item.status}
-            {!['CANCELLED', 'COMPLETED'].includes(item.status) && <div className="mt-2 flex gap-3">
+            <div className="mt-2 flex gap-3"><button type="button" className="text-blue-700 underline" onClick={() => setDetailId(item.id)}>View details</button>
+            {!['CANCELLED', 'COMPLETED'].includes(item.status) && <>
               <button type="button" className="text-red-600 underline" onClick={async () => { const reason = window.prompt('Cancellation reason', 'Cancelled by student'); if (!reason) return; await appointmentService.cancelAppointment(item.id, reason); toast.success('Appointment cancelled'); appointments.refetch(); }}>Cancel</button>
               <button type="button" className="text-orange-700 underline" onClick={async () => { const value = window.prompt('New start time (YYYY-MM-DDTHH:mm)', item.startTime.slice(0, 16)); if (!value) return; await appointmentService.rescheduleAppointment(item.id, value); toast.success('Appointment rescheduled'); appointments.refetch(); }}>Reschedule</button>
-            </div>}
+            </>}</div>
           </div>)}</div> : <p className="mt-2 text-sm text-gray-500">No appointments yet.</p>}
       </section>
+      <StudentAppointmentDetailModal id={detailId} onClose={() => setDetailId(null)} />
     </div>
   );
 }

@@ -53,6 +53,10 @@ export const appointmentService = {
   },
   getStudentAppointments: async (): Promise<BookedAppointment[]> =>
     (await apiClient.get<BookedAppointment[]>('/student/appointments')).data ?? [],
+  getStudentAppointment: async (id: string): Promise<BookedAppointment> =>
+    (await apiClient.get<BookedAppointment>(`/student/appointments/${id}`)).data,
+  getAdvisorAppointment: async (id: string): Promise<BookedAppointment> =>
+    (await apiClient.get<BookedAppointment>(`/advisor/appointments/${id}`)).data,
   cancelAppointment: async (id: string, reason: string): Promise<BookedAppointment> =>
     (await apiClient.put<BookedAppointment>(`/appointments/${id}/cancel`, { reason }, { headers: await getCsrfHeaders() })).data,
   rescheduleAppointment: async (id: string, startTime: string): Promise<BookedAppointment> =>

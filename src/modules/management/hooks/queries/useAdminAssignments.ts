@@ -138,11 +138,11 @@ export const useAdminNotifications = (page = 0, size = 20) =>
     placeholderData: keepPreviousData,
   });
 
-/** Unread count for the bell badge: a one-row page whose totalElements is the number of unread notifications. */
+/** Lightweight unread count for the bell badge. */
 export const useUnreadNotificationCount = () =>
   useQuery({
     queryKey: [...NOTIFICATIONS, 'unread-count'],
-    queryFn: async () => (await notificationService.list({ unreadOnly: true, page: 0, size: 1 })).totalElements,
+    queryFn: notificationService.unreadCount,
   });
 
 export const useMarkNotificationRead = () => {

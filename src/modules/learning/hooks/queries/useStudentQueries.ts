@@ -10,6 +10,7 @@ export const STUDENT_QUERY_KEYS = {
   notificationsRoot: ['student', 'notifications'] as const,
   notifications: (page: number, size: number, unreadOnly: boolean) =>
     ['student', 'notifications', page, size, unreadOnly] as const,
+  unreadNotifications: ['student', 'notifications', 'unread-count'] as const,
   advisingRequests: ['student', 'advising-requests'] as const,
 };
 
@@ -39,12 +40,11 @@ export const useStudentNotifications = (
     placeholderData: keepPreviousData,
   });
 
-/** Số thông báo chưa đọc — gọi list unread với size = 1 để lấy totalElements. */
+/** Lightweight unread count used by the portal badge. */
 export const useUnreadStudentNotificationCount = () =>
   useQuery({
-    queryKey: STUDENT_QUERY_KEYS.notifications(0, 1, true),
-    queryFn: () => studentService.getNotifications({ page: 0, size: 1, unreadOnly: true }),
-    placeholderData: keepPreviousData,
+    queryKey: STUDENT_QUERY_KEYS.unreadNotifications,
+    queryFn: studentService.getUnreadNotificationCount,
   });
 
 /** Các yêu cầu tư vấn của chính sinh viên. */

@@ -30,12 +30,13 @@ export type ImportHistory = { id: string; fileName: string; status: string; rowC
 export type Semester = { id: string; code: string; name: string; startDate: string; endDate: string };
 export type CurriculumPlan = { header: { id: string; semesterId: string; semesterCode: string;
   version: number; status: string; planType: string; totalCredits: number; previousPlanId: string | null;
-  createdAt: string }; courses: { id: string; code: string; name: string; credits: number }[]; issues: string[] };
+  submittedAt: string | null; reviewedByUserId: string | null; reviewedAt: string | null;
+  reviewNotes: string | null; createdAt: string }; courses: { id: string; code: string; name: string; credits: number }[]; issues: string[] };
 export type LearningTask = { title: string; description: string | null; dueDate: string | null;
   resourceUrl: string | null };
 export type CoursePlan = { header: { id: string; courseId: string; courseCode: string;
   courseName: string; learningGoal: string | null; version: number; createdAt: string };
-  tasks: (LearningTask & { id: string; sortOrder: number })[] };
+  tasks: (LearningTask & { id: string; sortOrder: number; completed: boolean; completedAt: string | null })[] };
 export type AssignmentStatus = { advisorId: string | null; pendingRequestId: string | null;
   canRequestAdvisor: boolean; canRequestAdvising: boolean };
 export type AcademicAdvisingRequest = { id: string; studentId: string; studentName: string;
@@ -68,6 +69,8 @@ export const studentAcademicService = {
   confirmImport: (id: string) => post<{ importId: string; importedCount: number; status: string }>(`/transcript/imports/${id}/confirm`),
   importHistory: () => get<ImportHistory[]>('/transcript/imports'),
   importDetail: (id: string) => get<ImportPreview>(`/transcript/imports/${id}`),
+  downloadImportErrors: async (id: string): Promise<Blob> =>
+    (await apiClient.get(`/student/transcript/imports/${id}/errors.xlsx`, { responseType: 'blob' })).data as Blob,
   semesters: () => get<Semester[]>('/semesters'),
   studyPlans: () => get<CurriculumPlan[]>('/study-plans'),
   studyPlan: (id: string) => get<CurriculumPlan>(`/study-plans/${id}`),
@@ -79,6 +82,9 @@ export const studentAcademicService = {
   coursePlan: (id: string) => get<CoursePlan>(`/course-learning-plans/${id}`),
   coursePlanVersions: (id: string) => get<CoursePlan[]>(`/course-learning-plans/${id}/versions`),
   saveCoursePlan: (body: { courseId: string; learningGoal: string; tasks: LearningTask[] }) => post<CoursePlan>('/course-learning-plans', body),
+  updateTask: async (planId: string, taskId: string, completed: boolean) =>
+    (await apiClient.patch<CoursePlan>(`/student/course-learning-plans/${planId}/tasks/${taskId}`,
+      { completed }, { headers: await getCsrfHeaders() })).data,
   assignment: () => get<AssignmentStatus>('/advisor-assignment'),
   requestAdvisor: () => post<{ id: string; status: string }>('/advisor-assignment-requests'),
   advisingRequests: () => get<AcademicAdvisingRequest[]>('/advising-requests'),

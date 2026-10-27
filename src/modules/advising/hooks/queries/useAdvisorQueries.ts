@@ -5,6 +5,8 @@ import type { AdvisingRequestStatus } from '../../types/advising';
 
 export const ADVISOR_QUERY_KEYS = {
   all: ['advisor'] as const,
+  notifications: ['advisor', 'notifications'] as const,
+  unreadNotifications: ['advisor', 'notifications', 'unread-count'] as const,
   students: (params: { search?: string; page: number; size: number }) =>
     ['advisor', 'students', params] as const,
   advisingRequests: (params: {
@@ -14,6 +16,18 @@ export const ADVISOR_QUERY_KEYS = {
     size: number;
   }) => ['advisor', 'advising-requests', params] as const,
 };
+
+export const useAdvisorNotifications = () =>
+  useQuery({
+    queryKey: ADVISOR_QUERY_KEYS.notifications,
+    queryFn: advisorService.getNotifications,
+  });
+
+export const useUnreadAdvisorNotificationCount = () =>
+  useQuery({
+    queryKey: ADVISOR_QUERY_KEYS.unreadNotifications,
+    queryFn: advisorService.getUnreadNotificationCount,
+  });
 
 /** Sinh viên được phân công cho advisor hiện tại. */
 export const useAdviseeStudents = (params: {

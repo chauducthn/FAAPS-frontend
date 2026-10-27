@@ -36,6 +36,13 @@ export const studentService = {
     return data;
   },
 
+  getUnreadNotificationCount: async (): Promise<number> => {
+    const { data } = await apiClient.get<{ unreadCount: number }>(
+      '/student/notifications/unread-count',
+    );
+    return data.unreadCount;
+  },
+
   /** Đánh dấu 1 thông báo đã đọc. */
   markNotificationRead: async (id: string): Promise<{ updated: boolean }> => {
     const { data } = await apiClient.patch<{ updated: boolean }>(

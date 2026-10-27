@@ -3,7 +3,7 @@
 // Cấu trúc giống hệt AdminLayout: sidebar trượt dọc (desktop) / overlay (mobile),
 // header sticky 1 hàng, dropdown đăng xuất — nhưng header/nav là riêng cho từng vai trò.
 
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import { ChevronDown, LogOut, Menu, X, type LucideIcon } from 'lucide-react';
 import { Logo } from '@/shared/components/common/Logo';
@@ -203,7 +203,9 @@ export default function PortalLayout({
         )}
 
         <main className="min-w-0 flex-1 p-4 sm:p-8">
-          <Outlet />
+          <Suspense fallback={<p className="text-sm text-gray-500">Loading page...</p>}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
