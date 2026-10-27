@@ -7,19 +7,19 @@ import type { AdvisingRequestStatus } from '@/types/advising';
 
 const STYLES: Record<AdvisingRequestStatus, { label: string; className: string }> = {
   PENDING: {
-    label: 'Đang chờ',
+    label: 'Pending',
     className: 'bg-orange-100 text-orange-800 ring-orange-200',
   },
   IN_PROGRESS: {
-    label: 'Đang xử lý',
+    label: 'In progress',
     className: 'bg-blue-100 text-blue-800 ring-blue-200',
   },
   RESOLVED: {
-    label: 'Đã xử lý',
+    label: 'Resolved',
     className: 'bg-green-100 text-green-800 ring-green-200',
   },
   CANCELLED: {
-    label: 'Đã từ chối',
+    label: 'Rejected',
     className: 'bg-red-100 text-red-800 ring-red-200',
   },
 };

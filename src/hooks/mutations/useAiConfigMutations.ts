@@ -1,7 +1,7 @@
 // src/hooks/mutations/useAiConfigMutations.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { aiConfigService } from '../../services/admin/ai-config.service';
+import { aiConfigService } from '../../services/management/ai-config.service';
 import type {
   AiConfigSecretDto,
   CreateAiConfigDto,

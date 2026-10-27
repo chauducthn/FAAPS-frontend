@@ -1,0 +1,17 @@
+// src/services/management/cohort.service.ts
+// A cohort is the same backend record as a curriculum (major + version); only the URL differs.
+import { apiClient } from '../../lib/apiClient';
+import type { ApiResponse } from '../../types/api';
+import type { CurriculumItem, CurriculumStatus } from '../../types/curriculum';
+import { createCurriculumApi } from './curriculum.service';
+
+export const cohortService = {
+  ...createCurriculumApi('/admin/cohorts'),
+
+  // There is no /cohorts/{id}/status endpoint; the curriculum one acts on the same record.
+  updateStatus: async (id: string, status: CurriculumStatus): Promise<CurriculumItem> => {
+    const { data } = await apiClient.patch<ApiResponse<CurriculumItem>>(`/admin/curriculums/${id}/status`, { status });
+    if (!data.data) throw new Error('Could not change the status');
+    return data.data;
+  },
+};

@@ -1,8 +1,8 @@
 // src/hooks/queries/useCurriculumsQuery.ts
 // Cohorts and curriculums are the same backend records, so they share one cache key family.
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { cohortService } from '../../services/admin/cohort.service';
-import { curriculumService } from '../../services/admin/curriculum.service';
+import { cohortService } from '../../services/management/cohort.service';
+import { curriculumService } from '../../services/management/curriculum.service';
 import type { CurriculumFilterParams, SemesterOption } from '../../types/curriculum';
 
 export type CurriculumKind = 'cohort' | 'curriculum';

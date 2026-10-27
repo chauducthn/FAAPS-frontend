@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { adminAppointmentService } from '../../services/admin/appointment.service';
+import { adminAppointmentService } from '../../services/management/appointment.service';
 import type { AppointmentStatus } from '../../types/admin';
 
 export const useAppointments = (params: {

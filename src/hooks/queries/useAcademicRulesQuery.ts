@@ -1,6 +1,6 @@
 // src/hooks/queries/useAcademicRulesQuery.ts
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { academicRuleService } from '../../services/admin/academic-rule.service';
+import { academicRuleService } from '../../services/management/academic-rule.service';
 import type { AcademicRuleFilterParams } from '../../types/academic-rule';
 
 export const ACADEMIC_RULE_QUERY_KEYS = {

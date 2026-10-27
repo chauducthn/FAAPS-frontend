@@ -4,11 +4,11 @@
 import type { AdvisingRequestType } from '@/types/advising';
 
 export const REQUEST_TYPE_LABELS: Record<AdvisingRequestType, string> = {
-  PLAN_REVIEW: 'Duyệt kế hoạch học tập',
-  COURSE_SELECTION: 'Chọn môn học',
-  ACADEMIC_GUIDANCE: 'Hướng dẫn học thuật',
-  GRADUATION_CHECK: 'Kiểm tra điều kiện tốt nghiệp',
-  OTHER: 'Khác',
+  PLAN_REVIEW: 'Study plan review',
+  COURSE_SELECTION: 'Course selection',
+  ACADEMIC_GUIDANCE: 'Academic guidance',
+  GRADUATION_CHECK: 'Graduation eligibility check',
+  OTHER: 'Other',
 };
 
 export function RequestTypeLabel({

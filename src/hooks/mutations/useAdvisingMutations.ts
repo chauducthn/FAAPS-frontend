@@ -15,11 +15,11 @@ export const useCreateAdvisingRequest = () => {
   return useMutation({
     mutationFn: (body: CreateAdvisingRequestDto) => studentService.createAdvisingRequest(body),
     onSuccess: () => {
-      toast.success('Đã gửi yêu cầu tư vấn');
+      toast.success('Advising request submitted');
       queryClient.invalidateQueries({ queryKey: STUDENT_QUERY_KEYS.all });
     },
     onError: (error) => {
-      toast.error(apiErrorMessage(error, 'Không gửi được yêu cầu.'));
+      toast.error(apiErrorMessage(error, 'Unable to submit the request.'));
     },
   });
 };
@@ -36,13 +36,13 @@ export const useUpdateAdvisingRequestStatus = () => {
       advisorService.updateRequestStatus(id, body),
     onSuccess: (_data, variables) => {
       const { status } = variables.body;
-      if (status === 'RESOLVED') toast.success('Đã chấp nhận yêu cầu');
-      else if (status === 'CANCELLED') toast.success('Đã từ chối yêu cầu');
-      else toast.success('Đã tiếp nhận yêu cầu');
+      if (status === 'RESOLVED') toast.success('Request accepted');
+      else if (status === 'CANCELLED') toast.success('Request rejected');
+      else toast.success('Request is now in progress');
       queryClient.invalidateQueries({ queryKey: ADVISOR_QUERY_KEYS.all });
     },
     onError: (error) => {
-      toast.error(apiErrorMessage(error, 'Không cập nhật được yêu cầu.'));
+      toast.error(apiErrorMessage(error, 'Unable to update the request.'));
     },
   });
 };
@@ -66,11 +66,11 @@ export const useMarkAllStudentNotificationsRead = () => {
   return useMutation({
     mutationFn: () => studentService.markAllNotificationsRead(),
     onSuccess: (result) => {
-      toast.success(`Đã đánh dấu ${result.updated} thông báo là đã đọc`);
+      toast.success(`${result.updated} notification(s) marked as read`);
       queryClient.invalidateQueries({ queryKey: STUDENT_QUERY_KEYS.all });
     },
     onError: (error) => {
-      toast.error(apiErrorMessage(error, 'Không cập nhật được thông báo.'));
+      toast.error(apiErrorMessage(error, 'Unable to update notifications.'));
     },
   });
 };

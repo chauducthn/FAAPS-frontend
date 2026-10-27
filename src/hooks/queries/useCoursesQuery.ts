@@ -1,6 +1,6 @@
 // src/hooks/queries/useCoursesQuery.ts
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { courseService } from '../../services/admin/course.service';
+import { courseService } from '../../services/management/course.service';
 import type { CourseFilterParams } from '../../types/course';
 
 export const COURSE_QUERY_KEYS = {

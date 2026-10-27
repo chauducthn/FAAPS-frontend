@@ -10,10 +10,10 @@ export const REQUEST_TYPES = [
 ] as const;
 
 export const createAdvisingRequestSchema = z.object({
-  requestType: z.enum(REQUEST_TYPES, { message: 'Chọn loại yêu cầu' }),
-  title: z.string().trim().min(5, 'Tiêu đề tối thiểu 5 ký tự').max(255, 'Tối đa 255 ký tự'),
-  description: z.string().trim().max(2000, 'Tối đa 2000 ký tự').optional(),
-  studyPlanId: z.string().uuid('Mã kế hoạch học tập không hợp lệ').optional().or(z.literal('')),
+  requestType: z.enum(REQUEST_TYPES, { message: 'Select a request type' }),
+  title: z.string().trim().min(5, 'Title must contain at least 5 characters').max(255, 'Maximum 255 characters'),
+  description: z.string().trim().max(2000, 'Maximum 2000 characters').optional(),
+  studyPlanId: z.string().uuid('Invalid study plan ID').optional().or(z.literal('')),
 });
 
 export type CreateAdvisingRequestFormValues = z.infer<typeof createAdvisingRequestSchema>;

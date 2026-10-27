@@ -22,7 +22,7 @@ export const useCreateAiConversation = () => {
       queryClient.invalidateQueries({ queryKey: AI_STUDENT_QUERY_KEYS.conversations });
     },
     onError: (error) => {
-      toast.error(apiErrorMessage(error, 'Không tạo được hội thoại mới.'));
+      toast.error(apiErrorMessage(error, 'Unable to create a new conversation.'));
     },
   });
 };
@@ -41,7 +41,7 @@ export const useSendAiMessage = (conversationId: string | null) => {
       queryClient.invalidateQueries({ queryKey: AI_STUDENT_QUERY_KEYS.conversations });
     },
     onError: (error) => {
-      toast.error(apiErrorMessage(error, 'Không gửi được tin nhắn.'));
+      toast.error(apiErrorMessage(error, 'Unable to send the message.'));
     },
   });
 };
@@ -59,7 +59,7 @@ export const useSendAiFeedback = (conversationId: string | null) => {
       });
     },
     onError: (error) => {
-      toast.error(apiErrorMessage(error, 'Không gửi được đánh giá.'));
+      toast.error(apiErrorMessage(error, 'Unable to submit feedback.'));
     },
   });
 };
@@ -71,11 +71,11 @@ export const useGenerateRoadmap = () => {
   return useMutation({
     mutationFn: (body: GenerateRoadmapDto = {}) => aiStudentService.generateRoadmap(body),
     onSuccess: () => {
-      toast.success('Đã sinh lộ trình học mới');
+      toast.success('A new study roadmap has been generated');
       queryClient.invalidateQueries({ queryKey: AI_STUDENT_QUERY_KEYS.roadmap });
     },
     onError: (error) => {
-      toast.error(apiErrorMessage(error, 'Không sinh được lộ trình học.'));
+      toast.error(apiErrorMessage(error, 'Unable to generate a study roadmap.'));
     },
   });
 };

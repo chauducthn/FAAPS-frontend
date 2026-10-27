@@ -2,8 +2,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { toastBadRequest } from '../../lib/apiError';
-import { cohortService } from '../../services/admin/cohort.service';
-import { curriculumService } from '../../services/admin/curriculum.service';
+import { cohortService } from '../../services/management/cohort.service';
+import { curriculumService } from '../../services/management/curriculum.service';
 import type { AddCurriculumCoursesInput, CurriculumInput, CurriculumStatus } from '../../types/curriculum';
 import { CURRICULUM_QUERY_KEYS, serviceFor, type CurriculumKind } from '../queries/useCurriculumsQuery';
 

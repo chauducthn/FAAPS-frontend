@@ -1,6 +1,6 @@
 // src/hooks/queries/useAiConfigQuery.ts
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { aiConfigService } from '../../services/admin/ai-config.service';
+import { aiConfigService } from '../../services/management/ai-config.service';
 import type {
   AiConfigFilterParams,
   AiPerformanceFilterParams,
