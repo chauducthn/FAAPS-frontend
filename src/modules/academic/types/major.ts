@@ -2,8 +2,8 @@ export type MajorStatus = 'ACTIVE' | 'INACTIVE' | 'DRAFT';
 
 export interface Major {
   id: string;
-  code: string;           
-  name: string;           
+  code: string;
+  name: string;
   description?: string;
   totalCredits: number;
   durationYears: number;
@@ -28,8 +28,8 @@ export interface CreateMajorDto {
   description?: string;
   totalCredits: number;
   durationYears: number;
+  cohort: string;
+  status: MajorStatus;
 }
 
-export interface UpdateMajorDto extends Partial<CreateMajorDto> {
-  status?: MajorStatus;
-}
+export interface UpdateMajorDto extends Partial<CreateMajorDto> {}
