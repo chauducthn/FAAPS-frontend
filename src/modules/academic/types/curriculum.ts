@@ -73,7 +73,7 @@ export interface AddCurriculumCoursesInput {
   isMandatory: boolean;
 }
 
-/** A semester the form can pick; the backend has no semester list API, so these come from existing records. */
+/** A semester the form can pick from the backend semester catalogue. */
 export interface SemesterOption {
   id: string;
   code: string;

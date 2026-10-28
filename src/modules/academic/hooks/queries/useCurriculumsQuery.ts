@@ -3,6 +3,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { cohortService } from '../../../management/services/cohort.service';
 import { curriculumService } from '../../../management/services/curriculum.service';
+import { semesterService } from '../../services/semesterService';
 import type { CurriculumFilterParams, SemesterOption } from '../../types/curriculum';
 
 export type CurriculumKind = 'cohort' | 'curriculum';
@@ -38,24 +39,11 @@ export const useCurriculumCourses = (id: string | null) =>
     enabled: !!id,
   });
 
-/**
- * Semesters the form can pick. The backend has no semester list endpoint, so they are collected from the
- * semesters already used by existing cohorts/curriculums (newest first).
- */
 export const useSemesterOptions = (enabled = true) =>
   useQuery({
     queryKey: CURRICULUM_QUERY_KEYS.semesters(),
     enabled,
     staleTime: 60_000,
-    queryFn: async (): Promise<SemesterOption[]> => {
-      const page = await curriculumService.list({ page: 0, size: 100 });
-      const map = new Map<string, SemesterOption>();
-      for (const item of page.items) {
-        map.set(item.effectiveFromSemesterId, { id: item.effectiveFromSemesterId, code: item.effectiveFromSemesterCode, startDate: item.effectiveFromDate });
-        if (item.effectiveToSemesterId && item.effectiveToSemesterCode) {
-          map.set(item.effectiveToSemesterId, { id: item.effectiveToSemesterId, code: item.effectiveToSemesterCode, startDate: item.effectiveToDate });
-        }
-      }
-      return [...map.values()].sort((a, b) => (b.startDate ?? '').localeCompare(a.startDate ?? ''));
-    },
+    queryFn: async (): Promise<SemesterOption[]> =>
+      (await semesterService.list()).map(({ id, code, startDate }) => ({ id, code, startDate })),
   });

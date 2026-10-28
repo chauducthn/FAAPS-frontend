@@ -5,10 +5,9 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Bot, KeyRound, Save, Sparkles } from 'lucide-react';
+import { KeyRound, Save, Sparkles } from 'lucide-react';
 import {
   createAiConfigSchema,
-  aiSecretSchema,
   type CreateAiConfigFormValues,
 } from '../../../ai/validations/ai-config.schema';
 import type { AiConfig, AiPreset } from '../../../ai/types/ai-config';
@@ -21,8 +20,6 @@ interface Props {
   preset?: AiPreset | null;
   isLoading?: boolean;
   onSubmit: (values: CreateAiConfigFormValues) => void;
-  onSetSecret: (apiKey: string) => void;
-  isSettingSecret?: boolean;
 }
 
 const TABS = [
@@ -39,8 +36,6 @@ export default function AiConfigForm({
   preset,
   isLoading,
   onSubmit,
-  onSetSecret,
-  isSettingSecret,
 }: Props) {
   const isCreate = mode === 'create';
   const [tab, setTab] = useState<TabId>('general');
@@ -326,64 +321,13 @@ export default function AiConfigForm({
       </div>
 
       {/* Secret section: write-only. Never pre-filled. */}
-      {!isCreate && <SecretForm onSubmit={onSetSecret} isSubmitting={isSettingSecret} />}
+      {!isCreate && (
+        <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800">
+          <KeyRound className="mr-2 inline size-4" />
+          Configure FAAPS_GEMINI_API_KEY in the backend environment to enable AI chat. Keys are not stored in this form.
+        </p>
+      )}
     </form>
-  );
-}
-
-function SecretForm({
-  onSubmit,
-  isSubmitting,
-}: {
-  onSubmit: (apiKey: string) => void;
-  isSubmitting?: boolean;
-}) {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<{ apiKey: string }>({
-    resolver: zodResolver(aiSecretSchema),
-    defaultValues: { apiKey: '' },
-  });
-
-  return (
-    <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/50 p-4">
-      <div className="flex items-center gap-2">
-        <KeyRound className="size-4 text-amber-700" />
-        <span className="text-xs font-bold uppercase tracking-wider text-amber-800">API key (write-only)</span>
-      </div>
-      <p className="mt-1.5 text-[11px] text-amber-700">
-        The server never returns the API key. Submitting a new value replaces the existing key.
-      </p>
-      <form
-        onSubmit={handleSubmit((v) => {
-          onSubmit(v.apiKey);
-          reset();
-        })}
-        className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end"
-      >
-        <div className="flex-1">
-          <input
-            type="password"
-            autoComplete="off"
-            placeholder="••••••••••••"
-            {...register('apiKey')}
-            className={cn(inputClass, 'bg-white')}
-          />
-          {errors.apiKey && <p className="mt-1 text-[11px] font-medium text-red-600">{errors.apiKey.message}</p>}
-        </div>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-60"
-        >
-          <Bot className="size-4" />
-          {isSubmitting ? 'Saving...' : 'Save key'}
-        </button>
-      </form>
-    </div>
   );
 }
 

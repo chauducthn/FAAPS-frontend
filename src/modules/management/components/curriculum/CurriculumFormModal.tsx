@@ -9,6 +9,7 @@ import { useMajorsQuery } from '../../../academic/hooks/queries/useMajorsQuery';
 import { useSemesterOptions } from '../../../academic/hooks/queries/useCurriculumsQuery';
 import { curriculumFormSchema, type CurriculumFormValues } from '../../../academic/validations/curriculum.schema';
 import type { CurriculumInput, CurriculumItem } from '../../../academic/types/curriculum';
+import { SemesterCreator } from './SemesterCreator';
 
 interface Props {
   open: boolean;
@@ -54,6 +55,7 @@ export default function CurriculumFormModal({ open, noun, initial, isSubmitting,
     handleSubmit,
     reset,
     watch,
+    setValue,
     setError,
     formState: { errors },
   } = useForm<CurriculumFormValues>({ resolver: zodResolver(curriculumFormSchema), defaultValues: emptyValues });
@@ -139,6 +141,7 @@ export default function CurriculumFormModal({ open, noun, initial, isSubmitting,
                   </option>
                 ))}
               </select>
+              <SemesterCreator onCreated={(id) => setValue('effectiveFromSemesterId', id, { shouldValidate: true })} />
             </Field>
             <Field label="End semester" error={errors.effectiveToSemesterId?.message}>
               <select {...register('effectiveToSemesterId')} className={field} aria-label="End semester">
@@ -153,8 +156,7 @@ export default function CurriculumFormModal({ open, noun, initial, isSubmitting,
           </div>
           {!semesters.isLoading && semesterList.length === 0 && (
             <p className="text-[11px] text-amber-700">
-              No semesters are available yet. The backend has no semester list API, so semesters can only be chosen from ones
-              already used by an existing cohort.
+              No semesters are available yet. Add the first semester above.
             </p>
           )}
 

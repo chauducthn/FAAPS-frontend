@@ -37,10 +37,10 @@ export function RoadmapPanel() {
       <section className="rounded-xl bg-white p-5 shadow-sm">
         <h2 className="flex items-center gap-2 text-sm font-semibold text-[#151c27]">
           <Sparkles className="size-4 text-[#F26F21]" />
-          Generate an AI Study Roadmap
+          Generate a Curriculum Study Roadmap
         </h2>
         <p className="mt-0.5 text-[13px] text-[#555f6f]">
-          AI analyzes your GPA, earned credits, and curriculum to recommend each semester.
+          This roadmap organizes curriculum courses by semester and credit limit. Review it before submitting a study plan.
         </p>
 
         <form onSubmit={handleGenerate} className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_160px_auto]">

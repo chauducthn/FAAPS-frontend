@@ -36,6 +36,7 @@ function AssistantMeta({ message }: { message: AiChatMessage }) {
           Confidence {Math.round(message.confidenceScore * 100)}%
         </span>
       )}
+      {message.isFallback && <span className="text-[11px] text-[#98a2b3]">Assistant unavailable</span>}
       <span className="inline-flex items-center gap-1">
         <button
           type="button"

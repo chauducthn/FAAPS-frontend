@@ -133,8 +133,7 @@ export function RoadmapTimeline({ roadmap }: { roadmap: StudyRoadmap }) {
       <div className="rounded-xl border border-orange-200 bg-[#fff7ed] p-4">
         <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[#b45309]">
           <Sparkles className="size-3.5" />
-          AI Summary {roadmap.modelName ? `· ${roadmap.modelName}` : ''}
-          {typeof roadmap.confidenceScore === 'number' ? ` · Confidence ${Math.round(roadmap.confidenceScore * 100)}%` : ''}
+          Curriculum Summary
         </p>
         <p className="mt-1.5 text-[13px] leading-relaxed text-[#151c27]">{roadmap.summary}</p>
         <p className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[12px] font-semibold text-[#555f6f]">

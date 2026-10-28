@@ -27,8 +27,6 @@ export default function AiConfigPage() {
     isCreating,
     update,
     isUpdating,
-    setSecret,
-    isSettingSecret,
     remove,
     isRemoving,
   } = useAiConfigMutations();
@@ -195,10 +193,6 @@ export default function AiConfigPage() {
                 onSubmit={async (values: CreateAiConfigFormValues) => {
                   await update({ id: activeItem.id, body: values });
                 }}
-                onSetSecret={async (apiKey) => {
-                  await setSecret({ id: activeItem.id, body: { apiKey } });
-                }}
-                isSettingSecret={isSettingSecret}
               />
             </>
           ) : (
@@ -259,9 +253,6 @@ export default function AiConfigPage() {
               await create(values);
               setCreatingOpen(false);
               setSelectedPreset(null);
-            }}
-            onSetSecret={async () => {
-              /* API key được đặt sau khi config đã tạo */
             }}
           />
         </div>
