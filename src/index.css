@@ -136,3 +136,37 @@ body {
     @apply font-sans;
   }
 }
+
+/*
+ * The horizontal scrollbar of the roadmap board. The browser default is too heavy for a
+ * dense kanban: this one is thin, rounded and quiet until the pointer is over it.
+ */
+@layer components {
+  .roadmap-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+
+  .roadmap-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .roadmap-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .roadmap-scroll::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .roadmap-scroll:hover::-webkit-scrollbar-thumb {
+    background-color: #94a3b8;
+  }
+
+  .roadmap-scroll::-webkit-scrollbar-thumb:hover {
+    background-color: #64748b;
+  }
+}
