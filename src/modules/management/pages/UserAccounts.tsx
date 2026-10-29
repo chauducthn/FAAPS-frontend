@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { StatusBadge } from '../components/StatusBadge';
 import { UserInitials } from '../components/UserInitials';
 import { UserDetailModal } from '../components/UserDetailModal';
+import { CreateUserModal } from '../components/CreateUserModal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { backState } from '../../../shared/lib/backLink';
@@ -83,8 +84,6 @@ export default function UserAccounts() {
   const [curriculumId, setCurriculumId] = useState('');
   const [roleError, setRoleError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
-  const [createForm, setCreateForm] = useState({ role: 'STUDENT' as AdminUserRole, email: '', fullName: '', studentCode: '', curriculumId: '', maxAdvisees: '30' });
-  const [createError, setCreateError] = useState('');
 
   const changeStatus = useChangeUserStatus();
   const changeRole = useChangeUserRole();
@@ -188,27 +187,6 @@ export default function UserAccounts() {
     } catch (error) {
       setRoleError(apiErrorMessage(error));
     }
-  };
-
-  const createUser = async () => {
-    const curriculum = curriculums.data?.items.find((item) => item.id === createForm.curriculumId);
-    if (!createForm.fullName.trim() || !createForm.email.trim()) return setCreateError('Full name and email are required.');
-    if (createForm.role === 'STUDENT' && (!/^(SE|IA)1\d{5}$/.test(createForm.studentCode) || !curriculum)) {
-      return setCreateError('Student ID must match SE173012/IA173012 and a curriculum is required.');
-    }
-    try {
-      await adminService.createUser({
-        role: createForm.role, email: createForm.email.trim(), fullName: createForm.fullName.trim(),
-        studentCode: createForm.role === 'STUDENT' ? createForm.studentCode : undefined,
-        curriculumVersionId: curriculum?.id, enrollmentSemesterId: curriculum?.effectiveFromSemesterId,
-        currentSemester: createForm.role === 'STUDENT' ? 1 : undefined,
-        maxAdvisees: createForm.role === 'ADVISOR' ? Number(createForm.maxAdvisees) : undefined,
-      });
-      toast.success('User account created.');
-      setCreating(false); setCreateError('');
-      setCreateForm({ role: 'STUDENT', email: '', fullName: '', studentCode: '', curriculumId: '', maxAdvisees: '30' });
-      await refetch();
-    } catch (error) { setCreateError(apiErrorMessage(error)); }
   };
 
   const columns = useMemo<DataTableColumnDef<AdminUserSummary>[]>(
@@ -423,19 +401,16 @@ export default function UserAccounts() {
 
       <UserDetailModal userId={detailId} onClose={() => setDetailId(null)} />
 
-      <Modal open={creating} onClose={() => setCreating(false)} title="Create user" className="max-w-lg">
-        <div className="space-y-4 p-6">
-          <label className="block text-sm font-medium">Role<select value={createForm.role} onChange={(e) => setCreateForm({ ...createForm, role: e.target.value as AdminUserRole })} className="mt-1 w-full rounded-lg border p-2"><option value="STUDENT">Student</option><option value="ADVISOR">Advisor</option></select></label>
-          <label className="block text-sm font-medium">Full name<input value={createForm.fullName} onChange={(e) => setCreateForm({ ...createForm, fullName: e.target.value })} className="mt-1 w-full rounded-lg border p-2" /></label>
-          <label className="block text-sm font-medium">Email<input type="email" value={createForm.email} onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })} className="mt-1 w-full rounded-lg border p-2" /></label>
-          {createForm.role === 'STUDENT' ? <>
-            <label className="block text-sm font-medium">Student ID<input value={createForm.studentCode} maxLength={8} onChange={(e) => setCreateForm({ ...createForm, studentCode: e.target.value.toUpperCase() })} placeholder="SE173012" className="mt-1 w-full rounded-lg border p-2" /></label>
-            <label className="block text-sm font-medium">Curriculum<select value={createForm.curriculumId} onChange={(e) => setCreateForm({ ...createForm, curriculumId: e.target.value })} className="mt-1 w-full rounded-lg border p-2"><option value="">Select curriculum...</option>{(curriculums.data?.items ?? []).map((item) => <option key={item.id} value={item.id}>{item.majorCode} {item.version} · {item.name}</option>)}</select></label>
-          </> : <label className="block text-sm font-medium">Maximum advisees<input type="number" min="1" value={createForm.maxAdvisees} onChange={(e) => setCreateForm({ ...createForm, maxAdvisees: e.target.value })} className="mt-1 w-full rounded-lg border p-2" /></label>}
-          {createError && <p role="alert" className="text-sm text-red-600">{createError}</p>}
-          <div className="flex justify-end gap-2"><button onClick={() => setCreating(false)} className="rounded-lg bg-gray-100 px-4 py-2">Cancel</button><button onClick={createUser} className="rounded-lg bg-[#f37021] px-4 py-2 font-semibold text-white">Create user</button></div>
-        </div>
-      </Modal>
+      <CreateUserModal
+        open={creating}
+        defaultRole={role}
+        onClose={() => setCreating(false)}
+        onCreated={async (name) => {
+          toast.success(`${name} was added.`);
+          setCreating(false);
+          await refetch();
+        }}
+      />
 
       <ConfirmDialog
         open={!!confirm}

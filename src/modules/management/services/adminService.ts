@@ -89,9 +89,11 @@ export const adminService = {
     role: AdminUserRole;
     email: string;
     fullName: string;
+    phone?: string;
     studentCode?: string;
     curriculumVersionId?: string;
     enrollmentSemesterId?: string;
+    expectedGraduationSemesterId?: string;
     currentSemester?: number;
     maxAdvisees?: number;
   }): Promise<AdminUserDetail> => {

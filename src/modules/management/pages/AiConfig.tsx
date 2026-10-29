@@ -53,7 +53,7 @@ export default function AiConfigPage() {
   }, [items]);
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs text-[#555f6f]">AI / Configuration</p>

@@ -166,7 +166,7 @@ export default function AssignmentsOverview() {
   const hasFilter = !!search || !!cohortFilter || pendingOnly;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <div>
         <p className="text-xs text-[#555f6f]">Users &amp; Advisors / Advisor Assignments</p>
         <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">Advisor Assignments</h1>

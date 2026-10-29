@@ -68,7 +68,7 @@ export default function AiReportDetail() {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-6xl">
+      <div className="w-full">
         {back}
         <div className="mt-6 h-64 animate-pulse rounded-xl bg-white" />
       </div>
@@ -77,7 +77,7 @@ export default function AiReportDetail() {
 
   if (isError || !data) {
     return (
-      <div className="mx-auto max-w-6xl">
+      <div className="w-full">
         {back}
         <div className="mt-6 rounded-xl bg-white p-8 text-center text-sm text-[#555f6f]">
           Could not load this report.{' '}
@@ -110,7 +110,7 @@ export default function AiReportDetail() {
   };
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <div>
         {back}
         <h1 className="mt-3 text-2xl font-semibold text-[#151c27]">Report Details</h1>

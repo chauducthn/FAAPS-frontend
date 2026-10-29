@@ -120,7 +120,7 @@ export default function CohortDetails() {
   const hasFilters = !!search || unassignedOnly || pendingOnly;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <div>
         <Link to="/admin/assignments" className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
           <ChevronLeft className="size-4" />

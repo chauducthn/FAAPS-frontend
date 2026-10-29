@@ -23,7 +23,7 @@ export function Navbar() {
 
         <div className="hidden items-center gap-3 md:flex">
           <CTAButton variant="outline">Sign in</CTAButton>
-          <CTAButton>Get Started</CTAButton>
+          <CTAButton to="/register">Get Started</CTAButton>
         </div>
 
         <button
@@ -53,7 +53,7 @@ export function Navbar() {
           </nav>
           <div className="flex flex-col gap-2 pt-2">
             <CTAButton variant="outline" onClick={close}>Sign in</CTAButton>
-            <CTAButton onClick={close}>Get Started</CTAButton>
+            <CTAButton to="/register" onClick={close}>Get Started</CTAButton>
           </div>
         </div>
       )}
