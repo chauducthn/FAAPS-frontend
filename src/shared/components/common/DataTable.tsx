@@ -215,6 +215,11 @@ export interface DataTableProps<TData extends RowData, TValue = any> {
    * or the column id.
    */
   searchKey: string;
+  /**
+   * Renders the built-in search box in the toolbar. Turn it off when the
+   * page owns the search input in its own toolbar.
+   */
+  showSearch?: boolean;
   /** Slot for filter controls rendered by the parent component. */
   filters?: ReactNode;
   /** Buttons rendered inside the floating bulk-action bar. */
@@ -273,6 +278,7 @@ export function DataTable<TData extends RowData, TValue = any>({
   columns,
   data,
   searchKey,
+  showSearch = true,
   filters,
   bulkActions,
   columnFilters,
@@ -470,25 +476,34 @@ export function DataTable<TData extends RowData, TValue = any>({
   return (
     <div className={cn('w-full', className)}>
       {/* Toolbar: search + parent-provided filters */}
-      <div className="flex flex-wrap items-center gap-3 pb-4">
-        <div className="relative w-full sm:w-72">
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
-            aria-hidden
-          />
-          <input
-            type="search"
-            value={internalSearch}
-            onChange={(event) => setInternalSearch(event.target.value)}
-            placeholder={searchPlaceholder}
-            aria-label={searchPlaceholder}
-            className={cn(
-              'h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-[#151c27]',
-              'outline-none transition-colors placeholder:text-slate-400',
-              'focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
-            )}
-          />
-        </div>
+      <div
+        className={cn(
+          'flex flex-wrap items-center gap-3',
+          // Without a search box the toolbar would leave a stray gap above
+          // the table, so it is dropped entirely.
+          showSearch ? 'pb-4' : 'hidden',
+        )}
+      >
+        {showSearch ? (
+          <div className="relative w-full sm:w-72">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+              aria-hidden
+            />
+            <input
+              type="search"
+              value={internalSearch}
+              onChange={(event) => setInternalSearch(event.target.value)}
+              placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
+              className={cn(
+                'h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-[#151c27]',
+                'outline-none transition-colors placeholder:text-slate-400',
+                'focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
+              )}
+            />
+          </div>
+        ) : null}
         {filters ? <div className="flex flex-wrap items-center gap-3">{filters}</div> : null}
       </div>
 
