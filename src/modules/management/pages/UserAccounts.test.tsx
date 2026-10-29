@@ -9,13 +9,14 @@ const listUsers = vi.fn();
 const getCohortOptions = vi.fn();
 const getMajorOptions = vi.fn();
 const getCurriculums = vi.fn();
+const createUser = vi.fn();
 
 vi.mock('../services/adminService', () => ({
   adminService: {
     getUsers: (...args: unknown[]) => listUsers(...args),
     getCohortOptions: (...args: unknown[]) => getCohortOptions(...args),
     getMajorOptions: (...args: unknown[]) => getMajorOptions(...args),
-    createUser: vi.fn(),
+    createUser: (...args: unknown[]) => createUser(...args),
     changeUserStatus: vi.fn(),
     changeUserRole: vi.fn(),
     bulkChangeUserStatus: vi.fn(),
@@ -25,6 +26,7 @@ vi.mock('../services/adminService', () => ({
 
 vi.mock('../../academic/hooks/queries/useCurriculumsQuery', () => ({
   useCurriculumsQuery: () => ({ data: { items: [] } }),
+  useSemesterOptions: () => ({ data: [], isLoading: false }),
 }));
 
 function renderPage() {
@@ -123,5 +125,41 @@ describe('UserAccounts', () => {
       },
       { timeout: 2000 },
     );
+  });
+  describe('create user modal', () => {
+    it('explains that accounts have no password and validates required fields', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByRole('button', { name: /create user/i }));
+      expect(await screen.findByText(/No password is set/i)).toBeInTheDocument();
+
+      await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
+      expect(await screen.findByText('Full name is required')).toBeInTheDocument();
+      expect(screen.getByText('Use the format SE173012 or IA173012')).toBeInTheDocument();
+      expect(createUser).not.toHaveBeenCalled();
+    });
+
+    it('creates an advisor from the advisor fields', async () => {
+      const user = userEvent.setup();
+      createUser.mockResolvedValue({});
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByRole('button', { name: /create user/i }));
+      await user.click(await screen.findByText('Advisor', { selector: 'label' }));
+      await user.type(screen.getByLabelText('Full name'), 'Tran Advisor');
+      await user.type(screen.getByLabelText('Email'), 'advisor@fpt.edu.vn');
+      await user.clear(screen.getByLabelText('Maximum advisees'));
+      await user.type(screen.getByLabelText('Maximum advisees'), '12');
+      await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
+
+      await waitFor(() =>
+        expect(createUser).toHaveBeenCalledWith(
+          expect.objectContaining({ role: 'ADVISOR', fullName: 'Tran Advisor', email: 'advisor@fpt.edu.vn', maxAdvisees: 12 }),
+        ),
+      );
+    });
   });
 });
