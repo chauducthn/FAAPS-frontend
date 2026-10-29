@@ -280,8 +280,8 @@ export function DataTable<TData extends RowData, TValue = any>({
   isLoading = false,
   pageSizes = [10, 25, 50, 100],
   getRowId,
-  searchPlaceholder = 'Tìm kiếm...',
-  emptyText = 'Không tìm thấy dữ liệu',
+  searchPlaceholder = 'Search...',
+  emptyText = 'No data found.',
   className,
   manual = false,
   searchValue,
@@ -506,7 +506,7 @@ export function DataTable<TData extends RowData, TValue = any>({
                           checked={allSelected}
                           indeterminate={someSelected}
                           onChange={table.getToggleAllRowsSelectedHandler()}
-                          label="Chọn tất cả"
+                          label="Select all"
                         />
                       </th>
                     );
@@ -582,8 +582,8 @@ export function DataTable<TData extends RowData, TValue = any>({
                     <p className="text-sm font-semibold text-[#151c27]">{emptyText}</p>
                     <p className="text-[13px] text-slate-500">
                       {isSearching
-                        ? 'Thử từ khoá khác hoặc bỏ bộ lọc đang áp dụng.'
-                        : 'Chưa có dữ liệu nào để hiển thị.'}
+                        ? 'Try a different keyword or clear the active filters.'
+                        : 'There is no data to display yet.'}
                     </p>
                   </div>
                 </td>
@@ -606,7 +606,7 @@ export function DataTable<TData extends RowData, TValue = any>({
                             <Checkbox
                               checked={isSelected}
                               onChange={row.getToggleSelectedHandler()}
-                              label={`Chọn dòng ${row.index + 1}`}
+                              label={`Select row ${row.index + 1}`}
                             />
                           </td>
                         );
@@ -634,17 +634,17 @@ export function DataTable<TData extends RowData, TValue = any>({
       <div className="flex flex-col gap-3 border-t border-slate-200 px-1 py-3.5 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-[13px] text-slate-500">
           {totalRows === 0
-            ? 'Không có dòng dữ liệu'
-            : `Hiển thị ${firstRow}–${lastRow} / ${totalRows} dòng`}
+            ? 'No rows'
+            : `Showing ${firstRow}–${lastRow} of ${totalRows} rows`}
         </p>
 
         <div className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-[13px] text-slate-500">
-            Số dòng
+            Rows per page
             <select
               value={pageSize}
               onChange={(event) => table.setPageSize(Number(event.target.value))}
-              aria-label="Số dòng mỗi trang"
+              aria-label="Rows per page"
               className={cn(
                 'h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] font-medium text-[#151c27]',
                 'outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
@@ -659,7 +659,7 @@ export function DataTable<TData extends RowData, TValue = any>({
           </label>
 
           <span className="text-[13px] font-semibold text-slate-700">
-            Trang {pageIndex + 1} / {totalPages}
+            Page {pageIndex + 1} of {totalPages}
           </span>
 
           <div className="flex items-center gap-1">
@@ -700,7 +700,7 @@ export function DataTable<TData extends RowData, TValue = any>({
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-5">
           <div
             role="region"
-            aria-label="Thao tác hàng loạt"
+            aria-label="Bulk actions"
             className={cn(
               'pointer-events-auto flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white py-3 pl-4 pr-3',
               'shadow-[0_12px_32px_rgba(20,32,51,0.14)]',
@@ -708,7 +708,7 @@ export function DataTable<TData extends RowData, TValue = any>({
             )}
           >
             <span className="rounded-full bg-[#F26F21] px-2.5 py-1 text-xs font-bold text-white">
-              {selectedCount} dòng đã chọn
+              {selectedCount} row{selectedCount === 1 ? '' : 's'} selected
             </span>
             {bulkActions ? (
               <div className="flex flex-wrap items-center gap-2">{bulkActions(selectedRows)}</div>
@@ -716,7 +716,7 @@ export function DataTable<TData extends RowData, TValue = any>({
             <button
               type="button"
               onClick={() => table.resetRowSelection()}
-              aria-label="Bỏ chọn tất cả"
+              aria-label="Clear selection"
               className={cn(
                 'inline-flex size-7 items-center justify-center rounded-md text-slate-400',
                 'transition-colors hover:bg-slate-100 hover:text-slate-700',

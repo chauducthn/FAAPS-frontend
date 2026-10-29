@@ -215,7 +215,7 @@ export default function UserAccounts() {
     () => [
       {
         accessorKey: 'fullName',
-        header: 'Họ tên',
+        header: 'Full Name',
         cell: ({ row }) => (
           <div className="flex items-center gap-2.5">
             <UserInitials name={row.original.fullName} />
@@ -241,7 +241,7 @@ export default function UserAccounts() {
       },
       {
         accessorKey: 'status',
-        header: 'Trạng thái',
+        header: 'Status',
         enableSorting: false,
         cell: ({ row }) => <StatusBadge status={row.original.status} />,
       },
