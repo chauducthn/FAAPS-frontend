@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { Bell, Search } from 'lucide-react';
-import { AssignAdvisorModal } from '../../components/AssignAdvisorModal';
+import { Bell, Search, WandSparkles } from 'lucide-react';
+import { toast } from 'sonner';
+import { AssignToAdvisorModal } from '../../components/AssignToAdvisorModal';
 import { AutoAssignModal } from '../../components/AutoAssignModal';
 import { CohortAssignModal } from '../../components/CohortAssignModal';
 import { CohortPoolModal } from '../../components/CohortPoolModal';
 import { LoadBadge } from '../../components/LoadBadge';
+import { UserInitials } from '../../components/UserInitials';
 import { backState } from '../../../../shared/lib/backLink';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { Pagination } from '../../components/Pagination';
@@ -13,11 +15,13 @@ import {
   useAdvisorCohortRows,
   useAssignmentAdvisors,
   useAssignmentSummary,
+  useAutoAssignStudents,
   useCohortPool,
   useUnassignedStudents,
 } from '../../hooks/queries/useAdminAssignments';
-import type { SummaryCohort } from '../../types/admin';
+import type { SummaryCohort, UnassignedStudent } from '../../types/admin';
 import { cn } from '@/shared/lib/utils';
+import { DataTable, type DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 
 const PAGE_SIZE = 10;
 type Tab = 'cohorts' | 'advisors' | 'unassigned';
@@ -85,16 +89,17 @@ export default function AssignmentsOverview() {
   const [search, setSearch] = useState('');
   const [cohortFilter, setCohortFilter] = useState('');
   const [page, setPage] = useState(0);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const [assignCohortFor, setAssignCohortFor] = useState<{ cohortId?: string; advisorId?: string } | null>(null);
   const [autoFor, setAutoFor] = useState<SummaryCohort | null>(null);
   const [poolFor, setPoolFor] = useState<SummaryCohort | null>(null);
-  const [assignStudents, setAssignStudents] = useState<{ id: string; name: string }[] | null>(null);
+  // The students ticked in the unassigned table, handed to the bulk modal.
+  const [bulkAssignStudents, setBulkAssignStudents] = useState<{ id: string; name: string }[] | null>(null);
 
   const summary = useAssignmentSummary();
   const advisors = useAssignmentAdvisors();
   const advisorRows = useAdvisorCohortRows();
+  const autoAssign = useAutoAssignStudents();
   const debouncedSearch = useDebounce(search.trim());
   // The unassigned list is searched, filtered and paged by the server.
   const unassigned = useUnassignedStudents({
@@ -113,7 +118,6 @@ export default function AssignmentsOverview() {
     setParams(next === 'cohorts' && !Object.keys(extra).length ? {} : { tab: next, ...extra }, { replace: true });
     setSearch('');
     setCohortFilter('');
-    setSelected(new Set());
     setPage(0);
   };
 
@@ -144,29 +148,59 @@ export default function AssignmentsOverview() {
 
   const total = tab === 'cohorts' ? cohortRows.length : tab === 'advisors' ? advisorList.length : unassigned.data?.totalElements ?? 0;
   const start = page * PAGE_SIZE;
-  const pageIds = unassignedRows.map((s) => s.id);
-  // A selection only makes sense for the rows currently shown.
-  useEffect(() => setSelected(new Set()), [tab, debouncedSearch, cohortFilter, pendingOnly, page]);
-  const allPageSelected = tab === 'unassigned' && pageIds.length > 0 && pageIds.every((id) => selected.has(id));
-  const toggleOne = (id: string) =>
-    setSelected((cur) => {
-      const next = new Set(cur);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  const toggleAll = () =>
-    setSelected((cur) => {
-      const next = new Set(cur);
-      pageIds.forEach((id) => (allPageSelected ? next.delete(id) : next.add(id)));
-      return next;
-    });
-  const selectedStudents = unassignedRows.filter((s) => selected.has(s.id)).map((s) => ({ id: s.id, name: s.fullName }));
-
   const pending = summary.data?.pendingAdvisorRequests;
   const hasFilter = !!search || !!cohortFilter || pendingOnly;
 
+  const unassignedColumns = useMemo<DataTableColumnDef<UnassignedStudent>[]>(
+    () => [
+      {
+        accessorKey: 'studentCode',
+        header: 'Student ID',
+        enableSorting: false,
+        cell: ({ row }) => (
+          <span className="font-semibold tabular-nums text-[#151c27]">{row.original.studentCode}</span>
+        ),
+      },
+      {
+        accessorKey: 'fullName',
+        header: 'Full Name',
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="flex min-w-0 items-center gap-2.5">
+            <UserInitials name={row.original.fullName} />
+            <span className="truncate font-semibold text-[#151c27]">{row.original.fullName}</span>
+          </div>
+        ),
+      },
+      {
+        accessorKey: 'majorCode',
+        header: 'Major',
+        enableSorting: false,
+        cell: ({ row }) => <span className="text-[#555f6f]">{row.original.majorCode}</span>,
+      },
+      {
+        accessorKey: 'cohort',
+        header: 'Cohort',
+        enableSorting: false,
+        cell: ({ row }) => <span className="text-[#555f6f]">{row.original.cohort}</span>,
+      },
+    ],
+    [],
+  );
+
+  /** Auto assigns the students ticked in the table. */
+  const runAutoAssign = async (studentIds: string[]) => {
+    if (studentIds.length === 0) return;
+    try {
+      const res = await autoAssign.mutateAsync({ studentIds });
+      toast.success(`${res.assigned} student${res.assigned === 1 ? '' : 's'} assigned automatically.`);
+    } catch {
+      // The global API error handler already shows a toast.
+    }
+  };
+
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="w-full space-y-6">
       <div>
         <p className="text-xs text-[#555f6f]">Users &amp; Advisors / Advisor Assignments</p>
         <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">Advisor Assignments</h1>
@@ -285,184 +319,156 @@ export default function AssignmentsOverview() {
         </div>
       </section>
 
-      <section className="rounded-xl bg-white shadow-sm">
-        {tab === 'unassigned' && selected.size > 0 && (
-          <div className="flex flex-col items-start justify-between gap-3 border-b border-[#e7eefe] p-4 sm:flex-row sm:items-center">
-            <p className="text-sm font-semibold text-[#151c27]">
-              {selected.size} student{selected.size === 1 ? '' : 's'} selected
-            </p>
-            <div className="flex gap-2">
-              <button type="button" onClick={() => setSelected(new Set())} className="px-2 text-sm font-semibold text-[#f37021] hover:underline">
-                Clear selection
-              </button>
-              <button type="button" onClick={() => setAssignStudents(selectedStudents)} className="rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15]">
-                Assign advisor
-              </button>
-            </div>
-          </div>
-        )}
-
-        <div className="overflow-x-auto">
-          {tab === 'cohorts' && (
-            <table className="w-full min-w-[820px] text-left">
-              <thead className="bg-[rgba(240,243,255,0.7)]">
-                <tr>
-                  <th className={th}>Major</th>
-                  <th className={th}>Cohort</th>
-                  <th className={th}>Total</th>
-                  <th className={th}>Assigned</th>
-                  <th className={th}>Unassigned</th>
-                  <th className={th}>Advisors</th>
-                  <th className={cn(th, 'text-right')}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {summary.isLoading || (summary.isError && !summary.data) || cohortRows.length === 0 ? (
-                  <TableState cols={7} loading={summary.isLoading} error={summary.isError && !summary.data} empty={search ? 'No cohorts match your search.' : 'No cohorts yet.'} onRetry={() => summary.refetch()} />
-                ) : (
-                  cohortRows.slice(start, start + PAGE_SIZE).map((c) => (
-                    <tr key={c.cohortId} className="border-t border-[#e7eefe] hover:bg-gray-50/60">
-                      <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">{c.majorCode}</td>
-                      <td className="px-3 py-4 text-sm font-semibold">
-                        <Link to={`/admin/assignments/cohorts/${c.cohortId}`} className="text-[#f37021] hover:underline">
-                          {c.cohort}
-                        </Link>
-                      </td>
-                      <td className="px-3 py-4 text-sm text-[#151c27]">{c.total}</td>
-                      <td className="px-3 py-4 text-sm text-[#151c27]">{c.assigned}</td>
-                      <td className="px-3 py-4 text-sm">
-                        <span className={c.unassigned > 0 ? 'font-semibold text-[#b45309]' : 'text-[#151c27]'}>{c.unassigned}</span>
-                      </td>
-                      <td className="max-w-[220px] px-3 py-4 text-[13px] text-[#555f6f]">{poolByCohort.get(c.cohortId)?.join(', ') ?? <span className="text-[#98a2b3]">Not configured</span>}</td>
-                      <td className="px-3 py-4">
-                        <div className="flex flex-wrap justify-end gap-2">
-                          {c.unassigned > 0 ? (
-                            <>
-                              <button type="button" className={btn} onClick={() => setAssignCohortFor({ cohortId: c.cohortId })}>Assign advisor</button>
-                              <button type="button" className={btn} onClick={() => setAutoFor(c)}>Auto assign</button>
-                            </>
-                          ) : (
-                            <Link to={`/admin/assignments/cohorts/${c.cohortId}`} className={btn}>Reassign / unassign</Link>
-                          )}
-                          <Link to={`/admin/assignments/cohorts/${c.cohortId}`} className={btn}>
-                            Manage
+      {tab === 'unassigned' ? (
+        <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
+          <DataTable
+            manual
+            columns={unassignedColumns}
+            data={unassignedRows}
+            searchKey="fullName"
+            showSearch={false}
+            emptyText={hasFilter ? 'No students match your filters.' : 'Every student has an advisor.'}
+            getRowId={(row) => row.id}
+            isLoading={unassigned.isLoading}
+            totalRowCount={unassigned.data?.totalElements ?? 0}
+            pagination={{ pageIndex: page, pageSize: PAGE_SIZE }}
+            onPaginationChange={(next) => setPage(next.pageIndex)}
+            bulkActions={(selectedRows) => (
+              <>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setBulkAssignStudents(selectedRows.map((s) => ({ id: s.id, name: s.fullName })))
+                  }
+                  className="rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15]"
+                >
+                  Assign to Advisor
+                </button>
+                <button
+                  type="button"
+                  onClick={() => runAutoAssign(selectedRows.map((s) => s.id))}
+                  disabled={autoAssign.isPending}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-50 disabled:opacity-50"
+                >
+                  <WandSparkles className="size-4" aria-hidden />
+                  {autoAssign.isPending ? 'Assigning...' : 'Auto Assign'}
+                </button>
+              </>
+            )}
+          />
+        </section>
+      ) : (
+        <section className="rounded-xl bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            {tab === 'cohorts' && (
+              <table className="w-full min-w-[820px] text-left">
+                <thead className="bg-[rgba(240,243,255,0.7)]">
+                  <tr>
+                    <th className={th}>Major</th>
+                    <th className={th}>Cohort</th>
+                    <th className={th}>Total</th>
+                    <th className={th}>Assigned</th>
+                    <th className={th}>Unassigned</th>
+                    <th className={th}>Advisors</th>
+                    <th className={cn(th, 'text-right')}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {summary.isLoading || (summary.isError && !summary.data) || cohortRows.length === 0 ? (
+                    <TableState cols={7} loading={summary.isLoading} error={summary.isError && !summary.data} empty={search ? 'No cohorts match your search.' : 'No cohorts yet.'} onRetry={() => summary.refetch()} />
+                  ) : (
+                    cohortRows.slice(start, start + PAGE_SIZE).map((c) => (
+                      <tr key={c.cohortId} className="border-t border-[#e7eefe] hover:bg-gray-50/60">
+                        <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">{c.majorCode}</td>
+                        <td className="px-3 py-4 text-sm font-semibold">
+                          <Link to={`/admin/assignments/cohorts/${c.cohortId}`} className="text-[#f37021] hover:underline">
+                            {c.cohort}
                           </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
-
-          {tab === 'advisors' && (
-            <table className="w-full min-w-[780px] text-left">
-              <thead className="bg-[rgba(240,243,255,0.7)]">
-                <tr>
-                  <th className={th}>Advisor</th>
-                  <th className={th}>Students / limit</th>
-                  <th className={th}>Cohorts</th>
-                  <th className={cn(th, 'text-right')}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {advisorRows.isLoading || (advisorRows.isError && !advisorRows.data) || advisorList.length === 0 ? (
-                  <TableState cols={4} loading={advisorRows.isLoading} error={advisorRows.isError && !advisorRows.data} empty={search ? 'No advisors match your search.' : 'No active advisors.'} onRetry={() => advisorRows.refetch()} />
-                ) : (
-                  advisorList.slice(start, start + PAGE_SIZE).map((a) => (
-                    <tr key={a.id} className="border-t border-[#e7eefe] hover:bg-gray-50/60">
-                      <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">
-                        {a.name}
-                        <span className="block text-xs font-normal text-[#555f6f]">{a.email}</span>
-                      </td>
-                      <td className="px-3 py-4">
-                        <LoadBadge count={loadOf(a.id)} limit={a.limit} />
-                      </td>
-                      <td className="px-3 py-4">
-                        {a.chips.length === 0 ? (
-                          <span className="text-[13px] text-[#98a2b3]">No cohort yet</span>
-                        ) : (
-                          <div className="flex flex-wrap gap-1.5">
-                            {a.chips.map((c) => (
-                              <span key={c.key} className={cn('rounded-full px-2 py-0.5 text-xs font-medium', c.students > 0 ? 'bg-[#eff6ff] text-[#1d4ed8]' : 'bg-gray-100 text-[#555f6f]')} title={c.inPool ? 'Configured for this cohort' : 'Has students, not in the cohort advisor list'}>
-                                {c.text} · {c.students}
-                              </span>
-                            ))}
+                        </td>
+                        <td className="px-3 py-4 text-sm text-[#151c27]">{c.total}</td>
+                        <td className="px-3 py-4 text-sm text-[#151c27]">{c.assigned}</td>
+                        <td className="px-3 py-4 text-sm">
+                          <span className={c.unassigned > 0 ? 'font-semibold text-[#b45309]' : 'text-[#151c27]'}>{c.unassigned}</span>
+                        </td>
+                        <td className="max-w-[220px] px-3 py-4 text-[13px] text-[#555f6f]">{poolByCohort.get(c.cohortId)?.join(', ') ?? <span className="text-[#98a2b3]">Not configured</span>}</td>
+                        <td className="px-3 py-4">
+                          <div className="flex flex-wrap justify-end gap-2">
+                            {c.unassigned > 0 ? (
+                              <>
+                                <button type="button" className={btn} onClick={() => setAssignCohortFor({ cohortId: c.cohortId })}>Assign advisor</button>
+                                <button type="button" className={btn} onClick={() => setAutoFor(c)}>Auto assign</button>
+                              </>
+                            ) : (
+                              <Link to={`/admin/assignments/cohorts/${c.cohortId}`} className={btn}>Reassign / unassign</Link>
+                            )}
+                            <Link to={`/admin/assignments/cohorts/${c.cohortId}`} className={btn}>
+                              Manage
+                            </Link>
                           </div>
-                        )}
-                      </td>
-                      <td className="px-3 py-4">
-                        <div className="flex justify-end gap-2">
-                          <button type="button" className={btn} onClick={() => setAssignCohortFor({ advisorId: a.id })}>
-                            Assign cohort
-                          </button>
-                          <Link to={`/admin/assignments/advisors/${a.id}`} state={backState('/admin/assignments?tab=advisors', 'Advisor Assignments · Advisors tab')} className={btn}>
-                            Details
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
 
-          {tab === 'unassigned' && (
-            <table className="w-full min-w-[760px] text-left">
-              <thead className="bg-[rgba(240,243,255,0.7)]">
-                <tr>
-                  <th className="w-12 px-4 py-3.5">
-                    <input type="checkbox" checked={allPageSelected} onChange={toggleAll} aria-label="Select all students on this page" className="size-4 accent-[#f37021]" />
-                  </th>
-                  <th className={th}>Student ID</th>
-                  <th className={th}>Name</th>
-                  <th className={th}>Major</th>
-                  <th className={th}>Cohort</th>
-                  <th className={th}>Request</th>
-                  <th className={cn(th, 'text-right')}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {unassigned.isLoading || (unassigned.isError && !unassigned.data) || unassignedRows.length === 0 ? (
-                  <TableState cols={7} loading={unassigned.isLoading} error={unassigned.isError && !unassigned.data} empty={hasFilter ? 'No students match your filters.' : 'Every student has an advisor.'} onRetry={() => unassigned.refetch()} />
-                ) : (
-                  unassignedRows.map((s) => (
-                    <tr key={s.id} className={cn('border-t border-[#e7eefe] hover:bg-gray-50/60', selected.has(s.id) && 'bg-[#fff7ed]/50')}>
-                      <td className="px-4 py-3.5">
-                        <input type="checkbox" checked={selected.has(s.id)} onChange={() => toggleOne(s.id)} aria-label={`Select ${s.fullName}`} className="size-4 accent-[#f37021]" />
-                      </td>
-                      <td className="px-3 py-3.5 text-[13px] font-semibold text-[#151c27]">{s.studentCode}</td>
-                      <td className="px-3 py-3.5 text-sm font-semibold text-[#151c27]">{s.fullName}</td>
-                      <td className="px-3 py-3.5 text-sm text-[#555f6f]">{s.majorCode}</td>
-                      <td className="px-3 py-3.5 text-sm text-[#555f6f]">{s.cohort}</td>
-                      <td className="px-3 py-3.5">
-                        {s.hasPendingRequest ? (
-                          <span className="rounded-full bg-[#fffbeb] px-2 py-0.5 text-[11px] font-bold uppercase text-[#b45309]">Requested</span>
-                        ) : (
-                          <span className="text-[13px] text-[#98a2b3]">—</span>
-                        )}
-                      </td>
-                      <td className="px-3 py-3.5">
-                        <div className="flex justify-end gap-2">
-                          <button type="button" className={btn} onClick={() => setAssignStudents([{ id: s.id, name: s.fullName }])}>
-                            Assign
-                          </button>
-                          <Link to={`/admin/assignments/students/${s.id}/history`} state={backState('/admin/assignments?tab=unassigned', 'Advisor Assignments · Unassigned students')} className={btn}>
-                            History
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-        <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun={tab === 'cohorts' ? 'cohorts' : tab === 'advisors' ? 'advisors' : 'students'} onChange={setPage} />
-      </section>
+            {tab === 'advisors' && (
+              <table className="w-full min-w-[780px] text-left">
+                <thead className="bg-[rgba(240,243,255,0.7)]">
+                  <tr>
+                    <th className={th}>Advisor</th>
+                    <th className={th}>Students / limit</th>
+                    <th className={th}>Cohorts</th>
+                    <th className={cn(th, 'text-right')}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {advisorRows.isLoading || (advisorRows.isError && !advisorRows.data) || advisorList.length === 0 ? (
+                    <TableState cols={4} loading={advisorRows.isLoading} error={advisorRows.isError && !advisorRows.data} empty={search ? 'No advisors match your search.' : 'No active advisors.'} onRetry={() => advisorRows.refetch()} />
+                  ) : (
+                    advisorList.slice(start, start + PAGE_SIZE).map((a) => (
+                      <tr key={a.id} className="border-t border-[#e7eefe] hover:bg-gray-50/60">
+                        <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">
+                          {a.name}
+                          <span className="block text-xs font-normal text-[#555f6f]">{a.email}</span>
+                        </td>
+                        <td className="px-3 py-4">
+                          <LoadBadge count={loadOf(a.id)} limit={a.limit} />
+                        </td>
+                        <td className="px-3 py-4">
+                          {a.chips.length === 0 ? (
+                            <span className="text-[13px] text-[#98a2b3]">No cohort yet</span>
+                          ) : (
+                            <div className="flex flex-wrap gap-1.5">
+                              {a.chips.map((c) => (
+                                <span key={c.key} className={cn('rounded-full px-2 py-0.5 text-xs font-medium', c.students > 0 ? 'bg-[#eff6ff] text-[#1d4ed8]' : 'bg-gray-100 text-[#555f6f]')} title={c.inPool ? 'Configured for this cohort' : 'Has students, not in the cohort advisor list'}>
+                                  {c.text} · {c.students}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-4">
+                          <div className="flex justify-end gap-2">
+                            <button type="button" className={btn} onClick={() => setAssignCohortFor({ advisorId: a.id })}>
+                              Assign cohort
+                            </button>
+                            <Link to={`/admin/assignments/advisors/${a.id}`} state={backState('/admin/assignments?tab=advisors', 'Advisor Assignments · Advisors tab')} className={btn}>
+                              Details
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun={tab === 'cohorts' ? 'cohorts' : 'advisors'} onChange={setPage} />
+        </section>
+      )}
 
       <CohortAssignModal open={!!assignCohortFor} onClose={() => setAssignCohortFor(null)} cohorts={cohorts} advisors={advisors.data ?? []} fixedCohortId={assignCohortFor?.cohortId} fixedAdvisorId={assignCohortFor?.advisorId} />
       <AutoAssignModal
@@ -476,7 +482,13 @@ export default function AssignmentsOverview() {
         }}
       />
       <CohortPoolModal open={!!poolFor} cohort={poolFor} advisors={advisors.data ?? []} currentIds={(autoPool.data ?? []).map((a) => a.advisorId)} onClose={() => setPoolFor(null)} />
-      <AssignAdvisorModal open={!!assignStudents} onClose={() => setAssignStudents(null)} students={assignStudents ?? []} advisors={advisors.data ?? []} onDone={() => setSelected(new Set())} />
+
+      <AssignToAdvisorModal
+        open={!!bulkAssignStudents}
+        onClose={() => setBulkAssignStudents(null)}
+        students={bulkAssignStudents ?? []}
+        advisors={advisors.data ?? []}
+      />
     </div>
   );
 }
