@@ -9,6 +9,7 @@ import type {
   AdminUserSummary,
   AiReportDetail,
   AiReportSummary,
+  CohortLite,
   DashboardAccounts,
   MonthlyCount,
   UserSort,
@@ -22,6 +23,12 @@ export const adminService = {
 
   getMajorOptions: async (): Promise<{ id: string; code: string; name: string }[]> => {
     const { data } = await apiClient.get<{ id: string; code: string; name: string }[]>('/admin/majors');
+    return data;
+  },
+
+  /** Every cohort in the system, for the cohort filter dropdown. */
+  getCohortOptions: async (): Promise<CohortLite[]> => {
+    const { data } = await apiClient.get<CohortLite[]>('/admin/assignments/cohorts');
     return data;
   },
 
@@ -63,6 +70,8 @@ export const adminService = {
     role?: AdminUserRole;
     status?: AdminUserStatus;
     search?: string;
+    /** Narrow the list to one major (uuid). */
+    majorId?: string;
     page?: number;
     size?: number;
     sort?: UserSort;
