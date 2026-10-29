@@ -1,22 +1,23 @@
 // src/pages/management/Courses.tsx
 import { useMemo, useState } from 'react';
-import { Plus, Search, ChevronDown, Trash2, Upload } from 'lucide-react';
+import { Plus, Trash2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { courseService } from '../services/course.service';
 import {
-  CourseTable,
   CourseFormModal,
   CourseDetailModal,
 } from '../components/courses';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { Pagination } from '../components/Pagination';
+import { StatusBadge } from '../components/StatusBadge';
+import { RowActionMenu } from '../components/RowActionMenu';
 import {
   useCoursesQuery,
   useCourse,
   useCourseCategoriesQuery,
 } from '../../academic/hooks/queries/useCoursesQuery';
 import { useCourseMutations } from '../../academic/hooks/mutations/useCourseMutations';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
+import type { PaginationState, SortingState } from '@tanstack/react-table';
 import type {
   CourseDetail,
   CourseSummary,
@@ -27,17 +28,42 @@ import type {
 const PAGE_SIZE = 10;
 import type { CreateCourseFormValues } from '../../academic/validations/course.schema';
 
+/** Credit values offered by the "Credits" filter (FE-03). */
+const CREDIT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+const selectClass =
+  'h-[38px] rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500';
+
+/**
+ * The backend sorts courses by a whitelist; the table only offers the ones it
+ * can serve (code and credits). Anything else falls back to `code,asc`.
+ */
+function toCourseSort(sorting: SortingState): NonNullable<CourseFilterParams['sort']> {
+  const active = sorting[0];
+  if (!active) return 'code,asc';
+  const dir = active.desc ? 'desc' : 'asc';
+  if (active.id === 'credits') return `credits,${dir}` as NonNullable<CourseFilterParams['sort']>;
+  if (active.id === 'code') return `code,${dir}` as NonNullable<CourseFilterParams['sort']>;
+  return 'code,asc';
+}
+
 export default function CoursesPage() {
   const [search, setSearch] = useState('');
-  const [status, setStatus] = useState('ALL');
+  const [status, setStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [categoryId, setCategoryId] = useState('ALL');
-  const [page, setPage] = useState(0);
-  const debouncedSearch = useDebounce(search, 300);
+  const [credits, setCredits] = useState<number | 'ALL'>('ALL');
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: PAGE_SIZE,
+  });
+  const [sorting, setSorting] = useState<SortingState>([]);
 
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<CourseSummary | null>(null);
   const [deleting, setDeleting] = useState<CourseSummary | null>(null);
+  // The rows the bulk-delete confirmation applies to; filled by the DataTable
+  // bulk-action bar.
+  const [bulkTargets, setBulkTargets] = useState<CourseSummary[]>([]);
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
@@ -45,16 +71,18 @@ export default function CoursesPage() {
 
   const params: CourseFilterParams = useMemo(
     () => ({
-      search: debouncedSearch || undefined,
-      status: status === 'ALL' ? undefined : (status as 'ACTIVE' | 'INACTIVE'),
+      search: search || undefined,
+      status: status === 'ALL' ? undefined : status,
       categoryId: categoryId === 'ALL' ? undefined : categoryId,
-      page,
-      size: PAGE_SIZE,
+      credits: credits === 'ALL' ? undefined : credits,
+      page: pagination.pageIndex,
+      size: pagination.pageSize,
+      sort: toCourseSort(sorting),
     }),
-    [debouncedSearch, status, categoryId, page],
+    [search, status, categoryId, credits, pagination.pageIndex, pagination.pageSize, sorting],
   );
 
-  const { data, isLoading, isError } = useCoursesQuery(params);
+  const { data, isLoading, isError, refetch } = useCoursesQuery(params);
   const categoriesQuery = useCourseCategoriesQuery();
   const viewingQuery = useCourse(viewingId);
   const editingQuery = useCourse(formOpen && editing ? editing.id : null);
@@ -76,9 +104,117 @@ export default function CoursesPage() {
     isRemovingRelation,
   } = useCourseMutations();
 
-  const items = data?.items ?? [];
+  const items = useMemo(() => data?.items ?? [], [data]);
   const totalItems = data?.totalItems ?? 0;
   const categories = categoriesQuery.data ?? [];
+
+  /**
+   * The backend `/api/admin/courses` endpoint does not expose a `credits`
+   * query parameter yet, so the filter is applied to the rows that were
+   * loaded as well. Once the backend supports it, the client-side pass
+   * becomes a no-op because the API already returns matching rows only.
+   */
+  const visibleItems = useMemo(
+    () => (credits === 'ALL' ? items : items.filter((c) => c.credits === credits)),
+    [items, credits],
+  );
+
+  /** Any change of the query must start again on the first page. */
+  const resetPage = <T,>(setter: (value: T) => void) => (value: T) => {
+    setter(value);
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
+  };
+
+  const hasFilters = search !== '' || status !== 'ALL' || categoryId !== 'ALL' || credits !== 'ALL';
+  const clearFilters = () => {
+    setSearch('');
+    setStatus('ALL');
+    setCategoryId('ALL');
+    setCredits('ALL');
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
+  };
+
+  const columns = useMemo<DataTableColumnDef<CourseSummary>[]>(
+    () => [
+      {
+        accessorKey: 'code',
+        header: 'Code',
+        cell: ({ row }) => (
+          <span className="font-semibold text-[#151c27]">{row.original.code}</span>
+        ),
+      },
+      {
+        accessorKey: 'name',
+        header: 'Course Name',
+        // The backend whitelist has no `name` sort, so the column is not sortable.
+        enableSorting: false,
+        cell: ({ row }) => (
+          <button
+            type="button"
+            onClick={() => setViewingId(row.original.id)}
+            className="text-left font-medium text-[#151c27] hover:underline"
+          >
+            {row.original.name}
+          </button>
+        ),
+      },
+      {
+        accessorKey: 'credits',
+        header: 'Credits',
+        cell: ({ row }) => <span className="font-medium">{row.original.credits}</span>,
+      },
+      {
+        accessorKey: 'status',
+        header: 'Status',
+        enableSorting: false,
+        cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      },
+      {
+        id: 'actions',
+        header: 'Actions',
+        enableSorting: false,
+        meta: { align: 'right' },
+        cell: ({ row }) => {
+          const course = row.original;
+          return (
+            <div className="flex justify-end">
+              <RowActionMenu
+                label={`Actions for ${course.code}`}
+                actions={[
+                  { label: 'View detail', onSelect: () => setViewingId(course.id) },
+                  {
+                    label: 'Edit course',
+                    onSelect: () => {
+                      setEditing(course);
+                      setFormOpen(true);
+                    },
+                  },
+                  {
+                    label: 'Delete course',
+                    danger: true,
+                    onSelect: () => {
+                      // The backend answers 500 for a course that is still in a
+                      // curriculum, so say why before asking for a confirmation.
+                      if (course.usedInCurriculumCount > 0) {
+                        toast.error(
+                          `${course.code} is used in ${course.usedInCurriculumCount} curriculum${
+                            course.usedInCurriculumCount === 1 ? '' : 's'
+                          }. Remove it from them first.`,
+                        );
+                        return;
+                      }
+                      setDeleting(course);
+                    },
+                  },
+                ]}
+              />
+            </div>
+          );
+        },
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="w-full space-y-6">
@@ -119,129 +255,113 @@ export default function CoursesPage() {
         }}>Download error report</button>
       </div> : null}
 
-      <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-2xs">
-        <div className="flex flex-col md:flex-row items-center gap-3">
-          <div className="relative flex-1 w-full">
-            <Search className="size-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by code or name..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(0);
-                setSelectedIds([]);
-              }}
-              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-[#F26F21]"
-            />
-          </div>
-          <div className="relative">
-            <select
-              value={status}
-              onChange={(e) => {
-                setStatus(e.target.value);
-                setPage(0);
-                setSelectedIds([]);
-              }}
-              className="appearance-none border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-xs font-medium"
-            >
-              <option value="ALL">Status: All</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-            </select>
-            <ChevronDown className="size-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-          <div className="relative">
-            <select
-              value={categoryId}
-              onChange={(e) => {
-                setCategoryId(e.target.value);
-                setPage(0);
-                setSelectedIds([]);
-              }}
-              className="appearance-none border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-xs font-medium"
-            >
-              <option value="ALL">Category: All</option>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.code} - {c.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="size-3.5 text-gray-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+      {isError && (
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Could not load courses.{' '}
+          <button type="button" onClick={() => refetch()} className="font-semibold underline">
+            Retry
+          </button>
         </div>
-      </div>
+      )}
 
-      {selectedIds.length > 0 && (
-        <div className="flex items-center justify-between rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-xs">
-          <span className="font-semibold text-gray-800">{selectedIds.length} selected</span>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setSelectedIds([])} className="rounded-lg px-3 py-1.5 font-semibold text-gray-600 hover:bg-white">
-              Clear
-            </button>
+      <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
+        <DataTable
+          manual
+          columns={columns}
+          data={visibleItems}
+          searchKey="name"
+          searchValue={search}
+          searchPlaceholder="Search by code or name..."
+          emptyText={hasFilters ? 'No courses match your filters.' : 'No courses yet.'}
+          getRowId={(row) => row.id}
+          isLoading={isLoading}
+          totalRowCount={credits === 'ALL' ? totalItems : visibleItems.length}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          sorting={sorting}
+          onSortingChange={setSorting}
+          onSearchChange={resetPage(setSearch)}
+          filters={
+            <>
+              <select
+                value={status}
+                onChange={(e) =>
+                  resetPage(setStatus)(e.target.value as 'ALL' | 'ACTIVE' | 'INACTIVE')
+                }
+                aria-label="Filter by status"
+                className={selectClass}
+              >
+                <option value="ALL">Status: All</option>
+                <option value="ACTIVE">Status: Active</option>
+                <option value="INACTIVE">Status: Inactive</option>
+              </select>
+
+              <select
+                value={categoryId}
+                onChange={(e) => resetPage(setCategoryId)(e.target.value)}
+                aria-label="Filter by category"
+                className={selectClass}
+              >
+                <option value="ALL">Category: All</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.code} - {c.name}
+                  </option>
+                ))}
+              </select>
+
+              {/* FE-03: filter the catalogue by number of credits. */}
+              <select
+                value={String(credits)}
+                onChange={(e) =>
+                  resetPage(setCredits)(
+                    e.target.value === 'ALL' ? 'ALL' : Number(e.target.value),
+                  )
+                }
+                aria-label="Filter by credits"
+                className={selectClass}
+              >
+                <option value="ALL">Credits: All</option>
+                {CREDIT_OPTIONS.map((value) => (
+                  <option key={value} value={value}>
+                    Credits: {value}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                onClick={clearFilters}
+                disabled={!hasFilters}
+                className="h-[38px] rounded-lg px-3 text-sm font-medium text-[#555f6f] hover:bg-gray-50 disabled:opacity-40"
+              >
+                Clear filters
+              </button>
+            </>
+          }
+          bulkActions={(selectedRows) => (
             <button
               type="button"
               onClick={() => {
-                const blocked = items.filter((c) => selectedIds.includes(c.id) && c.usedInCurriculumCount > 0);
+                const blocked = selectedRows.filter((c) => c.usedInCurriculumCount > 0);
                 if (blocked.length > 0) {
-                  toast.error(`Cannot delete ${blocked.map((c) => c.code).join(', ')}: still used in a curriculum. Unselect them first.`);
+                  toast.error(
+                    `Cannot delete ${blocked
+                      .map((c) => c.code)
+                      .join(', ')}: still used in a curriculum. Unselect them first.`,
+                  );
                   return;
                 }
+                setBulkTargets(selectedRows);
                 setBulkDeleting(true);
               }}
               className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-3 py-1.5 font-bold text-white hover:bg-red-700"
             >
               <Trash2 className="size-3.5" /> Delete selected
             </button>
-          </div>
-        </div>
-      )}
-
-      {isLoading && <p className="text-xs text-gray-500">Loading courses...</p>}
-      {isError && (
-        <p className="text-xs text-red-600">Could not load courses.</p>
-      )}
-      {!isLoading && !isError && (
-        <CourseTable
-          data={items}
-          selectedIds={selectedIds}
-          onSelectAll={(c) => setSelectedIds(c ? items.map((i) => i.id) : [])}
-          onSelectRow={(id) =>
-            setSelectedIds((prev) =>
-              prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-            )
-          }
-          onView={(c) => setViewingId(c.id)}
-          onEdit={(c) => {
-            setEditing(c);
-            setFormOpen(true);
-          }}
-          onDelete={(c) => {
-            // The backend answers 500 for a course that is still in a curriculum, so say why before asking.
-            if (c.usedInCurriculumCount > 0) {
-              toast.error(`${c.code} is used in ${c.usedInCurriculumCount} curriculum${c.usedInCurriculumCount === 1 ? '' : 's'}. Remove it from them first.`);
-              return;
-            }
-            setDeleting(c);
-          }}
+          )}
         />
-      )}
-
-      {!isLoading && !isError && (
-        <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-white">
-          <Pagination
-            page={page}
-            pageSize={PAGE_SIZE}
-            total={totalItems}
-            noun="courses"
-            onChange={(p) => {
-              setPage(p);
-              setSelectedIds([]);
-            }}
-          />
-        </div>
-      )}
+      </section>
 
       <CourseFormModal
         open={formOpen}
@@ -301,18 +421,18 @@ export default function CoursesPage() {
       <ConfirmDialog
         open={bulkDeleting}
         title="Delete selected courses?"
-        message={`Delete ${selectedIds.length} selected course${selectedIds.length === 1 ? '' : 's'}? Courses used in a curriculum or required by another course cannot be deleted.`}
+        message={`Delete ${bulkTargets.length} selected course${bulkTargets.length === 1 ? '' : 's'}? Courses used in a curriculum or required by another course cannot be deleted.`}
         confirmLabel="Delete"
         destructive
         isLoading={isBulkRemoving}
         onCancel={() => setBulkDeleting(false)}
         onConfirm={async () => {
           try {
-            await bulkRemove(selectedIds);
-            setSelectedIds([]);
+            await bulkRemove(bulkTargets.map((c) => c.id));
           } catch {
             // toast shown by the error handler
           }
+          setBulkTargets([]);
           setBulkDeleting(false);
         }}
       />

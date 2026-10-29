@@ -54,6 +54,8 @@ export interface CourseFilterParams {
   search?: string;
   categoryId?: string;
   status?: CourseStatus | 'ALL';
+  /** Filter the catalogue by number of credits (FE-03). */
+  credits?: number;
   page?: number;
   size?: number;
   sort?: 'code,asc' | 'code,desc' | 'credits,asc' | 'credits,desc' | 'createdAt,desc';

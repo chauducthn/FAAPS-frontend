@@ -36,7 +36,7 @@ describe('DataTable', () => {
 
   it('shows the empty state when there is no data', () => {
     render(<DataTable columns={columns} data={[]} searchKey="name" />);
-    expect(screen.getByText('Không tìm thấy dữ liệu')).toBeInTheDocument();
+    expect(screen.getByText('No data found.')).toBeInTheDocument();
   });
 
   it('renders skeleton rows while loading', () => {
@@ -44,7 +44,7 @@ describe('DataTable', () => {
       <DataTable columns={columns} data={[]} searchKey="name" isLoading />,
     );
     expect(container.querySelectorAll('.animate-pulse').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Không tìm thấy dữ liệu')).not.toBeInTheDocument();
+    expect(screen.queryByText('No data found.')).not.toBeInTheDocument();
   });
 
   it('filters client-side through the debounced search box', async () => {
@@ -77,24 +77,24 @@ describe('DataTable', () => {
         columns={columns}
         data={data}
         searchKey="name"
-        bulkActions={(rows) => <button type="button">Xoá {rows.length} dòng</button>}
+        bulkActions={(rows) => <button type="button">Delete {rows.length} rows</button>}
       />,
     );
 
-    expect(screen.queryByText(/dòng đã chọn/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/row(s)? selected/)).not.toBeInTheDocument();
 
-    await user.click(screen.getByLabelText('Chọn dòng 1'));
+    await user.click(screen.getByLabelText('Select row 1'));
 
-    expect(screen.getByText('1 dòng đã chọn')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Xoá 1 dòng' })).toBeInTheDocument();
+    expect(screen.getByText('1 row selected')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Delete 1 rows' })).toBeInTheDocument();
   });
 
   it('selects every row from the header checkbox', async () => {
     const user = userEvent.setup();
     render(<DataTable columns={columns} data={data} searchKey="name" />);
 
-    await user.click(screen.getByLabelText('Chọn tất cả'));
-    expect(screen.getByText('3 dòng đã chọn')).toBeInTheDocument();
+    await user.click(screen.getByLabelText('Select all'));
+    expect(screen.getByText('3 rows selected')).toBeInTheDocument();
   });
 
   it('paginates and reports the page position', async () => {
@@ -107,9 +107,9 @@ describe('DataTable', () => {
     }));
     render(<DataTable columns={columns} data={many} searchKey="name" />);
 
-    expect(screen.getByText('Trang 1 / 2')).toBeInTheDocument();
+    expect(screen.getByText('Page 1 of 2')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /Next/i }));
-    expect(screen.getByText('Trang 2 / 2')).toBeInTheDocument();
+    expect(screen.getByText('Page 2 of 2')).toBeInTheDocument();
   });
 
   describe('server-side mode', () => {
@@ -148,8 +148,8 @@ describe('DataTable', () => {
         />,
       );
 
-      expect(screen.getByText('Trang 1 / 5')).toBeInTheDocument();
-      expect(screen.getByText(/42 dòng/)).toBeInTheDocument();
+      expect(screen.getByText('Page 1 of 5')).toBeInTheDocument();
+      expect(screen.getByText(/42 rows/)).toBeInTheDocument();
 
       await user.click(screen.getByRole('button', { name: /Next/i }));
       expect(onPaginationChange).toHaveBeenCalledWith(
@@ -166,12 +166,12 @@ describe('DataTable', () => {
           data={data}
           searchKey="name"
           getRowId={(row) => row.id}
-          bulkActions={(rows) => <button type="button">Xoá {rows.length} dòng</button>}
+          bulkActions={(rows) => <button type="button">Delete {rows.length} rows</button>}
         />,
       );
 
-      await user.click(screen.getByLabelText('Chọn dòng 1'));
-      expect(screen.getByRole('button', { name: 'Xoá 1 dòng' })).toBeInTheDocument();
+      await user.click(screen.getByLabelText('Select row 1'));
+      expect(screen.getByRole('button', { name: 'Delete 1 rows' })).toBeInTheDocument();
     });
   });
 });

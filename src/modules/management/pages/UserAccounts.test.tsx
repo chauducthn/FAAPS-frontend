@@ -71,10 +71,10 @@ describe('UserAccounts', () => {
     renderPage();
     expect(await screen.findByText('Nguyen Van A')).toBeInTheDocument();
     expect(screen.getByText('a@fpt.edu.vn')).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /Họ tên/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Full Name/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /Email/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /Role/i })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /Trạng thái/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Status/i })).toBeInTheDocument();
   });
 
   it('offers the major and cohort filters', async () => {
