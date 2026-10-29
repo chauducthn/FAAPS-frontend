@@ -6,6 +6,8 @@ export const useAdminUsers = (params: {
   role?: AdminUserRole;
   status?: AdminUserStatus;
   search?: string;
+  /** Narrow the list to one major (uuid). */
+  majorId?: string;
   page?: number;
   size?: number;
   sort?: UserSort;
@@ -14,6 +16,14 @@ export const useAdminUsers = (params: {
     queryKey: ['admin', 'users', 'list', params],
     queryFn: () => adminService.getUsers(params),
     placeholderData: keepPreviousData,
+  });
+
+/** Every cohort in the system, for the cohort filter dropdown. */
+export const useCohortOptions = () =>
+  useQuery({
+    queryKey: ['admin', 'cohorts', 'options'],
+    queryFn: adminService.getCohortOptions,
+    staleTime: 5 * 60_000,
   });
 
 /** Total accounts for one role, used by the tab counters. */
