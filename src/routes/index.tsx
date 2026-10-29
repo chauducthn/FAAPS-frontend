@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { lazy, Suspense } from 'react';
 import { ProtectedRoute } from './ProtectedRoute';
 import Login from '../modules/auth/pages/Login';
+import Register from '../modules/auth/pages/Register';
 import AuthCallback from '../modules/auth/pages/AuthCallback';
 import LandingPage from '../modules/landing/pages';
 import AdminLayout from '../shared/components/layout/management/AdminLayout';
@@ -46,6 +47,7 @@ const suspense = (element: React.ReactNode) => <Suspense fallback={<p className=
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <Login /> },
+  { path: '/register', element: <Register /> },
   { path: '/auth/callback', element: <AuthCallback /> },
   {
     element: <ProtectedRoute allowedRoles={['ADMIN']} />,

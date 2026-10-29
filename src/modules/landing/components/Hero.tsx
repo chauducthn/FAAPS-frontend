@@ -16,7 +16,7 @@ export function Hero() {
           and academic advisors.
         </p>
         <div className="flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-          <CTAButton size="lg">
+          <CTAButton to="/register" size="lg">
             Get Started <ArrowRight className="size-5" />
           </CTAButton>
           <CTAButton size="lg" variant="outline">Sign in</CTAButton>

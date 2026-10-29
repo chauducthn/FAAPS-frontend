@@ -128,6 +128,13 @@ export default function Login() {
             {isAdminLoading ? 'Processing...' : 'Sign in'}
           </button>
         </form>
+
+        <p className="text-center text-sm text-gray-600">
+          New student?{' '}
+          <Link to="/register" className="font-semibold text-orange-600 hover:text-orange-700">
+            Create an account
+          </Link>
+        </p>
       </div>
       </div>
     </div>

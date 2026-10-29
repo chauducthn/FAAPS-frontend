@@ -8,7 +8,7 @@ export function CTASection() {
         <p className="mx-auto mb-8 max-w-xl text-orange-50">
           Sign in with Google to enter FAAPS. Your first sign-in automatically creates a Student account.
         </p>
-        <CTAButton variant="light" size="lg">Get Started</CTAButton>
+        <CTAButton to="/register" variant="light" size="lg">Get Started</CTAButton>
       </div>
     </section>
   );
