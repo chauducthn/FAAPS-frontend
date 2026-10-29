@@ -1,52 +1,166 @@
-// src/pages/management/CurriculumDetail.tsx
-// /admin/curriculum/:id - courses of one curriculum by semester, with a check-box picker to add more.
+// src/modules/management/pages/CurriculumDetail.tsx
+// /admin/curriculum/:id - the Academic Roadmap of one curriculum: one column per semester,
+// one card per course.
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import { ArrowLeft, Plus, Upload } from 'lucide-react';
+import { Archive, ArrowUpRight, ChevronRight, Pencil, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { curriculumService } from '../services/curriculum.service';
 import AddCoursesModal from '../components/curriculum/AddCoursesModal';
-import SemesterPlanner from '../components/curriculum/SemesterPlanner';
+import CurriculumFormModal from '../components/curriculum/CurriculumFormModal';
+import RoadmapBoard from '../components/curriculum/RoadmapBoard';
+import { ConfirmDialog } from '../components/ConfirmDialog';
+import { buildRoadmap } from '../../academic/roadmap/buildRoadmap';
+import { resolveMilestone } from '../../academic/roadmap/milestones';
 import { StatusBadge } from '../components/StatusBadge';
 import { useCurriculum, useCurriculumCourses } from '../../academic/hooks/queries/useCurriculumsQuery';
+import { useAcademicRulesQuery } from '../../academic/hooks/queries/useAcademicRulesQuery';
+import { useRoadmapCourseDetails } from '../../academic/hooks/queries/useRoadmapCourseDetails';
 import { useCurriculumMutations } from '../../academic/hooks/mutations/useCurriculumMutations';
+import type { CurriculumInput } from '../../academic/types/curriculum';
+import type { RoadmapCourse } from '../../academic/types/roadmap';
 
 export default function CurriculumDetailPage() {
   const navigate = useNavigate();
   const { id = '' } = useParams<{ id: string }>();
   const curriculum = useCurriculum(id);
   const courses = useCurriculumCourses(id);
-  const { addCourses, isAddingCourses, updateCourse, removeCourse } = useCurriculumMutations('curriculum');
+  const { addCourses, isAddingCourses, updateCourse, removeCourse, updateStatus, isUpdatingStatus } =
+    useCurriculumMutations('curriculum');
   const [picker, setPicker] = useState<{ semester: number } | null>(null);
   const [importing, setImporting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+
+  // The rules carry the milestone thresholds (how many credits an internship needs).
+  const rules = useAcademicRulesQuery({ curriculumVersionId: id, size: 100 });
 
   const list = courses.data ?? [];
   const placed = useMemo(() => new Map(list.map((c) => [c.courseId, c.semesterNumber])), [list]);
-  const totalCredits = list.reduce((sum, c) => sum + c.credits, 0);
-  const mandatory = list.filter((c) => c.isMandatory).length;
+
+  // Course details add the category line and the prerequisite codes to each card.
+  const details = useRoadmapCourseDetails(list.map((c) => c.courseId));
+
+  const semesters = useMemo(() => {
+    const withDetails = list.map((course) => {
+      const detail = details.get(course.courseId);
+      const prerequisites = (detail?.relations ?? [])
+        .filter((relation) => relation.kind === 'PREREQUISITE')
+        .map((relation) => ({
+          code: relation.otherCourseCode,
+          minimumScore: relation.minimumScore,
+        }));
+
+      const categoryLabel = detail
+        ? `${detail.categoryCode} | ${detail.categoryName}`
+        : course.groupName;
+
+      return {
+        ...course,
+        categoryLabel,
+        prerequisites,
+        milestone: resolveMilestone(course, rules.data?.items ?? []),
+      };
+    });
+    return buildRoadmap(withDetails);
+  }, [list, details, rules.data?.items]);
 
   if (curriculum.isLoading) return <p className="text-xs text-gray-500">Loading curriculum...</p>;
   if (curriculum.isError || !curriculum.data) {
     return <p className="text-xs text-red-600">Could not load this curriculum. Check that the link is valid.</p>;
   }
   const data = curriculum.data;
+  const isPublished = data.status === 'ACTIVE';
+
+  const handleMove = (course: RoadmapCourse, semesterNumber: number) => {
+    void updateCourse({
+      id,
+      courseId: course.courseId,
+      semesterNumber,
+      isMandatory: course.kind === 'MANDATORY',
+    });
+  };
+
+  // A card dropped into another column: move the course to that semester.
+  const handleDropCourse = (courseId: string, semesterNumber: number) => {
+    const course = list.find((c) => c.id === courseId);
+    if (!course || course.semesterNumber === semesterNumber) return;
+
+    void updateCourse({
+      id,
+      courseId: course.courseId,
+      semesterNumber,
+      isMandatory: course.isMandatory,
+    });
+  };
+
+  const handleEdit = async (body: CurriculumInput) => {
+    await curriculumService.update(id, body);
+    toast.success('Curriculum updated');
+    await curriculum.refetch();
+  };
 
   return (
     <div className="w-full space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <button type="button" onClick={() => navigate('/admin/curriculum')} className="inline-flex items-center gap-1 text-xs font-semibold text-gray-500 hover:text-gray-900">
-            <ArrowLeft className="size-3.5" /> Back to curriculum list
-          </button>
-          <h1 className="mt-1 text-xl font-bold tracking-tight text-gray-900">{data.name}</h1>
-          <p className="mt-0.5 text-xs text-gray-500">
-            {data.majorCode} - {data.majorName} · Cohort {data.version} · Start semester {data.effectiveFromSemesterCode}
-          </p>
+      <nav aria-label="Breadcrumb">
+        <ol className="flex items-center gap-1 text-[11px] font-medium text-gray-500">
+          <li>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/curriculum')}
+              className="rounded transition-colors hover:text-[#C2410C]"
+            >
+              Academic Data
+            </button>
+          </li>
+          <li aria-hidden="true">
+            <ChevronRight className="size-3 text-gray-300" />
+          </li>
+          <li className="font-semibold text-gray-900" aria-current="page">
+            Curriculum
+          </li>
+        </ol>
+      </nav>
+
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h1 className="truncate text-xl font-bold tracking-tight text-gray-900">{data.name}</h1>
+            <button
+              type="button"
+              onClick={() => setEditing(true)}
+              aria-label={`Edit ${data.name}`}
+              className="shrink-0 rounded p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            >
+              <Pencil className="size-3.5" />
+            </button>
+          </div>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <StatusBadge status={data.status} />
+            <span className="text-[11px] text-gray-500">
+              {data.majorCode} · Cohort {data.version} · Start semester {data.effectiveFromSemesterCode}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <StatusBadge status={data.status} />
-          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border px-4 py-2 text-xs font-bold">
-            <Upload className="size-4" /> Import XLSX
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 shadow-xs transition-colors hover:bg-gray-50"
+          >
+            <Pencil className="size-3.5" /> Edit Draft
+          </button>
+          <button
+            type="button"
+            onClick={() => setArchiving(true)}
+            disabled={!isPublished}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 shadow-xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Archive className="size-3.5" /> Archive
+          </button>
+          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 shadow-xs transition-colors hover:bg-gray-50">
+            <Upload className="size-3.5" /> Import XLSX
             <input type="file" accept=".xlsx" className="hidden" disabled={importing} onChange={async (event) => {
               const file = event.target.files?.[0]; if (!file) return; setImporting(true);
               try { const preview = await curriculumService.previewImport(id, file);
@@ -57,31 +171,34 @@ export default function CurriculumDetailPage() {
           </label>
           <button
             type="button"
-            onClick={() => setPicker({ semester: 1 })}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#e05f14]"
+            disabled={isPublished || isUpdatingStatus}
+            onClick={async () => {
+              try {
+                await updateStatus({ id, status: 'ACTIVE' });
+                await curriculum.refetch();
+              } catch {
+                // The error toast is shown by the mutation / global handler.
+              }
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <Plus className="size-4" /> Add courses
+            Publish Version <ArrowUpRight className="size-3.5" />
           </button>
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Courses" value={list.length} />
-        <Stat label="Total credits" value={totalCredits} />
-        <Stat label="Mandatory" value={mandatory} />
-        <Stat label="Elective" value={list.length - mandatory} />
-      </div>
-
-      {data.description && <p className="rounded-xl border border-gray-200/80 bg-white p-4 text-xs leading-relaxed text-gray-700">{data.description}</p>}
+      </header>
 
       {courses.isLoading ? (
         <p className="text-xs text-gray-500">Loading courses...</p>
       ) : courses.isError ? (
         <p className="text-xs text-red-600">Could not load the courses of this curriculum.</p>
       ) : (
-        <SemesterPlanner courses={list} onAdd={(semester) => setPicker({ semester })}
-          onMove={(course, semesterNumber) => updateCourse({ id, courseId: course.courseId, semesterNumber, isMandatory: course.isMandatory })}
-          onRemove={(course) => removeCourse({ id, courseId: course.courseId })} />
+        <RoadmapBoard
+          semesters={semesters}
+          onAdd={(semester) => setPicker({ semester })}
+          onMove={handleMove}
+          onRemove={(course) => removeCourse({ id, courseId: course.courseId })}
+          onDropCourse={handleDropCourse}
+        />
       )}
 
       <AddCoursesModal
@@ -92,15 +209,33 @@ export default function CurriculumDetailPage() {
         onClose={() => setPicker(null)}
         onSubmit={(body) => addCourses({ id, body })}
       />
-    </div>
-  );
-}
 
-function Stat({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="rounded-xl border border-gray-200/80 bg-white p-4 shadow-2xs">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
+      <CurriculumFormModal
+        open={editing}
+        noun="Curriculum"
+        initial={data}
+        isSubmitting={isUpdatingStatus}
+        onClose={() => setEditing(false)}
+        onSubmit={handleEdit}
+      />
+
+      <ConfirmDialog
+        open={archiving}
+        title="Archive this curriculum?"
+        message={`Archive ${data.name}? It stays in the list for reporting but stops being the active version of ${data.majorCode}.`}
+        confirmLabel="Archive"
+        isLoading={isUpdatingStatus}
+        onCancel={() => setArchiving(false)}
+        onConfirm={async () => {
+          try {
+            await updateStatus({ id, status: 'INACTIVE' });
+            await curriculum.refetch();
+          } catch {
+            // The error toast is shown by the mutation / global handler.
+          }
+          setArchiving(false);
+        }}
+      />
     </div>
   );
 }
