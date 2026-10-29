@@ -90,7 +90,7 @@ export default function MajorsPage() {
   };
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto space-y-5">
+    <div className="w-full space-y-5">
       {/* Page header — title + primary action */}
       <div className="flex flex-wrap items-end justify-between gap-3 px-1">
         <div>

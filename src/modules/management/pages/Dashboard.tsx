@@ -7,7 +7,7 @@ export default function AdminDashboard() {
   const { data, isLoading, isError, refetch } = useDashboardAccounts();
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <h1 className="text-2xl font-semibold text-[#555f6f]">Admin Dashboard</h1>
 
       {isError && (

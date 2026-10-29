@@ -39,7 +39,7 @@ export default function Appointments() {
   const refreshing = summary.isFetching || list.isFetching;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
+    <div className="flex w-full flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs text-[#555f6f]">Reports &amp; Statistics / Appointments</p>
