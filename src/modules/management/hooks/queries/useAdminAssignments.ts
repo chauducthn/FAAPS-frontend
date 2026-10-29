@@ -112,8 +112,16 @@ export const useConfirmAutoAssign = () => {
   });
 };
 
-export const useReplaceCohortPool = () => {
+/** Auto assigns an explicit set of students (used by the bulk action bar). */
+export const useAutoAssignStudents = () => {
   const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (input: { studentIds: string[] }) => assignmentService.autoAssignStudents(input.studentIds),
+    onSuccess: invalidate,
+  });
+};
+
+export const useReplaceCohortPool = () => {  const invalidate = useInvalidate();
   return useMutation({
     mutationFn: (input: { cohortId: string; advisorIds: string[] }) => assignmentService.replaceCohortPool(input.cohortId, input.advisorIds),
     onSuccess: invalidate,

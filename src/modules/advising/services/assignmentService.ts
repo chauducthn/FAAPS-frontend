@@ -12,6 +12,7 @@ import type {
   AssignmentHistoryRecord,
   AssignmentStudent,
   AssignmentSummary,
+  AutoAssignResult,
   CohortAssignPreview,
   CohortAssignResult,
   CohortAutoAssignResponse,
@@ -100,6 +101,13 @@ export const assignmentService = {
 
   confirmAutoAssign: (cohortId: string, advisorIds?: string[], notes?: string) =>
     post<CohortAutoAssignResponse>(`${BASE}/auto-assign/cohort/confirm`, { cohortId, advisorIds, notes: notes || undefined }),
+
+  /**
+   * Auto assigns an explicit set of students. The backend spreads them over
+   * the advisors configured for the cohorts the students belong to.
+   */
+  autoAssignStudents: (studentIds: string[]) =>
+    post<AutoAssignResult>(`${BASE}/auto-assign/confirm`, { studentIds }),
 };
 
 export const notificationService = {
