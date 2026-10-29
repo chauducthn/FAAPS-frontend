@@ -324,6 +324,19 @@ export interface AppointmentSummary {
   completed: number;
   cancelled: number;
   noShow: number;
+  /**
+   * Week-over-week comparison per metric. Absent when the API cannot provide
+   * one, in which case the KPI card renders no delta chip.
+   */
+  deltas?: Partial<Record<'total' | AppointmentStatus, MetricDelta>>;
+}
+
+/** A metric compared to the same metric a week earlier. */
+export interface MetricDelta {
+  /** Percentage change against the previous week. */
+  percent: number;
+  /** True when the change is good news for this metric. */
+  positive: boolean;
 }
 
 export interface AutoAssignResult {
