@@ -1,14 +1,14 @@
 import { useMutation } from '@tanstack/react-query';
 import { useAuth } from '@/modules/auth/stores/useAuth';
 import { authService } from '@/modules/auth/services/authService';
-import { adminLoginNotice } from '@/shared/lib/authErrors';
+import { loginErrorNotice } from '@/shared/lib/authErrors';
 import type { LoginFormValues } from '@/modules/auth/validations/auth.schema';
 
 export const useAuthMutations = () => {
   const { setUser } = useAuth();
 
-  const loginAdminMutation = useMutation({
-    mutationFn: (credentials: LoginFormValues) => authService.loginAdmin(credentials),
+  const loginMutation = useMutation({
+    mutationFn: (credentials: LoginFormValues) => authService.login(credentials),
     onSuccess: (user) => {
       setUser(user);
       window.location.assign(`/${user.role.toLowerCase()}`);
@@ -17,13 +17,13 @@ export const useAuthMutations = () => {
 
   const loginGoogle = () => window.location.assign('/oauth2/authorization/google');
 
-  const adminNotice = loginAdminMutation.error ? adminLoginNotice(loginAdminMutation.error) : null;
+  const loginNotice = loginMutation.error ? loginErrorNotice(loginMutation.error) : null;
 
   return {
-    loginAdmin: (credentials: LoginFormValues) => loginAdminMutation.mutate(credentials),
-    isAdminLoading: loginAdminMutation.isPending,
-    adminNotice,
-    resetAdminError: loginAdminMutation.reset,
+    login: (credentials: LoginFormValues) => loginMutation.mutate(credentials),
+    isLoginLoading: loginMutation.isPending,
+    loginNotice,
+    resetLoginError: loginMutation.reset,
 
     loginGoogle,
   };

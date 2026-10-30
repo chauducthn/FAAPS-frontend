@@ -1,8 +1,10 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { lazy, Suspense } from 'react';
 import { ProtectedRoute } from './ProtectedRoute';
+import { RequireStudentProfile } from './RequireStudentProfile';
 import Login from '../modules/auth/pages/Login';
 import Register from '../modules/auth/pages/Register';
+import CompleteRegistration from '../modules/auth/pages/CompleteRegistration';
 import AuthCallback from '../modules/auth/pages/AuthCallback';
 import LandingPage from '../modules/landing/pages';
 import AdminLayout from '../shared/components/layout/management/AdminLayout';
@@ -48,6 +50,10 @@ export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
+  {
+    element: <ProtectedRoute allowedRoles={['STUDENT']} />,
+    children: [{ path: '/register/complete', element: <CompleteRegistration /> }],
+  },
   { path: '/auth/callback', element: <AuthCallback /> },
   {
     element: <ProtectedRoute allowedRoles={['ADMIN']} />,
@@ -82,17 +88,22 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedRoute allowedRoles={['STUDENT']} />,
         children: [
-          { path: '/student', element: <StudentPortal /> },
-          { path: '/student/ai-chat', element: <StudentAiChat /> },
-          { path: '/student/ai-roadmap', element: <StudentAiRoadmap /> },
-          { path: '/student/advising-requests', element: <StudentAdvisingRequests /> },
-          { path: '/student/appointments', element: <StudentBookAppointment /> },
-          { path: '/student/academic-overview', element: <StudentOverview /> },
-          { path: '/student/profile', element: <StudentProfile /> },
-          { path: '/student/transcript', element: <StudentTranscript /> },
-          { path: '/student/courses', element: <StudentCourses /> },
-          { path: '/student/plans', element: <StudentPlans /> },
-          { path: '/student/advising', element: <StudentAdvising /> },
+          {
+            element: <RequireStudentProfile />,
+            children: [
+              { path: '/student', element: <StudentPortal /> },
+              { path: '/student/ai-chat', element: <StudentAiChat /> },
+              { path: '/student/ai-roadmap', element: <StudentAiRoadmap /> },
+              { path: '/student/advising-requests', element: <StudentAdvisingRequests /> },
+              { path: '/student/appointments', element: <StudentBookAppointment /> },
+              { path: '/student/academic-overview', element: <StudentOverview /> },
+              { path: '/student/profile', element: <StudentProfile /> },
+              { path: '/student/transcript', element: <StudentTranscript /> },
+              { path: '/student/courses', element: <StudentCourses /> },
+              { path: '/student/plans', element: <StudentPlans /> },
+              { path: '/student/advising', element: <StudentAdvising /> },
+            ],
+          },
         ],
       },
     ],

@@ -9,11 +9,11 @@ import { loginSchema, LoginFormValues } from '../validations/auth.schema';
 import { useAuthMutations } from '@/modules/auth/hooks/mutations/useAuthMutations';
 
 export default function Login() {
-  const { loginAdmin, loginGoogle, isAdminLoading, adminNotice, resetAdminError } = useAuthMutations();
+  const { login, loginGoogle, isLoginLoading, loginNotice, resetLoginError } = useAuthMutations();
   const [searchParams, setSearchParams] = useSearchParams();
   const paramNotice = loginNoticeFromParam(searchParams.get('error'));
   const [paramDismissed, setParamDismissed] = useState(false);
-  const notice = adminNotice ?? (paramDismissed ? null : paramNotice);
+  const notice = loginNotice ?? (paramDismissed ? null : paramNotice);
 
   const clearErrorParam = () => {
     if (!searchParams.has('error')) return;
@@ -24,12 +24,12 @@ export default function Login() {
 
   // A new sign-in attempt replaces the message that brought the user here.
   useEffect(() => {
-    if (adminNotice) clearErrorParam();
+    if (loginNotice) clearErrorParam();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [adminNotice]);
+  }, [loginNotice]);
 
   const dismiss = () => {
-    resetAdminError();
+    resetLoginError();
     setParamDismissed(true);
     clearErrorParam();
   };
@@ -98,13 +98,13 @@ export default function Login() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit((data) => loginAdmin(data))} className="mt-8 space-y-5">
+        <form onSubmit={handleSubmit((data) => login(data))} className="mt-8 space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Admin username or email</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email or username</label>
             <input
               {...register('email')}
               className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 sm:text-sm transition-all"
-              placeholder="admin"
+              placeholder="name@fpt.edu.vn"
             />
             {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
           </div>
@@ -122,10 +122,10 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={isAdminLoading}
+            disabled={isLoginLoading}
             className="flex w-full justify-center rounded-lg bg-orange-600 py-2.5 px-4 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:bg-orange-400 transition-all"
           >
-            {isAdminLoading ? 'Processing...' : 'Sign in'}
+            {isLoginLoading ? 'Processing...' : 'Sign in'}
           </button>
         </form>
 

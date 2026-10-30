@@ -55,8 +55,8 @@ export const loginNoticeFromParam = (code: string | null): LoginNotice | null =>
   );
 };
 
-/** Turns a failed admin sign-in request into text the user can act on. */
-export const adminLoginNotice = (error: unknown): LoginNotice => {
+/** Turns a failed sign-in request into text the user can act on. */
+export const loginErrorNotice = (error: unknown): LoginNotice => {
   const title = 'Could not sign in';
   if (!axios.isAxiosError<ApiErrorResponse>(error)) {
     return { title, message: 'Could not sign in. Please try again.', tone: 'error' };

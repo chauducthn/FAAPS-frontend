@@ -6,6 +6,7 @@ export type AcademicStudentProfile = {
   studentCode: string | null; majorCode: string | null; majorName: string | null;
   curriculumVersionId: string | null; cohort: string | null; currentSemester: number | null;
   currentGpa: number | null; totalCreditsEarned: number | null; academicStatus: string | null;
+  dateOfBirth?: string | null;
 };
 export type TranscriptRow = { id: string; courseCode: string; courseName: string; credits: number;
   semesterCode: string; semesterName: string; finalScore: number | null; status: string;
