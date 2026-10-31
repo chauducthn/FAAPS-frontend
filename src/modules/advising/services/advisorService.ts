@@ -1,11 +1,16 @@
 // src/services/advisorService.ts
 // API cho Advisor Portal.
 // Advisor Portal uses the real backend endpoints.
+//
+// LƯU Ý SHAPE: theo Swagger, `GET /advisor/advising-requests` trả về mảng thô
+// `AdvisingRequest[]` (KHÔNG phải object Page). Phân trang được thực hiện phía client.
 
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
+import { IS_MOCK_MODE } from '../../../config/mockConfig';
 import type { Page } from '../../../shared/types/api';
 import type {
+  AcademicStatus,
   AdviseeStudent,
   AdvisingRequest,
   AdvisingRequestStatus,
@@ -13,51 +18,162 @@ import type {
   StudentNotification,
 } from '../types/advising';
 import type { AcademicStudentProfile, Progress, TranscriptRow } from '../../academic/services/studentAcademicService';
+import {
+  mockAdvisingRequests,
+  mockAdvisorProfile,
+  mockNotifications,
+  mockStudentDetail,
+  mockStudents,
+  mockDelay,
+} from '../../../mocks/advisorMockData';
 
 export type AdvisorStudentDetail = { profile: AcademicStudentProfile; progress: Progress; transcript: TranscriptRow[] };
 export type AdvisorProfile = { id: string; fullName: string; email: string; maxAdvisees: number;
   activeAdvisees: number; status: string; assignmentStartDate: string | null };
 
+/** Lọc danh sách yêu cầu theo status và từ khoá (dùng cả cho mock lẫn fallback client-side). */
+const filterRequests = (
+  requests: AdvisingRequest[],
+  params: { status?: AdvisingRequestStatus; search?: string },
+): AdvisingRequest[] => {
+  const keyword = params.search?.trim().toLowerCase();
+  return requests.filter((request) => {
+    if (params.status && request.status !== params.status) return false;
+    if (!keyword) return true;
+    return (
+      request.title.toLowerCase().includes(keyword) ||
+      request.studentName.toLowerCase().includes(keyword) ||
+      (request.studentCode ?? '').toLowerCase().includes(keyword)
+    );
+  });
+};
+
 export const advisorService = {
-  getProfile: async (): Promise<AdvisorProfile> =>
-    (await apiClient.get<AdvisorProfile>('/advisor/profile')).data,
-  updateProfile: async (fullName: string): Promise<AdvisorProfile> =>
-    (await apiClient.put<AdvisorProfile>('/advisor/profile', { fullName },
-      { headers: await getCsrfHeaders() })).data,
+  getProfile: async (): Promise<AdvisorProfile> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      return mockAdvisorProfile;
+    }
+    return (await apiClient.get<AdvisorProfile>('/advisor/profile')).data;
+  },
+
+  updateProfile: async (fullName: string): Promise<AdvisorProfile> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      return { ...mockAdvisorProfile, fullName };
+    }
+    return (await apiClient.put<AdvisorProfile>('/advisor/profile', { fullName },
+      { headers: await getCsrfHeaders() })).data;
+  },
+
   /** Sinh viên được phân công cho advisor hiện tại (student_advisor_assignments.status = 'ACTIVE'). */
   getAdviseeStudents: async (
-    params: { search?: string; page?: number; size?: number } = {},
+    params: { search?: string; status?: AcademicStatus | 'ALL'; page?: number; size?: number } = {},
   ): Promise<Page<AdviseeStudent>> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      const keyword = params.search?.trim().toLowerCase();
+      const filtered = mockStudents.filter((student) => {
+        if (params.status && params.status !== 'ALL' && student.academicStatus !== params.status)
+          return false;
+        if (!keyword) return true;
+        return (
+          student.fullName.toLowerCase().includes(keyword) ||
+          student.studentCode.toLowerCase().includes(keyword) ||
+          student.email.toLowerCase().includes(keyword)
+        );
+      });
+      const page = params.page ?? 0;
+      const size = params.size ?? 10;
+      const start = page * size;
+      return {
+        items: filtered.slice(start, start + size),
+        page,
+        size,
+        totalElements: filtered.length,
+        totalPages: Math.max(1, Math.ceil(filtered.length / size)),
+      };
+    }
     const { data } = await apiClient.get<Page<AdviseeStudent>>('/advisor/students', { params });
     return data;
   },
-  getStudentDetail: async (studentId: string): Promise<AdvisorStudentDetail> =>
-    (await apiClient.get<AdvisorStudentDetail>(`/advisor/students/${studentId}`)).data,
-  getNotifications: async (): Promise<Page<StudentNotification>> =>
-    (await apiClient.get<Page<StudentNotification>>('/advisor/notifications',
-      { params: { page: 0, size: 8 } })).data,
-  getUnreadNotificationCount: async (): Promise<number> =>
-    (await apiClient.get<{ unreadCount: number }>('/advisor/notifications/unread-count')).data.unreadCount,
-  markNotificationRead: async (id: string): Promise<{ updated: boolean }> =>
-    (await apiClient.patch<{ updated: boolean }>(`/advisor/notifications/${id}/read`, null,
-      { headers: await getCsrfHeaders() })).data,
-  markAllNotificationsRead: async (): Promise<{ updated: number }> =>
-    (await apiClient.patch<{ updated: number }>('/advisor/notifications/read-all', null,
-      { headers: await getCsrfHeaders() })).data,
 
-  /** Yêu cầu tư vấn mà advisor nhận xử lý. */
+  getStudentDetail: async (studentId: string): Promise<AdvisorStudentDetail> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      return mockStudentDetail(studentId);
+    }
+    return (await apiClient.get<AdvisorStudentDetail>(`/advisor/students/${studentId}`)).data;
+  },
+
+  getNotifications: async (): Promise<Page<StudentNotification>> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      return {
+        items: mockNotifications,
+        page: 0,
+        size: mockNotifications.length,
+        totalElements: mockNotifications.length,
+        totalPages: 1,
+      };
+    }
+    return (await apiClient.get<Page<StudentNotification>>('/advisor/notifications',
+      { params: { page: 0, size: 8 } })).data;
+  },
+
+  getUnreadNotificationCount: async (): Promise<number> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      return mockNotifications.filter((item) => !item.isRead).length;
+    }
+    return (await apiClient.get<{ unreadCount: number }>('/advisor/notifications/unread-count')).data.unreadCount;
+  },
+
+  markNotificationRead: async (id: string): Promise<{ updated: boolean }> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      const target = mockNotifications.find((item) => item.id === id);
+      if (target) target.isRead = true;
+      return { updated: Boolean(target) };
+    }
+    return (await apiClient.patch<{ updated: boolean }>(`/advisor/notifications/${id}/read`, null,
+      { headers: await getCsrfHeaders() })).data;
+  },
+
+  markAllNotificationsRead: async (): Promise<{ updated: number }> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      let updated = 0;
+      for (const item of mockNotifications) {
+        if (!item.isRead) {
+          item.isRead = true;
+          updated += 1;
+        }
+      }
+      return { updated };
+    }
+    return (await apiClient.patch<{ updated: number }>('/advisor/notifications/read-all', null,
+      { headers: await getCsrfHeaders() })).data;
+  },
+
+  /**
+   * Yêu cầu tư vấn mà advisor nhận xử lý.
+   * API trả về mảng thô `AdvisingRequest[]` — lọc status/từ khoá và phân trang
+   * đều do client đảm nhiệm nên không gửi tham số phân trang lên URL.
+   */
   getAdvisingRequests: async (
     params: {
       status?: AdvisingRequestStatus;
       search?: string;
-      page?: number;
-      size?: number;
     } = {},
-  ): Promise<Page<AdvisingRequest>> => {
-    const { data } = await apiClient.get<Page<AdvisingRequest>>('/advisor/advising-requests', {
-      params,
-    });
-    return data;
+  ): Promise<AdvisingRequest[]> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      return filterRequests(mockAdvisingRequests, params);
+    }
+    const { data } = await apiClient.get<AdvisingRequest[]>('/advisor/advising-requests');
+    // Lọc phía client: API trả về toàn bộ danh sách.
+    return filterRequests(data ?? [], params);
   },
 
   /** Chuyển trạng thái request: RESOLVED = Chấp nhận, CANCELLED = Từ chối. */
@@ -65,6 +181,16 @@ export const advisorService = {
     id: string,
     body: UpdateAdvisingRequestStatusDto,
   ): Promise<AdvisingRequest> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      const target = mockAdvisingRequests.find((request) => request.id === id);
+      if (!target) throw new Error(`Request ${id} not found`);
+      target.status = body.status;
+      target.resolutionSummary = body.resolutionSummary ?? target.resolutionSummary;
+      target.updatedAt = new Date().toISOString();
+      if (body.status === 'RESOLVED') target.resolvedAt = target.updatedAt;
+      return { ...target };
+    }
     const { data } = await apiClient.put<AdvisingRequest>(
       `/advisor/advising-requests/${id}/status`,
       body,

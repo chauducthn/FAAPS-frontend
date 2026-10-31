@@ -1,7 +1,10 @@
 // src/components/advising/RequestListTable.tsx
 // Bảng yêu cầu tư vấn của cố vấn — có tab lọc trạng thái và nút Chấp nhận / Từ chối.
+//
+// API `GET /advisor/advising-requests` trả về mảng thô, nên việc lọc theo status/từ khoá
+// và phân trang đều thực hiện phía client (cắt mảng bằng slice).
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { Pagination } from '../../management/components/Pagination';
 import { RequestStatusBadge } from './RequestStatusBadge';
@@ -80,12 +83,25 @@ export function RequestListTable({ search = '' }: { search?: string }) {
   const { data, isLoading, isError, refetch } = useAdvisorAdvisingRequests({
     status: tab === 'ALL' ? undefined : tab,
     search: search || undefined,
-    page,
-    size: PAGE_SIZE,
   });
 
-  const rows = data?.items ?? [];
-  const total = data?.totalElements ?? 0;
+  // Lọc + tìm kiếm phía client (API trả về mảng thô).
+  const filtered = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    return (data ?? []).filter((request) => {
+      if (tab !== 'ALL' && request.status !== tab) return false;
+      if (!keyword) return true;
+      return (
+        request.title.toLowerCase().includes(keyword) ||
+        request.studentName.toLowerCase().includes(keyword) ||
+        (request.studentCode ?? '').toLowerCase().includes(keyword)
+      );
+    });
+  }, [data, tab, search]);
+
+  // Phân trang phía client.
+  const total = filtered.length;
+  const rows = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
   const switchTab = (key: TabKey) => {
     setTab(key);

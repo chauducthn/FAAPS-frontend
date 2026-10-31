@@ -2,6 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { appointmentService } from '../../services/appointmentService';
 import { useAuth } from '../../../auth/stores/useAuth';
+import { IS_MOCK_MODE } from '@/config/mockConfig';
 
 export const APPOINTMENT_QUERY_KEYS = {
   all: ['appointments'] as const,
@@ -51,7 +52,8 @@ export const useAdvisorAppointments = (from: string | null, to: string | null) =
   return useQuery({
     queryKey: APPOINTMENT_QUERY_KEYS.advisorWeek(from ?? '', to ?? '', user?.id),
     queryFn: () => appointmentService.getAdvisorAppointments({ from: from as string, to: to as string }),
-    enabled: !!from && !!to && !!user?.id,
+    // Chưa đăng nhập thì không gọi API (tránh spam 401). Ở mock mode thì luôn chạy.
+    enabled: IS_MOCK_MODE || (!!from && !!to && !!user?.id),
   });
 };
 
@@ -64,6 +66,6 @@ export const useAdvisorAvailability = () => {
   return useQuery({
     queryKey: APPOINTMENT_QUERY_KEYS.advisorAvailability(user?.id),
     queryFn: appointmentService.getAvailability,
-    enabled: !!user?.id,
+    enabled: IS_MOCK_MODE || !!user?.id,
   });
 };
