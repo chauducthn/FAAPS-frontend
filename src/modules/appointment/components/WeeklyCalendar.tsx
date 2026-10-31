@@ -17,12 +17,18 @@ const STATUS_BORDER: Record<AdvisorAppointment['status'], string> = {
   PENDING: 'border-l-[#f59e0b]',
   ACCEPTED: 'border-l-[#10b981]',
   REJECTED: 'border-l-[#ef4444]',
+  CANCELLED: 'border-l-[#94a3b8]',
+  COMPLETED: 'border-l-[#3b82f6]',
+  NO_SHOW: 'border-l-[#a855f7]',
 };
 
 const STATUS_BG: Record<AdvisorAppointment['status'], string> = {
   PENDING: 'bg-[#fffbeb]',
   ACCEPTED: 'bg-[#ecfdf5]',
   REJECTED: 'bg-[#fef2f2]',
+  CANCELLED: 'bg-slate-50',
+  COMPLETED: 'bg-blue-50/60',
+  NO_SHOW: 'bg-purple-50/60',
 };
 
 /**

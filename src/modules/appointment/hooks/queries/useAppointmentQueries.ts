@@ -10,6 +10,8 @@ export const APPOINTMENT_QUERY_KEYS = {
     [...APPOINTMENT_QUERY_KEYS.all, 'available-slots', date, advisorId ?? null] as const,
   advisorWeek: (from: string, to: string, advisorId?: string) =>
     [...APPOINTMENT_QUERY_KEYS.all, 'advisor-week', from, to, advisorId ?? null] as const,
+  advisorAll: (advisorId?: string) =>
+    [...APPOINTMENT_QUERY_KEYS.all, 'advisor-all', advisorId ?? null] as const,
   advisorAvailability: (advisorId?: string) =>
     [...APPOINTMENT_QUERY_KEYS.all, 'advisor-availability', advisorId ?? null] as const,
   detail: (role: 'student' | 'advisor', id?: string) =>
@@ -66,6 +68,20 @@ export const useAdvisorAvailability = () => {
   return useQuery({
     queryKey: APPOINTMENT_QUERY_KEYS.advisorAvailability(user?.id),
     queryFn: appointmentService.getAvailability,
+    enabled: IS_MOCK_MODE || !!user?.id,
+  });
+};
+
+/**
+ * The advisor's full appointment history (not limited to one week),
+ * powering the List view with Upcoming / History tabs.
+ */
+export const useAllAdvisorAppointments = () => {
+  const user = useAuth((s) => s.user);
+
+  return useQuery({
+    queryKey: APPOINTMENT_QUERY_KEYS.advisorAll(user?.id),
+    queryFn: appointmentService.getAllAdvisorAppointments,
     enabled: IS_MOCK_MODE || !!user?.id,
   });
 };

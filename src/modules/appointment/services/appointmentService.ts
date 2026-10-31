@@ -65,6 +65,7 @@ export const appointmentService = {
         reason: body.reason,
         status: 'PENDING',
         decisionNote: null,
+        consultationSummary: null,
         createdAt: new Date().toISOString(),
       };
     }
@@ -78,7 +79,10 @@ export const appointmentService = {
       const target = mockAdvisorAppointments.find((appointment) => appointment.id === id);
       if (!target) throw new Error(`Appointment ${id} not found`);
       target.status = body.status;
-      target.decisionNote = body.reason ?? null;
+      target.decisionNote = body.reason ?? target.decisionNote ?? null;
+      if (body.consultationSummary !== undefined) {
+        target.consultationSummary = body.consultationSummary;
+      }
       return { ...target, advisorId: 'adv-001', advisorName: 'Trần Minh Khoa' };
     }
     return (
@@ -136,11 +140,21 @@ export const appointmentService = {
       await mockDelay();
       const target = mockAdvisorAppointments.find((appointment) => appointment.id === id);
       if (!target) throw new Error(`Appointment ${id} not found`);
-      target.status = 'REJECTED';
+      target.status = 'CANCELLED';
       target.decisionNote = reason;
       return { ...target, advisorId: 'adv-001', advisorName: 'Trần Minh Khoa' };
     }
     return (await apiClient.put<BookedAppointment>(`/appointments/${id}/cancel`, { reason }, { headers: await getCsrfHeaders() })).data;
+  },
+
+  /** Advisor only: full history for the List view (Upcoming / History tabs). */
+  getAllAdvisorAppointments: async (): Promise<AdvisorAppointment[]> => {
+    if (IS_MOCK_MODE) {
+      await mockDelay();
+      return mockAdvisorAppointments.map((appointment) => ({ ...appointment }));
+    }
+    const { data } = await apiClient.get<AdvisorAppointment[]>('/advisor/appointments');
+    return data ?? [];
   },
 
   rescheduleAppointment: async (id: string, startTime: string): Promise<BookedAppointment> => {
