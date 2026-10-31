@@ -79,7 +79,11 @@ export const useMarkAdvisorNotificationRead = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: advisorService.markNotificationRead,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ADVISOR_QUERY_KEYS.notifications }),
+    // Phải invalidate cả danh sách lẫn badge số chưa đọc.
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ['advisor', 'notifications'],
+      }),
   });
 };
 
@@ -87,7 +91,11 @@ export const useMarkAllAdvisorNotificationsRead = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: advisorService.markAllNotificationsRead,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ADVISOR_QUERY_KEYS.notifications }),
+    // Phải invalidate cả danh sách lẫn badge số chưa đọc.
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ['advisor', 'notifications'],
+      }),
     onError: (error) => toast.error(apiErrorMessage(error, 'Unable to update notifications.')),
   });
 };

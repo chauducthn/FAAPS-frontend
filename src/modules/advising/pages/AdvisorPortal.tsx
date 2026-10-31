@@ -2,15 +2,19 @@
 // Dashboard Cố vấn: thẻ số liệu, danh sách sinh viên được phân công, yêu cầu tư vấn đang chờ.
 
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Link } from 'react-router';
+import { ArrowRight, Search } from 'lucide-react';
 import { useAuth } from '../../auth/stores/useAuth';
 import { useAdviseeStudents, useAdvisorAdvisingRequests } from '../hooks/queries/useAdvisorQueries';
-import { StudentList } from '../components/StudentList';
 import { RequestListTable } from '../components/RequestListTable';
 
 import { cn } from '@/shared/lib/utils';
 
 const COUNT_SIZE = 50;
+
+/** API trả về mảng thô — số lượng là độ dài mảng. */
+const countOf = (items: unknown[] | undefined): number | undefined =>
+  items ? items.length : undefined;
 
 function StatCard({
   label,
@@ -42,13 +46,9 @@ export default function AdvisorPortal() {
 
   // Đếm nhanh theo từng trạng thái (size lớn, không phân trang).
   const studentsQuery = useAdviseeStudents({ page: 0, size: COUNT_SIZE });
-  const pendingQuery = useAdvisorAdvisingRequests({ status: 'PENDING', page: 0, size: COUNT_SIZE });
-  const inProgressQuery = useAdvisorAdvisingRequests({
-    status: 'IN_PROGRESS',
-    page: 0,
-    size: COUNT_SIZE,
-  });
-  const resolvedQuery = useAdvisorAdvisingRequests({ status: 'RESOLVED', page: 0, size: COUNT_SIZE });
+  const pendingQuery = useAdvisorAdvisingRequests({ status: 'PENDING' });
+  const inProgressQuery = useAdvisorAdvisingRequests({ status: 'IN_PROGRESS' });
+  const resolvedQuery = useAdvisorAdvisingRequests({ status: 'RESOLVED' });
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
@@ -66,9 +66,9 @@ export default function AdvisorPortal() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Assigned Students" value={studentsQuery.data?.totalElements} />
-        <StatCard label="Pending Requests" value={pendingQuery.data?.totalElements} tone="warn" />
-        <StatCard label="In Progress" value={inProgressQuery.data?.totalElements} />
-        <StatCard label="Resolved" value={resolvedQuery.data?.totalElements} />
+        <StatCard label="Pending Requests" value={countOf(pendingQuery.data)} tone="warn" />
+        <StatCard label="In Progress" value={countOf(inProgressQuery.data)} />
+        <StatCard label="Resolved" value={countOf(resolvedQuery.data)} />
       </div>
 
       <section className="flex flex-col gap-4">
@@ -95,14 +95,24 @@ export default function AdvisorPortal() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <div>
-          <h2 className="text-base font-semibold text-[#151c27]">Assigned Students</h2>
-          <p className="mt-0.5 text-[13px] text-[#555f6f]">
-            Monitor the academic progress and status of your assigned students.
-          </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-[#151c27]">Assigned Students</h2>
+            <p className="mt-0.5 text-[13px] text-[#555f6f]">
+              Monitor the academic progress and status of your assigned students.
+            </p>
+          </div>
+          <Link
+            to="/advisor/students"
+            className="inline-flex h-[38px] items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#e05f14]"
+          >
+            Open My Students <ArrowRight className="size-4" aria-hidden />
+          </Link>
         </div>
-
-        <StudentList />
+        <div className="rounded-xl bg-white p-4 text-sm text-[#555f6f] shadow-sm">
+          You have <strong className="text-[#151c27]">{studentsQuery.data?.totalElements ?? '–'}</strong> assigned
+          students. Search, filter by academic status and open the 360° profile from the dedicated page.
+        </div>
       </section>
     </div>
   );
