@@ -20,6 +20,8 @@ export function StudentAppointmentDetailModal({ id, onClose }: { id: string | nu
           <p className="mt-1 whitespace-pre-wrap rounded-lg bg-gray-50 p-3 text-sm">{data.reason}</p></section>
         {data.decisionNote && <section><p className="text-xs font-semibold text-gray-500">Advisor note</p>
           <p className="mt-1 whitespace-pre-wrap rounded-lg bg-gray-50 p-3 text-sm">{data.decisionNote}</p></section>}
+        {data.consultationSummary && <section><p className="text-xs font-semibold text-gray-500">Consultation summary</p>
+          <p className="mt-1 whitespace-pre-wrap rounded-lg bg-blue-50/60 p-3 text-sm">{data.consultationSummary}</p></section>}
       </>}
     </div>
     <div className="flex justify-end border-t p-4"><button type="button" onClick={onClose}

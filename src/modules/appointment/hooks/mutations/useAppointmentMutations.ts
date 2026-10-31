@@ -48,13 +48,23 @@ export const useConfigureAvailabilityMutation = () => {
 export const useUpdateAppointmentStatusMutation = () => {
   const qc = useQueryClient();
 
+  const STATUS_TOAST: Record<UpdateAppointmentStatusDto['status'], { title: string; description: string }> = {
+    ACCEPTED: { title: 'Appointment accepted', description: 'The student has been notified.' },
+    REJECTED: { title: 'Appointment rejected', description: 'The student has been notified.' },
+    CANCELLED: { title: 'Appointment cancelled', description: 'The student has been notified.' },
+    COMPLETED: { title: 'Appointment completed', description: 'Consultation summary has been saved.' },
+    NO_SHOW: { title: 'Marked as no-show', description: 'The absence has been recorded.' },
+  };
+
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: UpdateAppointmentStatusDto }) =>
       appointmentService.updateAppointmentStatus(id, body),
     onSuccess: (_data, vars) => {
-      toast.success(vars.body.status === 'ACCEPTED' ? 'Appointment accepted' : 'Appointment rejected', {
+      const toastContent = STATUS_TOAST[vars.body.status] ?? {
+        title: 'Appointment updated',
         description: 'The student has been notified.',
-      });
+      };
+      toast.success(toastContent.title, { description: toastContent.description });
       qc.invalidateQueries({ queryKey: APPOINTMENT_QUERY_KEYS.all });
     },
     onError: (error) => {

@@ -60,6 +60,16 @@ const daysAgo = (days: number, hour = 9): string => {
   return date.toISOString();
 };
 
+/** Cặp start/end cách nhau 30 phút, cách đây `days` ngày — dùng cho lịch sử. */
+// NOTE: mock appointments reset on every Vite reload; mutations are in-memory only.
+const slotDaysAgo = (days: number, hour = 9): { start: string; end: string } => {
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+  startDate.setHours(hour, 0, 0, 0);
+  const endDate = new Date(startDate.getTime() + 30 * 60000);
+  return { start: startDate.toISOString(), end: endDate.toISOString() };
+};
+
 // ---------------------------------------------------------------------------
 // 1. Yêu cầu tư vấn — 15 phần tử, đủ PENDING / IN_PROGRESS / RESOLVED / CANCELLED
 // ---------------------------------------------------------------------------
@@ -448,6 +458,7 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     reason: 'Em muốn hỏi về việc chọn môn điện tử và quản trị cho kỳ tới.',
     status: 'ACCEPTED',
     decisionNote: null,
+    consultationSummary: null,
     createdAt: daysAgo(2, 10),
   },
   {
@@ -460,6 +471,7 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     reason: 'Duyệt kế hoạch học tập kỳ 9 ạ.',
     status: 'ACCEPTED',
     decisionNote: null,
+    consultationSummary: null,
     createdAt: daysAgo(2, 11),
   },
   {
@@ -472,6 +484,7 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     reason: 'Hỏi về điều kiện tốt nghiệp và môn OJT.',
     status: 'PENDING',
     decisionNote: null,
+    consultationSummary: null,
     createdAt: daysAgo(1, 15),
   },
   {
@@ -484,6 +497,7 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     reason: 'Em bị trễ 2 môn kỳ 8, cần thầy tư vấn cách khắc phục.',
     status: 'ACCEPTED',
     decisionNote: null,
+    consultationSummary: null,
     createdAt: daysAgo(3, 9),
   },
   {
@@ -496,6 +510,7 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     reason: 'Thảo luận kế hoạch học tập sau khi đổi môn.',
     status: 'ACCEPTED',
     decisionNote: null,
+    consultationSummary: null,
     createdAt: daysAgo(3, 13),
   },
   {
@@ -509,6 +524,7 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     status: 'REJECTED',
     decisionNote:
       'Rất tiếc thầy không thể nhận lịch 9h sáng thứ 3 vì thầy đã có lịch họp khoa. Em vui lòng đặt lịch khác nhé.',
+    consultationSummary: null,
     createdAt: daysAgo(4, 10),
   },
   {
@@ -521,6 +537,7 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     reason: 'Hỏi về môn quản trị kinh doanh trong nhóm tự chọn.',
     status: 'ACCEPTED',
     decisionNote: null,
+    consultationSummary: null,
     createdAt: daysAgo(4, 14),
   },
   {
@@ -533,6 +550,7 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     reason: 'Hướng dẫn thủ tục đăng ký OJT.',
     status: 'ACCEPTED',
     decisionNote: null,
+    consultationSummary: null,
     createdAt: daysAgo(5, 9),
   },
   {
@@ -545,6 +563,7 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     reason: 'Xin lịch tư vấn kế hoạch học tập kỳ 8.',
     status: 'REJECTED',
     decisionNote: 'Khung giờ này thầy đã dành cho buổi họp khoa. Em đặt lịch vào chiều thứ 5 được không?',
+    consultationSummary: null,
     createdAt: daysAgo(6, 11),
   },
   {
@@ -557,7 +576,77 @@ export const mockAdvisorAppointments: AdvisorAppointment[] = [
     reason: 'Hỏi cách học môn Cấu trúc dữ liệu.',
     status: 'PENDING',
     decisionNote: null,
+    consultationSummary: null,
     createdAt: daysAgo(1, 17),
+  },
+  // --- History (past weeks) so Upcoming / History tabs have rich data ---
+  {
+    id: 'apt-h01',
+    studentId: 'stu-002',
+    studentName: 'Lê Văn Minh',
+    studentCode: 'SE2021002',
+    startTime: slotDaysAgo(9, 9).start,
+    endTime: slotDaysAgo(9, 9).end,
+    reason: 'Duyệt kế hoạch học tập kỳ 8.',
+    status: 'COMPLETED',
+    decisionNote: null,
+    consultationSummary:
+      'Đã duyệt kế hoạch 18 tín chỉ kỳ 8. Minh cần ưu tiên trả môn PRJ301 trước, đăng ký OJT vào kỳ 9. Hẹn follow-up sau 2 tuần.',
+    createdAt: daysAgo(12, 9),
+  },
+  {
+    id: 'apt-h02',
+    studentId: 'stu-004',
+    studentName: 'Võ Thành Long',
+    studentCode: 'SE2021004',
+    startTime: slotDaysAgo(12, 14).start,
+    endTime: slotDaysAgo(12, 14).end,
+    reason: 'Tư vấn cải thiện GPA sau probation.',
+    status: 'COMPLETED',
+    decisionNote: null,
+    consultationSummary:
+      'Long còn nợ 2 môn kỳ 7. Chốt lộ trình học lại 1 môn/kỳ, đăng ký mentor kèm DSA. Cảnh báo nguy cơ suspend nếu GPA < 5.0.',
+    createdAt: daysAgo(15, 10),
+  },
+  {
+    id: 'apt-h03',
+    studentId: 'stu-007',
+    studentName: 'Bùi Thị Mai',
+    studentCode: 'SE2021007',
+    startTime: slotDaysAgo(7, 15).start,
+    endTime: slotDaysAgo(7, 15).end,
+    reason: 'Hỏi về học bổng khuyến khích.',
+    status: 'NO_SHOW',
+    decisionNote: 'Sinh viên không tham gia, không báo trước.',
+    consultationSummary: null,
+    createdAt: daysAgo(9, 11),
+  },
+  {
+    id: 'apt-h04',
+    studentId: 'stu-009',
+    studentName: 'Trương Thanh Hà',
+    studentCode: 'SE2021009',
+    startTime: slotDaysAgo(16, 10).start,
+    endTime: slotDaysAgo(16, 10).end,
+    reason: 'Tư vấn chọn chuyên ngành hẹp.',
+    status: 'CANCELLED',
+    decisionNote: 'Thầy bận họp đột xuất, đã nhắn sinh viên đặt lại lịch tuần sau.',
+    consultationSummary: null,
+    createdAt: daysAgo(18, 9),
+  },
+  {
+    id: 'apt-h05',
+    studentId: 'stu-005',
+    studentName: 'Đặng Kim Ngân',
+    studentCode: 'SE2021005',
+    startTime: slotDaysAgo(20, 13).start,
+    endTime: slotDaysAgo(20, 13).end,
+    reason: 'Rà soát tiến độ OJT.',
+    status: 'COMPLETED',
+    decisionNote: null,
+    consultationSummary:
+      'Ngân đã hoàn thành 80% báo cáo OJT. Cần bổ sung chương 3 về quy trình kiểm thử, nộp bản final trước 15/12.',
+    createdAt: daysAgo(22, 14),
   },
 ];
 

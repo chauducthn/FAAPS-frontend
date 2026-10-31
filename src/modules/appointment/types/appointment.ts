@@ -6,10 +6,16 @@
 //   PUT  /advisor/appointments/{id}/status
 
 /** Status of a booking request from the student point of view. */
-export type BookingStatus = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+export type BookingStatus =
+  | 'PENDING'
+  | 'ACCEPTED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'COMPLETED'
+  | 'NO_SHOW';
 
-/** Only the two states an advisor can move a pending appointment into. */
-export type AppointmentDecision = 'ACCEPTED' | 'REJECTED';
+/** States an advisor can move an appointment into. */
+export type AppointmentDecision = 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW';
 
 /** ISO weekday index used by the availability configuration: 1 = Monday ... 7 = Sunday. */
 export type IsoWeekday = 1 | 2 | 3 | 4 | 5 | 6 | 7;
@@ -46,8 +52,10 @@ export interface BookAppointmentDto {
 /** Body of PUT /advisor/appointments/{id}/status. */
 export interface UpdateAppointmentStatusDto {
   status: AppointmentDecision;
-  /** Mandatory when rejecting. */
+  /** Mandatory when rejecting/cancelling. */
   reason?: string;
+  /** Consultation summary — mandatory when completing, editable afterwards. */
+  consultationSummary?: string;
 }
 
 /** One appointment as seen by the advisor, in the weekly calendar. */
@@ -64,6 +72,8 @@ export interface AdvisorAppointment {
   status: BookingStatus;
   /** Populated when the advisor rejected the request. */
   decisionNote: string | null;
+  /** Consultation summary written after a completed session. */
+  consultationSummary: string | null;
   createdAt: string;
 }
 
@@ -83,5 +93,7 @@ export interface BookedAppointment {
   status: BookingStatus;
   /** Populated when the advisor rejected the request. */
   decisionNote: string | null;
+  /** Consultation summary written after a completed session. */
+  consultationSummary: string | null;
   createdAt: string;
 }
