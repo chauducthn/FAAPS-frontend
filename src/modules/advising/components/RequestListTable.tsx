@@ -1,12 +1,10 @@
 // src/components/advising/RequestListTable.tsx
-// Bảng yêu cầu tư vấn của cố vấn — pill tabs + DataTable-style rows + 3 nút PENDING.
-// Đồng bộ 1-1 với My Students / Appointments: avatar gradient, badge pill, action cam FPT.
-//
-// API `GET /advisor/advising-requests` trả về mảng thô, nên lọc theo status/từ khoá
-// và phân trang đều thực hiện phía client (cắt mảng bằng slice).
+// Bảng yêu cầu tư vấn — SIMPLIFIED (audit 37/100):
+// 1 nút chính Accept + menu More (In Progress / Reject), 3 kiểu nút duy nhất,
+// chữ body tối thiểu 14px, hàng thoáng px-6 py-5.
 
-import { useMemo, useState } from 'react';
-import { CheckCircle2, Hourglass, Inbox, Loader2, SearchX, XCircle } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { CheckCircle2, Hourglass, Inbox, Loader2, MoreHorizontal, SearchX, XCircle } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Pagination } from '../../management/components/Pagination';
 import { RequestStatusBadge } from './RequestStatusBadge';
@@ -58,9 +56,9 @@ function TableState({
     return (
       <>
         {Array.from({ length: 4 }).map((_, i) => (
-          <tr key={i} className="h-12 border-b border-slate-100">
-            <td colSpan={cols} className="px-4 py-3">
-              <div className="h-3.5 animate-pulse rounded bg-slate-100" style={{ width: `${55 + (i % 3) * 15}%` }} />
+          <tr key={i} className="border-b border-slate-100 last:border-b-0">
+            <td colSpan={cols} className="px-6 py-6">
+              <div className="h-4 animate-pulse rounded-lg bg-slate-100" style={{ width: `${55 + (i % 3) * 15}%` }} />
             </td>
           </tr>
         ))}
@@ -71,21 +69,21 @@ function TableState({
   return (
     <tr>
       <td colSpan={cols}>
-        <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
-          <span className="flex size-11 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+        <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+          <span className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
             {error ? <Inbox className="size-5" aria-hidden /> : searching ? <SearchX className="size-5" aria-hidden /> : <Inbox className="size-5" aria-hidden />}
           </span>
           {error ? (
             <>
-              <p className="text-sm font-semibold text-[#151c27]">Unable to load requests.</p>
-              <button type="button" onClick={onRetry} className="text-[13px] font-semibold text-orange-600 hover:underline">
+              <p className="text-base font-bold text-slate-900">Unable to load requests.</p>
+              <button type="button" onClick={onRetry} className="inline-flex h-11 items-center px-4 text-sm font-bold text-orange-700 hover:underline">
                 Try again
               </button>
             </>
           ) : (
             <>
-              <p className="text-sm font-semibold text-[#151c27]">{empty ?? 'No requests found.'}</p>
-              <p className="text-[13px] text-slate-500">
+              <p className="text-base font-bold text-slate-900">{empty ?? 'No requests found.'}</p>
+              <p className="text-sm font-medium text-slate-600">
                 {searching ? 'Try a different keyword or switch tabs.' : 'There is no data to display yet.'}
               </p>
             </>
@@ -103,6 +101,8 @@ export function RequestListTable({ search = '' }: { search?: string }) {
     null,
   );
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const updateStatus = useUpdateAdvisingRequestStatus();
 
   const { data, isLoading, isError, refetch } = useAdvisorAdvisingRequests({
@@ -110,7 +110,23 @@ export function RequestListTable({ search = '' }: { search?: string }) {
     search: search || undefined,
   });
 
-  // Lọc + tìm kiếm phía client (API trả về mảng thô).
+  // Đóng menu More khi click ra ngoài / nhấn Escape.
+  useEffect(() => {
+    if (!menuOpenId) return;
+    const onDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpenId(null);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMenuOpenId(null);
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [menuOpenId]);
+
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     return (data ?? []).filter((request) => {
@@ -124,7 +140,6 @@ export function RequestListTable({ search = '' }: { search?: string }) {
     });
   }, [data, tab, search]);
 
-  // Phân trang phía client.
   const total = filtered.length;
   const rows = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
@@ -135,6 +150,7 @@ export function RequestListTable({ search = '' }: { search?: string }) {
 
   const handleInProgress = async (request: AdvisingRequest) => {
     if (processingId) return;
+    setMenuOpenId(null);
     setProcessingId(request.id);
     try {
       await updateStatus.mutateAsync({ id: request.id, body: { status: 'IN_PROGRESS' } });
@@ -148,8 +164,8 @@ export function RequestListTable({ search = '' }: { search?: string }) {
   return (
     <>
       <div>
-        {/* Pill tabs — đồng bộ Appointments Upcoming/History + My Students chips */}
-        <div role="tablist" aria-label="Request status" className="flex flex-wrap items-center gap-2">
+        {/* Tabs — Primary khi active, Secondary khi inactive (trong 3 kiểu nút chuẩn) */}
+        <div role="tablist" aria-label="Request status" className="flex flex-wrap items-center gap-3">
           {TABS.map((t) => {
             const activeTab = tab === t.key;
             return (
@@ -160,10 +176,10 @@ export function RequestListTable({ search = '' }: { search?: string }) {
                 aria-selected={activeTab}
                 onClick={() => switchTab(t.key)}
                 className={cn(
-                  'inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-[13px] font-bold ring-1 ring-inset transition-colors',
+                  'inline-flex h-11 items-center gap-1.5 rounded-full px-5 text-sm font-bold ring-1 ring-inset transition-all',
                   activeTab
-                    ? 'bg-[#F26F21] text-white ring-[#F26F21]'
-                    : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50 hover:text-slate-900',
+                    ? 'bg-[#F26F21] text-white ring-[#F26F21] shadow-sm'
+                    : 'bg-white text-slate-700 ring-slate-200 hover:border-[#F26F21]/40 hover:bg-[#fff7f0] hover:text-slate-900',
                 )}
               >
                 {t.label}
@@ -172,19 +188,19 @@ export function RequestListTable({ search = '' }: { search?: string }) {
           })}
         </div>
 
-        <div className="mt-4 w-full overflow-x-auto">
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
           <table className="w-full border-collapse text-left">
             <thead>
               <tr className="bg-slate-50">
-                <th scope="col" className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-600">Student</th>
-                <th scope="col" className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-600">Type</th>
-                <th scope="col" className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-600">Title</th>
-                <th scope="col" className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-600">Submitted</th>
-                <th scope="col" className="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-600">Status</th>
-                <th scope="col" className="px-4 py-3 text-right text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-600">Actions</th>
+                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Student</th>
+                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Type</th>
+                <th scope="col" className="px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Title</th>
+                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Submitted</th>
+                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Status</th>
+                <th scope="col" className="whitespace-nowrap px-6 py-4 text-right text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {isLoading || (isError && !data) || rows.length === 0 ? (
                 <TableState
                   cols={6}
@@ -197,78 +213,115 @@ export function RequestListTable({ search = '' }: { search?: string }) {
               ) : (
                 rows.map((r) => {
                   const busy = processingId === r.id;
+                  const menuOpen = menuOpenId === r.id;
                   return (
-                    <tr key={r.id} className="h-12 border-b border-slate-100 transition-colors last:border-b-0 hover:bg-slate-50/70">
-                      <td className="px-4 py-3">
+                    <tr key={r.id} className="bg-white transition-colors hover:bg-slate-50/70">
+                      <td className="px-6 py-5">
                         <div className="flex min-w-0 items-center gap-3">
                           <span
                             aria-hidden
-                            className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-[13px] font-bold text-white shadow-sm"
+                            className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-sm font-extrabold text-white shadow-sm"
                           >
                             {initialsOf(r.studentName)}
                           </span>
                           <div className="min-w-0">
-                            <p className="block max-w-full truncate text-sm font-semibold text-[#151c27]">
+                            <p className="block max-w-full truncate text-sm font-bold text-slate-900">
                               {r.studentName}
                             </p>
-                            <p className="mt-0.5 truncate text-xs text-slate-400">
+                            <p className="mt-0.5 truncate text-sm font-medium text-slate-600">
                               {r.studentCode ?? '—'}
                             </p>
                           </div>
                         </div>
                       </td>
-                      <td className="max-w-36 px-4 py-3 text-[13px] text-slate-600">
+                      <td className="max-w-40 px-6 py-5 text-sm font-medium text-slate-700">
                         <span className="block truncate" title={r.description ?? undefined}>
                           <RequestTypeLabel requestType={r.requestType} />
                         </span>
                         {r.description && (
-                          <span className="mt-0.5 block max-w-36 truncate text-xs text-slate-400" title={r.description}>
+                          <span className="mt-1 block max-w-40 truncate text-sm font-normal text-slate-600" title={r.description}>
                             {r.description}
                           </span>
                         )}
                       </td>
-                      <td className="max-w-[220px] px-4 py-3 text-sm font-semibold text-[#151c27]">
-                        <span className="line-clamp-2" title={r.title}>
+                      <td className="max-w-[220px] px-6 py-5 text-sm font-bold text-slate-900">
+                        <span className="line-clamp-2 leading-snug" title={r.title}>
                           {r.title}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-[13px] text-slate-600">{formatDate(r.createdAt)}</td>
-                      <td className="px-4 py-3">
-                        <RequestStatusBadge status={r.status} />
+                      <td className="whitespace-nowrap px-6 py-5 text-sm font-medium tabular-nums text-slate-700">{formatDate(r.createdAt)}</td>
+                      <td className="whitespace-nowrap px-6 py-5">
+                        <RequestStatusBadge status={r.status} className="px-3 py-1 text-xs font-bold" />
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
-                          {r.status === 'PENDING' ? (
+                      <td className="px-6 py-5">
+                        <div className="flex items-center justify-end gap-2">
+                          {r.status === 'PENDING' || r.status === 'IN_PROGRESS' ? (
                             <>
-                              <button
-                                type="button"
-                                onClick={() => handleInProgress(r)}
-                                disabled={busy}
-                                title="Tiếp nhận xử lý — chuyển sang In progress"
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700 shadow-sm transition-colors hover:bg-blue-100 disabled:opacity-50"
-                              >
-                                {busy ? <Loader2 className="size-3.5 animate-spin" aria-hidden /> : <Hourglass className="size-3.5" aria-hidden />}
-                                {busy ? 'Saving…' : 'In Progress'}
-                              </button>
+                              {/* 1 hành động chính duy nhất — Primary */}
                               <button
                                 type="button"
                                 onClick={() => setActive({ request: r, decision: 'accept' })}
-                                className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14]"
+                                className="inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#F26F21] px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14]"
                               >
-                                <CheckCircle2 className="size-3.5" aria-hidden />
-                                Accept
+                                <CheckCircle2 className="size-4" aria-hidden />
+                                {r.status === 'PENDING' ? 'Accept' : 'Resolve'}
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => setActive({ request: r, decision: 'reject' })}
-                                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 transition-colors hover:bg-red-100"
+                              {/* Hành động phụ gom vào menu More — Secondary/Ghost */}
+                              <div
+                                className="relative"
+                                ref={menuOpen ? menuRef : undefined}
                               >
-                                <XCircle className="size-3.5" aria-hidden />
-                                Reject
-                              </button>
+                                <button
+                                  type="button"
+                                  aria-haspopup="menu"
+                                  aria-expanded={menuOpen}
+                                  aria-label={`More actions for ${r.studentName}`}
+                                  onClick={() => setMenuOpenId(menuOpen ? null : r.id)}
+                                  className={cn(
+                                    'inline-flex h-11 w-11 items-center justify-center rounded-xl border bg-white text-slate-700 shadow-sm transition-colors',
+                                    menuOpen
+                                      ? 'border-[#F26F21]/50 bg-[#fff7f0] text-[#F26F21]'
+                                      : 'border-slate-200 hover:border-[#F26F21]/40 hover:bg-[#fff7f0] hover:text-slate-900',
+                                  )}
+                                >
+                                  <MoreHorizontal className="size-5" aria-hidden />
+                                </button>
+                                {menuOpen && (
+                                  <div
+                                    role="menu"
+                                    aria-label="More actions"
+                                    className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 shadow-xl"
+                                  >
+                                    {r.status === 'PENDING' && (
+                                      <button
+                                        type="button"
+                                        role="menuitem"
+                                        disabled={busy}
+                                        onClick={() => handleInProgress(r)}
+                                        className="flex h-11 w-full items-center gap-2.5 px-4 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
+                                      >
+                                        {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Hourglass className="size-4 text-slate-500" aria-hidden />}
+                                        {busy ? 'Saving…' : 'Mark in progress'}
+                                      </button>
+                                    )}
+                                    <button
+                                      type="button"
+                                      role="menuitem"
+                                      onClick={() => {
+                                        setMenuOpenId(null);
+                                        setActive({ request: r, decision: 'reject' });
+                                      }}
+                                      className="flex h-11 w-full items-center gap-2.5 px-4 text-left text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"
+                                    >
+                                      <XCircle className="size-4" aria-hidden />
+                                      Reject request
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             </>
                           ) : (
-                            <span className="text-[13px] text-slate-400">—</span>
+                            <span className="inline-flex h-11 items-center text-sm font-medium text-slate-600">—</span>
                           )}
                         </div>
                       </td>
@@ -280,7 +333,9 @@ export function RequestListTable({ search = '' }: { search?: string }) {
           </table>
         </div>
 
-        <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun="requests" onChange={setPage} bare />
+        <div className="mt-5">
+          <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun="requests" onChange={setPage} bare />
+        </div>
       </div>
 
       <RequestActionModal

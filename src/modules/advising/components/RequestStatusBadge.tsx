@@ -8,19 +8,19 @@ import type { AdvisingRequestStatus } from '@/modules/advising/types/advising';
 const STYLES: Record<AdvisingRequestStatus, { label: string; className: string }> = {
   PENDING: {
     label: 'Pending',
-    className: 'bg-orange-100 text-orange-800 ring-orange-200',
+    className: 'bg-orange-200 text-orange-950 ring-orange-400',
   },
   IN_PROGRESS: {
     label: 'In progress',
-    className: 'bg-blue-100 text-blue-800 ring-blue-200',
+    className: 'bg-blue-200 text-blue-950 ring-blue-400',
   },
   RESOLVED: {
     label: 'Resolved',
-    className: 'bg-green-100 text-green-800 ring-green-200',
+    className: 'bg-emerald-200 text-emerald-950 ring-emerald-400',
   },
   CANCELLED: {
     label: 'Rejected',
-    className: 'bg-red-100 text-red-800 ring-red-200',
+    className: 'bg-red-200 text-red-950 ring-red-400',
   },
 };
 
