@@ -1,5 +1,5 @@
 /**
- * Mock data cho trang Academic Lookup của Advisor.
+ * Mock data cho trang Academic Search của Advisor.
  * Dùng khi `IS_MOCK_MODE = true` — advisor tra cứu Curricula / Courses mà không cần backend.
  */
 

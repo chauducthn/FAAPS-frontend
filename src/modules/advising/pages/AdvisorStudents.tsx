@@ -3,6 +3,7 @@
 // với cell giàu thông tin (avatar, GPA bar, status dot) + Modal 360 (4 tabs).
 
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import { GraduationCap, TriangleAlert, UserCheck, UsersRound } from 'lucide-react';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
@@ -26,16 +27,16 @@ const STATUS_OPTIONS: { value: 'ALL' | AcademicStatus; label: string }[] = [
 ];
 
 const STATUS_STYLES: Record<AcademicStatus, { pill: string; dot: string; label: string }> = {
-  ACTIVE: { pill: 'bg-emerald-50 text-emerald-700 ring-emerald-200', dot: 'bg-emerald-500', label: 'Active' },
-  PROBATION: { pill: 'bg-orange-50 text-orange-700 ring-orange-200', dot: 'bg-[#F26F21]', label: 'Probation' },
-  SUSPENDED: { pill: 'bg-red-50 text-red-700 ring-red-200', dot: 'bg-red-500', label: 'Suspended' },
-  GRADUATED: { pill: 'bg-blue-50 text-blue-700 ring-blue-200', dot: 'bg-blue-500', label: 'Graduated' },
-  WITHDRAWN: { pill: 'bg-slate-100 text-slate-600 ring-slate-200', dot: 'bg-slate-400', label: 'Withdrawn' },
-  LEAVE_OF_ABSENCE: { pill: 'bg-slate-100 text-slate-600 ring-slate-200', dot: 'bg-slate-400', label: 'On leave' },
+  ACTIVE: { pill: 'bg-emerald-100 text-emerald-900 ring-emerald-300', dot: 'bg-emerald-600', label: 'Active' },
+  PROBATION: { pill: 'bg-orange-100 text-orange-900 ring-orange-300', dot: 'bg-[#F26F21]', label: 'Probation' },
+  SUSPENDED: { pill: 'bg-red-100 text-red-900 ring-red-300', dot: 'bg-red-600', label: 'Suspended' },
+  GRADUATED: { pill: 'bg-blue-100 text-blue-900 ring-blue-300', dot: 'bg-blue-600', label: 'Graduated' },
+  WITHDRAWN: { pill: 'bg-slate-200 text-slate-800 ring-slate-300', dot: 'bg-slate-500', label: 'Withdrawn' },
+  LEAVE_OF_ABSENCE: { pill: 'bg-slate-200 text-slate-800 ring-slate-300', dot: 'bg-slate-500', label: 'On leave' },
 };
 
 const selectClass =
-  'h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-[#151c27] shadow-sm focus:border-[#F26F21] focus:outline-none focus:ring-1 focus:ring-[#F26F21]/40';
+  'h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 shadow-sm focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/30';
 
 function initialsOf(name: string) {
   return name
@@ -47,7 +48,7 @@ function initialsOf(name: string) {
 }
 
 function gpaTone(gpa: number | null) {
-  if (gpa === null) return { text: 'text-slate-400', bar: 'bg-slate-200' };
+  if (gpa === null) return { text: 'text-slate-600', bar: 'bg-slate-200' };
   if (gpa >= 8) return { text: 'text-emerald-700', bar: 'bg-emerald-500' };
   if (gpa >= 6.5) return { text: 'text-[#9a4a12]', bar: 'bg-[#F26F21]' };
   if (gpa >= 5) return { text: 'text-amber-700', bar: 'bg-amber-400' };
@@ -154,11 +155,11 @@ export default function AdvisorStudents() {
                   type="button"
                   onClick={() => openDetail(s)}
                   disabled={loadingId === s.id}
-                  className="block max-w-full truncate text-left text-sm font-semibold text-[#151c27] hover:text-[#F26F21] hover:underline disabled:opacity-50"
+                  className="block max-w-full truncate text-left text-[15px] font-bold text-slate-900 hover:text-[#F26F21] hover:underline disabled:opacity-50"
                 >
                   {loadingId === s.id ? 'Loading…' : s.fullName}
                 </button>
-                <p className="mt-0.5 truncate text-xs text-slate-400">
+                <p className="mt-0.5 truncate text-sm font-medium text-slate-600">
                   {s.studentCode} · {s.email}
                 </p>
               </div>
@@ -172,8 +173,8 @@ export default function AdvisorStudents() {
         enableSorting: false,
         cell: ({ row }) => (
           <div>
-            <p className="text-sm font-semibold text-[#151c27]">{row.original.majorCode}</p>
-            <p className="max-w-36 truncate text-xs text-slate-400">{row.original.majorName}</p>
+            <p className="text-sm font-bold text-slate-900">{row.original.majorCode}</p>
+            <p className="max-w-36 truncate text-sm font-medium text-slate-600">{row.original.majorName}</p>
           </div>
         ),
       },
@@ -185,7 +186,7 @@ export default function AdvisorStudents() {
             <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">
               Sem {row.original.currentSemester}
             </span>
-            <p className="mt-1 text-xs text-slate-400">{row.original.curriculumVersion}</p>
+            <p className="mt-1 text-sm font-medium text-slate-600">{row.original.curriculumVersion}</p>
           </div>
         ),
       },
@@ -214,8 +215,8 @@ export default function AdvisorStudents() {
         header: 'Credits',
         cell: ({ row }) => (
           <p className="text-sm tabular-nums">
-            <span className="font-bold text-[#151c27]">{row.original.totalCreditsEarned}</span>
-            <span className="text-xs text-slate-400">/{REQUIRED_CREDITS}</span>
+            <span className="font-bold text-slate-900">{row.original.totalCreditsEarned}</span>
+            <span className="text-sm font-medium text-slate-600">/{REQUIRED_CREDITS}</span>
           </p>
         ),
       },
@@ -228,7 +229,7 @@ export default function AdvisorStudents() {
           return (
             <span
               className={cn(
-                'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold ring-1 ring-inset',
+                'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ring-1 ring-inset',
                 style.pill,
               )}
             >
@@ -249,7 +250,7 @@ export default function AdvisorStudents() {
               type="button"
               onClick={() => openDetail(row.original)}
               disabled={loadingId === row.original.id}
-              className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
+              className="inline-flex h-11 items-center rounded-xl bg-[#F26F21] px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
             >
               {loadingId === row.original.id ? 'Loading…' : 'Profile'}
             </button>
@@ -261,46 +262,72 @@ export default function AdvisorStudents() {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5">
-      {/* Hero cam FPT */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#F26F21] to-[#ff8f3f] p-6 text-white shadow-sm">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 pb-4">
+      {/* Hero — đồng bộ Overview: cam đậm + nút trắng là clickable duy nhất */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#b45309] via-[#F26F21] to-[#fb923c] px-6 py-7 text-white shadow-lg shadow-orange-500/20 sm:px-8 sm:py-8">
         <div
           aria-hidden
-          className="pointer-events-none absolute -right-12 -top-16 size-56 rounded-full bg-white/10"
+          className="pointer-events-none absolute -right-14 -top-20 size-64 rounded-full bg-white/15 blur-[1px]"
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute -bottom-20 right-40 size-36 rounded-full bg-white/10"
+          className="pointer-events-none absolute -bottom-24 right-48 size-40 rounded-full bg-white/10"
         />
-        <div className="relative">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/80">
-            Advisor / My Students
-          </p>
-          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold">
-            <UsersRound className="size-6" aria-hidden />
-            My Students
-          </h1>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {[
-              { icon: UsersRound, label: 'Assigned', value: String(stats.total) },
-              { icon: UserCheck, label: 'Active', value: String(stats.active) },
-              { icon: TriangleAlert, label: 'At risk', value: String(stats.atRisk) },
-              {
-                icon: GraduationCap,
-                label: 'Avg GPA',
-                value: stats.avgGpa !== null ? stats.avgGpa.toFixed(2) : '—',
-              },
-            ].map((s) => (
-              <div key={s.label} className="rounded-xl bg-white/15 px-3 py-2.5 backdrop-blur-sm">
-                <p className="flex items-center gap-1.5 text-[11px] font-medium text-white/80">
-                  <s.icon className="size-3.5" aria-hidden />
-                  {s.label}
-                </p>
-                <p className="mt-0.5 text-xl font-bold tabular-nums">{s.value}</p>
-              </div>
-            ))}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-white/30" />
+        <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="flex items-center gap-2.5 text-[26px] font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
+              <UsersRound className="size-7" aria-hidden strokeWidth={2.25} />
+              My Students
+            </h1>
+            <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-white/95">
+              {stats.total > 0
+                ? `${stats.total} assigned · ${stats.atRisk} need attention${stats.avgGpa !== null ? ` · Avg GPA ${stats.avgGpa.toFixed(2)}` : ''}`
+                : 'No students assigned yet.'}
+            </p>
           </div>
+          <Link
+            to="/advisor"
+            className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-white px-5 text-sm font-extrabold text-[#c2410c] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-all hover:bg-orange-50 active:scale-[0.98]"
+          >
+            Back to Overview
+          </Link>
         </div>
+      </div>
+
+      {/* KPI read-only — giống Overview */}
+      <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+        {[
+          { icon: UsersRound, label: 'Assigned', sub: 'total students', value: String(stats.total), iconBox: 'bg-slate-900 text-white shadow-[0_6px_16px_-6px_rgba(15,23,42,0.5)]', topBar: 'bg-slate-900' },
+          { icon: UserCheck, label: 'Active', sub: 'studying normally', value: String(stats.active), iconBox: 'bg-emerald-600 text-white shadow-[0_6px_16px_-6px_rgba(5,150,105,0.5)]', topBar: 'bg-emerald-600' },
+          { icon: TriangleAlert, label: 'At risk', sub: 'probation/suspended', value: String(stats.atRisk), iconBox: 'bg-[#F26F21] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.6)]', topBar: 'bg-[#F26F21]' },
+          {
+            icon: GraduationCap,
+            label: 'Avg GPA',
+            sub: 'cohort average',
+            value: stats.avgGpa !== null ? stats.avgGpa.toFixed(2) : '—',
+            iconBox: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200',
+            topBar: 'bg-slate-300',
+          },
+        ].map((s) => (
+          <div
+            key={s.label}
+            aria-readonly="true"
+            className="relative cursor-default overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.06),0_10px_28px_-14px_rgba(15,23,42,0.25)]"
+          >
+            <span aria-hidden className={cn('absolute inset-x-0 top-0 h-1', s.topBar)} />
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">{s.label}</p>
+                <p className="mt-2.5 text-[30px] font-extrabold leading-none tabular-nums text-slate-900">{s.value}</p>
+                <p className="mt-2 text-sm font-medium text-slate-600">{s.sub}</p>
+              </div>
+              <span className={cn('flex size-11 shrink-0 items-center justify-center rounded-xl', s.iconBox)}>
+                <s.icon className="size-5" aria-hidden strokeWidth={2.25} />
+              </span>
+            </div>
+          </div>
+        ))}
       </div>
 
       {isError && (
@@ -312,9 +339,9 @@ export default function AdvisorStudents() {
         </div>
       )}
 
-      <section className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-5">
-        {/* Quick-filter chips theo trạng thái */}
-        <div className="mb-1 flex flex-wrap items-center gap-2" role="group" aria-label="Quick filter by status">
+      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        {/* Quick-filter chips theo trạng thái — h-11 chuẩn touch target */}
+        <div className="mb-4 flex flex-wrap items-center gap-3" role="group" aria-label="Quick filter by status">
           {chips.map((chip) => {
             const active = status === chip.value;
             return (
@@ -324,17 +351,17 @@ export default function AdvisorStudents() {
                 onClick={() => pickStatus(chip.value)}
                 aria-pressed={active}
                 className={cn(
-                  'inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-semibold ring-1 ring-inset transition-colors',
+                  'inline-flex h-11 items-center gap-1.5 rounded-full px-4 text-sm font-bold ring-1 ring-inset transition-colors',
                   active
-                    ? 'bg-[#F26F21] text-white ring-[#F26F21]'
-                    : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50 hover:text-slate-900',
+                    ? 'bg-[#F26F21] text-white ring-[#F26F21] shadow-sm'
+                    : 'bg-white text-slate-700 ring-slate-200 hover:bg-[#fff7f0] hover:text-slate-900',
                 )}
               >
                 {chip.label}
                 <span
                   className={cn(
-                    'rounded-full px-1.5 py-px text-[11px] font-bold tabular-nums',
-                    active ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-500',
+                    'rounded-full px-1.5 py-px text-xs font-bold tabular-nums',
+                    active ? 'bg-white/25 text-white' : 'bg-slate-100 text-slate-600',
                   )}
                 >
                   {chip.count}
@@ -377,7 +404,7 @@ export default function AdvisorStudents() {
                 type="button"
                 onClick={clearFilters}
                 disabled={!hasFilters}
-                className="h-10 rounded-lg px-3 text-sm font-medium text-[#555f6f] hover:bg-gray-50 disabled:opacity-40"
+                className="inline-flex h-11 items-center rounded-xl px-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-40"
               >
                 Clear filters
               </button>

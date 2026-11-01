@@ -195,7 +195,7 @@ export default function AdvisorPortal() {
         {[
           { to: '/advisor/students', icon: UsersRound, title: 'My Students', desc: `${totalStudents} assigned · ${atRisk.length} at risk` },
           { to: '/advisor/appointments', icon: CalendarDays, title: 'Appointments', desc: 'Calendar & list views' },
-          { to: '/advisor/academic-lookup', icon: BookOpen, title: 'Academic Lookup', desc: 'Curricula & courses' },
+          { to: '/advisor/academic-lookup', icon: BookOpen, title: 'Academic Search', desc: 'Curricula & courses' },
         ].map((l) => (
           <Link
             key={l.to}

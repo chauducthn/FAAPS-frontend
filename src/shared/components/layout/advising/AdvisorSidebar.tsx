@@ -18,7 +18,7 @@ export const ADVISOR_NAV_SECTIONS: PortalNavSection[] = [
       { label: 'Advising Conversations', to: '/advisor/conversations', icon: MessageSquareText },
       { label: 'Study Plan Reviews', to: '/advisor/study-plans', icon: ClipboardCheck },
       { label: 'Appointments', to: '/advisor/appointments', icon: CalendarDays },
-      { label: 'Academic Lookup', to: '/advisor/academic-lookup', icon: BookOpen },
+      { label: 'Academic Search', to: '/advisor/academic-lookup', icon: BookOpen },
       { label: 'My Profile', to: '/advisor/profile', icon: UserRound },
     ],
   },
