@@ -17,7 +17,7 @@ import {
 import { Modal } from '../../../shared/components/ui/Modal';
 import { Pagination } from '../../management/components/Pagination';
 import { academicLookupService } from '../services/academicLookupService';
-import type { LookupCourse, LookupCurriculum } from '../../../mocks/academicLookupMock';
+import type { LookupCourse, LookupCurriculum } from '../types/academic-lookup';
 import { cn } from '@/shared/lib/utils';
 
 type ViewMode = 'curricula' | 'courses';
@@ -48,7 +48,11 @@ export default function AdvisorAcademicLookup() {
   });
   const coursesQuery = useQuery({
     queryKey: ['advisor', 'academic-lookup', 'courses', search, category],
-    queryFn: () => academicLookupService.getCourses({ search: search || undefined, category }),
+    queryFn: () =>
+      academicLookupService.getCourses({
+        search: search || undefined,
+        category: category === 'ALL' ? undefined : category,
+      }),
   });
 
   const curricula = useMemo(() => curriculaQuery.data ?? [], [curriculaQuery.data]);
@@ -71,9 +75,17 @@ export default function AdvisorAcademicLookup() {
     }
   };
 
+  // Mở môn học theo mã (từ danh sách curriculum) — tìm trong cache, không dựng dữ liệu giả.
   const openCourseByCode = async (code: string) => {
-    const found = academicLookupService.getCourseByCode(code);
-    if (found) await openCourse(found);
+    const found = courses.find((c) => c.code === code);
+    if (found) {
+      await openCourse(found);
+      return;
+    }
+    // Mã môn nằm ngoài trang đang tải: gọi API tìm theo mã.
+    const matches = await academicLookupService.getCourses({ search: code });
+    const exact = matches.find((c) => c.code === code);
+    if (exact) await openCourse(exact);
   };
 
   return (
@@ -464,19 +476,25 @@ function CourseLookupModal({
 
             <div className="rounded-2xl border border-slate-200 bg-white p-5">
               <h3 className="text-sm font-bold text-slate-900">Syllabus</h3>
-              <ol className="mt-3 space-y-3">
-                {course.syllabus.map((w) => (
-                  <li key={w.week} className="flex gap-3">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#fff3ea] text-xs font-bold text-[#F26F21]">
-                      {w.week}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-slate-900">{w.topic}</p>
-                      <p className="mt-0.5 text-sm leading-relaxed text-slate-700">{w.content}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
+              {course.syllabus.length === 0 ? (
+                <p className="mt-2 rounded-xl bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-600">
+                  Chưa có dữ liệu tuần học cho môn này.
+                </p>
+              ) : (
+                <ol className="mt-3 space-y-3">
+                  {course.syllabus.map((w) => (
+                    <li key={w.week} className="flex gap-3">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#fff3ea] text-xs font-bold text-[#F26F21]">
+                        {w.week}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-slate-900">{w.topic}</p>
+                        <p className="mt-0.5 text-sm leading-relaxed text-slate-700">{w.content}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
             </div>
           </div>
         </div>

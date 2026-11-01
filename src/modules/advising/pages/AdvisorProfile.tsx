@@ -2,8 +2,8 @@
 // "My Profile" — redesigned into the Overview design system:
 // FPT-orange hero + 2-column identity/edit layout.
 // Business rules preserved: read profile via advisorService, update display
-// name via API. Extra fields (phone, specialty, department, office) are mock
-// supplements until the backend returns them — edited locally.
+// name via API. Extra fields (phone, specialty, department, office) are not
+// returned by the backend yet — shown read-only as "Not provided".
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
@@ -26,14 +26,6 @@ import { apiMessage } from '../../../shared/lib/apiMessage';
 import { useAuth } from '../../auth/stores/useAuth';
 import { advisorService } from '../services/advisorService';
 import { cn } from '@/shared/lib/utils';
-
-// Mock supplements — backend does not return these yet.
-const MOCK_EXTRAS = {
-  phone: '+84 28 7300 5588',
-  specialty: 'Software Engineering',
-  department: 'School of Information Technology',
-  office: 'Room A-305, Innovation Building',
-};
 
 const STATUS_STYLES: Record<string, { pill: string; dot: string; label: string }> = {
   ACTIVE: { pill: 'bg-emerald-100 text-emerald-900 ring-emerald-300', dot: 'bg-emerald-600', label: 'Active' },
@@ -64,10 +56,6 @@ export default function AdvisorProfile() {
   const profile = useQuery({ queryKey: ['advisor', 'profile'], queryFn: advisorService.getProfile });
 
   const [fullName, setFullName] = useState('');
-  const [phone, setPhone] = useState(MOCK_EXTRAS.phone);
-  const [specialty, setSpecialty] = useState(MOCK_EXTRAS.specialty);
-  const [department, setDepartment] = useState(MOCK_EXTRAS.department);
-  const [office, setOffice] = useState(MOCK_EXTRAS.office);
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -76,20 +64,14 @@ export default function AdvisorProfile() {
 
   const dirty = useMemo(() => {
     if (!profile.data) return false;
-    return (
-      fullName.trim() !== profile.data.fullName ||
-      phone.trim() !== MOCK_EXTRAS.phone ||
-      specialty.trim() !== MOCK_EXTRAS.specialty ||
-      department.trim() !== MOCK_EXTRAS.department ||
-      office.trim() !== MOCK_EXTRAS.office
-    );
-  }, [profile.data, fullName, phone, specialty, department, office]);
+    return fullName.trim() !== profile.data.fullName;
+  }, [profile.data, fullName]);
 
   const update = useMutation({
     mutationFn: () => advisorService.updateProfile(fullName.trim()),
     onSuccess: async (result) => {
       if (user) setUser({ ...user, fullName: result.fullName });
-      setMessage('Profile updated successfully. Contact details are saved locally until the backend supports them.');
+      setMessage('Profile updated successfully.');
       await qc.invalidateQueries({ queryKey: ['advisor', 'profile'] });
     },
     onError: (error) => setMessage(apiMessage(error)),
@@ -195,28 +177,28 @@ export default function AdvisorProfile() {
                   <Phone className="mt-0.5 size-4 shrink-0 text-slate-500" aria-hidden />
                   <span className="min-w-0">
                     <span className="block text-xs font-bold uppercase tracking-[0.06em] text-slate-500">Phone</span>
-                    <span className="block font-semibold tabular-nums text-slate-900">{phone || '—'}</span>
+                    <span className="block font-semibold tabular-nums text-slate-900">Not provided</span>
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Briefcase className="mt-0.5 size-4 shrink-0 text-slate-500" aria-hidden />
                   <span className="min-w-0">
                     <span className="block text-xs font-bold uppercase tracking-[0.06em] text-slate-500">Specialty</span>
-                    <span className="block font-semibold text-slate-900">{specialty || '—'}</span>
+                    <span className="block font-semibold text-slate-900">Not provided</span>
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Building2 className="mt-0.5 size-4 shrink-0 text-slate-500" aria-hidden />
                   <span className="min-w-0">
                     <span className="block text-xs font-bold uppercase tracking-[0.06em] text-slate-500">Department</span>
-                    <span className="block font-semibold leading-snug text-slate-900">{department || '—'}</span>
+                    <span className="block font-semibold leading-snug text-slate-900">Not provided</span>
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <MapPin className="mt-0.5 size-4 shrink-0 text-slate-500" aria-hidden />
                   <span className="min-w-0">
                     <span className="block text-xs font-bold uppercase tracking-[0.06em] text-slate-500">Office</span>
-                    <span className="block font-semibold leading-snug text-slate-900">{office || '—'}</span>
+                    <span className="block font-semibold leading-snug text-slate-900">Not provided</span>
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
@@ -291,47 +273,13 @@ export default function AdvisorProfile() {
                 </p>
                 <p className="mt-1.5 text-xs font-medium text-slate-500">Managed by your institution — contact IT to change it.</p>
               </div>
-              <label className="block text-sm font-bold text-slate-900">
-                Phone
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  maxLength={32}
-                  inputMode="tel"
-                  placeholder="+84 ..."
-                  className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium tabular-nums text-slate-900 shadow-sm outline-none transition-colors placeholder:font-normal placeholder:text-slate-500 focus:border-[#F26F21] focus:ring-2 focus:ring-[#F26F21]/30"
-                />
-              </label>
-              <label className="block text-sm font-bold text-slate-900">
-                Specialty
-                <input
-                  value={specialty}
-                  onChange={(e) => setSpecialty(e.target.value)}
-                  maxLength={120}
-                  placeholder="e.g. Software Engineering"
-                  className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 shadow-sm outline-none transition-colors placeholder:font-normal placeholder:text-slate-500 focus:border-[#F26F21] focus:ring-2 focus:ring-[#F26F21]/30"
-                />
-              </label>
-              <label className="block text-sm font-bold text-slate-900">
-                Department
-                <input
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  maxLength={160}
-                  placeholder="e.g. School of Information Technology"
-                  className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 shadow-sm outline-none transition-colors placeholder:font-normal placeholder:text-slate-500 focus:border-[#F26F21] focus:ring-2 focus:ring-[#F26F21]/30"
-                />
-              </label>
-              <label className="block text-sm font-bold text-slate-900">
-                Office location
-                <input
-                  value={office}
-                  onChange={(e) => setOffice(e.target.value)}
-                  maxLength={160}
-                  placeholder="e.g. Room A-305"
-                  className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 shadow-sm outline-none transition-colors placeholder:font-normal placeholder:text-slate-500 focus:border-[#F26F21] focus:ring-2 focus:ring-[#F26F21]/30"
-                />
-              </label>
+              <div className="block text-sm font-bold text-slate-900 sm:col-span-2">
+                Contact details
+                <p className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm font-medium leading-relaxed text-slate-600">
+                  Phone, specialty, department and office are not returned by the advisor profile API
+                  yet. They will appear here as editable fields once the backend exposes them.
+                </p>
+              </div>
             </div>
 
             {message && (

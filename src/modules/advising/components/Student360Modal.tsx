@@ -1,8 +1,10 @@
 // src/pages/advising/Student360Modal.tsx
-// Modal "Student 360 Profile" — 4 tabs: Overview | Transcript | Advising History | Graduation & OJT.
-// Tabs History + Graduation dùng Mock Data (backend chưa có API).
+// Modal "Student 360 Profile" — 5 tabs: Overview | Transcript | Advising History | Appointments | Graduation.
+// Lịch sử tư vấn và lịch hẹn lấy từ API thật của advisor (lọc theo sinh viên),
+// graduation suy ra từ progress + transcript.
 
 import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   AlertCircle,
   Briefcase,
@@ -21,7 +23,8 @@ import {
 import { Modal } from '../../../shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
 import type { AdvisorStudentDetail } from '../services/advisorService';
-import { mockAdvisingRequests, mockAdvisorAppointments } from '../../../mocks/advisorMockData';
+import { advisorService } from '../services/advisorService';
+import { appointmentService } from '../../appointment/services/appointmentService';
 import { RequestStatusBadge } from './RequestStatusBadge';
 import { BookingStatusBadge } from '../../appointment/components/AppointmentBits';
 import { formatIsoDay, formatIsoTime } from '../../../shared/lib/appointmentDate';
@@ -74,18 +77,34 @@ export function Student360Modal({
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<TabKey>('overview');
+  const studentId = detail?.profile.id ?? '';
+
+  // Lịch sử tư vấn: API advisor trả về toàn bộ request — lọc theo sinh viên đang xem.
+  const requestsQuery = useQuery({
+    queryKey: ['advisor', 'advising-requests', { studentId }],
+    queryFn: () => advisorService.getAdvisingRequests(),
+    enabled: Boolean(studentId),
+    staleTime: 1000 * 30,
+  });
+  // Lịch hẹn: GET /advisor/appointments trả toàn bộ lịch của advisor — lọc theo sinh viên.
+  const appointmentsQuery = useQuery({
+    queryKey: ['advisor', 'appointments', 'all', studentId],
+    queryFn: () => appointmentService.getAllAdvisorAppointments(),
+    enabled: Boolean(studentId),
+    staleTime: 1000 * 30,
+  });
 
   const history = useMemo(() => {
-    if (!detail) return [];
-    return mockAdvisingRequests.filter((r) => r.studentId === detail.profile.id);
-  }, [detail]);
+    if (!studentId) return [];
+    return (requestsQuery.data ?? []).filter((r) => r.studentId === studentId);
+  }, [requestsQuery.data, studentId]);
 
   const appointments = useMemo(() => {
-    if (!detail) return [];
-    return mockAdvisorAppointments
-      .filter((a) => a.studentId === detail.profile.id)
+    if (!studentId) return [];
+    return (appointmentsQuery.data ?? [])
+      .filter((a) => a.studentId === studentId)
       .sort((a, b) => b.startTime.localeCompare(a.startTime));
-  }, [detail]);
+  }, [appointmentsQuery.data, studentId]);
 
   const graduation = useMemo(() => {
     if (!detail) return null;
@@ -320,11 +339,28 @@ export function Student360Modal({
 
             {tab === 'history' && (
               <div className="space-y-3">
-                <p className="rounded-xl border border-dashed border-[#F26F21]/30 bg-[#fff7f0] px-3 py-2 text-xs text-[#9a4a12]">
-                  Mock data — backend chưa có API lịch sử tư vấn theo sinh viên, đang lọc từ danh sách
-                  yêu cầu chung.
-                </p>
-                {history.length === 0 ? (
+                {requestsQuery.isLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="rounded-2xl border border-slate-100 bg-white p-4">
+                        <div className="h-5 w-24 animate-pulse rounded-lg bg-slate-100" />
+                        <div className="mt-3 h-4 w-3/4 animate-pulse rounded bg-slate-100" />
+                        <div className="mt-2 h-3 w-full animate-pulse rounded bg-slate-100" />
+                      </div>
+                    ))}
+                  </div>
+                ) : requestsQuery.isError ? (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm font-medium text-red-800">
+                    Could not load advising history.{' '}
+                    <button
+                      type="button"
+                      onClick={() => requestsQuery.refetch()}
+                      className="font-bold underline"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : history.length === 0 ? (
                   <p className="rounded-2xl border border-slate-100 bg-white p-8 text-center text-sm text-slate-500">
                     No advising requests from this student yet.
                   </p>
@@ -355,11 +391,28 @@ export function Student360Modal({
 
             {tab === 'appointments' && (
               <div className="space-y-3">
-                <p className="rounded-xl border border-dashed border-[#F26F21]/30 bg-[#fff7f0] px-3 py-2 text-xs text-[#9a4a12]">
-                  Mock data — backend chưa có API lịch hẹn theo sinh viên, đang lọc từ danh sách
-                  appointments của advisor.
-                </p>
-                {appointments.length === 0 ? (
+                {appointmentsQuery.isLoading ? (
+                  <div className="space-y-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div key={i} className="rounded-2xl border border-slate-100 bg-white p-4">
+                        <div className="h-5 w-28 animate-pulse rounded-lg bg-slate-100" />
+                        <div className="mt-3 h-4 w-2/3 animate-pulse rounded bg-slate-100" />
+                        <div className="mt-2 h-3 w-full animate-pulse rounded bg-slate-100" />
+                      </div>
+                    ))}
+                  </div>
+                ) : appointmentsQuery.isError ? (
+                  <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm font-medium text-red-800">
+                    Could not load appointments.{' '}
+                    <button
+                      type="button"
+                      onClick={() => appointmentsQuery.refetch()}
+                      className="font-bold underline"
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : appointments.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-100 bg-white p-8 text-center">
                     <span className="flex size-11 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                       <CalendarDays className="size-5" aria-hidden />
@@ -405,9 +458,9 @@ export function Student360Modal({
 
             {tab === 'graduation' && graduation && (
               <div className="space-y-4">
-                <p className="rounded-xl border border-dashed border-[#F26F21]/30 bg-[#fff7f0] px-3 py-2 text-xs text-[#9a4a12]">
-                  Mock data — backend chưa có API graduation-check, số liệu suy từ progress +
-                  transcript hiện có.
+                <p className="rounded-xl border border-dashed border-slate-300 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+                  Graduation check is derived from the student&apos;s progress and transcript — the
+                  backend has no dedicated graduation-check endpoint yet.
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <div className="rounded-2xl border border-slate-100 bg-white p-4">
