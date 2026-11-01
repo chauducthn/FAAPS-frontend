@@ -8,10 +8,12 @@ import {
   Briefcase,
   CalendarDays,
   CheckCircle2,
+  Clock3,
   GraduationCap,
   History,
   LayoutGrid,
   Mail,
+  MessageSquareWarning,
   Phone,
   ScrollText,
   UserRound,
@@ -19,15 +21,18 @@ import {
 import { Modal } from '../../../shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
 import type { AdvisorStudentDetail } from '../services/advisorService';
-import { mockAdvisingRequests } from '../../../mocks/advisorMockData';
+import { mockAdvisingRequests, mockAdvisorAppointments } from '../../../mocks/advisorMockData';
 import { RequestStatusBadge } from './RequestStatusBadge';
+import { BookingStatusBadge } from '../../appointment/components/AppointmentBits';
+import { formatIsoDay, formatIsoTime } from '../../../shared/lib/appointmentDate';
 
-type TabKey = 'overview' | 'transcript' | 'history' | 'graduation';
+type TabKey = 'overview' | 'transcript' | 'history' | 'appointments' | 'graduation';
 
 const TABS: { key: TabKey; label: string; icon: typeof LayoutGrid }[] = [
   { key: 'overview', label: 'Overview', icon: LayoutGrid },
   { key: 'transcript', label: 'Transcript', icon: ScrollText },
   { key: 'history', label: 'Advising History', icon: History },
+  { key: 'appointments', label: 'Appointments', icon: CalendarDays },
   { key: 'graduation', label: 'Graduation & OJT', icon: GraduationCap },
 ];
 
@@ -73,6 +78,13 @@ export function Student360Modal({
   const history = useMemo(() => {
     if (!detail) return [];
     return mockAdvisingRequests.filter((r) => r.studentId === detail.profile.id);
+  }, [detail]);
+
+  const appointments = useMemo(() => {
+    if (!detail) return [];
+    return mockAdvisorAppointments
+      .filter((a) => a.studentId === detail.profile.id)
+      .sort((a, b) => b.startTime.localeCompare(a.startTime));
   }, [detail]);
 
   const graduation = useMemo(() => {
@@ -194,6 +206,11 @@ export function Student360Modal({
                   {t.key === 'history' && history.length > 0 && (
                     <span className="ml-1 rounded-full bg-[#F26F21]/10 px-1.5 py-0.5 text-[11px] font-bold text-[#F26F21]">
                       {history.length}
+                    </span>
+                  )}
+                  {t.key === 'appointments' && appointments.length > 0 && (
+                    <span className="ml-1 rounded-full bg-blue-50 px-1.5 py-0.5 text-[11px] font-bold text-blue-700">
+                      {appointments.length}
                     </span>
                   )}
                 </button>
@@ -328,6 +345,56 @@ export function Student360Modal({
                       {r.resolutionSummary && (
                         <p className="mt-2 rounded-lg bg-green-50 px-3 py-2 text-[13px] text-green-800">
                           {r.resolutionSummary}
+                        </p>
+                      )}
+                    </article>
+                  ))
+                )}
+              </div>
+            )}
+
+            {tab === 'appointments' && (
+              <div className="space-y-3">
+                <p className="rounded-xl border border-dashed border-[#F26F21]/30 bg-[#fff7f0] px-3 py-2 text-xs text-[#9a4a12]">
+                  Mock data — backend chưa có API lịch hẹn theo sinh viên, đang lọc từ danh sách
+                  appointments của advisor.
+                </p>
+                {appointments.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 rounded-2xl border border-slate-100 bg-white p-8 text-center">
+                    <span className="flex size-11 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                      <CalendarDays className="size-5" aria-hidden />
+                    </span>
+                    <p className="text-sm font-semibold text-[#151c27]">No appointments yet</p>
+                    <p className="text-[13px] text-slate-500">
+                      Booked sessions with this student will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  appointments.map((a) => (
+                    <article key={a.id} className="rounded-2xl border border-slate-100 bg-white p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <BookingStatusBadge status={a.status} />
+                        <span className="flex items-center gap-1.5 text-xs text-slate-400">
+                          <span className="inline-flex items-center gap-1">
+                            <CalendarDays className="size-3.5" aria-hidden />
+                            {formatIsoDay(a.startTime)}
+                          </span>
+                          <span className="inline-flex items-center gap-1">
+                            <Clock3 className="size-3.5" aria-hidden />
+                            {formatIsoTime(a.startTime)} – {formatIsoTime(a.endTime)}
+                          </span>
+                        </span>
+                      </div>
+                      <h4 className="mt-2 text-sm font-bold text-[#151c27]">{a.reason}</h4>
+                      {a.decisionNote && (
+                        <p className="mt-2 flex items-start gap-1.5 rounded-xl bg-[#fff7f0] px-3 py-2 text-[13px] leading-relaxed text-[#9a4a12]">
+                          <MessageSquareWarning className="mt-0.5 size-4 shrink-0" aria-hidden />
+                          {a.decisionNote}
+                        </p>
+                      )}
+                      {a.consultationSummary && (
+                        <p className="mt-2 rounded-xl bg-blue-50/60 px-3 py-2 text-[13px] leading-relaxed text-slate-700">
+                          {a.consultationSummary}
                         </p>
                       )}
                     </article>

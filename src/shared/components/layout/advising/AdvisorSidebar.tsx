@@ -1,7 +1,7 @@
 // src/components/layout/advising/AdvisorSidebar.tsx
 // Menu điều hướng riêng cho Cố vấn.
 
-import { CalendarDays, ClipboardCheck, Inbox, LayoutDashboard, MessageSquareText, UserRound, UsersRound } from 'lucide-react';
+import { BookOpen, CalendarDays, ClipboardCheck, Inbox, LayoutDashboard, MessageSquareText, UserRound, UsersRound } from 'lucide-react';
 import {
   PortalSidebar,
   type PortalNavSection,
@@ -18,6 +18,7 @@ export const ADVISOR_NAV_SECTIONS: PortalNavSection[] = [
       { label: 'Advising Conversations', to: '/advisor/conversations', icon: MessageSquareText },
       { label: 'Study Plan Reviews', to: '/advisor/study-plans', icon: ClipboardCheck },
       { label: 'Appointments', to: '/advisor/appointments', icon: CalendarDays },
+      { label: 'Academic Lookup', to: '/advisor/academic-lookup', icon: BookOpen },
       { label: 'My Profile', to: '/advisor/profile', icon: UserRound },
     ],
   },
