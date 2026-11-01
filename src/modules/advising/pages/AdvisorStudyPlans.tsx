@@ -27,39 +27,10 @@ import { Modal } from '../../../shared/components/ui/Modal';
 import { apiMessage } from '../../../shared/lib/apiMessage';
 import { advisorStudyPlanService } from '../services/advisorStudyPlanService';
 import { advisorService } from '../services/advisorService';
-import { courseByCode } from '../../../mocks/academicLookupMock';
+import { academicLookupService } from '../services/academicLookupService';
+import type { LookupCourse } from '../types/academic-lookup';
 import type { StudyPlanDecision } from '../types/study-plan';
 import { cn } from '@/shared/lib/utils';
-
-// Fallback context for senior SE courses (not in the lookup mock yet).
-const COURSE_FALLBACK: Record<string, { category: string; description: string; prerequisites: { code: string; name: string }[] }> = {
-  SE401: {
-    category: 'Core',
-    description: 'Kiến trúc phần mềm: styles, patterns, đánh giá trade-off và tài liệu hoá kiến trúc.',
-    prerequisites: [{ code: 'SE301', name: 'Software Engineering' }],
-  },
-  SE402: {
-    category: 'Core',
-    description: 'Hệ phân tán: RPC, consensus cơ bản, replication và xử lý lỗi mạng.',
-    prerequisites: [
-      { code: 'SE301', name: 'Software Engineering' },
-      { code: 'DBI202', name: 'Database Systems' },
-    ],
-  },
-  SE403: {
-    category: 'Elective',
-    description: 'Học máy ứng dụng: pipeline dữ liệu, huấn luyện và đánh giá mô hình.',
-    prerequisites: [
-      { code: 'DSA204', name: 'Data Structures and Algorithms' },
-      { code: 'MAE101', name: 'Mathematics for Engineering' },
-    ],
-  },
-  SE405: {
-    category: 'Elective',
-    description: 'Điện toán đám mây: ảo hoá, container, triển khai và giám sát dịch vụ.',
-    prerequisites: [{ code: 'SE301', name: 'Software Engineering' }],
-  },
-};
 
 function creditLoadLabel(total: number) {
   if (total < 14) return { label: 'Light load', className: 'bg-slate-100 text-slate-800 ring-slate-300' };
@@ -150,6 +121,17 @@ export default function AdvisorStudyPlans() {
     queryFn: () => advisorService.getStudentDetail(selectedStudentId),
     enabled: Boolean(selectedStudentId),
   });
+  // Danh mục môn học (read-only) để bổ sung category / mô tả / tiên quyết cho môn trong kế hoạch.
+  const courseCatalog = useQuery({
+    queryKey: ['advisor', 'academic-catalog'],
+    queryFn: () => academicLookupService.getCourses(),
+    staleTime: 1000 * 60 * 5,
+  });
+  const courseByCode = useMemo(() => {
+    const map = new Map<string, LookupCourse>();
+    for (const course of courseCatalog.data ?? []) map.set(course.code, course);
+    return map;
+  }, [courseCatalog.data]);
 
   const counts = useMemo(() => {
     const items = countsQuery.data?.items ?? [];
@@ -586,13 +568,13 @@ export default function AdvisorStudyPlans() {
                 </h3>
                 <ul className="mt-3 space-y-3">
                   {detail.data.plan.courses.map((course) => {
-                    const lookup = courseByCode(course.code);
-                    const fallback = COURSE_FALLBACK[course.code];
-                    const category = lookup?.category ?? fallback?.category ?? 'Core';
-                    const description = lookup?.description ?? fallback?.description ?? '';
-                    const prereqs = (lookup?.prerequisites ?? []).map((p) => ({ code: p.courseCode, name: p.courseName })) ??
-                      [];
-                    const allPrereqs = prereqs.length > 0 ? prereqs : (fallback?.prerequisites ?? []);
+                    const lookup = courseByCode.get(course.code);
+                    const category = lookup?.category ?? '—';
+                    const description = lookup?.description ?? '';
+                    const allPrereqs = (lookup?.prerequisites ?? []).map((p) => ({
+                      code: p.courseCode,
+                      name: p.courseName,
+                    }));
                     const missing = allPrereqs.filter((p) => !passedByCode.has(p.code));
                     const ok = missing.length === 0;
                     return (
@@ -628,10 +610,19 @@ export default function AdvisorStudyPlans() {
                             {description && (
                               <p className="mt-1.5 line-clamp-2 text-sm font-medium leading-relaxed text-slate-600">{description}</p>
                             )}
+                            {!lookup && (
+                              <p className="mt-1.5 text-sm font-medium text-slate-500">
+                                Not in the course catalog yet — category and prerequisites unavailable.
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className={cn('border-t px-4 py-2.5 text-sm', ok ? 'border-emerald-100 bg-emerald-50/60' : 'border-red-100 bg-red-50/60')}>
-                          {allPrereqs.length === 0 ? (
+                          {!lookup ? (
+                            <p className="font-medium text-slate-600">
+                              Course details are not in the catalog yet — prerequisite check skipped.
+                            </p>
+                          ) : allPrereqs.length === 0 ? (
                             <p className="font-medium text-slate-600">No prerequisites — open to all students.</p>
                           ) : (
                             <ul className="space-y-1">

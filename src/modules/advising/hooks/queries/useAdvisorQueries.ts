@@ -2,7 +2,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { advisorService } from '../../services/advisorService';
 import { useAuth } from '@/modules/auth/stores/useAuth';
-import { IS_MOCK_MODE } from '@/config/mockConfig';
 import type { AcademicStatus, AdvisingRequestStatus } from '../../types/advising';
 
 export const ADVISOR_QUERY_KEYS = {
@@ -21,8 +20,8 @@ export const useAdvisorNotifications = () => {
   return useQuery({
     queryKey: ADVISOR_QUERY_KEYS.notifications,
     queryFn: advisorService.getNotifications,
-    // Chưa đăng nhập thì không gọi API (tránh spam 401). Ở mock mode thì luôn chạy.
-    enabled: IS_MOCK_MODE || !!user?.id,
+    // Chưa đăng nhập thì không gọi API (tránh spam 401).
+    enabled: !!user?.id,
   });
 };
 
@@ -32,7 +31,7 @@ export const useUnreadAdvisorNotificationCount = () => {
   return useQuery({
     queryKey: ADVISOR_QUERY_KEYS.unreadNotifications,
     queryFn: advisorService.getUnreadNotificationCount,
-    enabled: IS_MOCK_MODE || !!user?.id,
+    enabled: !!user?.id,
   });
 };
 

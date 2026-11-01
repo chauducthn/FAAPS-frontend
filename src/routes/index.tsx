@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { lazy, Suspense } from 'react';
+import { PageSkeleton } from '../shared/components/common/PageSkeleton';
 import { ProtectedRoute } from './ProtectedRoute';
 import { RequireStudentProfile } from './RequireStudentProfile';
 import Login from '../modules/auth/pages/Login';
@@ -43,8 +44,14 @@ const AdvisorPortal = lazy(() => import('../modules/advising/pages/AdvisorPortal
 const AdvisorAdvisingRequests = lazy(() => import('../modules/advising/pages/AdvisorAdvisingRequests'));
 const AdvisorConversationWorkspace = lazy(() => import('../modules/advising/pages/AdvisorConversationWorkspace'));
 const AdvisorStudyPlans = lazy(() => import('../modules/advising/pages/AdvisorStudyPlans'));
+const AdvisorStudents = lazy(() => import('../modules/advising/pages/AdvisorStudents'));
+const AdvisorAcademicLookup = lazy(() => import('../modules/advising/pages/AdvisorAcademicLookup'));
 const AdvisorProfile = lazy(() => import('../modules/advising/pages/AdvisorProfile'));
-const suspense = (element: React.ReactNode) => <Suspense fallback={<p className="p-6 text-sm">Loading...</p>}>{element}</Suspense>;
+
+/** Bọc mọi route lazy bằng Suspense + skeleton để không nháy màn trắng khi tải chunk. */
+const suspense = (element: React.ReactNode) => (
+  <Suspense fallback={<PageSkeleton />}>{element}</Suspense>
+);
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -62,22 +69,22 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { path: '/admin', element: suspense(<AdminDashboard />) },
-          { path: '/admin/users', element: <UserAccounts /> },
-          { path: '/admin/majors', element: <MajorsPage /> },
-          { path: '/admin/cohorts', element: <CohortsPage /> },
-          { path: '/admin/curriculum', element: <CurriculumPage /> },
-          { path: '/admin/curriculum/:id', element: <CurriculumDetailPage /> },
-          { path: '/admin/courses', element: <CoursesPage /> },
-          { path: '/admin/rules', element: <AcademicRulesPage /> },
-          { path: '/admin/ai-config', element: <AiConfigPage /> },
-          { path: '/admin/ai-performance', element: <AiPerformancePage /> },
-          { path: '/admin/appointments', element: <Appointments /> },
-          { path: '/admin/ai-reports', element: <AiReports /> },
-          { path: '/admin/ai-reports/:id', element: <AiReportDetail /> },
-          { path: '/admin/assignments', element: <AssignmentsOverview /> },
-          { path: '/admin/assignments/advisors/:advisorId', element: <AdvisorDetails /> },
-          { path: '/admin/assignments/cohorts/:cohortId', element: <CohortDetails /> },
-          { path: '/admin/assignments/students/:studentId/history', element: <StudentHistory /> },
+          { path: '/admin/users', element: suspense(<UserAccounts />) },
+          { path: '/admin/majors', element: suspense(<MajorsPage />) },
+          { path: '/admin/cohorts', element: suspense(<CohortsPage />) },
+          { path: '/admin/curriculum', element: suspense(<CurriculumPage />) },
+          { path: '/admin/curriculum/:id', element: suspense(<CurriculumDetailPage />) },
+          { path: '/admin/courses', element: suspense(<CoursesPage />) },
+          { path: '/admin/rules', element: suspense(<AcademicRulesPage />) },
+          { path: '/admin/ai-config', element: suspense(<AiConfigPage />) },
+          { path: '/admin/ai-performance', element: suspense(<AiPerformancePage />) },
+          { path: '/admin/appointments', element: suspense(<Appointments />) },
+          { path: '/admin/ai-reports', element: suspense(<AiReports />) },
+          { path: '/admin/ai-reports/:id', element: suspense(<AiReportDetail />) },
+          { path: '/admin/assignments', element: suspense(<AssignmentsOverview />) },
+          { path: '/admin/assignments/advisors/:advisorId', element: suspense(<AdvisorDetails />) },
+          { path: '/admin/assignments/cohorts/:cohortId', element: suspense(<CohortDetails />) },
+          { path: '/admin/assignments/students/:studentId/history', element: suspense(<StudentHistory />) },
         ],
       },
     ],
@@ -91,17 +98,17 @@ export const router = createBrowserRouter([
           {
             element: <RequireStudentProfile />,
             children: [
-              { path: '/student', element: <StudentPortal /> },
-              { path: '/student/ai-chat', element: <StudentAiChat /> },
-              { path: '/student/ai-roadmap', element: <StudentAiRoadmap /> },
-              { path: '/student/advising-requests', element: <StudentAdvisingRequests /> },
-              { path: '/student/appointments', element: <StudentBookAppointment /> },
-              { path: '/student/academic-overview', element: <StudentOverview /> },
-              { path: '/student/profile', element: <StudentProfile /> },
-              { path: '/student/transcript', element: <StudentTranscript /> },
-              { path: '/student/courses', element: <StudentCourses /> },
-              { path: '/student/plans', element: <StudentPlans /> },
-              { path: '/student/advising', element: <StudentAdvising /> },
+              { path: '/student', element: suspense(<StudentPortal />) },
+              { path: '/student/ai-chat', element: suspense(<StudentAiChat />) },
+              { path: '/student/ai-roadmap', element: suspense(<StudentAiRoadmap />) },
+              { path: '/student/advising-requests', element: suspense(<StudentAdvisingRequests />) },
+              { path: '/student/appointments', element: suspense(<StudentBookAppointment />) },
+              { path: '/student/academic-overview', element: suspense(<StudentOverview />) },
+              { path: '/student/profile', element: suspense(<StudentProfile />) },
+              { path: '/student/transcript', element: suspense(<StudentTranscript />) },
+              { path: '/student/courses', element: suspense(<StudentCourses />) },
+              { path: '/student/plans', element: suspense(<StudentPlans />) },
+              { path: '/student/advising', element: suspense(<StudentAdvising />) },
             ],
           },
         ],
@@ -114,12 +121,14 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedRoute allowedRoles={['ADVISOR']} />,
         children: [
-          { path: '/advisor', element: <AdvisorPortal /> },
-          { path: '/advisor/advising-requests', element: <AdvisorAdvisingRequests /> },
-          { path: '/advisor/appointments', element: <AdvisorAppointments /> },
-          { path: '/advisor/conversations', element: <AdvisorConversationWorkspace /> },
-          { path: '/advisor/study-plans', element: <AdvisorStudyPlans /> },
-          { path: '/advisor/profile', element: <AdvisorProfile /> },
+          { path: '/advisor', element: suspense(<AdvisorPortal />) },
+          { path: '/advisor/advising-requests', element: suspense(<AdvisorAdvisingRequests />) },
+          { path: '/advisor/students', element: suspense(<AdvisorStudents />) },
+          { path: '/advisor/appointments', element: suspense(<AdvisorAppointments />) },
+          { path: '/advisor/conversations', element: suspense(<AdvisorConversationWorkspace />) },
+          { path: '/advisor/study-plans', element: suspense(<AdvisorStudyPlans />) },
+          { path: '/advisor/academic-lookup', element: suspense(<AdvisorAcademicLookup />) },
+          { path: '/advisor/profile', element: suspense(<AdvisorProfile />) },
         ],
       },
     ],
