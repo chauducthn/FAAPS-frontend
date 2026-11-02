@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const select =
-  'block w-full min-w-0 rounded-lg border border-gray-300 bg-white px-2.5 py-2.5 text-sm text-gray-900 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500';
+  'block h-10 w-full min-w-0 rounded-lg border border-gray-300 bg-white px-2 text-xs sm:text-sm text-gray-900 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all';
 
 interface Props {
   /** ISO date (YYYY-MM-DD) or an empty string while incomplete. */
@@ -27,7 +27,7 @@ export function DateOfBirthField({ value, onChange, idPrefix = 'dob' }: Props) {
   };
 
   return (
-    <div className="grid grid-cols-[1fr_1.7fr_1.2fr] gap-2">
+    <div className="grid grid-cols-[1fr_1.4fr_1.1fr] gap-1.5">
       <select id={`${idPrefix}-day`} aria-label="Day of birth" value={day} onChange={(e) => update({ day: e.target.value })} className={select}>
         <option value="">Day</option>
         {Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0')).map((d) => (

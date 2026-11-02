@@ -50,17 +50,12 @@ describe('Register', () => {
     ]);
   });
 
-  it('offers manual registration and Google sign-up as two options', async () => {
+  it('offers both Google sign-up and manual registration on the same page', async () => {
     renderPage();
-    const tabs = screen.getAllByRole('tab');
-    expect(tabs.map((t) => t.textContent)).toEqual(['Create an account', 'Sign up with Google']);
-    expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('button', { name: /sign up with google/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/full name/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/^password/i)).toBeInTheDocument();
-
-    await userEvent.click(tabs[1]);
-    expect(screen.getByRole('button', { name: /sign up with google/i })).toBeInTheDocument();
-    expect(screen.queryByLabelText(/^password/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
   it('shows an error for every missing field', async () => {
