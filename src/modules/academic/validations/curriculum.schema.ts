@@ -9,7 +9,7 @@ export const curriculumFormSchema = z.object({
   version: z.string().trim().min(1, 'Cohort / version is required (e.g. K19)').max(50, 'At most 50 characters'),
   name: z.string().trim().min(2, 'Name is required').max(255, 'At most 255 characters'),
   effectiveFromSemesterId: id('Select the first semester'),
-  effectiveToSemesterId: z.string().optional(),
+  effectiveToSemesterId: z.union([z.literal(''), id('Select a valid end semester')]).optional(),
   description: z.string().max(2000, 'At most 2000 characters').optional(),
   isCurrent: z.boolean(),
   status: z.enum(['ACTIVE', 'INACTIVE']),

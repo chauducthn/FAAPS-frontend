@@ -137,7 +137,7 @@ describe('UserAccounts', () => {
 
       await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
       expect(await screen.findByText('Full name is required')).toBeInTheDocument();
-      expect(screen.getByText('Use the format SE173012 or IA173012')).toBeInTheDocument();
+      expect(screen.getByText('Use two letters and six digits, for example SE233333')).toBeInTheDocument();
       expect(createUser).not.toHaveBeenCalled();
     });
 

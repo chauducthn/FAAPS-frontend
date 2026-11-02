@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { studentAcademicService } from '../../academic/services/studentAcademicService';
 import { apiMessage } from '../../../shared/lib/apiMessage';
+import { isValidOptionalPhone } from '../../../shared/validation/identity';
 
 export default function StudentProfile() {
   const queryClient = useQueryClient();
@@ -14,7 +15,12 @@ export default function StudentProfile() {
   if (isLoading) return <p>Loading profile...</p>;
   if (isError || !data) return <p role="alert" className="text-red-700">Could not load profile.</p>;
   const save = async (event: React.FormEvent) => {
-    event.preventDefault(); setSaving(true); setMessage('');
+    event.preventDefault();
+    if (!isValidOptionalPhone(phone)) {
+      setMessage('Enter a valid phone number with 8 to 15 digits.');
+      return;
+    }
+    setSaving(true); setMessage('');
     try { await studentAcademicService.updateProfile({ fullName, phone }); await queryClient.invalidateQueries({ queryKey: ['student', 'academic-profile'] }); setMessage('Profile saved.'); }
     catch (error) { setMessage(apiMessage(error)); }
     finally { setSaving(false); }
@@ -27,7 +33,7 @@ export default function StudentProfile() {
     <p className="text-sm text-gray-600">Cohort: {data.cohort ?? 'Not assigned'}</p>
     <form onSubmit={save} className="mt-5 space-y-4">
       <label className="block text-sm font-medium">Full name<input className="mt-1 w-full rounded border p-2" maxLength={255} required value={fullName} onChange={(e) => setFullName(e.target.value)} /></label>
-      <label className="block text-sm font-medium">Phone<input className="mt-1 w-full rounded border p-2" maxLength={20} value={phone} onChange={(e) => setPhone(e.target.value)} /></label>
+      <label className="block text-sm font-medium">Phone<input type="tel" className="mt-1 w-full rounded border p-2" maxLength={20} value={phone} onChange={(e) => setPhone(e.target.value)} /></label>
       <button disabled={saving} className="rounded bg-orange-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{saving ? 'Saving...' : 'Save profile'}</button>
       {message && <p role="status" className="text-sm">{message}</p>}
     </form>

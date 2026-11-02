@@ -11,16 +11,14 @@ import { apiErrorMessage } from '../../../shared/lib/apiError';
 import { useCurriculumsQuery, useSemesterOptions } from '../../academic/hooks/queries/useCurriculumsQuery';
 import { adminService } from '../services/adminService';
 import type { AdminUserRole } from '../types/admin';
-
-const STUDENT_CODE = /^(SE|IA)1\d{5}$/;
-const PHONE = /^\+?[0-9 .()-]{8,20}$/;
+import { isValidOptionalPhone, isValidStudentCode } from '../../../shared/validation/identity';
 
 const createUserSchema = z
   .object({
     role: z.enum(['STUDENT', 'ADVISOR']),
     fullName: z.string().trim().min(2, 'Full name is required').max(255, 'At most 255 characters'),
     email: z.string().trim().min(1, 'Email is required').email('Enter a valid email address').max(255, 'At most 255 characters'),
-    phone: z.string().trim().refine((v) => v === '' || PHONE.test(v), 'Enter a valid phone number'),
+    phone: z.string().trim().refine(isValidOptionalPhone, 'Enter a valid phone number'),
     studentCode: z.string().trim(),
     curriculumId: z.string(),
     enrollmentSemesterId: z.string(),
@@ -31,7 +29,7 @@ const createUserSchema = z
   .superRefine((v, ctx) => {
     const fail = (path: keyof typeof v, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
     if (v.role === 'STUDENT') {
-      if (!STUDENT_CODE.test(v.studentCode)) fail('studentCode', 'Use the format SE173012 or IA173012');
+      if (!isValidStudentCode(v.studentCode)) fail('studentCode', 'Use two letters and six digits, for example SE233333');
       if (!v.curriculumId) fail('curriculumId', 'Select a curriculum');
       if (!v.enrollmentSemesterId) fail('enrollmentSemesterId', 'Select the enrollment semester');
       const semester = Number(v.currentSemester);
@@ -131,7 +129,7 @@ export function CreateUserModal({ open, defaultRole, onClose, onCreated }: Props
         phone: v.phone || undefined,
         ...(isStudent
           ? {
-              studentCode: v.studentCode,
+              studentCode: v.studentCode.trim().toUpperCase(),
               curriculumVersionId: v.curriculumId,
               enrollmentSemesterId: v.enrollmentSemesterId,
               expectedGraduationSemesterId: v.expectedGraduationSemesterId || undefined,

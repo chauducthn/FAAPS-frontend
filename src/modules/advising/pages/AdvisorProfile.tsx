@@ -1,9 +1,7 @@
 // src/pages/advising/AdvisorProfile.tsx
 // "My Profile" — redesigned into the Overview design system:
 // FPT-orange hero + 2-column identity/edit layout.
-// Business rules preserved: read profile via advisorService, update display
-// name via API. Extra fields (phone, specialty, department, office) are not
-// returned by the backend yet — shown read-only as "Not provided".
+// Profile fields are read and updated through advisorService.
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
@@ -26,6 +24,7 @@ import { apiMessage } from '../../../shared/lib/apiMessage';
 import { useAuth } from '../../auth/stores/useAuth';
 import { advisorService } from '../services/advisorService';
 import { cn } from '@/shared/lib/utils';
+import { isValidOptionalPhone } from '../../../shared/validation/identity';
 
 const STATUS_STYLES: Record<string, { pill: string; dot: string; label: string }> = {
   ACTIVE: { pill: 'bg-emerald-100 text-emerald-900 ring-emerald-300', dot: 'bg-emerald-600', label: 'Active' },
@@ -56,19 +55,31 @@ export default function AdvisorProfile() {
   const profile = useQuery({ queryKey: ['advisor', 'profile'], queryFn: advisorService.getProfile });
 
   const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [specialization, setSpecialization] = useState('');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (profile.data) setFullName(profile.data.fullName);
+    if (profile.data) {
+      setFullName(profile.data.fullName);
+      setPhone(profile.data.phone ?? '');
+      setSpecialization(profile.data.specialization ?? '');
+    }
   }, [profile.data]);
 
   const dirty = useMemo(() => {
     if (!profile.data) return false;
-    return fullName.trim() !== profile.data.fullName;
-  }, [profile.data, fullName]);
+    return fullName.trim() !== profile.data.fullName
+      || phone.trim() !== (profile.data.phone ?? '')
+      || specialization.trim() !== (profile.data.specialization ?? '');
+  }, [profile.data, fullName, phone, specialization]);
 
   const update = useMutation({
-    mutationFn: () => advisorService.updateProfile(fullName.trim()),
+    mutationFn: () => advisorService.updateProfile({
+      fullName: fullName.trim(),
+      phone: phone.trim() || null,
+      specialization: specialization.trim() || null,
+    }),
     onSuccess: async (result) => {
       if (user) setUser({ ...user, fullName: result.fullName });
       setMessage('Profile updated successfully.');
@@ -177,14 +188,14 @@ export default function AdvisorProfile() {
                   <Phone className="mt-0.5 size-4 shrink-0 text-slate-500" aria-hidden />
                   <span className="min-w-0">
                     <span className="block text-xs font-bold uppercase tracking-[0.06em] text-slate-500">Phone</span>
-                    <span className="block font-semibold tabular-nums text-slate-900">Not provided</span>
+                    <span className="block font-semibold tabular-nums text-slate-900">{data.phone || 'Not provided'}</span>
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <Briefcase className="mt-0.5 size-4 shrink-0 text-slate-500" aria-hidden />
                   <span className="min-w-0">
                     <span className="block text-xs font-bold uppercase tracking-[0.06em] text-slate-500">Specialty</span>
-                    <span className="block font-semibold text-slate-900">Not provided</span>
+                    <span className="block font-semibold text-slate-900">{data.specialization || 'Not provided'}</span>
                   </span>
                 </li>
                 <li className="flex items-start gap-2.5">
@@ -273,13 +284,18 @@ export default function AdvisorProfile() {
                 </p>
                 <p className="mt-1.5 text-xs font-medium text-slate-500">Managed by your institution — contact IT to change it.</p>
               </div>
-              <div className="block text-sm font-bold text-slate-900 sm:col-span-2">
-                Contact details
-                <p className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-3 text-sm font-medium leading-relaxed text-slate-600">
-                  Phone, specialty, department and office are not returned by the advisor profile API
-                  yet. They will appear here as editable fields once the backend exposes them.
-                </p>
-              </div>
+              <label className="block text-sm font-bold text-slate-900">
+                Phone
+                <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={20}
+                  aria-invalid={!isValidOptionalPhone(phone)}
+                  className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900" />
+                {!isValidOptionalPhone(phone) && <span className="mt-1 block text-xs text-red-700">Enter a valid phone number (8–15 digits).</span>}
+              </label>
+              <label className="block text-sm font-bold text-slate-900">
+                Specialty
+                <input value={specialization} onChange={(e) => setSpecialization(e.target.value)}
+                  className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900" />
+              </label>
             </div>
 
             {message && (
@@ -292,7 +308,7 @@ export default function AdvisorProfile() {
             <div className="mt-6 flex flex-col gap-2.5 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                disabled={update.isPending || !fullName.trim() || !dirty}
+                disabled={update.isPending || !fullName.trim() || !dirty || !isValidOptionalPhone(phone)}
                 onClick={() => { setMessage(''); update.mutate(); }}
                 className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-[#F26F21] px-6 text-sm font-extrabold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
               >

@@ -24,6 +24,7 @@ import type { AdminUserRole, AdminUserStatus, AdminUserSummary, UserSort } from 
 import { adminService } from '../services/adminService';
 import { UserRowMenu } from '../components/UserRowMenu';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
+import { isValidStudentCode } from '../../../shared/validation/identity';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 
 const PAGE_SIZE = 10;
@@ -170,8 +171,8 @@ export default function UserAccounts() {
     if (!roleChange) return;
     const target = roleChange.role === 'STUDENT' ? 'ADVISOR' : 'STUDENT';
     const curriculum = curriculums.data?.items.find((item) => item.id === curriculumId);
-    if (target === 'STUDENT' && (!/^(SE|IA)1\d{5}$/.test(studentCode.trim().toUpperCase()) || !curriculum)) {
-      setRoleError('Enter a Student ID like SE173012 or IA173012 and select a curriculum.');
+    if (target === 'STUDENT' && (!isValidStudentCode(studentCode) || !curriculum)) {
+      setRoleError('Enter a Student ID like SE233333 and select a curriculum.');
       return;
     }
     try {
@@ -439,7 +440,7 @@ export default function UserAccounts() {
             <div className="mt-4 space-y-3">
               <label className="block text-sm font-medium text-[#151c27]">Student ID
                 <input value={studentCode} onChange={(event) => setStudentCode(event.target.value.toUpperCase())}
-                  placeholder="SE173012 or IA173012" maxLength={8}
+                  placeholder="SE233333" maxLength={8}
                   className="mt-1 w-full rounded-lg border border-[#e5e7eb] px-3 py-2 outline-none focus:border-orange-500" />
               </label>
               <label className="block text-sm font-medium text-[#151c27]">Curriculum

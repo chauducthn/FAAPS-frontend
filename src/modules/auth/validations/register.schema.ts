@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PHONE_PATTERN, STUDENT_CODE_PATTERN } from '../../../shared/validation/identity';
 
 const isRealDate = (value: string) => {
   const [y, m, d] = value.split('-').map(Number);
@@ -10,7 +11,7 @@ export const studentCodeSchema = z
   .string()
   .trim()
   .transform((value) => value.toUpperCase())
-  .pipe(z.string().regex(/^[A-Z]{2}\d{6}$/, 'Use two letters and six digits, for example SE173012'));
+  .pipe(z.string().regex(STUDENT_CODE_PATTERN, 'Use two letters and six digits, for example SE233333'));
 
 export const dateOfBirthSchema = z
   .string()
@@ -21,7 +22,7 @@ export const dateOfBirthSchema = z
 export const phoneSchema = z
   .string()
   .trim()
-  .refine((value) => value === '' || /^\+?[0-9 .()-]{8,20}$/.test(value), 'Enter a valid phone number');
+  .refine((value) => value === '' || PHONE_PATTERN.test(value), 'Enter a valid phone number');
 
 export const registerSchema = z
   .object({
@@ -35,8 +36,8 @@ export const registerSchema = z
       .string()
       .min(8, 'Use at least 8 characters')
       .max(72, 'Use at most 72 characters')
-      .regex(/[A-Za-z]/, 'Include a letter')
-      .regex(/\d/, 'Include a digit'),
+      .regex(/\p{L}/u, 'Include a letter')
+      .regex(/\p{Nd}/u, 'Include a digit'),
     confirmPassword: z.string().min(1, 'Repeat your password'),
   })
   .refine((v) => v.password === v.confirmPassword, { path: ['confirmPassword'], message: 'Passwords do not match' });

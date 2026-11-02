@@ -18,7 +18,7 @@ import type {
 import type { AcademicStudentProfile, Progress, TranscriptRow } from '../../academic/services/studentAcademicService';
 
 export type AdvisorStudentDetail = { profile: AcademicStudentProfile; progress: Progress; transcript: TranscriptRow[] };
-export type AdvisorProfile = { id: string; fullName: string; email: string; maxAdvisees: number; activeAdvisees: number; status: string; assignmentStartDate: string | null };
+export type AdvisorProfile = { id: string; fullName: string; email: string; phone: string | null; specialization: string | null; maxAdvisees: number; activeAdvisees: number; status: string; assignmentStartDate: string | null };
 
 /** Lọc danh sách yêu cầu theo status và từ khoá (client-side). */
 const filterRequests = (
@@ -42,8 +42,8 @@ export const advisorService = {
     return (await apiClient.get<AdvisorProfile>('/advisor/profile')).data;
   },
 
-  updateProfile: async (fullName: string): Promise<AdvisorProfile> => {
-    return (await apiClient.put<AdvisorProfile>('/advisor/profile', { fullName },
+  updateProfile: async (input: Pick<AdvisorProfile, 'fullName' | 'phone' | 'specialization'>): Promise<AdvisorProfile> => {
+    return (await apiClient.put<AdvisorProfile>('/advisor/profile', input,
       { headers: await getCsrfHeaders() })).data;
   },
 
