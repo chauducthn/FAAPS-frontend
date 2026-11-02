@@ -212,7 +212,10 @@ describe('AssignmentsOverview — unassigned students', () => {
     await user.click(await screen.findByRole('button', { name: /Auto Assign/i }));
 
     await waitFor(() =>
-      expect(autoAssignStudents).toHaveBeenCalledWith(['s1', 's2']),
+      expect(autoAssignStudents).toHaveBeenCalledWith([
+        expect.objectContaining({ id: 's1', cohortId: 'c1' }),
+        expect.objectContaining({ id: 's2', cohortId: 'c1' }),
+      ]),
     );
     expect(toastSuccess).toHaveBeenCalledWith('2 students assigned automatically.');
   });
@@ -223,7 +226,9 @@ describe('AssignmentsOverview — unassigned students', () => {
     await user.click(screen.getByLabelText('Select row 2'));
     await user.click(await screen.findByRole('button', { name: /Auto Assign/i }));
 
-    await waitFor(() => expect(autoAssignStudents).toHaveBeenCalledWith(['s2']));
+    await waitFor(() => expect(autoAssignStudents).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 's2', cohortId: 'c1' }),
+    ]));
   });
 
   it('selects every row on the page from the header checkbox', async () => {
@@ -235,7 +240,10 @@ describe('AssignmentsOverview — unassigned students', () => {
 
     await user.click(screen.getByRole('button', { name: /Auto Assign/i }));
 
-    await waitFor(() => expect(autoAssignStudents).toHaveBeenCalledWith(['s1', 's2']));
+    await waitFor(() => expect(autoAssignStudents).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 's1', cohortId: 'c1' }),
+      expect.objectContaining({ id: 's2', cohortId: 'c1' }),
+    ]));
   });
 
   it('clears the selection from the bulk action bar', async () => {

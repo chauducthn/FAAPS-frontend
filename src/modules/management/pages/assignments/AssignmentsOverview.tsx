@@ -189,10 +189,10 @@ export default function AssignmentsOverview() {
   );
 
   /** Auto assigns the students ticked in the table. */
-  const runAutoAssign = async (studentIds: string[]) => {
-    if (studentIds.length === 0) return;
+  const runAutoAssign = async (students: Pick<UnassignedStudent, 'id' | 'cohortId'>[]) => {
+    if (students.length === 0) return;
     try {
-      const res = await autoAssign.mutateAsync({ studentIds });
+      const res = await autoAssign.mutateAsync({ students });
       toast.success(`${res.assigned} student${res.assigned === 1 ? '' : 's'} assigned automatically.`);
     } catch {
       // The global API error handler already shows a toast.
@@ -346,7 +346,7 @@ export default function AssignmentsOverview() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => runAutoAssign(selectedRows.map((s) => s.id))}
+                  onClick={() => runAutoAssign(selectedRows)}
                   disabled={autoAssign.isPending}
                   className="inline-flex items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-50 disabled:opacity-50"
                 >

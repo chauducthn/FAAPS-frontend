@@ -116,8 +116,9 @@ export const useConfirmAutoAssign = () => {
 export const useAutoAssignStudents = () => {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: (input: { studentIds: string[] }) => assignmentService.autoAssignStudents(input.studentIds),
-    onSuccess: invalidate,
+    mutationFn: (input: { students: { id: string; cohortId: string }[] }) =>
+      assignmentService.autoAssignStudents(input.students),
+    onSettled: invalidate,
   });
 };
 

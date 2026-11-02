@@ -102,12 +102,19 @@ export const assignmentService = {
   confirmAutoAssign: (cohortId: string, advisorIds?: string[], notes?: string) =>
     post<CohortAutoAssignResponse>(`${BASE}/auto-assign/cohort/confirm`, { cohortId, advisorIds, notes: notes || undefined }),
 
-  /**
-   * Auto assigns an explicit set of students. The backend spreads them over
-   * the advisors configured for the cohorts the students belong to.
-   */
-  autoAssignStudents: (studentIds: string[]) =>
-    post<AutoAssignResult>(`${BASE}/auto-assign/confirm`, { studentIds }),
+  /** Assign selected students through each cohort's configured advisor pool. */
+  autoAssignStudents: async (students: Pick<UnassignedStudent, 'id' | 'cohortId'>[]): Promise<AutoAssignResult> => {
+    const byCohort = new Map<string, string[]>();
+    for (const student of students) {
+      byCohort.set(student.cohortId, [...(byCohort.get(student.cohortId) ?? []), student.id]);
+    }
+    const results = await Promise.all(
+      [...byCohort].map(([cohortId, studentIds]) =>
+        post<CohortAutoAssignResponse>(`${BASE}/auto-assign/cohort/confirm`, { cohortId, studentIds }),
+      ),
+    );
+    return { assigned: results.reduce((total, result) => total + result.assigned, 0), allocation: {} };
+  },
 };
 
 export const notificationService = {
