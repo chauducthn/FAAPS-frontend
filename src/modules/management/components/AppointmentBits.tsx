@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import type { Appointment, AppointmentStatus } from '../types/admin';
+import { initialsOf } from './UserInitials';
 
 /**
  * One source of truth for every status: the label, the icon and the colour
@@ -133,14 +134,7 @@ export function AppointmentAvatar({
   kind?: 'student' | 'advisor';
   className?: string;
 }) {
-  const initials =
-    name
-      .trim()
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(-2)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join('') || '?';
+  const initials = initialsOf(name);
 
   const tone =
     kind === 'advisor'

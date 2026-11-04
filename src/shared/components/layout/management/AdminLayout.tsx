@@ -6,6 +6,7 @@ import {
   BookOpen,
   CalendarCheck,
   Briefcase,
+  Flag,
   FolderOpen,
   GraduationCap,
   ChevronDown,
@@ -60,6 +61,7 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
     items: [
       { label: 'AI Configuration', to: '/admin/ai-config', icon: Cpu },
       { label: 'AI Performance', to: '/admin/ai-performance', icon: Activity },
+      { label: 'Reported Responses', to: '/admin/ai-reports', icon: Flag },
     ],
   },
 ];
