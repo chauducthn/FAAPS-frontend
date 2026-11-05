@@ -29,6 +29,8 @@ export default function CurriculumDetailPage() {
     useCurriculumMutations('curriculum');
   const [picker, setPicker] = useState<{ semester: number } | null>(null);
   const [importing, setImporting] = useState(false);
+  // The preview of a spreadsheet that has invalid rows; the valid rows can still be imported.
+  const [importPreview, setImportPreview] = useState<Awaited<ReturnType<typeof curriculumService.previewImport>> | null>(null);
   const [editing, setEditing] = useState(false);
   const [archiving, setArchiving] = useState(false);
 
@@ -164,8 +166,15 @@ export default function CurriculumDetailPage() {
             <input type="file" accept=".xlsx" className="hidden" disabled={importing} onChange={async (event) => {
               const file = event.target.files?.[0]; if (!file) return; setImporting(true);
               try { const preview = await curriculumService.previewImport(id, file);
-                if (preview.errorRows) toast.error(`${preview.errorRows} invalid row(s). Fix the spreadsheet and retry.`);
-                else { const count = await curriculumService.confirmImport(id, preview); toast.success(`Imported ${count} curriculum course(s)`); await courses.refetch(); }
+                if (preview.errorRows) {
+                  setImportPreview(preview);
+                  toast.warning(preview.validRows
+                    ? `${preview.errorRows} invalid row(s). Import the ${preview.validRows} valid row(s) or fix the spreadsheet and retry.`
+                    : `${preview.errorRows} invalid row(s) and no valid row to import. Fix the spreadsheet and retry.`);
+                } else {
+                  setImportPreview(null);
+                  const count = await curriculumService.confirmImport(id, preview); toast.success(`Imported ${count} curriculum course(s)`); await courses.refetch();
+                }
               } finally { setImporting(false); event.target.value = ''; }
             }} />
           </label>
@@ -186,6 +195,57 @@ export default function CurriculumDetailPage() {
           </button>
         </div>
       </header>
+
+      {importPreview?.errorRows ? (
+        <div className="space-y-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm">
+          <div className="flex items-center justify-between gap-4">
+            <span>
+              <strong>{importPreview.errorRows}</strong> invalid row(s) found in the spreadsheet
+              {importPreview.validRows ? <>, <strong>{importPreview.validRows}</strong> valid.</> : '.'}
+            </span>
+            <div className="flex items-center gap-4">
+              {importPreview.validRows ? (
+                <button
+                  type="button"
+                  disabled={importing}
+                  className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#e05f14] disabled:opacity-60"
+                  onClick={async () => {
+                    setImporting(true);
+                    try {
+                      // The backend refuses a preview that still contains invalid rows, so send the valid ones only.
+                      const valid = { ...importPreview, items: importPreview.items.filter((item) => item.errors.length === 0) };
+                      const count = await curriculumService.confirmImport(id, valid);
+                      toast.success(`Imported ${count} curriculum course(s)`);
+                      setImportPreview(null);
+                      await courses.refetch();
+                    } catch {
+                      toast.error('Unable to import the valid rows.');
+                    } finally {
+                      setImporting(false);
+                    }
+                  }}
+                >
+                  Import {importPreview.validRows} valid row(s)
+                </button>
+              ) : null}
+              <button type="button" className="font-semibold text-red-700 underline" onClick={() => setImportPreview(null)}>
+                Dismiss
+              </button>
+            </div>
+          </div>
+          <ul className="list-disc pl-5 text-xs text-red-800">
+            {importPreview.items
+              .filter((item) => item.errors.length > 0)
+              .slice(0, 5)
+              .map((item) => (
+                <li key={item.rowNumber}>
+                  Row {item.rowNumber} ({item.courseCode}): {item.errors.join('; ')}
+                </li>
+              ))}
+            {importPreview.errorRows > 5 ? <li>and {importPreview.errorRows - 5} more...</li> : null}
+          </ul>
+        </div>
+      ) : null}
 
       {courses.isLoading ? (
         <p className="text-xs text-gray-500">Loading courses...</p>
