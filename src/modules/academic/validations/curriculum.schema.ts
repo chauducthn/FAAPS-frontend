@@ -2,7 +2,8 @@
 import { z } from 'zod';
 
 const id = (message: string) =>
-  z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, message);
+  // Accept both backend UUIDs and mock ids (major-se, sem-fa2022, cv-0001, ...).
+  z.string().trim().min(1, message);
 
 export const curriculumFormSchema = z.object({
   majorId: id('Select a major'),

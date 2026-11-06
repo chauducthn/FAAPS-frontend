@@ -21,6 +21,8 @@ export interface CurriculumItem {
   isCurrent: boolean;
   status: CurriculumStatus;
   courseCount: number;
+  /** Tổng số tín chỉ của curriculum (backend trả kèm trong CurriculumItem). */
+  totalCredits: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,6 +54,9 @@ export interface CurriculumFilterParams {
   search?: string;
   majorId?: string;
   status?: CurriculumStatus;
+  /** Chỉ lấy version đang là hiện hành của major (backend hỗ trợ tham số này). */
+  isCurrent?: boolean;
+  /** Trang bắt đầu từ 0. */
   page?: number;
   size?: number;
 }
@@ -70,7 +75,8 @@ export interface CurriculumInput {
 export interface AddCurriculumCoursesInput {
   courseIds: string[];
   semesterNumber: number;
-  isMandatory: boolean;
+  /** Kept for backend compatibility — UI no longer sets it (FPT has no Mandatory/Elective). */
+  isMandatory?: boolean;
 }
 
 /** A semester the form can pick from the backend semester catalogue. */

@@ -46,6 +46,7 @@ export function buildRoadmap(
       semesterNumber: course.semesterNumber,
       kind: course.isMandatory ? 'MANDATORY' : 'ELECTIVE',
       categoryLabel: course.categoryLabel ?? course.groupName ?? null,
+      specialization: course.specialization ?? null,
       groupName: course.groupName,
       prerequisites: (course.prerequisites ?? []).filter(isPrerequisite),
       milestone: course.milestone ?? null,

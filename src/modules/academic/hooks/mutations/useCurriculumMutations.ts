@@ -59,14 +59,28 @@ export const useCurriculumMutations = (kind: CurriculumKind) => {
   });
   const updateCourse = useMutation({
     onError: toastBadRequest,
-    mutationFn: ({ id, courseId, semesterNumber, isMandatory }: { id: string; courseId: string; semesterNumber: number; isMandatory: boolean }) =>
-      curriculumService.updateCourse(id, courseId, { semesterNumber, isMandatory }),
+    mutationFn: ({ id, courseId, semesterNumber, isMandatory }: { id: string; courseId: string; semesterNumber: number; isMandatory?: boolean }) =>
+      curriculumService.updateCourse(id, courseId, { semesterNumber, isMandatory: isMandatory ?? true }),
     onSuccess: () => { toast.success('Course placement updated'); refresh(); },
   });
   const removeCourse = useMutation({
     onError: toastBadRequest,
     mutationFn: ({ id, courseId }: { id: string; courseId: string }) => curriculumService.removeCourse(id, courseId),
     onSuccess: () => { toast.success('Course removed from curriculum'); refresh(); },
+  });
+
+  const previewImport = useMutation({
+    onError: toastBadRequest,
+    mutationFn: ({ id, file }: { id: string; file: File }) => curriculumService.previewImport(id, file),
+  });
+
+  const confirmImport = useMutation({
+    onError: toastBadRequest,
+    mutationFn: ({ id, preview }: { id: string; preview: unknown }) => curriculumService.confirmImport(id, preview),
+    onSuccess: (count) => {
+      toast.success(`Imported ${count} course${count === 1 ? '' : 's'} from spreadsheet`);
+      refresh();
+    },
   });
 
   return {
@@ -83,5 +97,11 @@ export const useCurriculumMutations = (kind: CurriculumKind) => {
     updateCourse: updateCourse.mutateAsync,
     removeCourse: removeCourse.mutateAsync,
     isUpdatingCourse: updateCourse.isPending || removeCourse.isPending,
+    previewImport: previewImport.mutateAsync,
+    isPreviewingImport: previewImport.isPending,
+    previewImportError: previewImport.error,
+    resetPreviewImport: previewImport.reset,
+    confirmImport: confirmImport.mutateAsync,
+    isConfirmingImport: confirmImport.isPending,
   };
 };
