@@ -230,8 +230,11 @@ export default function CoursesPage() {
           <input type="file" accept=".xlsx" className="hidden" disabled={importing} onChange={async (event) => {
             const file = event.target.files?.[0]; if (!file) return; setImporting(true);
             try { const preview = await courseService.previewImport(file); setImportPreview(preview);
-              if (preview.errorRows) toast.error(`${preview.errorRows} invalid row(s). Download the error report, fix the spreadsheet and retry.`);
-              else { const count = await courseService.confirmImport(preview.items); toast.success(`Imported ${count} course(s)`); window.location.reload(); }
+              if (preview.errorRows) {
+                toast.warning(preview.validRows
+                  ? `${preview.errorRows} invalid row(s). Import the ${preview.validRows} valid row(s) or download the error report.`
+                  : `${preview.errorRows} invalid row(s) and no valid row to import. Download the error report, fix the spreadsheet and retry.`);
+              } else { const count = await courseService.confirmImport(preview.items); toast.success(`Imported ${count} course(s)`); window.location.reload(); }
             } finally { setImporting(false); event.target.value = ''; }
           }} />
         </label><button
@@ -246,13 +249,26 @@ export default function CoursesPage() {
       </div>
 
       {importPreview?.errorRows ? <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 p-4 text-sm">
-        <span><strong>{importPreview.errorRows}</strong> invalid row(s) found in the course spreadsheet.</span>
-        <button type="button" className="font-semibold text-red-700 underline" onClick={async () => {
-          try {
-            const blob = await courseService.downloadImportErrors(importPreview.items);
-            download(blob, 'course-import-errors.xlsx');
-          } catch { toast.error('Unable to download the course error report.'); }
-        }}>Download error report</button>
+        <span>
+          <strong>{importPreview.errorRows}</strong> invalid row(s) found in the course spreadsheet
+          {importPreview.validRows ? <>, <strong>{importPreview.validRows}</strong> valid.</> : '.'}
+        </span>
+        <div className="flex items-center gap-4">
+          {importPreview.validRows ? <button type="button" disabled={importing} className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#e05f14] disabled:opacity-60" onClick={async () => {
+            setImporting(true);
+            try {
+              const count = await courseService.confirmImport(importPreview.items);
+              toast.success(`Imported ${count} course(s)`);
+              window.location.reload();
+            } catch { toast.error('Unable to import the valid rows.'); } finally { setImporting(false); }
+          }}>Import {importPreview.validRows} valid row(s)</button> : null}
+          <button type="button" className="font-semibold text-red-700 underline" onClick={async () => {
+            try {
+              const blob = await courseService.downloadImportErrors(importPreview.items);
+              download(blob, 'course-import-errors.xlsx');
+            } catch { toast.error('Unable to download the course error report.'); }
+          }}>Download error report</button>
+        </div>
       </div> : null}
 
       {isError && (
