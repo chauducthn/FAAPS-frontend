@@ -2,7 +2,8 @@
 import { z } from 'zod';
 
 // Any 36-character hex id: the backend generates and validates the actual UUIDs.
-const uuid = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, 'Select a valid option');
+// Mock catalogue uses readable ids (cat-01, course-se101), so accept any non-empty id.
+const idRef = z.string().min(1, 'Select a valid option');
 
 export const createCourseSchema = z.object({
   code: z
@@ -12,7 +13,7 @@ export const createCourseSchema = z.object({
     .regex(/^[A-Z0-9_-]+$/i, 'Use letters, numbers, dash, underscore only'),
   name: z.string().min(3, 'Course name is required').max(255),
   credits: z.number({ error: 'Credits must be a number' }).int('Credits must be a whole number').min(1, 'Credits must be at least 1').max(20, 'Credits must be at most 20'),
-  categoryId: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, 'Select a category'),
+  categoryId: z.string().min(1, 'Select a category'),
   description: z.string().max(2000).optional().nullable(),
   objectives: z.string().max(2000).optional().nullable(),
   learningOutcomes: z.string().max(2000).optional().nullable(),
@@ -24,7 +25,7 @@ export const updateCourseSchema = createCourseSchema.partial();
 export const addCourseRelationSchema = z.object({
   kind: z.enum(['PREREQUISITE', 'REPLACEMENT']),
   groupNo: z.number().int().min(1).max(20),
-  otherCourseId: uuid,
+  otherCourseId: idRef,
   minimumScore: z
     .number()
     .min(0)

@@ -122,43 +122,136 @@ const PREREQUISITE_PAIRS: Record<string, string> = {
   CAP403: 'BA110',
 };
 
+/** Một vài quan hệ thay thế (replacement) để UI detail có dữ liệu demo. */
+const REPLACEMENT_PAIRS: Record<string, string> = {
+  SE202: 'SE201',
+  SE107: 'SE106',
+  OJT402: 'OJT401',
+};
+
 const courseIdOf = (code: string) => `course-${code.toLowerCase()}`;
 
-export const MOCK_COURSES: CourseDetail[] = COURSE_CATALOGUE.map((course, index) => {
-  const category = categoryOf(course.category);
-  const prerequisiteCode = PREREQUISITE_PAIRS[course.code];
+const SYLLABUS: Record<string, { description: string; objectives: string; learningOutcomes: string }> = {
+  IT001: {
+    description: 'Nhập môn lập trình với ngôn ngữ C: biến, rẽ nhánh, vòng lặp, mảng, hàm và tư duy giải thuật cơ bản.',
+    objectives: 'Nắm vững cú pháp C cơ bản và rèn kỹ năng phân tích, cài đặt giải thuật cho bài toán nhập môn.',
+    learningOutcomes: 'Viết được chương trình C hoàn chỉnh có kiểm thử đơn giản; đọc hiểu và sửa lỗi chương trình có sẵn.',
+  },
+  IT002: {
+    description: 'Lập trình hướng đối tượng với Java: lớp, đối tượng, kế thừa, đa hình, interface và collections.',
+    objectives: 'Hiểu và vận dụng 4 tính chất OOP để thiết kế hệ thống vừa và nhỏ.',
+    learningOutcomes: 'Thiết kế được class diagram đơn giản và cài đặt ứng dụng Java OOP có xử lý ngoại lệ.',
+  },
+  IT003: {
+    description: 'Cấu trúc dữ liệu và giải thuật: danh sách, ngăn xếp, hàng đợi, cây, đồ thị, sắp xếp và tìm kiếm.',
+    objectives: 'Phân tích độ phức tạp và lựa chọn cấu trúc dữ liệu phù hợp cho từng bài toán.',
+    learningOutcomes: 'Cài đặt được các cấu trúc dữ liệu kinh điển và đánh giá được Big-O của giải thuật.',
+  },
+  SE101: {
+    description: 'Hệ cơ sở dữ liệu quan hệ: mô hình ER, chuẩn hóa, SQL, transaction, index và bảo mật dữ liệu.',
+    objectives: 'Thiết kế schema chuẩn 3NF và thao tác thành thạo SQL cho ứng dụng thực tế.',
+    learningOutcomes: 'Thiết kế và triển khai database hoàn chỉnh, viết truy vấn tối ưu cho báo cáo nghiệp vụ.',
+  },
+  SE102: {
+    description: 'Lập trình web full-stack: HTML/CSS/JS, React, REST API và triển khai ứng dụng web.',
+    objectives: 'Xây dựng được ứng dụng web hoàn chỉnh từ frontend tới backend.',
+    learningOutcomes: 'Triển khai web app có xác thực, phân trang và gọi API; deploy lên môi trường cloud cơ bản.',
+  },
+};
 
+const defaultSyllabus = (code: string, name: string, categoryName: string) => {
+  const preset = SYLLABUS[code];
+  if (preset) return preset;
   return {
-    id: courseIdOf(course.code),
-    code: course.code,
-    name: course.name,
-    credits: course.credits,
-    categoryId: category.id,
-    categoryCode: category.code,
-    categoryName: category.name,
-    specialization: course.specialization ?? null,
-    description: `${course.name} — môn học thuộc nhóm ${category.name}.`,
-    objectives: `Nắm vững kiến thức nền tảng của ${course.name}.`,
-    learningOutcomes: `Áp dụng được kiến thức ${course.name} vào bài toán thực tế.`,
-    status: 'ACTIVE',
-    prerequisiteCount: prerequisiteCode ? 1 : 0,
-    usedInCurriculumCount: 2,
-    createdAt: `2026-01-${String((index % 28) + 1).padStart(2, '0')}T08:00:00Z`,
-    updatedAt: `2026-10-${String((index % 28) + 1).padStart(2, '0')}T08:00:00Z`,
-    relations: prerequisiteCode
-      ? [{
-        relationId: `rel-${course.code.toLowerCase()}`,
+    description: `${name} — môn học thuộc nhóm ${categoryName}. Đề cương gồm lý thuyết nền tảng, bài tập thực hành và đồ án cuối kỳ bám sát chuẩn đầu ra của chương trình.`,
+    objectives: `Nắm vững kiến thức nền tảng của ${name}; rèn kỹ năng làm việc nhóm, thuyết trình và giải quyết vấn đề.`,
+    learningOutcomes: `Vận dụng được kiến thức ${name} vào bài toán thực tế; hoàn thành bài kiểm tra và đồ án đạt chuẩn đầu ra môn học.`,
+  };
+};
+
+/** Trạng thái demo: phần lớn ACTIVE, một vài môn INACTIVE để test bộ lọc status. */
+const INACTIVE_CODES = new Set(['SE107', 'BA111', 'CAP402']);
+
+/** Số curriculum đang dùng mỗi môn — khớp tương đối với seed trong curriculumMockData. */
+const CURRICULUM_USAGE: Record<string, number> = {
+  IT001: 4, IT002: 4, IT003: 4, IT004: 4, MA003: 4, MA004: 4, MA005: 4,
+  SE101: 4, SE102: 4, SE103: 4, SE104: 4, SE105: 4, SE106: 2, SE107: 1,
+  SE201: 2, SE202: 2, SE203: 2, SE204: 2, GE001: 4, EL101: 4, EL102: 3,
+  OJT401: 3, CAP401: 3, CAP402: 3, GE101: 3, GE102: 3,
+  BA101: 3, BA102: 3, BA103: 3, BA104: 3, BA105: 2, BA106: 2, BA107: 3,
+  BA108: 2, BA109: 2, BA110: 3, BA111: 1, EL201: 2, OJT402: 2, CAP403: 2,
+};
+
+function buildMockCourses(): CourseDetail[] {
+  const list: CourseDetail[] = COURSE_CATALOGUE.map((course, index) => {
+    const category = categoryOf(course.category);
+    const syllabus = defaultSyllabus(course.code, course.name, category.name);
+    const prerequisiteCode = PREREQUISITE_PAIRS[course.code];
+    const replacementCode = REPLACEMENT_PAIRS[course.code];
+    const relations: CourseDetail['relations'] = [];
+    if (prerequisiteCode) {
+      relations.push({
+        relationId: `rel-${course.code.toLowerCase()}-pre`,
         kind: 'PREREQUISITE',
         groupNo: 1,
         otherCourseId: courseIdOf(prerequisiteCode),
         otherCourseCode: prerequisiteCode,
         otherCourseName: COURSE_CATALOGUE.find((c) => c.code === prerequisiteCode)?.name ?? prerequisiteCode,
-        minimumScore: 50,
-      }]
-      : [],
-    referencedBy: [],
-  };
-});
+        minimumScore: 5,
+      });
+    }
+    if (replacementCode) {
+      relations.push({
+        relationId: `rel-${course.code.toLowerCase()}-rep`,
+        kind: 'REPLACEMENT',
+        groupNo: 1,
+        otherCourseId: courseIdOf(replacementCode),
+        otherCourseCode: replacementCode,
+        otherCourseName: COURSE_CATALOGUE.find((c) => c.code === replacementCode)?.name ?? replacementCode,
+        minimumScore: null,
+      });
+    }
+    return {
+      id: courseIdOf(course.code),
+      code: course.code,
+      name: course.name,
+      credits: course.credits,
+      categoryId: category.id,
+      categoryCode: category.code,
+      categoryName: category.name,
+      specialization: course.specialization ?? null,
+      description: syllabus.description,
+      objectives: syllabus.objectives,
+      learningOutcomes: syllabus.learningOutcomes,
+      status: INACTIVE_CODES.has(course.code) ? 'INACTIVE' : 'ACTIVE',
+      prerequisiteCount: relations.length,
+      usedInCurriculumCount: CURRICULUM_USAGE[course.code] ?? 2,
+      createdAt: `2026-01-${String((index % 28) + 1).padStart(2, '0')}T08:00:00Z`,
+      updatedAt: `2026-10-${String((index % 28) + 1).padStart(2, '0')}T08:00:00Z`,
+      relations,
+      referencedBy: [],
+    };
+  });
+
+  // Đảo chiều quan hệ để có "Referenced By": ai đang cần môn này làm tiên quyết / thay thế.
+  const byCode = new Map(list.map((c) => [c.code, c]));
+  for (const course of list) {
+    for (const rel of course.relations) {
+      const target = byCode.get(rel.otherCourseCode);
+      if (!target || target.id === course.id) continue;
+      if (!target.referencedBy.some((r) => r.courseId === course.id)) {
+        target.referencedBy.push({
+          courseId: course.id,
+          courseCode: course.code,
+          courseName: course.name,
+        });
+      }
+    }
+  }
+  return list;
+}
+
+export const MOCK_COURSES: CourseDetail[] = buildMockCourses();
 
 export const MOCK_COURSE_BY_ID = new Map(MOCK_COURSES.map((course) => [course.id, course]));
 export const MOCK_COURSE_BY_CODE = new Map(MOCK_COURSES.map((course) => [course.code, course]));

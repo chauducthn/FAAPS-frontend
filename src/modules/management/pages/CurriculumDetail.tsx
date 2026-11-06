@@ -57,12 +57,6 @@ export default function CurriculumDetailPage() {
     isConfirmingImport,
   } = useCurriculumMutations('curriculum');
   const [picker, setPicker] = useState<{ semester: number } | null>(null);
-<<<<<<< HEAD
-=======
-  const [importing, setImporting] = useState(false);
-  // The preview of a spreadsheet that has invalid rows; the valid rows can still be imported.
-  const [importPreview, setImportPreview] = useState<Awaited<ReturnType<typeof curriculumService.previewImport>> | null>(null);
->>>>>>> 20218a3992c0e9fe98bc6793f47fb6b63e00a23c
   const [editing, setEditing] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
@@ -311,118 +305,8 @@ export default function CurriculumDetailPage() {
               {isUpdatingStatus ? <Loader2 className="size-3.5 animate-spin" /> : <>Publish Version <ArrowUpRight className="size-3.5" /></>}
             </button>
           </div>
-<<<<<<< HEAD
-=======
-          <div className="mt-1.5 flex flex-wrap items-center gap-2">
-            <StatusBadge status={data.status} />
-            <span className="text-[11px] text-gray-500">
-              {data.majorCode} · Cohort {data.version} · Start semester {data.effectiveFromSemesterCode}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setEditing(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 shadow-xs transition-colors hover:bg-gray-50"
-          >
-            <Pencil className="size-3.5" /> Edit Draft
-          </button>
-          <button
-            type="button"
-            onClick={() => setArchiving(true)}
-            disabled={!isPublished}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 shadow-xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Archive className="size-3.5" /> Archive
-          </button>
-          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 shadow-xs transition-colors hover:bg-gray-50">
-            <Upload className="size-3.5" /> Import XLSX
-            <input type="file" accept=".xlsx" className="hidden" disabled={importing} onChange={async (event) => {
-              const file = event.target.files?.[0]; if (!file) return; setImporting(true);
-              try { const preview = await curriculumService.previewImport(id, file);
-                if (preview.errorRows) {
-                  setImportPreview(preview);
-                  toast.warning(preview.validRows
-                    ? `${preview.errorRows} invalid row(s). Import the ${preview.validRows} valid row(s) or fix the spreadsheet and retry.`
-                    : `${preview.errorRows} invalid row(s) and no valid row to import. Fix the spreadsheet and retry.`);
-                } else {
-                  setImportPreview(null);
-                  const count = await curriculumService.confirmImport(id, preview); toast.success(`Imported ${count} curriculum course(s)`); await courses.refetch();
-                }
-              } finally { setImporting(false); event.target.value = ''; }
-            }} />
-          </label>
-          <button
-            type="button"
-            disabled={isPublished || isUpdatingStatus}
-            onClick={async () => {
-              try {
-                await updateStatus({ id, status: 'ACTIVE' });
-                await curriculum.refetch();
-              } catch {
-                // The error toast is shown by the mutation / global handler.
-              }
-            }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 py-2 text-xs font-bold text-white shadow-xs transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Publish Version <ArrowUpRight className="size-3.5" />
-          </button>
->>>>>>> 20218a3992c0e9fe98bc6793f47fb6b63e00a23c
         </div>
       </header>
-
-      {importPreview?.errorRows ? (
-        <div className="space-y-2 rounded-xl border border-red-200 bg-red-50 p-4 text-sm">
-          <div className="flex items-center justify-between gap-4">
-            <span>
-              <strong>{importPreview.errorRows}</strong> invalid row(s) found in the spreadsheet
-              {importPreview.validRows ? <>, <strong>{importPreview.validRows}</strong> valid.</> : '.'}
-            </span>
-            <div className="flex items-center gap-4">
-              {importPreview.validRows ? (
-                <button
-                  type="button"
-                  disabled={importing}
-                  className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#e05f14] disabled:opacity-60"
-                  onClick={async () => {
-                    setImporting(true);
-                    try {
-                      // The backend refuses a preview that still contains invalid rows, so send the valid ones only.
-                      const valid = { ...importPreview, items: importPreview.items.filter((item) => item.errors.length === 0) };
-                      const count = await curriculumService.confirmImport(id, valid);
-                      toast.success(`Imported ${count} curriculum course(s)`);
-                      setImportPreview(null);
-                      await courses.refetch();
-                    } catch {
-                      toast.error('Unable to import the valid rows.');
-                    } finally {
-                      setImporting(false);
-                    }
-                  }}
-                >
-                  Import {importPreview.validRows} valid row(s)
-                </button>
-              ) : null}
-              <button type="button" className="font-semibold text-red-700 underline" onClick={() => setImportPreview(null)}>
-                Dismiss
-              </button>
-            </div>
-          </div>
-          <ul className="list-disc pl-5 text-xs text-red-800">
-            {importPreview.items
-              .filter((item) => item.errors.length > 0)
-              .slice(0, 5)
-              .map((item) => (
-                <li key={item.rowNumber}>
-                  Row {item.rowNumber} ({item.courseCode}): {item.errors.join('; ')}
-                </li>
-              ))}
-            {importPreview.errorRows > 5 ? <li>and {importPreview.errorRows - 5} more...</li> : null}
-          </ul>
-        </div>
-      ) : null}
 
       {courses.isLoading ? (
         <DetailBoardSkeleton />
