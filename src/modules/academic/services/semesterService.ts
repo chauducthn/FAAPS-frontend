@@ -1,6 +1,8 @@
 import { apiClient } from '@/shared/lib/apiClient';
 import { getCsrfHeaders } from '@/shared/lib/csrf';
 import type { ApiResponse } from '@/shared/types/api';
+import { isCurriculumMockEnabled, mockDelay } from '../../management/mocks/mockConfig';
+import { MOCK_SEMESTERS } from '../../management/mocks/curriculumSupportMockData';
 
 export interface Semester {
   id: string;
@@ -14,6 +16,10 @@ export type SemesterInput = Omit<Semester, 'id'>;
 
 export const semesterService = {
   list: async (): Promise<Semester[]> => {
+    if (isCurriculumMockEnabled()) {
+      await mockDelay();
+      return MOCK_SEMESTERS;
+    }
     const { data } = await apiClient.get<ApiResponse<Semester[]>>('/admin/semesters');
     return data.data ?? [];
   },

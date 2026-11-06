@@ -23,6 +23,8 @@ export interface CourseSummary {
   categoryId: string;
   categoryCode: string;
   categoryName: string;
+  /** FPT narrow specialization (Chuyên ngành hẹp), e.g. "Node.js", ".NET", "Game Development". Null = foundation/common. */
+  specialization?: string | null;
   status: CourseStatus;
   prerequisiteCount: number;
   usedInCurriculumCount: number;
@@ -56,6 +58,8 @@ export interface CourseFilterParams {
   status?: CourseStatus | 'ALL';
   /** Filter the catalogue by number of credits (FE-03). */
   credits?: number;
+  /** FPT narrow specialization (Chuyên ngành hẹp), e.g. "Node.js". Mock-only filter for sem 7-9. */
+  specialization?: string;
   page?: number;
   size?: number;
   sort?: 'code,asc' | 'code,desc' | 'credits,asc' | 'credits,desc' | 'createdAt,desc';

@@ -4,7 +4,9 @@
 // one column per semester, one card per course.
 import type { CurriculumCourseItem } from './curriculum';
 
-/** A mandatory course is counted toward graduation; an elective one can be swapped for its group. */
+/** A mandatory course is counted toward graduation; an elective one can be swapped for its group.
+ * FPT UI no longer shows this distinction — kept only for backend compatibility.
+ * The visible grouping is `specialization` (Chuyên ngành hẹp, from semester 5, deep-dived in sem 7-9). */
 export type RoadmapCourseKind = 'MANDATORY' | 'ELECTIVE';
 
 /** One course-level prerequisite, mirrored from course_prerequisites. */
@@ -13,6 +15,8 @@ export interface RoadmapPrerequisite {
   code: string;
   /** Minimum score on the 10-point scale, when the relation carries one. */
   minimumScore: number | null;
+  /** Catalogue id of the prerequisite course, when known (for cross-navigation). */
+  courseId?: string | null;
 }
 
 /** Extra content of a milestone card (internship, capstone) inside the roadmap. */
@@ -36,6 +40,8 @@ export interface RoadmapCourse {
   kind: RoadmapCourseKind;
   /** Secondary line under the title, e.g. "C | Syntax". */
   categoryLabel?: string | null;
+  /** FPT narrow specialization (Chuyên ngành hẹp) resolved from the catalogue, e.g. "Node.js". */
+  specialization?: string | null;
   /** Elective group this course belongs to. */
   groupName?: string | null;
   prerequisites: RoadmapPrerequisite[];
@@ -57,6 +63,8 @@ export interface RoadmapSemester {
 export interface RoadmapCourseSource extends CurriculumCourseItem {
   /** Category line, e.g. "C | Syntax". */
   categoryLabel?: string | null;
+  /** FPT narrow specialization (Chuyên ngành hẹp), resolved from the catalogue. */
+  specialization?: string | null;
   /** Prerequisites of this course. */
   prerequisites?: RoadmapPrerequisite[];
   /** Milestone content, when the course is one. */

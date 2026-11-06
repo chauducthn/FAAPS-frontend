@@ -2,11 +2,27 @@
 import { apiClient } from '../../../shared/lib/apiClient';
 import { Major, MajorFilterParams, CreateMajorDto, UpdateMajorDto } from '../../academic/types/major';
 import { ApiResponse, PaginatedData } from '../../../shared/types/api';
+import { isCurriculumMockEnabled, mockDelay } from '../mocks/mockConfig';
+import { MOCK_MAJORS } from '../mocks/curriculumSupportMockData';
 
 export const majorService = {
   getMajors: async (params?: MajorFilterParams): Promise<PaginatedData<Major>> => {
-    const response = await apiClient.get<ApiResponse<PaginatedData<Major>>>('/admin/majors/paged', { params });
-    
+    if (isCurriculumMockEnabled()) {
+      await mockDelay();
+      const size = params?.size ?? 20;
+      const totalItems = MOCK_MAJORS.length;
+      const page = params?.page ?? 0;
+      return {
+        items: MOCK_MAJORS.slice(page * size, page * size + size),
+        page,
+        pageSize: size,
+        totalItems,
+        totalPages: size > 0 ? Math.ceil(totalItems / size) : 0,
+      };
+    }
+
+    const response = await apiClient.get<ApiResponse<PaginatedData<Major>> | PaginatedData<Major>>('/admin/majors/paged', { params });
+
     const defaultPaginatedData: PaginatedData<Major> = {
       items: [],
       page: 0,
@@ -15,7 +31,28 @@ export const majorService = {
       totalPages: 0,
     };
 
-    return response.data.data ?? defaultPaginatedData;
+    // Backend trả `Page` trần (items/page/size/totalElements/totalPages); bản deploy
+    // cũ bọc trong `ApiResponse`. Đọc cả hai để không vỡ khi contract đổi vỏ.
+    const payload = response.data as {
+      data?: { items?: Major[]; page?: number; size?: number; pageSize?: number; totalElements?: number; totalItems?: number; totalPages?: number };
+      items?: Major[];
+      page?: number;
+      size?: number;
+      pageSize?: number;
+      totalElements?: number;
+      totalItems?: number;
+      totalPages?: number;
+    };
+    const source = payload?.items ? payload : (payload?.data ?? payload);
+    const items = source?.items ?? [];
+
+    return {
+      items,
+      page: source?.page ?? 0,
+      pageSize: source?.pageSize ?? source?.size ?? params?.size ?? 20,
+      totalItems: source?.totalItems ?? source?.totalElements ?? items.length,
+      totalPages: source?.totalPages ?? 0,
+    };
   },
 
   getMajorById: async (id: string): Promise<Major> => {

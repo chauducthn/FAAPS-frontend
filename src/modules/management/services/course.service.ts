@@ -2,6 +2,8 @@
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
 import { ApiResponse, PaginatedData } from '../../../shared/types/api';
+import { isCurriculumMockEnabled, mockDelay } from '../mocks/mockConfig';
+import { MOCK_CATEGORIES, MOCK_COURSE_BY_ID, MOCK_COURSES } from '../mocks/curriculumSupportMockData';
 import type {
   CourseDetail,
   CourseRelation,
@@ -50,7 +52,7 @@ const toCourseDetail = (course: BackendCourseDetail): CourseDetail => ({
   })),
 });
 
-const toCourseSummary = (course: BackendCourseDetail): CourseSummary => ({
+const toCourseSummary = (course: BackendCourseDetail | CourseDetail): CourseSummary => ({
   id: course.id,
   code: course.code,
   name: course.name,
@@ -58,8 +60,11 @@ const toCourseSummary = (course: BackendCourseDetail): CourseSummary => ({
   categoryId: course.categoryId,
   categoryCode: course.categoryCode,
   categoryName: course.categoryName,
+  specialization: (course as CourseDetail).specialization ?? null,
   status: course.status,
-  prerequisiteCount: course.prerequisites.length,
+  prerequisiteCount: 'prerequisites' in course
+    ? course.prerequisites.length
+    : course.prerequisiteCount,
   usedInCurriculumCount: course.usedInCurriculumCount,
   createdAt: course.createdAt,
   updatedAt: course.updatedAt,
@@ -67,6 +72,27 @@ const toCourseSummary = (course: BackendCourseDetail): CourseSummary => ({
 
 export const courseService = {
   list: async (params?: CourseFilterParams): Promise<PaginatedData<CourseSummary>> => {
+    if (isCurriculumMockEnabled()) {
+      await mockDelay();
+      const search = params?.search?.trim().toLowerCase();
+      const filtered = MOCK_COURSES.filter((course) => {
+        if (params?.status && params.status !== 'ALL' && course.status !== params.status) return false;
+        if (params?.categoryId && course.categoryId !== params.categoryId) return false;
+        if (params?.specialization && params.specialization !== 'ALL' && (course.specialization ?? '') !== params.specialization) return false;
+        if (!search) return true;
+        return course.code.toLowerCase().includes(search) || course.name.toLowerCase().includes(search);
+      });
+      const size = params?.size ?? 20;
+      const page = params?.page ?? 0;
+      return {
+        items: filtered.slice(page * size, page * size + size).map(toCourseSummary),
+        page,
+        pageSize: size,
+        totalItems: filtered.length,
+        totalPages: size > 0 ? Math.ceil(filtered.length / size) : 0,
+      };
+    }
+
     const { data } = await apiClient.get<BackendCoursePage>(
       '/admin/courses',
       { params },
@@ -81,11 +107,21 @@ export const courseService = {
   },
 
   listCategories: async (): Promise<CourseCategory[]> => {
+    if (isCurriculumMockEnabled()) {
+      await mockDelay();
+      return MOCK_CATEGORIES.map((c) => ({ id: c.id, code: c.code, name: c.name }));
+    }
     const { data } = await apiClient.get<CourseCategory[]>('/admin/course-categories');
     return data;
   },
 
   getById: async (id: string): Promise<CourseDetail> => {
+    if (isCurriculumMockEnabled()) {
+      await mockDelay();
+      const found = MOCK_COURSE_BY_ID.get(id);
+      if (!found) throw new Error('Not found');
+      return found;
+    }
     const { data } = await apiClient.get<BackendCourseDetail>(`/admin/courses/${id}`);
     return toCourseDetail(data);
   },
