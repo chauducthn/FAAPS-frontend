@@ -104,7 +104,9 @@ export default function AdvisorConversationWorkspace() {
       total: all.length,
       pending: all.filter((r) => r.status === 'PENDING').length,
       inProgress: all.filter((r) => r.status === 'IN_PROGRESS').length,
-      resolved: all.filter((r) => r.status === 'RESOLVED').length,
+      // "Resolved" gộp cả request đã chấp nhận (RESOLVED) và đã từ chối
+      // (CANCELLED): cả hai đều đã đóng nên không còn việc cho advisor xử lý.
+      resolved: all.filter((r) => r.status === 'RESOLVED' || r.status === 'CANCELLED').length,
     }),
     [all],
   );
@@ -112,7 +114,12 @@ export default function AdvisorConversationWorkspace() {
   const visible = useMemo(() => {
     const q = inboxSearch.trim().toLowerCase();
     return all
-      .filter((r) => (filter === 'ALL' ? true : r.status === filter))
+      .filter((r) => {
+        if (filter === 'ALL') return true;
+        // Filter "Resolved" gộp cả RESOLVED và CANCELLED (đã đóng).
+        if (filter === 'RESOLVED') return r.status === 'RESOLVED' || r.status === 'CANCELLED';
+        return r.status === filter;
+      })
       .filter((r) => {
         if (!q) return true;
         return r.studentName.toLowerCase().includes(q) || r.title.toLowerCase().includes(q);
@@ -171,7 +178,7 @@ export default function AdvisorConversationWorkspace() {
   ];
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 pb-4">
+    <div className="w-full space-y-6 pb-4">
       {/* ── Hero — đồng bộ Overview ── */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#b45309] via-[#F26F21] to-[#fb923c] px-6 py-7 text-white shadow-lg shadow-orange-500/20 sm:px-8 sm:py-8">
         <div aria-hidden className="pointer-events-none absolute -right-14 -top-20 size-64 rounded-full bg-white/15 blur-[1px]" />

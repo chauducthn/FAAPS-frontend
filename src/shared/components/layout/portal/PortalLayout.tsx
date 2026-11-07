@@ -17,9 +17,12 @@ export interface PortalNavItem {
   icon: LucideIcon;
   /** Đánh dấu trang chủ — dùng `end` cho NavLink để không sáng ở các sub-route. */
   end?: boolean;
+  /** Số badge nhỏ hiển thị bên phải (vd: số yêu cầu đang chờ). */
+  badge?: number;
 }
 
 export interface PortalNavSection {
+  /** Nhãn phân khu (WORKSPACE, ADVISING...) — hiển thị nhỏ, xám mờ phía trên nhóm mục. */
   title?: string;
   items: PortalNavItem[];
 }
@@ -30,7 +33,7 @@ interface PortalLayoutProps {
   homePath: string;
   /** Nhãn vai trò hiển thị dưới tên người dùng. */
   roleLabel: string;
-  /** Nội dung bên phải header (vd: chuông thông báo, nút demo data). */
+  /** Nội dung bên phải header (vd: chuột thông báo, nút demo data). */
   headerExtra?: React.ReactNode;
 }
 
@@ -44,32 +47,50 @@ export function PortalSidebar({
   onNavigate?: () => void;
 }) {
   return (
-    <nav className="flex flex-col gap-2" aria-label="Portal navigation">
+    <nav className="flex flex-col gap-1" aria-label="Portal navigation">
       {navSections.map((section, i) => (
-        <div key={section.title ?? i} className="flex flex-col gap-2">
+        <div key={section.title ?? i} className="flex flex-col">
           {section.title && (
-            <p className="px-2 pb-1.5 pt-4 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">
+            <p
+              className={cn(
+                'px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#98a2b3]',
+                i === 0 ? 'pt-1' : 'pt-6',
+              )}
+            >
               {section.title}
             </p>
           )}
-          {section.items.map(({ label, to, icon: Icon, end }) => (
-            <NavLink
-              key={label}
-              to={to}
-              end={end}
-              onClick={onNavigate}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-2 rounded-lg border-l-[3px] border-transparent p-2 text-sm font-medium text-[#555f6f] hover:bg-gray-50',
-                  isActive &&
-                    'border-[#f37021] bg-[#fff7ed] font-semibold text-[#f37021] hover:bg-[#fff7ed]',
-                )
-              }
-            >
-              <Icon className="size-[18px]" />
-              {label}
-            </NavLink>
-          ))}
+          <div className="space-y-0.5">
+            {section.items.map(({ label, to, icon: Icon, end, badge }) => (
+              <NavLink
+                key={label}
+                to={to}
+                end={end}
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  cn(
+                    'group relative flex items-center gap-2.5 rounded-r-lg border-l-[3px] border-transparent py-2 pl-3 pr-3 text-sm font-medium text-[#555f6f] transition-colors hover:bg-gray-50 hover:text-[#151c27]',
+                    isActive &&
+                      'border-[#f37021] bg-[#fff7ed] font-semibold text-[#f37021] hover:bg-[#fff7ed] hover:text-[#f37021]',
+                  )
+                }
+              >
+                <Icon className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
+                <span className="min-w-0 flex-1 truncate">{label}</span>
+                {badge != null && badge > 0 && (
+                  <span
+                    className={cn(
+                      'inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-bold tabular-nums',
+                      'bg-[#F26F21] text-white',
+                    )}
+                    aria-label={`${badge} pending`}
+                  >
+                    {badge > 99 ? '99+' : badge}
+                  </span>
+                )}
+              </NavLink>
+            ))}
+          </div>
         </div>
       ))}
     </nav>

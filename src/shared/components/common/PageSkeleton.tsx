@@ -4,7 +4,7 @@
  */
 export function PageSkeleton() {
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 pb-4" aria-busy="true" aria-live="polite">
+    <div className="w-full space-y-6 pb-4" aria-busy="true" aria-live="polite">
       <span className="sr-only">Loading…</span>
 
       {/* Hero */}

@@ -130,7 +130,13 @@ export function RequestListTable({ search = '' }: { search?: string }) {
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     return (data ?? []).filter((request) => {
-      if (tab !== 'ALL' && request.status !== tab) return false;
+      // Tab "Resolved" gộp cả request đã chấp nhận (RESOLVED) và đã từ chối
+      // (CANCELLED) — cả hai đều đã đóng và không cần advisor xử lý tiếp.
+      if (tab === 'RESOLVED') {
+        if (request.status !== 'RESOLVED' && request.status !== 'CANCELLED') return false;
+      } else if (tab !== 'ALL' && request.status !== tab) {
+        return false;
+      }
       if (!keyword) return true;
       return (
         request.title.toLowerCase().includes(keyword) ||
