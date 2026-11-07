@@ -186,7 +186,7 @@ export default function AdvisorAppointments() {
   const pendingCount = appointments.filter((a) => a.status === 'PENDING').length;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 pb-4">
+    <div className="w-full space-y-6 pb-4">
       {/* Hero — đồng bộ Overview */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#b45309] via-[#F26F21] to-[#fb923c] px-6 py-7 text-white shadow-lg shadow-orange-500/20 sm:px-8 sm:py-8">
         <div aria-hidden className="pointer-events-none absolute -right-14 -top-20 size-64 rounded-full bg-white/15 blur-[1px]" />

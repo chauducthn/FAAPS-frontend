@@ -1,8 +1,10 @@
 import axios from 'axios';
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
+import { isAdvisorMockEnabled } from '../../../shared/lib/mockMode';
 import type { User } from '../types/auth';
 import type { CurriculumChoice } from './onboardingService';
+import { MOCK_ADVISOR_SESSION_USER } from '../mocks/mockAdvisorSession';
 
 export interface RegisterBody {
   fullName: string;
@@ -38,6 +40,12 @@ export const authService = {
 
   // React runs the bootstrap effect twice in development; the refresh token rotates on use, so share one request.
   getMe: (): Promise<User | null> => {
+    // Advisor chỉ đăng nhập được qua Google ở backend. Khi lớp mock Advisor
+    // đang bật (mặc định ở dev), trả về phiên giả để có thể test giao diện
+    // mà không cần backend/Google.
+    if (isAdvisorMockEnabled()) {
+      return Promise.resolve(MOCK_ADVISOR_SESSION_USER);
+    }
     meRequest ??= (async () => {
       try {
         const { data } = await apiClient.get<User>('/auth/me');

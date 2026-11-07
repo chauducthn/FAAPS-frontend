@@ -10,6 +10,17 @@ import type {
 } from '../../types/appointment';
 import { APPOINTMENT_QUERY_KEYS } from '../queries/useAppointmentQueries';
 
+/**
+ * Advisor đọc lịch hẹn qua hai hệ key khác nhau:
+ *   - `['appointments', ...]`  → lịch hẹn tuần + lịch rảnh (trang Advisor Appointments)
+ *   - `['advisor', 'appointments', ...]` → lịch hẹn trong Student 360 Modal
+ * Nên mọi mutation phải invalidate cả hai để UI đều cập nhật ngay.
+ */
+const invalidateAppointments = (qc: ReturnType<typeof useQueryClient>) => {
+  qc.invalidateQueries({ queryKey: APPOINTMENT_QUERY_KEYS.all });
+  qc.invalidateQueries({ queryKey: ['advisor', 'appointments'] });
+};
+
 export const useBookAppointmentMutation = () => {
   const qc = useQueryClient();
 
@@ -37,7 +48,7 @@ export const useConfigureAvailabilityMutation = () => {
       toast.success('Availability updated', {
         description: 'Students can now book the slots you published.',
       });
-      qc.invalidateQueries({ queryKey: APPOINTMENT_QUERY_KEYS.all });
+      invalidateAppointments(qc);
     },
     onError: (error) => {
       toast.error(apiErrorMessage(error, 'Could not save your availability.'));
@@ -65,7 +76,7 @@ export const useUpdateAppointmentStatusMutation = () => {
         description: 'The student has been notified.',
       };
       toast.success(toastContent.title, { description: toastContent.description });
-      qc.invalidateQueries({ queryKey: APPOINTMENT_QUERY_KEYS.all });
+      invalidateAppointments(qc);
     },
     onError: (error) => {
       toast.error(apiErrorMessage(error, 'Could not update the appointment status.'));
