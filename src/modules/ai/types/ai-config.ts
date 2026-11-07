@@ -51,6 +51,7 @@ export type AiPreset = {
 };
 
 export interface AiConfigFilterParams {
+  search?: string;
   purpose?: AiPurpose | 'ALL';
   provider?: AiProvider | 'ALL';
   isActive?: boolean | 'ALL';
