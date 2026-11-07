@@ -1,361 +1,486 @@
-// src/components/management/ai-config/AiConfigForm.tsx
-// Form cấu hình AI: chia 3 tab (General / Prompt / Advanced) + khu API key riêng.
-// Secret là write-only nên nằm ở form riêng, không nằm trong state của RHF chính.
-
-import { useEffect, useState } from 'react';
+// AI Configuration form — Operate-mode redesign synced with RuleFormModal:
+// gradient header, sectioned layout, strict numeric validation (no letters,
+// no negatives — zod messages + no-spin inputs + steppers), read-only view mode.
+import { useEffect, type ChangeEvent, type InputHTMLAttributes, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { KeyRound, Save, Sparkles } from 'lucide-react';
+import { Cpu, Loader2, Minus, Plus, X } from 'lucide-react';
+import { Modal } from '../../../../shared/components/ui/Modal';
+import { cn } from '@/shared/lib/utils';
 import {
   createAiConfigSchema,
   type CreateAiConfigFormValues,
 } from '../../../ai/validations/ai-config.schema';
 import type { AiConfig, AiPreset } from '../../../ai/types/ai-config';
-import { cn } from '@/shared/lib/utils';
 
 interface Props {
-  mode: 'create' | 'edit';
+  open: boolean;
+  mode: 'create' | 'edit' | 'view';
   initial?: AiConfig | null;
-  /** Khi đổi preset, form được prefill theo giá trị của preset đó. */
+  /** When set, the form is prefilled from this preset (create mode). */
   preset?: AiPreset | null;
   isLoading?: boolean;
+  onClose: () => void;
   onSubmit: (values: CreateAiConfigFormValues) => void;
 }
 
-const TABS = [
-  { id: 'general', label: 'General' },
-  { id: 'prompt', label: 'Prompt' },
-  { id: 'advanced', label: 'Advanced' },
-] as const;
+const field =
+  'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3.5 py-2.5 text-[13px] font-medium text-gray-900 placeholder:font-normal placeholder:text-gray-400 transition-all focus:border-[#F26F21] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20 disabled:cursor-not-allowed disabled:opacity-60';
+const labelClass = 'mb-1.5 block text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500';
+const selectClass = cn(field, 'appearance-none pr-9');
+const numClass = cn(
+  field,
+  'font-mono font-bold tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none',
+);
 
-type TabId = (typeof TABS)[number]['id'];
+const noSpin = numClass;
 
-export default function AiConfigForm({
-  mode,
-  initial,
-  preset,
-  isLoading,
-  onSubmit,
-}: Props) {
+export default function AiConfigForm({ open, mode, initial, preset, isLoading, onClose, onSubmit }: Props) {
   const isCreate = mode === 'create';
-  const [tab, setTab] = useState<TabId>('general');
+  const isView = mode === 'view';
+  const readOnly = isView;
 
   const {
     register,
     handleSubmit,
     reset,
     watch,
-    formState: { errors, isDirty },
+    setValue,
+    formState: { errors },
   } = useForm<CreateAiConfigFormValues>({
     resolver: zodResolver(createAiConfigSchema),
-    defaultValues: initial
-      ? {
-          name: initial.name,
-          provider: initial.provider,
-          modelName: initial.modelName,
-          purpose: initial.purpose,
-          temperature: initial.temperature,
-          maxTokens: initial.maxTokens,
-          retrievalTopK: initial.retrievalTopK,
-          similarityThreshold: initial.similarityThreshold,
-          timeoutSeconds: initial.timeoutSeconds,
-          dailyRequestLimit: initial.dailyRequestLimit,
-          systemPrompt: initial.systemPrompt ?? '',
-          fallbackMessage: initial.fallbackMessage ?? '',
-          isActive: initial.isActive,
-        }
-      : {
-          name: '',
-          provider: 'GEMINI',
-          modelName: 'gemini-2.0-flash',
-          purpose: 'CHAT',
-          temperature: 0.4,
-          maxTokens: 4096,
-          retrievalTopK: 6,
-          similarityThreshold: 0.72,
-          timeoutSeconds: 30,
-          dailyRequestLimit: 5000,
-          systemPrompt: '',
-          fallbackMessage: '',
-          isActive: true,
-        },
+    defaultValues: {
+      name: '',
+      provider: 'GEMINI',
+      modelName: 'gemini-2.0-flash',
+      purpose: 'CHAT',
+      temperature: 0.4,
+      maxTokens: 4096,
+      retrievalTopK: 6,
+      similarityThreshold: 0.72,
+      timeoutSeconds: 30,
+      dailyRequestLimit: 5000,
+      systemPrompt: '',
+      fallbackMessage: '',
+      isActive: true,
+    },
+    mode: 'onChange',
   });
 
-  // Chọn một config khác -> nạp lại toàn bộ giá trị vào form.
-  useEffect(() => {
-    if (!initial) return;
-    reset({
-      name: initial.name,
-      provider: initial.provider,
-      modelName: initial.modelName,
-      purpose: initial.purpose,
-      temperature: initial.temperature,
-      maxTokens: initial.maxTokens,
-      retrievalTopK: initial.retrievalTopK,
-      similarityThreshold: initial.similarityThreshold,
-      timeoutSeconds: initial.timeoutSeconds,
-      dailyRequestLimit: initial.dailyRequestLimit,
-      systemPrompt: initial.systemPrompt ?? '',
-      fallbackMessage: initial.fallbackMessage ?? '',
-      isActive: initial.isActive,
-    });
-    setTab('general');
-  }, [initial, reset]);
-
-  // Áp preset -> nạp giá trị mẫu (giữ nguyên tên/purpose nếu preset có).
-  useEffect(() => {
-    if (!preset) return;
-    reset((prev) => ({
-      ...prev,
-      provider: preset.provider,
-      modelName: preset.modelName,
-      purpose: preset.purpose,
-      temperature: preset.config.temperature,
-      maxTokens: preset.config.maxTokens,
-      retrievalTopK: preset.config.retrievalTopK,
-      similarityThreshold: preset.config.similarityThreshold,
-      timeoutSeconds: preset.config.timeoutSeconds,
-      dailyRequestLimit: preset.config.dailyRequestLimit,
-      systemPrompt: preset.config.systemPrompt ?? '',
-      fallbackMessage: preset.config.fallbackMessage ?? '',
-    }));
-    setTab('general');
-  }, [preset, reset]);
-
   const purpose = watch('purpose');
+  const temperature = watch('temperature');
+  const approvalActive = watch('isActive');
+
+  useEffect(() => {
+    if (!open) return;
+    if (initial) {
+      reset({
+        name: initial.name,
+        provider: initial.provider,
+        modelName: initial.modelName,
+        purpose: initial.purpose,
+        temperature: initial.temperature,
+        maxTokens: initial.maxTokens,
+        retrievalTopK: initial.retrievalTopK,
+        similarityThreshold: initial.similarityThreshold,
+        timeoutSeconds: initial.timeoutSeconds,
+        dailyRequestLimit: initial.dailyRequestLimit,
+        systemPrompt: initial.systemPrompt ?? '',
+        fallbackMessage: initial.fallbackMessage ?? '',
+        isActive: initial.isActive,
+      });
+    } else if (preset) {
+      reset({
+        name: '',
+        provider: preset.provider,
+        modelName: preset.modelName,
+        purpose: preset.purpose,
+        temperature: preset.config.temperature,
+        maxTokens: preset.config.maxTokens,
+        retrievalTopK: preset.config.retrievalTopK,
+        similarityThreshold: preset.config.similarityThreshold,
+        timeoutSeconds: preset.config.timeoutSeconds,
+        dailyRequestLimit: preset.config.dailyRequestLimit,
+        systemPrompt: preset.config.systemPrompt ?? '',
+        fallbackMessage: preset.config.fallbackMessage ?? '',
+        isActive: true,
+      });
+    } else {
+      reset({
+        name: '',
+        provider: 'GEMINI',
+        modelName: 'gemini-2.0-flash',
+        purpose: 'CHAT',
+        temperature: 0.4,
+        maxTokens: 4096,
+        retrievalTopK: 6,
+        similarityThreshold: 0.72,
+        timeoutSeconds: 30,
+        dailyRequestLimit: 5000,
+        systemPrompt: '',
+        fallbackMessage: '',
+        isActive: true,
+      });
+    }
+  }, [open, initial, preset, reset]);
+
+  const title = isCreate
+    ? 'New AI configuration'
+    : isView
+      ? (initial?.name ?? 'Configuration')
+      : `Edit ${initial?.name ?? 'configuration'}`;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col">
-      <div className="flex items-center gap-1 border-b border-[#e7eefe] px-1">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            aria-current={tab === t.id ? 'page' : undefined}
-            className={cn(
-              'relative px-4 py-3 text-sm font-semibold transition-colors',
-              tab === t.id ? 'text-[#f37021]' : 'text-[#555f6f] hover:text-[#151c27]',
-            )}
-          >
-            {t.label}
-            {tab === t.id && <span className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-[#f37021]" />}
+    <Modal open={open} onClose={onClose} title={title} className="max-w-3xl">
+      <form noValidate onSubmit={handleSubmit(onSubmit)} className="flex min-h-0 flex-col">
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#fff7ed] to-white px-6 py-5">
+          <div className="flex items-start gap-3">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
+              <Cpu className="size-5" />
+            </span>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-base font-extrabold tracking-tight text-gray-900">{title}</h2>
+                {initial && (
+                  <span
+                    className={cn(
+                      'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em]',
+                      initial.isActive ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-gray-100 text-[#555f6f]',
+                    )}
+                  >
+                    {initial.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                )}
+                {isCreate && (
+                  <span className="inline-flex items-center rounded-full bg-[#fff7ed] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em] text-[#9a3412] ring-1 ring-orange-200">
+                    New
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 text-xs leading-relaxed text-gray-500">
+                {isCreate
+                  ? 'Define the model, limits and prompt — numbers reject letters and negatives.'
+                  : readOnly
+                    ? 'Read-only view of this configuration.'
+                    : 'Changes apply to subsequent requests.'}
+              </p>
+            </div>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700">
+            <X className="size-4" />
           </button>
-        ))}
-        {isDirty && (
-          <span className="ml-auto pr-2 text-[11px] font-semibold uppercase tracking-[0.05em] text-amber-600">
-            Unsaved changes
-          </span>
-        )}
-      </div>
+        </div>
 
-      <div className="flex flex-col gap-5 py-5">
-        {tab === 'general' && (
-          <>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Name" required error={errors.name?.message} hint="Internal name used to identify this configuration in reports.">
-                <input
-                  {...register('name')}
-                  placeholder="Academic Advisor Chat"
-                  className={inputClass}
-                />
+        <div className="space-y-5 overflow-y-auto px-6 py-6 text-[13px]">
+          {preset && isCreate && (
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-orange-200 bg-[#fff7ed] px-4 py-3">
+              <p className="text-xs text-[#9a3412]">
+                Prefilled from preset <span className="font-bold">{preset.label}</span> — review before creating.
+              </p>
+            </div>
+          )}
+
+          <Section title="Identity" hint="Name, vendor model and the feature this config powers.">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Name" required error={errors.name?.message}>
+                <input {...register('name')} disabled={readOnly || isLoading} placeholder="Academic Advisor Chat" aria-label="Configuration name" className={field} />
               </Field>
+              <Field label="Model name" required error={errors.modelName?.message} hint="Exact vendor model id.">
+                <input {...register('modelName')} disabled={readOnly || isLoading} placeholder="gemini-2.0-flash" aria-label="Model name" className={cn(field, 'font-mono')} />
+              </Field>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Provider" required error={errors.provider?.message}>
-                <select {...register('provider')} className={inputClass}>
+                <select {...register('provider')} disabled={readOnly || isLoading} aria-label="Provider" className={selectClass}>
                   <option value="GEMINI">Gemini</option>
                   <option value="OTHER">Other</option>
                 </select>
               </Field>
-              <Field label="Purpose" required error={errors.purpose?.message} hint="Determines which model is used for each feature.">
-                <select {...register('purpose')} className={inputClass}>
+              <Field label="Purpose" required error={errors.purpose?.message}>
+                <select {...register('purpose')} disabled={readOnly || isLoading} aria-label="Purpose" className={selectClass}>
                   <option value="CHAT">Chat</option>
                   <option value="EMBEDDING">Embedding</option>
                   <option value="OCR">OCR</option>
                 </select>
               </Field>
             </div>
+          </Section>
 
-            <Field label="Model name" required error={errors.modelName?.message} hint="Exact model name provided by the vendor.">
-              <input {...register('modelName')} placeholder="gemini-2.0-flash" className={inputClass} />
-            </Field>
-
+          <Section title="Generation limits" hint="Strict numbers only — letters and negatives are rejected.">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Max tokens" error={errors.maxTokens?.message} hint="Maximum response length.">
-                <input type="number" min={64} max={32768} {...register('maxTokens', { valueAsNumber: true })} className={inputClass} />
-              </Field>
-              <Field label="Timeout (seconds)" error={errors.timeoutSeconds?.message} hint="Timeout for each request.">
-                <input type="number" min={5} max={120} {...register('timeoutSeconds', { valueAsNumber: true })} className={inputClass} />
-              </Field>
+              <div>
+                <label className={labelClass} htmlFor="ai-temperature">
+                  Temperature
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    id="ai-temperature-range"
+                    type="range"
+                    min={0}
+                    max={2}
+                    step={0.05}
+                    value={typeof temperature === 'number' && Number.isFinite(temperature) ? temperature : 0}
+                    disabled={readOnly || !!isLoading}
+                    onChange={(e) => setValue('temperature', Number(e.target.value), { shouldValidate: true })}
+                    aria-label="Temperature slider"
+                    className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-[#F26F21] disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                  <input
+                    id="ai-temperature"
+                    type="number"
+                    min={0}
+                    max={2}
+                    step={0.05}
+                    inputMode="decimal"
+                    {...register('temperature', {
+                      setValueAs: (v) => (v === '' || v === null ? undefined : Number(v)),
+                    })}
+                    disabled={readOnly || !!isLoading}
+                    aria-label="Temperature"
+                    className={cn(noSpin, 'w-20 bg-white text-center')}
+                  />
+                </div>
+                {errors.temperature?.message ? (
+                  <p className="mt-1.5 text-[11px] font-semibold text-red-600">{errors.temperature.message}</p>
+                ) : (
+                  <p className="mt-1 text-[11px] text-gray-400">0 = precise, 2 = creative. 0–0.5 for advising.</p>
+                )}
+              </div>
+              <StepperField
+                label="Max tokens"
+                hint="e.g. 4096"
+                error={errors.maxTokens?.message}
+                disabled={readOnly || !!isLoading}
+                inputProps={{
+                  ...register('maxTokens', { setValueAs: (v) => (v === '' || v === null ? undefined : Number(v)) }),
+                  min: 64,
+                  max: 32768,
+                  'aria-label': 'Max tokens',
+                }}
+                onStep={(dir) => {
+                  const cur = typeof watch('maxTokens') === 'number' ? (watch('maxTokens') as number) : 4096;
+                  setValue('maxTokens', Math.min(32768, Math.max(64, cur + dir * 512)), { shouldValidate: true });
+                }}
+              />
             </div>
-
-            <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-[#e5e7eb] bg-[#f7f8fa] p-4">
-              <input type="checkbox" {...register('isActive')} className="mt-0.5 size-4 accent-[#f37021]" />
-              <span>
-                <span className="block text-sm font-semibold text-[#151c27]">Active</span>
-                <span className="mt-0.5 block text-[13px] text-[#555f6f]">
-                  An active configuration is used for subsequent requests to the corresponding feature.
-                </span>
-              </span>
-            </label>
-          </>
-        )}
-
-        {tab === 'prompt' && (
-          <>
-            <Field
-              label="System prompt"
-              error={errors.systemPrompt?.message}
-              hint="Instructions for the model's role, tone, and response rules."
-            >
-              <textarea
-                rows={12}
-                {...register('systemPrompt')}
-                placeholder="You are the FAAPS academic assistant..."
-                className={`${inputClass} resize-y font-mono text-[13px] leading-6`}
+            <div className="grid gap-4 sm:grid-cols-3">
+              <StepperField
+                label="Timeout (s)"
+                hint="5 – 120s"
+                error={errors.timeoutSeconds?.message}
+                disabled={readOnly || !!isLoading}
+                inputProps={{
+                  ...register('timeoutSeconds', { setValueAs: (v) => (v === '' || v === null ? undefined : Number(v)) }),
+                  min: 5,
+                  max: 120,
+                  'aria-label': 'Timeout seconds',
+                }}
+                onStep={(dir) => {
+                  const cur = typeof watch('timeoutSeconds') === 'number' ? (watch('timeoutSeconds') as number) : 30;
+                  setValue('timeoutSeconds', Math.min(120, Math.max(5, cur + dir * 5)), { shouldValidate: true });
+                }}
               />
-            </Field>
-            <Field
-              label="Fallback message"
-              error={errors.fallbackMessage?.message}
-              hint="Content shown when a request fails or the quota is exhausted."
-            >
-              <textarea
-                rows={4}
-                {...register('fallbackMessage')}
-                placeholder="The system is busy. Please try again in a few minutes..."
-                className={`${inputClass} resize-y`}
+              <StepperField
+                label="Retrieval top K"
+                hint="1 – 20 chunks"
+                error={errors.retrievalTopK?.message}
+                disabled={readOnly || !!isLoading}
+                inputProps={{
+                  ...register('retrievalTopK', { setValueAs: (v) => (v === '' || v === null ? undefined : Number(v)) }),
+                  min: 1,
+                  max: 20,
+                  'aria-label': 'Retrieval top K',
+                }}
+                onStep={(dir) => {
+                  const cur = typeof watch('retrievalTopK') === 'number' ? (watch('retrievalTopK') as number) : 6;
+                  setValue('retrievalTopK', Math.min(20, Math.max(1, cur + dir)), { shouldValidate: true });
+                }}
               />
-            </Field>
-          </>
-        )}
-
-        {tab === 'advanced' && (
-          <>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label="Temperature"
-                error={errors.temperature?.message}
-                hint="0 = precise, 2 = creative. 0–0.5 is recommended for academic advising."
-              >
-                <input
-                  type="number"
-                  step="0.05"
-                  min={0}
-                  max={2}
-                  {...register('temperature', { valueAsNumber: true })}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Retrieval top K" error={errors.retrievalTopK?.message} hint="Number of document chunks retrieved from the vector index.">
+              <Field label="Daily request limit" error={errors.dailyRequestLimit?.message} hint="Empty = no limit.">
                 <input
                   type="number"
                   min={1}
-                  max={20}
-                  {...register('retrievalTopK', { valueAsNumber: true })}
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label="Similarity threshold"
-                error={errors.similarityThreshold?.message}
-                hint="Minimum match threshold. Leave blank when retrieval is disabled."
-              >
-                <input
-                  type="number"
-                  step="0.01"
-                  min={0}
-                  max={1}
-                  {...register('similarityThreshold', {
-                    setValueAs: (v) => (v === '' || v === null ? null : Number(v)),
-                  })}
-                  className={inputClass}
-                />
-              </Field>
-              <Field
-                label="Daily request limit"
-                error={errors.dailyRequestLimit?.message}
-                hint="Leave blank for no limit."
-              >
-                <input
-                  type="number"
-                  min={1}
+                  max={1000000}
+                  inputMode="numeric"
                   {...register('dailyRequestLimit', {
                     setValueAs: (v) => (v === '' || v === null ? null : Number(v)),
                   })}
-                  className={inputClass}
+                  disabled={readOnly || !!isLoading}
+                  placeholder="5000"
+                  aria-label="Daily request limit"
+                  className={cn(noSpin, 'bg-white')}
                 />
               </Field>
             </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Similarity threshold" error={errors.similarityThreshold?.message} hint="0 – 1. Empty when retrieval is off.">
+                <input
+                  type="number"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  inputMode="decimal"
+                  {...register('similarityThreshold', {
+                    setValueAs: (v) => (v === '' || v === null ? null : Number(v)),
+                  })}
+                  disabled={readOnly || !!isLoading}
+                  placeholder="0.72"
+                  aria-label="Similarity threshold"
+                  className={cn(noSpin, 'bg-white')}
+                />
+              </Field>
+              <div className="rounded-xl bg-orange-50/70 px-4 py-3 text-[11px] leading-relaxed text-[#7c2d12] ring-1 ring-orange-100 sm:self-start sm:mt-[26px]">
+                {purpose === 'EMBEDDING'
+                  ? 'Embedding configs ignore the prompt, temperature and fallback — they only build the vector index.'
+                  : 'Limits apply per request. Daily limit caps cost across the whole feature.'}
+              </div>
+            </div>
+          </Section>
 
-            {purpose === 'EMBEDDING' && (
-              <p className="rounded-lg bg-[#eef2ff] px-4 py-3 text-[13px] text-[#3730a3]">
-                Embedding configurations do not use the system prompt, temperature, or fallback message. These values are
-                ignored when vectors are created.
+          <Section title="Prompt" hint="What the model is told, and what students see on failure.">
+            <Field label="System prompt" error={errors.systemPrompt?.message} hint="Role, tone and response rules.">
+              <textarea
+                rows={8}
+                {...register('systemPrompt')}
+                disabled={readOnly || isLoading}
+                placeholder="You are the FAAPS academic assistant..."
+                aria-label="System prompt"
+                className={cn(field, 'resize-y font-mono text-[13px] leading-6')}
+              />
+            </Field>
+            <Field label="Fallback message" error={errors.fallbackMessage?.message} hint="Shown when a request fails or quota runs out.">
+              <textarea
+                rows={3}
+                {...register('fallbackMessage')}
+                disabled={readOnly || isLoading}
+                placeholder="Hệ thống đang bận. Vui lòng thử lại sau ít phút..."
+                aria-label="Fallback message"
+                className={cn(field, 'resize-y leading-relaxed')}
+              />
+            </Field>
+          </Section>
+
+          <Section title="Activation" hint="Only active configs serve live traffic.">
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={!!approvalActive}
+                aria-label="Active configuration"
+                disabled={readOnly || !!isLoading}
+                onClick={() => setValue('isActive', !approvalActive)}
+                className="flex items-center gap-2.5 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', approvalActive ? 'bg-[#F26F21]' : 'bg-gray-300')}>
+                  <span className={cn('absolute top-0.5 size-5 rounded-full bg-white shadow transition-all', approvalActive ? 'left-[22px]' : 'left-0.5')} />
+                </span>
+                <span className="text-xs font-bold text-gray-700">{approvalActive ? 'Active' : 'Inactive'}</span>
+              </button>
+              <p className="text-[11px] text-gray-400">
+                {approvalActive ? 'Serves subsequent requests.' : 'Kept as draft, no live traffic.'}
               </p>
-            )}
-          </>
-        )}
-      </div>
+            </div>
+          </Section>
 
-      <div className="flex items-center justify-between gap-3 border-t border-[#e7eefe] pt-4">
-        <p className="text-xs text-[#98a2b3]">
-          {isCreate ? 'Create a new AI configuration for the system.' : 'Changes apply to subsequent requests.'}
-        </p>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-60"
-        >
-          {isLoading ? (
-            'Saving...'
-          ) : (
-            <>
-              {isCreate ? <Sparkles className="size-4" /> : <Save className="size-4" />}
-              {isCreate ? 'Create configuration' : 'Save changes'}
-            </>
+          {!isCreate && (
+            <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-800">
+              API keys are write-only and configured via backend environment — never stored in this form.
+            </p>
           )}
-        </button>
-      </div>
+        </div>
 
-      {/* Secret section: write-only. Never pre-filled. */}
-      {!isCreate && (
-        <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-800">
-          <KeyRound className="mr-2 inline size-4" />
-          Configure FAAPS_GEMINI_API_KEY in the backend environment to enable AI chat. Keys are not stored in this form.
-        </p>
-      )}
-    </form>
+        <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/60 px-6 py-4">
+          <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+            {readOnly ? 'Close' : 'Cancel'}
+          </button>
+          {!readOnly && (
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="inline-flex min-w-44 items-center justify-center gap-2 rounded-xl bg-[#F26F21] px-5 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isLoading && <Loader2 className="size-3.5 animate-spin" />}
+              {isLoading ? 'Saving…' : isCreate ? 'Create configuration' : 'Save changes'}
+            </button>
+          )}
+        </div>
+      </form>
+    </Modal>
   );
 }
 
-const inputClass =
-  'w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-medium text-[#151c27] outline-none transition-colors placeholder:text-[#98a2b3] focus:border-[#f37021] focus:ring-1 focus:ring-[#f37021]';
-
-function Field({
+function StepperField({
   label,
-  required,
-  error,
   hint,
-  children,
+  error,
+  disabled,
+  inputProps,
+  onStep,
 }: {
   label: string;
-  required?: boolean;
-  error?: string;
   hint?: string;
-  children: React.ReactNode;
+  error?: string;
+  disabled?: boolean;
+  inputProps: InputHTMLAttributes<HTMLInputElement>;
+  onStep: (dir: 1 | -1) => void;
 }) {
   return (
     <div>
-      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">
+      <label className={labelClass}>{label}</label>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          aria-label={`Decrease ${label}`}
+          disabled={disabled}
+          onClick={() => onStep(-1)}
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Minus className="size-3.5" />
+        </button>
+        <input
+          type="number"
+          inputMode="numeric"
+          disabled={disabled}
+          {...inputProps}
+          onChange={(e: ChangeEvent<HTMLInputElement>) => inputProps.onChange?.(e)}
+          className={cn(noSpin, 'bg-white text-center')}
+        />
+        <button
+          type="button"
+          aria-label={`Increase ${label}`}
+          disabled={disabled}
+          onClick={() => onStep(1)}
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Plus className="size-3.5" />
+        </button>
+      </div>
+      {hint && !error && <p className="mt-1 text-[11px] text-gray-400">{hint}</p>}
+      {error && <p className="mt-1.5 text-[11px] font-semibold text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+function Section({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
+  return (
+    <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+      <h3 className="text-[13px] font-extrabold tracking-tight text-gray-900">{title}</h3>
+      <p className="mb-3.5 mt-0.5 text-[11px] text-gray-400">{hint}</p>
+      <div className="space-y-4">{children}</div>
+    </section>
+  );
+}
+
+function Field({ label, required, error, hint, children }: { label: string; required?: boolean; error?: string; hint?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className={labelClass}>
         {label}
-        {required && <span className="text-red-500"> *</span>}
+        {required && <span className="ml-0.5 text-[#F26F21]">*</span>}
       </label>
       {children}
-      {hint && !error && <p className="mt-1 text-[11px] text-[#98a2b3]">{hint}</p>}
-      {error && <p className="mt-1 text-[11px] font-medium text-red-600">{error}</p>}
+      {hint && !error && <p className="mt-1 text-[11px] text-gray-400">{hint}</p>}
+      {error && <p className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-red-600">{error}</p>}
     </div>
   );
 }
