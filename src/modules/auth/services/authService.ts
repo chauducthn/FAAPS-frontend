@@ -43,7 +43,7 @@ export const authService = {
     // Advisor chỉ đăng nhập được qua Google ở backend. Khi lớp mock Advisor
     // đang bật (mặc định ở dev), trả về phiên giả để có thể test giao diện
     // mà không cần backend/Google.
-    if (isAdvisorMockEnabled()) {
+    if (isAdvisorMockEnabled() && window.location.pathname.startsWith('/advisor')) {
       return Promise.resolve(MOCK_ADVISOR_SESSION_USER);
     }
     meRequest ??= (async () => {
