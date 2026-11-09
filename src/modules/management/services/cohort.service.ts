@@ -8,8 +8,6 @@ import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
 import type { ApiResponse } from '../../../shared/types/api';
 import type { CurriculumFilterParams, CurriculumItem, CurriculumPage, CurriculumStatus } from '../../academic/types/curriculum';
-import { isCurriculumMockEnabled, mockDelay } from '../mocks/mockConfig';
-import { mockUpdateCurriculumStatus } from '../mocks/curriculumMockApi';
 import { createCurriculumApi, fetchCurriculumPage } from './curriculum.service';
 
 export const cohortService = {
@@ -30,10 +28,6 @@ export const cohortService = {
 
   // There is no /cohorts/{id}/status endpoint; the curriculum one acts on the same record.
   updateStatus: async (id: string, status: CurriculumStatus): Promise<CurriculumItem> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockUpdateCurriculumStatus(id, status);
-    }
     const { data } = await apiClient.patch<ApiResponse<CurriculumItem>>(`/admin/curriculums/${id}/status`, { status },
       { headers: await getCsrfHeaders() });
     if (!data.data) throw new Error('Could not change the status');

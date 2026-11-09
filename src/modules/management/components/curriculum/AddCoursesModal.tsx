@@ -11,7 +11,6 @@ import { Modal } from '../../../../shared/components/ui/Modal';
 import { Pagination } from '../Pagination';
 import { useCoursesQuery } from '../../../academic/hooks/queries/useCoursesQuery';
 import { useDebounce } from '@/shared/hooks/useDebounce';
-import { MOCK_SPECIALIZATIONS } from '../../mocks/curriculumSupportMockData';
 import type { CourseSummary } from '../../../academic/types/course';
 
 interface Props {
@@ -30,7 +29,6 @@ const PAGE_SIZE = 8;
 export default function AddCoursesModal({ open, defaultSemester, placedCourses, isSubmitting, onClose, onSubmit }: Props) {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [specialization, setSpecialization] = useState<string>('ALL');
   const [selected, setSelected] = useState<Map<string, CourseSummary>>(new Map());
   const debounced = useDebounce(search, 250);
 
@@ -38,14 +36,12 @@ export default function AddCoursesModal({ open, defaultSemester, placedCourses, 
     if (!open) return;
     setSearch('');
     setPage(0);
-    setSpecialization('ALL');
     setSelected(new Map());
   }, [open, defaultSemester]);
 
   const { data, isFetching } = useCoursesQuery({
     search: debounced || undefined,
     status: 'ACTIVE',
-    specialization: specialization === 'ALL' ? undefined : specialization,
     page,
     size: PAGE_SIZE,
   });
@@ -69,11 +65,6 @@ export default function AddCoursesModal({ open, defaultSemester, placedCourses, 
       return next;
     });
   const totalCredits = [...selected.values()].reduce((sum, c) => sum + c.credits, 0);
-  const specializationHint = useMemo(() => {
-    if (defaultSemester >= 7) return 'Semester 7–9 focuses on narrow specializations — filter to pick the right track.';
-    if (defaultSemester >= 5) return 'From semester 5 students orient toward a narrow specialization.';
-    return null;
-  }, [defaultSemester]);
 
   const submit = async () => {
     if (selected.size === 0) return;
@@ -130,31 +121,7 @@ export default function AddCoursesModal({ open, defaultSemester, placedCourses, 
               className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3.5 text-[13px] focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20"
             />
           </div>
-          <div>
-            <label className="mb-1.5 block text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500">
-              Specialization <span className="font-medium normal-case tracking-normal text-gray-400">(Chuyên ngành hẹp)</span>
-            </label>
-            <select
-              value={specialization}
-              onChange={(e) => {
-                setSpecialization(e.target.value);
-                setPage(0);
-              }}
-              aria-label="Filter by specialization"
-              className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20"
-            >
-              <option value="ALL">All tracks</option>
-              {MOCK_SPECIALIZATIONS.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </div>
         </div>
-        {specializationHint && (
-          <p className="rounded-xl bg-violet-50 px-3.5 py-2 text-[12px] font-medium leading-relaxed text-violet-800 ring-1 ring-violet-200">
-            {specializationHint}
-          </p>
-        )}
 
         <div className="overflow-hidden rounded-2xl border border-gray-200">
           <table className="w-full text-left text-[13px]">
@@ -164,7 +131,6 @@ export default function AddCoursesModal({ open, defaultSemester, placedCourses, 
                   <input type="checkbox" checked={allOnPageSelected} onChange={toggleAll} disabled={selectable.length === 0} aria-label="Select all on this page" className="size-4 accent-[#F26F21]" />
                 </th>
                 <th className="p-3">Course</th>
-                <th className="p-3">Specialization</th>
                 <th className="p-3 text-center">Credits</th>
                 <th className="p-3 text-right">Status</th>
               </tr>

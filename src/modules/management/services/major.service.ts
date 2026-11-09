@@ -2,25 +2,9 @@
 import { apiClient } from '../../../shared/lib/apiClient';
 import { Major, MajorFilterParams, CreateMajorDto, UpdateMajorDto } from '../../academic/types/major';
 import { ApiResponse, PaginatedData } from '../../../shared/types/api';
-import { isCurriculumMockEnabled, mockDelay } from '../mocks/mockConfig';
-import { MOCK_MAJORS } from '../mocks/curriculumSupportMockData';
 
 export const majorService = {
   getMajors: async (params?: MajorFilterParams): Promise<PaginatedData<Major>> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      const size = params?.size ?? 20;
-      const totalItems = MOCK_MAJORS.length;
-      const page = params?.page ?? 0;
-      return {
-        items: MOCK_MAJORS.slice(page * size, page * size + size),
-        page,
-        pageSize: size,
-        totalItems,
-        totalPages: size > 0 ? Math.ceil(totalItems / size) : 0,
-      };
-    }
-
     const response = await apiClient.get<ApiResponse<PaginatedData<Major>> | PaginatedData<Major>>('/admin/majors/paged', { params });
 
     const defaultPaginatedData: PaginatedData<Major> = {

@@ -79,6 +79,25 @@ export interface AddCurriculumCoursesInput {
   isMandatory?: boolean;
 }
 
+/** Một dòng trong kết quả preview import XLSX (contract: CurriculumImportService.Preview). */
+export interface CurriculumImportPreviewRow {
+  rowNumber: number;
+  courseCode: string;
+  courseId: string;
+  semesterNumber: number;
+  mandatory: boolean;
+  groupName: string | null;
+  errors: string[];
+}
+
+/** Kết quả preview import XLSX (contract: CurriculumImportService.Preview). */
+export interface CurriculumImportPreview {
+  totalRows: number;
+  validRows: number;
+  errorRows: number;
+  items: CurriculumImportPreviewRow[];
+}
+
 /** A semester the form can pick from the backend semester catalogue. */
 export interface SemesterOption {
   id: string;

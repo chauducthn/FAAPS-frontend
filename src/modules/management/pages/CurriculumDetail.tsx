@@ -34,9 +34,8 @@ import { useRoadmapCourseDetails } from '../../academic/hooks/queries/useRoadmap
 import { useCurriculumMutations } from '../../academic/hooks/mutations/useCurriculumMutations';
 import { useCourse } from '../../academic/hooks/queries/useCoursesQuery';
 import { useCourseMutations } from '../../academic/hooks/mutations/useCourseMutations';
-import type { CurriculumInput } from '../../academic/types/curriculum';
+import type { CurriculumImportPreview, CurriculumInput } from '../../academic/types/curriculum';
 import type { RoadmapCourse } from '../../academic/types/roadmap';
-import type { MockImportPreview } from '../mocks/curriculumMockApi';
 
 export default function CurriculumDetailPage() {
   const navigate = useNavigate();
@@ -60,7 +59,7 @@ export default function CurriculumDetailPage() {
   const [editing, setEditing] = useState(false);
   const [archiving, setArchiving] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
-  const [importPreview, setImportPreview] = useState<MockImportPreview | null>(null);
+  const [importPreview, setImportPreview] = useState<CurriculumImportPreview | null>(null);
   const [importOpen, setImportOpen] = useState(false);
 
   // The rules carry the milestone thresholds (how many credits an internship needs).
@@ -169,7 +168,7 @@ export default function CurriculumDetailPage() {
     setImportPreview(null);
     setImportOpen(true);
     try {
-      const preview = (await previewImport({ id, file })) as unknown as MockImportPreview;
+      const preview = (await previewImport({ id, file })) as unknown as CurriculumImportPreview;
       setImportPreview(preview);
       if (preview.errorRows > 0) {
         toast.warning(`${preview.errorRows} invalid row(s) found`, {
@@ -487,7 +486,7 @@ function DetailSkeleton() {
           </div>
         ))}
       </div>
-      <p className="text-center text-[11px] font-medium text-gray-400">Loading roadmap… (mock delay 500ms)</p>
+      <p className="text-center text-[11px] font-medium text-gray-400">Loading roadmap…</p>
     </div>
   );
 }
