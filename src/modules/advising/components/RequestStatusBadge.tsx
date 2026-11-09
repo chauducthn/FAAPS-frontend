@@ -27,11 +27,15 @@ const STYLES: Record<AdvisingRequestStatus, { label: string; className: string }
 export function RequestStatusBadge({
   status,
   className,
+  cancelledLabel,
 }: {
   status: AdvisingRequestStatus;
   className?: string;
+  /** The advisor portal calls CANCELLED "Rejected"; the student portal passes "Cancelled". */
+  cancelledLabel?: string;
 }) {
   const style = STYLES[status] ?? STYLES.PENDING;
+  const label = status === 'CANCELLED' && cancelledLabel ? cancelledLabel : style.label;
 
   return (
     <span
@@ -41,7 +45,7 @@ export function RequestStatusBadge({
         className,
       )}
     >
-      {style.label}
+      {label}
     </span>
   );
 }

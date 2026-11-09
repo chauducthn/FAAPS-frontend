@@ -1,6 +1,8 @@
 // src/hooks/queries/useStudentQueries.ts
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { studentService } from '../../services/studentService';
+import { studentAcademicService } from '../../../academic/services/studentAcademicService';
+import { appointmentService } from '../../../appointment/services/appointmentService';
 
 export const STUDENT_QUERY_KEYS = {
   all: ['student'] as const,
@@ -52,4 +54,18 @@ export const useMyAdvisingRequests = () =>
   useQuery({
     queryKey: STUDENT_QUERY_KEYS.advisingRequests,
     queryFn: studentService.getMyAdvisingRequests,
+  });
+
+/** Credit and GPA progress against the curriculum (same cache entry as the Transcript page). */
+export const useMyProgress = () =>
+  useQuery({
+    queryKey: ['student', 'progress'],
+    queryFn: studentAcademicService.progress,
+  });
+
+/** The student's own appointments (same cache entry as the Book Appointment page). */
+export const useMyAppointments = () =>
+  useQuery({
+    queryKey: ['appointments', 'student'],
+    queryFn: appointmentService.getStudentAppointments,
   });

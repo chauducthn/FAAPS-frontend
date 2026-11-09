@@ -66,7 +66,7 @@ export function RoadmapPanel() {
               value={maxCredits}
               onChange={(e) => setMaxCredits(e.target.value.replace(/[^0-9]/g, '').slice(0, 2))}
               inputMode="numeric"
-              placeholder="VD: 21"
+              placeholder="e.g. 21"
               className={field}
             />
           </div>

@@ -73,6 +73,10 @@ export interface StudentProfile {
   totalCreditsEarned: number;
   /** students.academic_status */
   academicStatus: AcademicStatus;
+  /** Cohort code ("K19"); the backend returns it as `cohort`. */
+  cohort?: string | null;
+  /** users.date_of_birth — yyyy-MM-dd */
+  dateOfBirth?: string | null;
 }
 
 /**
