@@ -83,3 +83,35 @@ export const useUpdateAppointmentStatusMutation = () => {
     },
   });
 };
+
+/** The student (or advisor) cancels an appointment; the other side is notified by the backend. */
+export const useCancelAppointmentMutation = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => appointmentService.cancelAppointment(id, reason),
+    onSuccess: () => {
+      toast.success('Appointment cancelled', { description: 'Your advisor has been notified.' });
+      invalidateAppointments(qc);
+    },
+    onError: (error) => {
+      toast.error(apiErrorMessage(error, 'Could not cancel the appointment.'));
+    },
+  });
+};
+
+/** Moves an open appointment to another free slot. */
+export const useRescheduleAppointmentMutation = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, startTime }: { id: string; startTime: string }) => appointmentService.rescheduleAppointment(id, startTime),
+    onSuccess: () => {
+      toast.success('Appointment rescheduled', { description: 'Your advisor has been notified of the new time.' });
+      invalidateAppointments(qc);
+    },
+    onError: (error) => {
+      toast.error(apiErrorMessage(error, 'Could not reschedule the appointment.'));
+    },
+  });
+};

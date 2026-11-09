@@ -65,7 +65,7 @@ export function StudentProfileCard({ profile }: { profile: StudentProfile }) {
         <Stat
           icon={Layers}
           label="Cohort"
-          value={profile.curriculumVersion ?? 'Not updated'}
+          value={profile.curriculumVersion ?? profile.cohort ?? 'Not updated'}
         />
         <Stat icon={BookOpen} label="Current Semester" value={`Semester ${profile.currentSemester}`} />
         <Stat

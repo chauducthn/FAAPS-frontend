@@ -5,10 +5,19 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { BotMessageSquare, CalendarClock, MessageSquareText, Route } from 'lucide-react';
 import { useAuth } from '../../auth/stores/useAuth';
-import { useMyAdvisor, useMyProfile } from '../hooks/queries/useStudentQueries';
+import {
+  useMyAdvisingRequests,
+  useMyAdvisor,
+  useMyAppointments,
+  useMyProfile,
+  useMyProgress,
+} from '../hooks/queries/useStudentQueries';
 import { AdvisorInfoCard } from '../components/AdvisorInfoCard';
 import { NotificationList } from '../components/NotificationList';
+import { ProgressSummary } from '../components/ProgressSummary';
+import { RecentRequestsCard } from '../components/RecentRequestsCard';
 import { StudentProfileCard } from '../components/StudentProfileCard';
+import { UpcomingAppointmentCard } from '../components/UpcomingAppointmentCard';
 
 
 export default function StudentPortal() {
@@ -17,6 +26,9 @@ export default function StudentPortal() {
 
   const profileQuery = useMyProfile();
   const advisorQuery = useMyAdvisor();
+  const progressQuery = useMyProgress();
+  const appointmentsQuery = useMyAppointments();
+  const requestsQuery = useMyAdvisingRequests();
 
   const displayName = profileQuery.data?.fullName || user?.fullName || 'Student';
 
@@ -26,9 +38,11 @@ export default function StudentPortal() {
         <p className="text-xs text-[#555f6f]">Student / Home</p>
         <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">Welcome, {displayName}</h1>
         <p className="mt-1 text-sm text-[#555f6f]">
-          View your academic profile, assigned advisor, and latest notifications.
+          View your academic progress, assigned advisor, appointments, and latest notifications.
         </p>
       </div>
+
+      <ProgressSummary progress={progressQuery.data} isLoading={progressQuery.isLoading} />
 
 
 
@@ -65,6 +79,12 @@ export default function StudentPortal() {
 
         {/* Cố vấn phụ trách */}
         <AdvisorInfoCard advisor={advisorQuery.data} />
+      </div>
+
+      {/* Lịch hẹn sắp tới và yêu cầu tư vấn gần đây */}
+      <div className="grid gap-5 lg:grid-cols-2">
+        <UpcomingAppointmentCard appointments={appointmentsQuery.data} isLoading={appointmentsQuery.isLoading} />
+        <RecentRequestsCard requests={requestsQuery.data} isLoading={requestsQuery.isLoading} />
       </div>
 
       {/* Thông báo */}

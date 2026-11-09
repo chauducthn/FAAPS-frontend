@@ -37,8 +37,7 @@ export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
     title: 'ADVISING',
     items: [
       { label: 'Advising Requests', to: '/student/advising-requests', icon: MessageSquareText },
-      { label: 'Advising Conversations', to: '/student/advising', icon: MessageSquareText },
-      { label: 'Book Appointment', to: '/student/appointments', icon: CalendarClock },
+      { label: 'Appointments', to: '/student/appointments', icon: CalendarClock },
     ],
   },
 ];
