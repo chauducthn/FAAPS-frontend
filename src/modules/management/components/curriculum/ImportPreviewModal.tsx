@@ -1,15 +1,13 @@
 // Import XLSX — Preview & Confirm modal.
-// Mock trả 5 dòng hợp lệ + 1 dòng lỗi để test cả happy case lẫn edge case.
 import { AlertTriangle, CheckCircle2, FileSpreadsheet, Upload, X } from 'lucide-react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
-import type { MockImportPreview } from '../../mocks/curriculumMockApi';
-import { MOCK_COURSE_BY_CODE } from '../../mocks/curriculumSupportMockData';
+import type { CurriculumImportPreview } from '../../../academic/types/curriculum';
 
 interface Props {
   open: boolean;
   fileName: string;
-  preview: MockImportPreview | null;
+  preview: CurriculumImportPreview | null;
   isConfirming?: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -72,14 +70,11 @@ export default function ImportPreviewModal({ open, fileName, preview, isConfirmi
                     <th className="px-3 py-2.5">Row</th>
                     <th className="px-3 py-2.5">Course code</th>
                     <th className="px-3 py-2.5 text-center">Semester</th>
-                    <th className="px-3 py-2.5 text-center">Specialization</th>
                     <th className="px-3 py-2.5">Result</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {validRows.map((row) => {
-                    const specialization = MOCK_COURSE_BY_CODE.get(row.courseCode)?.specialization ?? null;
-                    return (
+                  {validRows.map((row) => (
                     <tr key={row.rowNumber} className="bg-white">
                       <td className="px-3 py-2.5 tabular-nums text-gray-500">{row.rowNumber}</td>
                       <td className="px-3 py-2.5 font-mono font-bold text-gray-900">{row.courseCode}</td>
@@ -88,29 +83,18 @@ export default function ImportPreviewModal({ open, fileName, preview, isConfirmi
                           Sem {row.semesterNumber}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5 text-center">
-                        {specialization ? (
-                          <span className="inline-block rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-bold text-violet-800">
-                            {specialization}
-                          </span>
-                        ) : (
-                          <span className="text-[11px] font-medium text-gray-400">Foundation</span>
-                        )}
-                      </td>
                       <td className="px-3 py-2.5">
                         <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
                           <CheckCircle2 className="size-3.5" /> Ready
                         </span>
                       </td>
                     </tr>
-                    );
-                  })}
+                  ))}
                   {errorRows.map((row) => (
                     <tr key={row.rowNumber} className="bg-red-50/50">
                       <td className="px-3 py-2.5 tabular-nums text-gray-500">{row.rowNumber}</td>
                       <td className="px-3 py-2.5 font-mono font-bold text-red-700">{row.courseCode}</td>
                       <td className="px-3 py-2.5 text-center text-gray-500">Sem {row.semesterNumber}</td>
-                      <td className="px-3 py-2.5 text-center text-gray-500">—</td>
                       <td className="px-3 py-2.5">
                         {row.errors.map((e) => (
                           <p key={e} className="flex items-start gap-1 text-[11px] font-medium text-red-600">

@@ -32,7 +32,6 @@ import {
 } from '../../academic/hooks/queries/useCoursesQuery';
 import { useCourseMutations } from '../../academic/hooks/mutations/useCourseMutations';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
-import { MOCK_SPECIALIZATIONS } from '../mocks/curriculumSupportMockData';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 import type {
   CourseDetail,
@@ -67,7 +66,6 @@ export default function CoursesPage() {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [categoryId, setCategoryId] = useState('ALL');
-  const [specialization, setSpecialization] = useState('ALL');
   const [credits, setCredits] = useState<number | 'ALL'>('ALL');
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -93,13 +91,12 @@ export default function CoursesPage() {
       search: search || undefined,
       status: status === 'ALL' ? undefined : status,
       categoryId: categoryId === 'ALL' ? undefined : categoryId,
-      specialization: specialization === 'ALL' ? undefined : specialization,
       credits: credits === 'ALL' ? undefined : credits,
       page: pagination.pageIndex,
       size: pagination.pageSize,
       sort: toCourseSort(sorting),
     }),
-    [search, status, categoryId, specialization, credits, pagination.pageIndex, pagination.pageSize, sorting],
+    [search, status, categoryId, credits, pagination.pageIndex, pagination.pageSize, sorting],
   );
 
   const { data, isLoading, isFetching, isError, refetch } = useCoursesQuery(params);
@@ -145,12 +142,11 @@ export default function CoursesPage() {
     setPagination((p) => ({ ...p, pageIndex: 0 }));
   };
 
-  const hasFilters = search !== '' || status !== 'ALL' || categoryId !== 'ALL' || specialization !== 'ALL' || credits !== 'ALL';
+  const hasFilters = search !== '' || status !== 'ALL' || categoryId !== 'ALL' || credits !== 'ALL';
   const clearFilters = () => {
     setSearch('');
     setStatus('ALL');
     setCategoryId('ALL');
-    setSpecialization('ALL');
     setCredits('ALL');
     setPagination((p) => ({ ...p, pageIndex: 0 }));
   };
@@ -236,7 +232,6 @@ export default function CoursesPage() {
             </button>
             <p className="mt-0.5 truncate text-[11px] font-medium text-gray-400">
               {row.original.categoryCode} | {row.original.categoryName}
-              {row.original.specialization ? ` · ${row.original.specialization}` : ''}
             </p>
           </div>
         ),
@@ -411,20 +406,6 @@ export default function CoursesPage() {
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.code} - {c.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={specialization}
-              onChange={(e) => resetPage(setSpecialization)(e.target.value)}
-              aria-label="Filter by specialization"
-              className={selectClass}
-            >
-              <option value="ALL">Track: All</option>
-              {MOCK_SPECIALIZATIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s}
                 </option>
               ))}
             </select>

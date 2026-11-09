@@ -2,22 +2,6 @@
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
 import { ApiResponse, PaginatedData } from '../../../shared/types/api';
-import { isCurriculumMockEnabled, mockDelay } from '../mocks/mockConfig';
-import { MOCK_CATEGORIES } from '../mocks/curriculumSupportMockData';
-import {
-  buildMockCoursePage,
-  mockAddCourseRelation,
-  mockBulkRemoveCourses,
-  mockConfirmCourseImport,
-  mockCourseImportErrorBlob,
-  mockCreateCourse,
-  mockGetCourseById,
-  mockPreviewCourseImport,
-  mockRemoveCourse,
-  mockRemoveCourseRelation,
-  mockUpdateCourse,
-  mockUpdateCourseRelation,
-} from '../mocks/courseMockApi';
 import type {
   CourseDetail,
   CourseRelation,
@@ -86,11 +70,6 @@ const toCourseSummary = (course: BackendCourseDetail | CourseDetail): CourseSumm
 
 export const courseService = {
   list: async (params?: CourseFilterParams): Promise<PaginatedData<CourseSummary>> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return buildMockCoursePage(params);
-    }
-
     const { data } = await apiClient.get<BackendCoursePage>(
       '/admin/courses',
       { params },
@@ -105,37 +84,21 @@ export const courseService = {
   },
 
   listCategories: async (): Promise<CourseCategory[]> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return MOCK_CATEGORIES.map((c) => ({ id: c.id, code: c.code, name: c.name }));
-    }
     const { data } = await apiClient.get<CourseCategory[]>('/admin/course-categories');
     return data;
   },
 
   getById: async (id: string): Promise<CourseDetail> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockGetCourseById(id);
-    }
     const { data } = await apiClient.get<BackendCourseDetail>(`/admin/courses/${id}`);
     return toCourseDetail(data);
   },
 
   create: async (body: CreateCourseDto): Promise<CourseSummary> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockCreateCourse(body);
-    }
     const { data } = await apiClient.post<BackendCourseDetail>('/admin/courses', body);
     return toCourseSummary(data);
   },
 
   update: async (id: string, body: UpdateCourseDto): Promise<CourseSummary> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockUpdateCourse(id, body);
-    }
     const { data } = await apiClient.put<BackendCourseDetail>(
       `/admin/courses/${id}`,
       body,
@@ -144,36 +107,19 @@ export const courseService = {
   },
 
   remove: async (id: string): Promise<void> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      mockRemoveCourse(id);
-      return;
-    }
     await apiClient.delete(`/admin/courses/${id}`);
   },
 
   bulkRemove: async (ids: string[]): Promise<number> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockBulkRemoveCourses(ids);
-    }
     const { data } = await apiClient.post<{ deletedCount: number }>('/admin/courses/bulk-delete', { ids });
     return data.deletedCount;
   },
   previewImport: async (file: File): Promise<CourseImportPreview> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockPreviewCourseImport(file?.name);
-    }
     const body = new FormData(); body.append('file', file);
     return (await apiClient.post<CourseImportPreview>('/admin/courses/import/preview', body,
       { headers: { 'Content-Type': 'multipart/form-data' } })).data;
   },
   confirmImport: async (items: CourseImportPreview['items']): Promise<number> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockConfirmCourseImport(items);
-    }
     const valid = items.filter((item) => item.errors.length === 0).map((item) => ({
       code: item.code, name: item.name, credits: item.credits, categoryId: item.categoryId,
       description: item.description, prerequisites: item.prerequisites,
@@ -182,20 +128,12 @@ export const courseService = {
     return (await apiClient.post<{ importedCount: number }>('/admin/courses/import/confirm', { items: valid })).data.importedCount;
   },
   downloadImportErrors: async (items: CourseImportPreview['items']): Promise<Blob> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockCourseImportErrorBlob(items);
-    }
     return (await apiClient.post('/admin/courses/import/errors.xlsx', { items }, {
       headers: await getCsrfHeaders(), responseType: 'blob',
     })).data as Blob;
   },
 
   listRelations: async (courseId: string): Promise<CourseRelation[]> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockGetCourseById(courseId).relations;
-    }
     const { data } = await apiClient.get<ApiResponse<CourseRelation[]>>(
       `/admin/courses/${courseId}/relations`,
     );
@@ -203,10 +141,6 @@ export const courseService = {
   },
 
   addRelation: async (courseId: string, body: AddCourseRelationDto): Promise<CourseRelation> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockAddCourseRelation(courseId, body);
-    }
     const { data } = await apiClient.post<ApiResponse<CourseRelation>>(
       `/admin/courses/${courseId}/relations`,
       body,
@@ -220,10 +154,6 @@ export const courseService = {
     relationId: string,
     body: UpdateCourseRelationDto,
   ): Promise<CourseRelation> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockUpdateCourseRelation(courseId, relationId, body);
-    }
     const { data } = await apiClient.put<ApiResponse<CourseRelation>>(
       `/admin/courses/${courseId}/relations/${relationId}`,
       body,
@@ -233,10 +163,6 @@ export const courseService = {
   },
 
   removeRelation: async (courseId: string, relationId: string): Promise<CourseRelation> => {
-    if (isCurriculumMockEnabled()) {
-      await mockDelay();
-      return mockRemoveCourseRelation(courseId, relationId);
-    }
     const { data } = await apiClient.delete<ApiResponse<CourseRelation>>(
       `/admin/courses/${courseId}/relations/${relationId}`,
     );
