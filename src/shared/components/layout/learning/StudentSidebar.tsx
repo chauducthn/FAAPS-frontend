@@ -8,6 +8,8 @@ import {
   ClipboardList,
   FileText,
   LayoutDashboard,
+  ListChecks,
+  Map,
   MessageSquareText,
   Route,
   UserRound,
@@ -30,7 +32,9 @@ export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
       { label: 'Profile', to: '/student/profile', icon: UserRound },
       { label: 'Transcript', to: '/student/transcript', icon: FileText },
       { label: 'Courses & Curriculum', to: '/student/courses', icon: BookOpenCheck },
+      { label: 'Learning Plan', to: '/student/learning-plan', icon: ListChecks },
       { label: 'Study Plans', to: '/student/plans', icon: ClipboardList },
+      { label: 'Study Plan Board', to: '/student/study-plan', icon: Map },
     ],
   },
   {
