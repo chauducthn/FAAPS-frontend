@@ -38,6 +38,8 @@ const StudentProfile = lazy(() => import('../modules/learning/pages/StudentProfi
 const StudentTranscript = lazy(() => import('../modules/learning/pages/StudentTranscript'));
 const StudentCourses = lazy(() => import('../modules/learning/pages/StudentCourses'));
 const StudentPlans = lazy(() => import('../modules/learning/pages/StudentPlans'));
+const StudentStudyPlan = lazy(() => import('../modules/learning/pages/StudentStudyPlan'));
+const StudentLearningPlan = lazy(() => import('../modules/learning/pages/StudentLearningPlan'));
 const AdvisorAppointments = lazy(() => import('../modules/advising/pages/AdvisorAppointments'));
 const AdvisorPortal = lazy(() => import('../modules/advising/pages/AdvisorPortal'));
 const AdvisorAdvisingRequests = lazy(() => import('../modules/advising/pages/AdvisorAdvisingRequests'));
@@ -107,6 +109,8 @@ export const router = createBrowserRouter([
               { path: '/student/transcript', element: suspense(<StudentTranscript />) },
               { path: '/student/courses', element: suspense(<StudentCourses />) },
               { path: '/student/plans', element: suspense(<StudentPlans />) },
+              { path: '/student/study-plan', element: suspense(<StudentStudyPlan />) },
+              { path: '/student/learning-plan', element: suspense(<StudentLearningPlan />) },
               // The conversation with the advisor now lives in the detail of an advising request.
               { path: '/student/advising', element: <Navigate to="/student/advising-requests" replace /> },
             ],

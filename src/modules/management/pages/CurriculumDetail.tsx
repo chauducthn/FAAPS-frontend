@@ -1,33 +1,16 @@
 // src/modules/management/pages/CurriculumDetail.tsx
 // /admin/curriculum/:id - the Academic Roadmap of one curriculum: one column per semester,
 // one card per course.
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
-import {
-  Archive,
-  ArrowUpRight,
-  BookOpenCheck,
-  CalendarDays,
-  ChevronRight,
-  CircleAlert,
-  GraduationCap,
-  Layers,
-  Loader2,
-  Pencil,
-  RotateCcw,
-  Upload,
-} from 'lucide-react';
+import { ChevronRight, CircleAlert } from 'lucide-react';
 import { toast } from 'sonner';
-import { cn } from '@/shared/lib/utils';
-import AddCoursesModal from '../components/curriculum/AddCoursesModal';
-import CurriculumFormModal from '../components/curriculum/CurriculumFormModal';
-import ImportPreviewModal from '../components/curriculum/ImportPreviewModal';
-import RoadmapBoard from '../components/curriculum/RoadmapBoard';
+import CurriculumHeader from '../components/curriculum/CurriculumHeader';
+import CurriculumKanban from '../components/curriculum/CurriculumKanban';
+import CurriculumModals from '../components/curriculum/CurriculumModals';
 import { CourseDetailModal } from '../components/courses';
-import { ConfirmDialog } from '../components/ConfirmDialog';
 import { buildRoadmap } from '../../academic/roadmap/buildRoadmap';
 import { resolveMilestone } from '../../academic/roadmap/milestones';
-import { StatusBadge } from '../components/StatusBadge';
 import { useCurriculum, useCurriculumCourses } from '../../academic/hooks/queries/useCurriculumsQuery';
 import { useAcademicRulesQuery } from '../../academic/hooks/queries/useAcademicRulesQuery';
 import { useRoadmapCourseDetails } from '../../academic/hooks/queries/useRoadmapCourseDetails';
@@ -218,199 +201,68 @@ export default function CurriculumDetailPage() {
       </nav>
 
       {/* Header card */}
-      <header className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-        <div className="h-1.5 bg-gradient-to-r from-[#F26F21] via-[#f97316] to-[#C2410C]" />
-        <div className="flex flex-wrap items-start justify-between gap-4 p-5">
-          <div className="flex min-w-0 items-start gap-3.5">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_4px_12px_rgba(242,111,33,0.35)]">
-              <GraduationCap className="size-6" />
-            </span>
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate text-lg font-extrabold tracking-tight text-gray-900">{data.name}</h1>
-                <button
-                  type="button"
-                  onClick={() => setEditing(true)}
-                  aria-label={`Edit ${data.name}`}
-                  className="shrink-0 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-orange-50 hover:text-[#C2410C]"
-                >
-                  <Pencil className="size-3.5" />
-                </button>
-              </div>
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[11px] font-medium text-gray-500">
-                <StatusBadge status={data.status} />
-                <span className="rounded-md bg-gray-900 px-2 py-0.5 font-mono font-bold text-white">
-                  {data.majorCode}_{data.version}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <CalendarDays className="size-3 text-gray-400" />
-                  Start {data.effectiveFromSemesterCode}
-                </span>
-                {data.isCurrent && (
-                  <span className="rounded-full bg-orange-100 px-2 py-px font-bold text-[#9a3412]">Current version</span>
-                )}
-              </div>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <Stat icon={<Layers className="size-3.5" />} label={`${list.length} courses`} />
-                <Stat icon={<BookOpenCheck className="size-3.5" />} label={`${totalCredits} credits`} accent />
-                <Stat icon={<CalendarDays className="size-3.5" />} label={`${usedSemesters} semesters used`} />
-              </div>
-            </div>
-          </div>
+      <CurriculumHeader
+        curriculum={{
+          name: data.name,
+          majorCode: data.majorCode,
+          version: data.version,
+          status: data.status,
+          effectiveFromSemesterCode: data.effectiveFromSemesterCode,
+          isCurrent: data.isCurrent,
+        }}
+        courseCount={list.length}
+        totalCredits={totalCredits}
+        usedSemesters={usedSemesters}
+        isPublished={isPublished}
+        isUpdatingStatus={isUpdatingStatus}
+        isPreviewingImport={isPreviewingImport}
+        onEdit={() => setEditing(true)}
+        onArchive={() => setArchiving(true)}
+        onPickFile={handlePickFile}
+        onPublish={() => {
+          updateStatus({ id, status: 'ACTIVE' }).catch(() => undefined);
+        }}
+      />
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-700 shadow-xs transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#9a3412]"
-            >
-              <Pencil className="size-3.5" /> Edit Draft
-            </button>
-            <button
-              type="button"
-              onClick={() => setArchiving(true)}
-              disabled={!isPublished}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-700 shadow-xs transition-all hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <Archive className="size-3.5" /> Archive
-            </button>
-            <label
-              className={cn(
-                'inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-700 shadow-xs transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#9a3412]',
-                isPreviewingImport && 'pointer-events-none opacity-60',
-              )}
-            >
-              {isPreviewingImport ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5" />}
-              {isPreviewingImport ? 'Reading…' : 'Import XLSX'}
-              <input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                className="hidden"
-                disabled={isPreviewingImport}
-                onChange={(event) => {
-                  void handlePickFile(event.target.files?.[0]);
-                  event.target.value = '';
-                }}
-              />
-            </label>
-            <button
-              type="button"
-              disabled={isPublished || isUpdatingStatus}
-              onClick={() => {
-                updateStatus({ id, status: 'ACTIVE' }).catch(() => undefined);
-              }}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:-translate-y-px hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
-            >
-              {isUpdatingStatus ? <Loader2 className="size-3.5 animate-spin" /> : <>Publish Version <ArrowUpRight className="size-3.5" /></>}
-            </button>
-          </div>
-        </div>
-      </header>
+      <CurriculumKanban
+        semesters={semesters}
+        isLoading={courses.isLoading}
+        isError={courses.isError}
+        isEmpty={list.length === 0}
+        onAdd={(semester) => setPicker({ semester })}
+        onMove={handleMove}
+        onRemove={(course) => removeCourse({ id, courseId: course.courseId })}
+        onDropCourse={handleDropCourse}
+        onViewCourse={(courseId) => setViewingId(courseId)}
+        onRetry={() => void courses.refetch()}
+        onPickFile={handlePickFile}
+      />
 
-      {courses.isLoading ? (
-        <DetailBoardSkeleton />
-      ) : courses.isError ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-gray-200/80 bg-white px-6 py-16 text-center">
-          <span className="flex size-12 items-center justify-center rounded-2xl bg-red-50 text-red-500">
-            <CircleAlert className="size-6" />
-          </span>
-          <div>
-            <p className="text-sm font-bold text-gray-900">Could not load the courses of this curriculum</p>
-            <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
-              The roadmap failed to load. Your curriculum header above is intact — retry to reload the course columns.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => courses.refetch()}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gray-900 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-gray-700"
-          >
-            <RotateCcw className="size-3.5" /> Retry loading courses
-          </button>
-        </div>
-      ) : list.length === 0 ? (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
-          <span className="flex size-12 items-center justify-center rounded-2xl bg-[#fff7ed] text-[#F26F21]">
-            <Layers className="size-6" />
-          </span>
-          <div>
-            <p className="text-sm font-bold text-gray-900">This roadmap is empty</p>
-            <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-gray-500">
-              Add courses to semesters to build the study plan, or import a spreadsheet to fill several semesters at once.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => setPicker({ semester: 1 })}
-              className="rounded-xl bg-[#F26F21] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#e05f14]"
-            >
-              Add the first course
-            </button>
-            <label className="cursor-pointer rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50">
-              Import XLSX instead
-              <input
-                type="file"
-                accept=".xlsx,.xls,.csv"
-                className="hidden"
-                onChange={(event) => {
-                  void handlePickFile(event.target.files?.[0]);
-                  event.target.value = '';
-                }}
-              />
-            </label>
-          </div>
-        </div>
-      ) : (
-        <RoadmapBoard
-          semesters={semesters}
-          onAdd={(semester) => setPicker({ semester })}
-          onMove={handleMove}
-          onRemove={(course) => removeCourse({ id, courseId: course.courseId })}
-          onDropCourse={handleDropCourse}
-          onViewCourse={(courseId) => setViewingId(courseId)}
-        />
-      )}
-
-      <AddCoursesModal
-        open={!!picker}
-        defaultSemester={picker?.semester ?? 1}
+      <CurriculumModals
+        curriculum={data}
+        addOpen={!!picker}
+        addSemester={picker?.semester ?? 1}
         placedCourses={placed}
-        isSubmitting={isAddingCourses}
-        onClose={() => setPicker(null)}
-        onSubmit={(body) => addCourses({ id, body })}
-      />
-
-      <CurriculumFormModal
-        open={editing}
-        noun="Curriculum"
-        initial={data}
-        isSubmitting={isUpdatingStatus}
-        onClose={() => setEditing(false)}
-        onSubmit={handleEdit}
-      />
-
-      <ImportPreviewModal
-        open={importOpen}
-        fileName={importFile?.name ?? 'spreadsheet.xlsx'}
-        preview={importPreview}
-        isConfirming={isConfirmingImport}
-        onClose={() => {
+        isAddingCourses={isAddingCourses}
+        onCloseAdd={() => setPicker(null)}
+        onSubmitAdd={(body) => addCourses({ id, body })}
+        editOpen={editing}
+        isUpdatingStatus={isUpdatingStatus}
+        onCloseEdit={() => setEditing(false)}
+        onSubmitEdit={handleEdit}
+        importOpen={importOpen}
+        importFileName={importFile?.name ?? null}
+        importPreview={importPreview}
+        isConfirmingImport={isConfirmingImport}
+        onCloseImport={() => {
           setImportOpen(false);
           setImportPreview(null);
           setImportFile(null);
         }}
-        onConfirm={handleConfirmImport}
-      />
-
-      <ConfirmDialog
-        open={archiving}
-        title="Archive this curriculum?"
-        message={`Archive ${data.name}? It stays in the list for reporting but stops being the active version of ${data.majorCode}.`}
-        confirmLabel="Archive"
-        isLoading={isUpdatingStatus}
-        onCancel={() => setArchiving(false)}
-        onConfirm={async () => {
+        onConfirmImport={handleConfirmImport}
+        archiveOpen={archiving}
+        onCancelArchive={() => setArchiving(false)}
+        onConfirmArchive={async () => {
           try {
             await updateStatus({ id, status: 'INACTIVE' });
           } catch {
@@ -430,35 +282,6 @@ export default function CurriculumDetailPage() {
         onUpdateRelation={(relationId, body) => updateRelation({ courseId: viewingId as string, relationId, body })}
         onRemoveRelation={(relationId) => removeRelation({ courseId: viewingId as string, relationId })}
       />
-    </div>
-  );
-}
-
-function Stat({ icon, label, accent }: { icon: ReactNode; label: string; accent?: boolean }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold tabular-nums ring-1',
-        accent ? 'bg-orange-50 text-[#9a3412] ring-orange-200' : 'bg-gray-100 text-gray-600 ring-gray-200',
-      )}
-    >
-      {icon}
-      {label}
-    </span>
-  );
-}
-
-function DetailBoardSkeleton() {
-  return (
-    <div className="flex gap-4 overflow-hidden" aria-label="Loading courses">
-      {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="w-[280px] shrink-0 space-y-2.5 rounded-2xl border border-gray-200/80 bg-white p-3">
-          <div className="h-8 animate-pulse rounded-xl bg-orange-50" style={{ animationDelay: `${i * 70}ms` }} />
-          {[0, 1, 2].map((j) => (
-            <div key={j} className="h-20 animate-pulse rounded-xl bg-gray-100" style={{ animationDelay: `${(i * 3 + j) * 60}ms` }} />
-          ))}
-        </div>
-      ))}
     </div>
   );
 }

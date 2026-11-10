@@ -221,7 +221,6 @@ export default function AddCoursesModal({ open, defaultSemester, placedCourses, 
             {selected.size}
           </span>
           course{selected.size === 1 ? '' : 's'} · {totalCredits} credits → Sem {defaultSemester}
-          {specialization !== 'ALL' && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[11px] text-violet-800">{specialization}</span>}
         </span>
         <div className="flex items-center gap-2.5">
           <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50">

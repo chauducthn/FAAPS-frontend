@@ -40,6 +40,8 @@ interface Props {
   onClose: () => void;
   /** Cross-navigation: jump to another course without closing the modal. */
   onNavigate?: (courseId: string) => void;
+  /** Read-only mode (e.g. student view): hides the relation editor. */
+  readOnly?: boolean;
   onAddRelation: (rel: NewRelation) => Promise<unknown>;
   onUpdateRelation: (relationId: string, body: { groupNo: number; minimumScore: number | null }) => Promise<unknown>;
   onRemoveRelation: (relationId: string) => Promise<unknown>;
@@ -55,6 +57,7 @@ export default function CourseDetailModal({
   isSubmitting,
   onClose,
   onNavigate,
+  readOnly = false,
   onAddRelation,
   onUpdateRelation,
   onRemoveRelation,
@@ -114,12 +117,12 @@ export default function CourseDetailModal({
             <section className="overflow-hidden rounded-2xl border border-gray-100">
               <header className="flex items-center gap-2 border-b border-gray-100 bg-gray-50/70 px-4 py-2.5">
                 <ScrollText className="size-4 text-[#F26F21]" />
-                <h3 className="text-[13px] font-extrabold tracking-tight text-gray-900">Syllabus — Đề cương</h3>
+                <h3 className="text-[13px] font-extrabold tracking-tight text-gray-900">Syllabus</h3>
               </header>
               <div className="space-y-3.5 p-4">
-                <SyllabusBlock icon={<BookOpenText className="size-3.5" />} title="Description" text={course.description} fallback="No description yet — edit the course to add one." />
-                <SyllabusBlock icon={<Target className="size-3.5" />} title="Objectives" text={course.objectives} fallback="No objectives yet." />
-                <SyllabusBlock icon={<GraduationCap className="size-3.5" />} title="Learning outcomes" text={course.learningOutcomes} fallback="No learning outcomes yet." />
+                <SyllabusBlock icon={<BookOpenText className="size-3.5" />} title="Description" text={course.description} fallback="No description provided." />
+                <SyllabusBlock icon={<Target className="size-3.5" />} title="Objectives" text={course.objectives} fallback="No objectives provided." />
+                <SyllabusBlock icon={<GraduationCap className="size-3.5" />} title="Learning outcomes" text={course.learningOutcomes} fallback="No learning outcomes provided." />
               </div>
             </section>
 
@@ -128,13 +131,14 @@ export default function CourseDetailModal({
               <h3 className="mb-2 flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500">
                 <Link2 className="size-3.5 text-[#F26F21]" /> Prerequisites & replacements
               </h3>
-              <AddRelationForm course={course} isSubmitting={isSubmitting} onAdd={onAddRelation} />
+              {!readOnly && <AddRelationForm course={course} isSubmitting={isSubmitting} onAdd={onAddRelation} />}
               <RelationsTable
                 course={course}
                 isSubmitting={isSubmitting}
                 onNavigate={onNavigate}
                 onUpdate={onUpdateRelation}
                 onRemove={onRemoveRelation}
+                readOnly={readOnly}
               />
               <p className="mt-2 text-[11px] italic leading-relaxed text-gray-500">
                 Prerequisites in the same group are alternatives (any one is enough); different groups must all be satisfied.
@@ -225,8 +229,8 @@ function DetailSkeleton({ onClose }: { onClose: () => void }) {
         {[0, 1, 2].map((i) => (
           <div key={i} className="h-16 animate-pulse rounded-2xl bg-gray-100" style={{ animationDelay: `${i * 80}ms` }} />
         ))}
-        <p className="flex items-center justify-center gap-2 text-center text-[11px] font-medium text-gray-400">
-          <Loader2 className="size-3.5 animate-spin" /> Loading course… (mock delay 500ms)
+          <p className="flex items-center justify-center gap-2 text-center text-[11px] font-medium text-gray-400">
+          <Loader2 className="size-3.5 animate-spin" /> Loading course detail…
         </p>
       </div>
     </div>
@@ -424,12 +428,14 @@ function RelationsTable({
   onNavigate,
   onUpdate,
   onRemove,
+  readOnly = false,
 }: {
   course: CourseDetail;
   isSubmitting?: boolean;
   onNavigate?: (courseId: string) => void;
   onUpdate: Props['onUpdateRelation'];
   onRemove: Props['onRemoveRelation'];
+  readOnly?: boolean;
 }) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [group, setGroup] = useState('1');
@@ -470,14 +476,16 @@ function RelationsTable({
             <th className="p-2.5">Course</th>
             <th className="p-2.5 text-center">Group</th>
             <th className="p-2.5 text-center">Min score</th>
-            <th className="w-24 p-2.5 text-center">Actions</th>
+            {!readOnly && <th className="w-24 p-2.5 text-center">Actions</th>}
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
           {course.relations.length === 0 && (
             <tr>
-              <td colSpan={5} className="p-6 text-center text-xs text-gray-400">
-                No prerequisite or replacement courses yet — add the first one above.
+              <td colSpan={readOnly ? 4 : 5} className="p-6 text-center text-xs text-gray-400">
+                {readOnly
+                  ? 'No prerequisite or replacement courses for this course.'
+                  : 'No prerequisite or replacement courses yet — add the first one above.'}
               </td>
             </tr>
           )}
@@ -530,6 +538,7 @@ function RelationsTable({
                     <span className="font-semibold text-gray-700">{r.minimumScore ?? '—'}</span>
                   )}
                 </td>
+                {!readOnly && (
                 <td className="p-2.5 text-center">
                   {removingId === r.relationId ? (
                     <span className="inline-flex items-center gap-1">
@@ -573,6 +582,7 @@ function RelationsTable({
                     </span>
                   )}
                 </td>
+                )}
               </tr>
             );
           })}
