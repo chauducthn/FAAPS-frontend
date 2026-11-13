@@ -43,7 +43,8 @@ export const assignmentService = {
     (await apiClient.get<AdminPage<AssignmentStudent>>(`${BASE}/students`, { params })).data,
 
   /** Every active advisor with its current load (activeStudents) and limit. */
-  getAdvisors: async (): Promise<AssignmentAdvisor[]> => (await apiClient.get<AssignmentAdvisor[]>(`${BASE}/advisors`)).data,
+  getAdvisors: async (): Promise<AssignmentAdvisor[]> =>
+    (await apiClient.get<AssignmentAdvisor[]>(`${BASE}/advisors`)).data,
 
   getAdvisorCohortsPage: async (params: PageParams & { cohortId?: string }): Promise<AdminPage<AdvisorCohortRow>> =>
     (await apiClient.get<AdminPage<AdvisorCohortRow>>(`${BASE}/advisors/by-cohort`, { params })).data,
@@ -77,7 +78,8 @@ export const assignmentService = {
     (await apiClient.patch<AdvisorLimitResult>(`${BASE}/advisors/${advisorId}/limit`, { maxAdvisees }, { headers: await getCsrfHeaders() })).data,
 
   // ---- assigning students (single / bulk / reassignment)
-  previewAssign: (studentIds: string[], advisorId: string) => post<AssignPreview>(`${BASE}/assign/preview`, { studentIds, advisorId }),
+  previewAssign: (studentIds: string[], advisorId: string) =>
+    post<AssignPreview>(`${BASE}/assign/preview`, { studentIds, advisorId }),
 
   assign: (studentIds: string[], advisorId: string, acknowledgeAppointmentCancellation: boolean, notes?: string) =>
     post<AssignResult>(`${BASE}/assign`, { studentIds, advisorId, acknowledgeAppointmentCancellation, notes: notes || undefined }),

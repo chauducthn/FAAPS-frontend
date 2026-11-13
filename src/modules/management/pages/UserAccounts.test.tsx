@@ -10,6 +10,19 @@ const getCohortOptions = vi.fn();
 const getMajorOptions = vi.fn();
 const getCurriculums = vi.fn();
 const createUser = vi.fn();
+const getAdvisors = vi.fn();
+const previewAssign = vi.fn();
+const assignStudents = vi.fn();
+const semesters = { items: [] as { id: string; code: string; startDate: string | null }[] };
+const curriculums = {
+  items: [] as {
+    id: string;
+    majorCode: string;
+    version: string;
+    name: string;
+    effectiveFromSemesterId: string | null;
+  }[],
+};
 
 vi.mock('../services/adminService', () => ({
   adminService: {
@@ -20,13 +33,21 @@ vi.mock('../services/adminService', () => ({
     changeUserStatus: vi.fn(),
     changeUserRole: vi.fn(),
     bulkChangeUserStatus: vi.fn(),
+    resetUserPassword: vi.fn(),
+    bulkResetUserPassword: vi.fn(),
     getUser: vi.fn(),
   },
 }));
 
 vi.mock('../../academic/hooks/queries/useCurriculumsQuery', () => ({
-  useCurriculumsQuery: () => ({ data: { items: [] } }),
-  useSemesterOptions: () => ({ data: [], isLoading: false }),
+  useCurriculumsQuery: () => ({ data: curriculums }),
+  useSemesterOptions: () => ({ data: semesters.items, isLoading: false }),
+}));
+
+vi.mock('../hooks/queries/useAdminAssignments', () => ({
+  useAssignmentAdvisors: () => ({ data: [] }),
+  usePreviewAssign: () => ({ mutateAsync: previewAssign, isPending: false }),
+  useAssignStudents: () => ({ mutateAsync: assignStudents, isPending: false }),
 }));
 
 function renderPage() {
@@ -44,6 +65,9 @@ function renderPage() {
 
 describe('UserAccounts', () => {
   beforeEach(() => {
+    // The catalogues are shared fixtures: every test starts from a clean one.
+    semesters.items = [];
+    curriculums.items = [];
     listUsers.mockResolvedValue({
       items: [
         {
@@ -67,6 +91,7 @@ describe('UserAccounts', () => {
     getMajorOptions.mockResolvedValue([
       { id: 'm1', code: 'SE', name: 'Software Engineering' },
     ]);
+    getAdvisors.mockResolvedValue([]);
   });
 
   it('renders the accounts in the DataTable', async () => {
@@ -79,10 +104,32 @@ describe('UserAccounts', () => {
     expect(screen.getByRole('columnheader', { name: /Status/i })).toBeInTheDocument();
   });
 
-  it('offers the major and cohort filters', async () => {
+  it('offers the role, status, major and cohort filters', async () => {
     renderPage();
-    expect(await screen.findByLabelText('Filter by major')).toBeInTheDocument();
+    expect(await screen.findByLabelText('Filter by role')).toBeInTheDocument();
+    expect(screen.getByLabelText('Filter by status')).toBeInTheDocument();
+    expect(screen.getByLabelText('Filter by major')).toBeInTheDocument();
     expect(screen.getByLabelText('Filter by cohort')).toBeInTheDocument();
+  });
+
+  it('no longer offers the Student / Advisor tabs', async () => {
+    renderPage();
+    await screen.findByText('Nguyen Van A');
+    expect(screen.queryByRole('tab', { name: /Student/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Advisor/i })).not.toBeInTheDocument();
+  });
+
+  it('queries the API with the selected role', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('Nguyen Van A');
+
+    await user.selectOptions(await screen.findByLabelText('Filter by role'), 'ADVISOR');
+
+    await waitFor(() => {
+      const call = listUsers.mock.calls.at(-1)?.[0];
+      expect(call).toMatchObject({ role: 'ADVISOR', page: 0 });
+    });
   });
 
   it('queries the API with the selected major', async () => {
@@ -116,7 +163,7 @@ describe('UserAccounts', () => {
     renderPage();
     await screen.findByText('Nguyen Van A');
 
-    await user.type(screen.getByRole('searchbox'), 'nguyen');
+    await user.type(screen.getByLabelText('Search accounts'), 'nguyen');
 
     await waitFor(
       () => {
@@ -126,6 +173,100 @@ describe('UserAccounts', () => {
       { timeout: 2000 },
     );
   });
+
+  it('hides the rows-per-page selector and offers a go-to-page field', async () => {
+    renderPage();
+    await screen.findByText('Nguyen Van A');
+    expect(screen.queryByLabelText('Rows per page')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Go to page')).toBeInTheDocument();
+  });
+
+  it('jumps to the page the admin types', async () => {
+    const user = userEvent.setup();
+    listUsers.mockResolvedValue({
+      items: [],
+      page: 0,
+      size: 10,
+      totalElements: 42,
+      totalPages: 5,
+    });
+    renderPage();
+    await screen.findByLabelText('Go to page');
+
+    const field = screen.getByLabelText('Go to page');
+    await user.clear(field);
+    await user.type(field, '5');
+    await user.keyboard('{Enter}');
+
+    await waitFor(() => {
+      const call = listUsers.mock.calls.at(-1)?.[0];
+      expect(call).toMatchObject({ page: 4 });
+    });
+  });
+
+  describe('bulk actions', () => {
+    it('offers Set advisor for students and Reset password for every role', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByLabelText('Select row 1'));
+
+      expect(screen.getByRole('button', { name: /set advisor/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /reset password/i })).toBeInTheDocument();
+    });
+
+    it('hides Set advisor when the selection mixes roles', async () => {
+      const user = userEvent.setup();
+      listUsers.mockResolvedValue({
+        items: [
+          {
+            id: 'u1',
+            userId: 'SE173012',
+            fullName: 'Nguyen Van A',
+            email: 'a@fpt.edu.vn',
+            role: 'STUDENT',
+            status: 'ACTIVE',
+            createdAt: '2026-01-01T00:00:00Z',
+          },
+          {
+            id: 'u2',
+            userId: 'ADV001',
+            fullName: 'Tran Advisor',
+            email: 'b@fe.edu.vn',
+            role: 'ADVISOR',
+            status: 'ACTIVE',
+            createdAt: '2026-01-01T00:00:00Z',
+          },
+        ],
+        page: 0,
+        size: 10,
+        totalElements: 2,
+        totalPages: 1,
+      });
+      renderPage();
+      await screen.findByText('Tran Advisor');
+
+      await user.click(screen.getByLabelText('Select row 1'));
+      await user.click(screen.getByLabelText('Select row 2'));
+
+      expect(screen.queryByRole('button', { name: /set advisor/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /reset password/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('row actions', () => {
+    it('offers Reset password in the three-dot menu', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByLabelText('Actions for Nguyen Van A'));
+
+      expect(await screen.findByRole('menuitem', { name: /reset password/i })).toBeInTheDocument();
+    });
+  });
+
   describe('create user modal', () => {
     it('explains that accounts have no password and validates required fields', async () => {
       const user = userEvent.setup();
@@ -137,12 +278,90 @@ describe('UserAccounts', () => {
 
       await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
       expect(await screen.findByText('Full name is required')).toBeInTheDocument();
-      expect(screen.getByText('Use the format SE173012 or IA173012')).toBeInTheDocument();
       expect(createUser).not.toHaveBeenCalled();
     });
 
-    it('creates an advisor from the advisor fields', async () => {
+    it('rejects a phone number that is not a Vietnamese mobile number', async () => {
       const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByRole('button', { name: /create user/i }));
+      await user.type(await screen.findByLabelText('Phone'), '12345');
+      await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
+
+      expect(
+        await screen.findByText(
+          'Please enter a valid phone number (10 digits, starting with 03, 05, 07, 08, or 09).',
+        ),
+      ).toBeInTheDocument();
+      expect(createUser).not.toHaveBeenCalled();
+    });
+
+    it('blocks the submit when the email does not fit the role', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByRole('button', { name: /create user/i }));
+      await user.click(await screen.findByText('Advisor', { selector: 'label' }));
+      await user.type(screen.getByLabelText('Email'), 'advisor@fpt.edu.vn');
+
+      expect(await screen.findByText(/Advisor accounts must use an @fe\.edu\.vn/)).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!).toBeDisabled();
+    });
+
+    it('fills the major, cohort and curriculum from the Student ID', async () => {
+      const user = userEvent.setup();
+      semesters.items = [
+        { id: 'sem-fa2023', code: 'FA2023', startDate: '2023-09-04' },
+        { id: 'sem-sp2024', code: 'SP2024', startDate: '2024-01-08' },
+        { id: 'sem-fa2024', code: 'FA2024', startDate: '2024-09-02' },
+        { id: 'sem-sp2025', code: 'SP2025', startDate: '2025-01-06' },
+        { id: 'sem-fa2025', code: 'FA2025', startDate: '2025-09-01' },
+        { id: 'sem-sp2026', code: 'SP2026', startDate: '2026-01-05' },
+        { id: 'sem-fa2026', code: 'FA2026', startDate: '2026-08-31' },
+        { id: 'sem-sp2027', code: 'SP2027', startDate: '2027-01-04' },
+        { id: 'sem-fa2027', code: 'FA2027', startDate: '2027-09-06' },
+      ];
+      curriculums.items = [
+        {
+          id: 'cv-se-k17',
+          majorCode: 'SE',
+          version: 'K17',
+          name: 'Software Engineering K17',
+          effectiveFromSemesterId: 'sem-fa2023',
+        },
+      ];
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByRole('button', { name: /create user/i }));
+      await user.type(await screen.findByLabelText('Student ID'), 'SE173012');
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Curriculum')).toHaveValue('cv-se-k17');
+        expect(screen.getByLabelText('Enrollment semester')).toHaveValue('sem-fa2023');
+        expect(screen.getByLabelText('Expected graduation semester')).toHaveValue('sem-fa2027');
+      });
+      expect(screen.getByText(/Major Software Engineering/)).toBeInTheDocument();
+      expect(screen.getByText(/Cohort K17/)).toBeInTheDocument();
+    });
+
+    it('rejects a Student ID that does not follow the format', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByRole('button', { name: /create user/i }));
+      await user.type(await screen.findByLabelText('Student ID'), 'SE17');
+      await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
+
+      expect(await screen.findByText(/Enter a valid Student ID/)).toBeInTheDocument();
+      expect(createUser).not.toHaveBeenCalled();
+    });
+
+    it('creates an advisor from the advisor fields', async () => {      const user = userEvent.setup();
       createUser.mockResolvedValue({});
       renderPage();
       await screen.findByText('Nguyen Van A');
@@ -150,14 +369,21 @@ describe('UserAccounts', () => {
       await user.click(screen.getByRole('button', { name: /create user/i }));
       await user.click(await screen.findByText('Advisor', { selector: 'label' }));
       await user.type(screen.getByLabelText('Full name'), 'Tran Advisor');
-      await user.type(screen.getByLabelText('Email'), 'advisor@fpt.edu.vn');
+      await user.type(screen.getByLabelText('Email'), 'advisor@fe.edu.vn');
+      await user.type(screen.getByLabelText('Advisor Code'), 'ADV001');
       await user.clear(screen.getByLabelText('Maximum advisees'));
       await user.type(screen.getByLabelText('Maximum advisees'), '12');
       await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
 
       await waitFor(() =>
         expect(createUser).toHaveBeenCalledWith(
-          expect.objectContaining({ role: 'ADVISOR', fullName: 'Tran Advisor', email: 'advisor@fpt.edu.vn', maxAdvisees: 12 }),
+          expect.objectContaining({
+            role: 'ADVISOR',
+            fullName: 'Tran Advisor',
+            email: 'advisor@fe.edu.vn',
+            advisorCode: 'ADV001',
+            maxAdvisees: 12,
+          }),
         ),
       );
     });

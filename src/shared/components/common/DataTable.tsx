@@ -202,6 +202,69 @@ function SortIcon({ sorted }: SortIconProps) {
 }
 
 /* -------------------------------------------------------------------------- */
+/*                              Page jump control                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A compact "go to page" field for long admin lists: the admin types a page
+ * number and presses Enter to jump there. The value is kept local so a
+ * half-typed number never moves the list.
+ */
+function PageJumpInput({
+  pageIndex,
+  totalPages,
+  onJump,
+}: {
+  pageIndex: number;
+  totalPages: number;
+  onJump: (pageIndex: number) => void;
+}) {
+  const [value, setValue] = useState(String(pageIndex + 1));
+
+  // Follow the table when it moves by other means (filters, next/previous).
+  useEffect(() => {
+    setValue(String(pageIndex + 1));
+  }, [pageIndex]);
+
+  const commit = () => {
+    const parsed = Number.parseInt(value.trim(), 10);
+    if (!Number.isFinite(parsed)) {
+      setValue(String(pageIndex + 1));
+      return;
+    }
+    const target = Math.min(Math.max(parsed, 1), totalPages) - 1;
+    onJump(target);
+    setValue(String(target + 1));
+  };
+
+  return (
+    <label className="flex items-center gap-2 text-[13px] text-slate-500">
+      Go to
+      <input
+        type="number"
+        min={1}
+        max={totalPages}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            commit();
+          }
+        }}
+        aria-label="Go to page"
+        className={cn(
+          'h-8 w-16 rounded-md border border-slate-200 bg-white px-2 text-center text-[13px] font-semibold text-[#151c27]',
+          'tabular-nums outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
+          '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+        )}
+      />
+    </label>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*                                  Component                                 */
 /* -------------------------------------------------------------------------- */
 
@@ -235,6 +298,16 @@ export interface DataTableProps<TData extends RowData, TValue = any> {
   isLoading?: boolean;
   /** Available page sizes. */
   pageSizes?: number[];
+  /**
+   * Shows the "Rows per page" selector next to the pagination controls.
+   * Turn it off when the page size is fixed by the server contract.
+   */
+  showPageSizeSelect?: boolean;
+  /**
+   * Shows a compact "go to page" field in the pagination bar. The admin types
+   * a page number and presses Enter to jump there.
+   */
+  showPageJump?: boolean;
   /** Stable row id. Defaults to the row index. */
   getRowId?: (row: TData, index: number) => string;
   /** Placeholder of the search input. */
@@ -285,6 +358,8 @@ export function DataTable<TData extends RowData, TValue = any>({
   onColumnFiltersChange,
   isLoading = false,
   pageSizes = [10, 25, 50, 100],
+  showPageSizeSelect = true,
+  showPageJump = false,
   getRowId,
   searchPlaceholder = 'Search...',
   emptyText = 'No data found.',
@@ -654,28 +729,34 @@ export function DataTable<TData extends RowData, TValue = any>({
         </p>
 
         <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-[13px] text-slate-500">
-            Rows per page
-            <select
-              value={pageSize}
-              onChange={(event) => table.setPageSize(Number(event.target.value))}
-              aria-label="Rows per page"
-              className={cn(
-                'h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] font-medium text-[#151c27]',
-                'outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
-              )}
-            >
-              {pageSizes.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </label>
+          {showPageSizeSelect && (
+            <label className="flex items-center gap-2 text-[13px] text-slate-500">
+              Rows per page
+              <select
+                value={pageSize}
+                onChange={(event) => table.setPageSize(Number(event.target.value))}
+                aria-label="Rows per page"
+                className={cn(
+                  'h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] font-medium text-[#151c27]',
+                  'outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
+                )}
+              >
+                {pageSizes.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           <span className="text-[13px] font-semibold text-slate-700">
             Page {pageIndex + 1} of {totalPages}
           </span>
+
+          {showPageJump ? (
+            <PageJumpInput pageIndex={pageIndex} totalPages={totalPages} onJump={(index) => table.setPageIndex(index)} />
+          ) : null}
 
           <div className="flex items-center gap-1">
             <button

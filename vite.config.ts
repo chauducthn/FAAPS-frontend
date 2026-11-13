@@ -1,13 +1,18 @@
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type PluginOption, type UserConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from "path"
 
-export default defineConfig(({ mode }) => {
+// Vite 8's `PluginOption` union is deep enough that TypeScript runs out of
+// stack while comparing it, so the plugin list is built once and asserted
+// here rather than in the config object.
+const plugins = [react(), tailwindcss()] as unknown as PluginOption[]
+
+export default defineConfig(({ mode }): UserConfig => {
   const backendUrl = loadEnv(mode, process.cwd(), 'VITE_BACKEND_URL').VITE_BACKEND_URL || 'http://localhost:8080'
 
   return {
-    plugins: [react(), tailwindcss()],
+    plugins,
     server: {
       proxy: {
         '/api': { target: backendUrl, changeOrigin: true },
