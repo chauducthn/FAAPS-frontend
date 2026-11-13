@@ -67,7 +67,7 @@ export const loginErrorNotice = (error: unknown): LoginNotice => {
   const code = error.response.data?.code;
   const status = error.response.status;
   if (code === 'INVALID_CREDENTIALS' || status === 401) {
-    return { title, message: 'Invalid username/email or password.', tone: 'error' };
+    return { title, message: 'Invalid email or password.', tone: 'error' };
   }
   if (code === 'ACCOUNT_INACTIVE') {
     return { title: 'Account is not active', message: 'This account is suspended or inactive. Contact an administrator.', tone: 'error' };

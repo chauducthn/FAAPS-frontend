@@ -6,12 +6,10 @@ import { MemoryRouter, Route, Routes } from 'react-router';
 import Register from './Register';
 
 const register = vi.fn();
-const registerCurriculums = vi.fn();
 
 vi.mock('@/modules/auth/services/authService', () => ({
   authService: {
     register: (b: unknown) => register(b),
-    registerCurriculums: () => registerCurriculums(),
   },
 }));
 
@@ -28,26 +26,25 @@ function renderPage() {
   );
 }
 
-async function fillValidForm() {
+async function fillValidForm(overrides: { password?: string; phone?: string; studentCode?: string } = {}) {
   const user = userEvent.setup();
+  const password = overrides.password ?? 'Secret@123';
   await user.type(screen.getByLabelText(/full name/i), 'Nguyen Van A');
-  await user.type(screen.getByLabelText(/student id/i), 'se190001');
+  await user.type(screen.getByLabelText(/student id/i), overrides.studentCode ?? 'se190001');
   await user.selectOptions(screen.getByLabelText('Day of birth'), '14');
   await user.selectOptions(screen.getByLabelText('Month of birth'), '03');
   await user.selectOptions(screen.getByLabelText('Year of birth'), String(new Date().getFullYear() - 20));
-  await user.selectOptions(await screen.findByLabelText(/curriculum/i), 'c1');
   await user.type(screen.getByLabelText(/^email/i), 'a@fpt.edu.vn');
-  await user.type(screen.getByLabelText(/^password/i), 'Secret123');
-  await user.type(screen.getByLabelText(/confirm password/i), 'Secret123');
+  await user.type(screen.getByLabelText(/^phone/i), overrides.phone ?? '0901234567');
+  await user.type(screen.getByLabelText(/^password/i), password);
+  await user.type(screen.getByLabelText(/confirm password/i), password);
   return user;
 }
 
 describe('Register', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    registerCurriculums.mockResolvedValue([
-      { id: 'c1', version: 'K19', name: 'SE K19', majorCode: 'SE', majorName: 'Software Engineering' },
-    ]);
+    sessionStorage.clear();
   });
 
   it('offers both Google sign-up and manual registration on the same page', async () => {
@@ -58,23 +55,60 @@ describe('Register', () => {
     expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
   });
 
+  it('no longer asks for a major: it is chosen after the account exists', () => {
+    renderPage();
+    expect(screen.queryByLabelText(/curriculum|major/i)).not.toBeInTheDocument();
+  });
+
   it('shows an error for every missing field', async () => {
     renderPage();
     await userEvent.click(screen.getByRole('button', { name: /create account/i }));
     expect(await screen.findByText('Enter your full name')).toBeInTheDocument();
-    expect(screen.getByText(/two letters and six digits/i)).toBeInTheDocument();
+    expect(screen.getByText(/cohort from 01 to 22/i)).toBeInTheDocument();
     expect(screen.getByText(/day, month and year of birth/i)).toBeInTheDocument();
-    expect(screen.getByText('Select your curriculum')).toBeInTheDocument();
     expect(screen.getByText('Enter your email')).toBeInTheDocument();
+    expect(screen.getByText('Enter your phone number')).toBeInTheDocument();
     expect(screen.getByText('Use at least 8 characters')).toBeInTheDocument();
     expect(register).not.toHaveBeenCalled();
+  });
+
+  it('rejects a Student ID whose cohort is outside 01-22 and a phone that is not a Vietnamese mobile number', async () => {
+    renderPage();
+    const user = await fillValidForm({ studentCode: 'SE990001', phone: '0123456789' });
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+    expect(await screen.findByText(/cohort from 01 to 22/i)).toBeInTheDocument();
+    expect(screen.getByText(/10-digit Vietnamese number/i)).toBeInTheDocument();
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it('rejects a password without a special character or with the Student ID inside', async () => {
+    renderPage();
+    const user = await fillValidForm({ password: 'Secret123' });
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+    expect(await screen.findByText('Include a special character, for example @ # $ !')).toBeInTheDocument();
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it('rejects a password that contains the Student ID', async () => {
+    renderPage();
+    const user = await fillValidForm({ password: 'Xx@SE190001' });
+    await user.click(screen.getByRole('button', { name: /create account/i }));
+    expect(await screen.findByText('Password must not contain your Student ID, name or email')).toBeInTheDocument();
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it('does not offer a birth year that makes the student too young', () => {
+    renderPage();
+    const years = Array.from(screen.getByLabelText('Year of birth').querySelectorAll('option')).map((o) => o.value);
+    expect(years).not.toContain(String(new Date().getFullYear() - 10));
+    expect(years).toContain(String(new Date().getFullYear() - 20));
   });
 
   it('rejects a password that does not match its confirmation', async () => {
     renderPage();
     const user = await fillValidForm();
     await user.clear(screen.getByLabelText(/confirm password/i));
-    await user.type(screen.getByLabelText(/confirm password/i), 'Different1');
+    await user.type(screen.getByLabelText(/confirm password/i), 'Different@1');
     await user.click(screen.getByRole('button', { name: /create account/i }));
     expect(await screen.findByText('Passwords do not match')).toBeInTheDocument();
     expect(register).not.toHaveBeenCalled();
@@ -94,9 +128,10 @@ describe('Register', () => {
       fullName: 'Nguyen Van A',
       studentCode: 'SE190001',
       email: 'a@fpt.edu.vn',
-      password: 'Secret123',
-      curriculumVersionId: 'c1',
+      phone: '0901234567',
+      password: 'Secret@123',
     });
+    expect(register.mock.calls[0][0]).not.toHaveProperty('curriculumVersionId');
     expect(register.mock.calls[0][0].dateOfBirth).toMatch(/^\d{4}-03-14$/);
     expect(await screen.findByRole('alert')).toHaveTextContent('An account with this email already exists');
   });

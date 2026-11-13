@@ -2,7 +2,6 @@ import axios from 'axios';
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
 import type { User } from '../types/auth';
-import type { CurriculumChoice } from './onboardingService';
 
 export interface RegisterBody {
   fullName: string;
@@ -10,8 +9,7 @@ export interface RegisterBody {
   password: string;
   dateOfBirth: string;
   studentCode: string;
-  curriculumVersionId: string;
-  phone?: string;
+  phone: string;
 }
 
 let meRequest: Promise<User | null> | null = null;
@@ -32,9 +30,6 @@ export const authService = {
     const { data } = await apiClient.post<User>('/auth/register', body, { headers: await getCsrfHeaders() });
     return data;
   },
-
-  registerCurriculums: async (): Promise<CurriculumChoice[]> =>
-    (await apiClient.get<CurriculumChoice[]>('/auth/register/curriculums')).data,
 
   // React runs the bootstrap effect twice in development; the refresh token rotates on use, so share one request.
   getMe: (): Promise<User | null> => {

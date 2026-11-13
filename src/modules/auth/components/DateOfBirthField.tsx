@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { MIN_STUDENT_AGE } from '../validations/register.schema';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -16,7 +17,8 @@ interface Props {
 export function DateOfBirthField({ value, onChange, idPrefix = 'dob' }: Props) {
   const [year = '', month = '', day = ''] = value ? value.split('-') : [];
   const thisYear = new Date().getFullYear();
-  const years = useMemo(() => Array.from({ length: 71 }, (_, i) => thisYear - 14 - i), [thisYear]);
+  // The newest selectable year is the one of the youngest allowed student.
+  const years = useMemo(() => Array.from({ length: 60 }, (_, i) => thisYear - MIN_STUDENT_AGE - i), [thisYear]);
 
   // Keep a partially chosen date in the form as "YYYY-MM-DD" with empty parts so the selects do not reset.
   const update = (next: { year?: string; month?: string; day?: string }) => {

@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { Logo } from '@/shared/components/common/Logo';
 import { apiErrorMessage } from '@/shared/lib/apiError';
@@ -10,6 +9,7 @@ import { useAuth } from '@/modules/auth/stores/useAuth';
 import { useAuthMutations } from '@/modules/auth/hooks/mutations/useAuthMutations';
 import { authService } from '@/modules/auth/services/authService';
 import { DateOfBirthField } from '../components/DateOfBirthField';
+import { savePendingStudentCode } from '../lib/pendingStudentCode';
 import { registerSchema, type RegisterInput, type RegisterValues } from '../validations/register.schema';
 
 const inputClass =
@@ -46,11 +46,6 @@ function Field({
 export default function Register() {
   const { loginGoogle } = useAuthMutations();
   const { setUser } = useAuth();
-  const curriculums = useQuery({
-    queryKey: ['register', 'curriculums'],
-    queryFn: () => authService.registerCurriculums(),
-    staleTime: 5 * 60_000,
-  });
 
   const {
     register,
@@ -66,7 +61,6 @@ export default function Register() {
       dateOfBirth: '',
       email: '',
       phone: '',
-      curriculumVersionId: '',
       password: '',
       confirmPassword: '',
     },
@@ -80,25 +74,16 @@ export default function Register() {
         password: values.password,
         dateOfBirth: values.dateOfBirth,
         studentCode: values.studentCode,
-        curriculumVersionId: values.curriculumVersionId,
-        phone: values.phone || undefined,
+        phone: values.phone,
       }),
-    onSuccess: (user) => {
+    onSuccess: (user, values) => {
+      // The major is chosen on the next step, which only offers the curriculums that fit this Student ID.
+      savePendingStudentCode(values.studentCode);
       setUser(user);
       window.location.assign('/student');
     },
     onError: (error) => setError('root', { message: apiErrorMessage(error) }),
   });
-
-  const grouped = useMemo(() => {
-    const byMajor = new Map<string, { label: string; items: NonNullable<typeof curriculums.data> }>();
-    for (const item of curriculums.data ?? []) {
-      const entry = byMajor.get(item.majorCode) ?? { label: `${item.majorCode} - ${item.majorName}`, items: [] };
-      entry.items.push(item);
-      byMajor.set(item.majorCode, entry);
-    }
-    return [...byMajor.values()];
-  }, [curriculums.data]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
@@ -154,8 +139,8 @@ export default function Register() {
                 <input id="email" type="email" {...register('email')} autoComplete="email" placeholder="name@fpt.edu.vn" className={inputClass} />
               </Field>
 
-              <Field label="Phone" htmlFor="phone" error={errors.phone?.message}>
-                <input id="phone" {...register('phone')} autoComplete="tel" placeholder="0901234567" className={inputClass} />
+              <Field label="Phone" htmlFor="phone" required error={errors.phone?.message}>
+                <input id="phone" {...register('phone')} autoComplete="tel" inputMode="numeric" maxLength={10} placeholder="0901234567" className={inputClass} />
               </Field>
 
               <Field label="Date of birth" required error={errors.dateOfBirth?.message}>
@@ -166,30 +151,19 @@ export default function Register() {
                 />
               </Field>
 
-              <Field label="Curriculum / Major" htmlFor="curriculumVersionId" required error={errors.curriculumVersionId?.message}>
-                <select id="curriculumVersionId" {...register('curriculumVersionId')} disabled={curriculums.isLoading} className={inputClass}>
-                  <option value="">{curriculums.isLoading ? 'Loading...' : 'Select curriculum...'}</option>
-                  {grouped.map((group) => (
-                    <optgroup key={group.label} label={group.label}>
-                      {group.items.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.version} - {item.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-                {curriculums.isError && <p className="mt-1 text-xs text-red-500">Could not load curriculums. Please reload.</p>}
-              </Field>
-
               <Field label="Password" htmlFor="password" required error={errors.password?.message}>
-                <input id="password" type="password" {...register('password')} autoComplete="new-password" placeholder="Min 8 chars, letter & digit" className={inputClass} />
+                <input id="password" type="password" {...register('password')} autoComplete="new-password" placeholder="Min 8 chars" className={inputClass} />
               </Field>
 
               <Field label="Confirm password" htmlFor="confirmPassword" required error={errors.confirmPassword?.message}>
                 <input id="confirmPassword" type="password" {...register('confirmPassword')} autoComplete="new-password" placeholder="Repeat your password" className={inputClass} />
               </Field>
             </div>
+
+            <p className="text-[11px] leading-relaxed text-gray-500">
+              Password: at least 8 characters with an uppercase letter, a lowercase letter, a digit and a special character, and
+              it must not contain your Student ID, name or email. You will choose your major in the next step.
+            </p>
 
             {errors.root?.message && (
               <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-700">
