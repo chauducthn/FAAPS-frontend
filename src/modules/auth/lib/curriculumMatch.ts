@@ -1,8 +1,13 @@
-import type { CurriculumChoice } from '../services/onboardingService';
+/** The part of a curriculum the match needs; both the student and the admin screens have it. */
+export interface MatchableCurriculum {
+  id: string;
+  version: string;
+  majorCode: string;
+}
 
-export interface CurriculumMatch {
+export interface CurriculumMatch<T extends MatchableCurriculum> {
   /** The curriculums to offer: those of the major in the Student ID, or all of them when none match. */
-  options: CurriculumChoice[];
+  options: T[];
   /** True when the Student ID prefix identified a major. */
   matched: boolean;
   /** The curriculum of the student's own cohort (SE19xxxx -> K19) when exactly one fits. */
@@ -10,7 +15,7 @@ export interface CurriculumMatch {
 }
 
 /** Student IDs look like SE190001: major code (SE), cohort (19), running number. */
-export function matchCurriculums(studentCode: string, choices: CurriculumChoice[]): CurriculumMatch {
+export function matchCurriculums<T extends MatchableCurriculum>(studentCode: string, choices: T[]): CurriculumMatch<T> {
   const code = studentCode.trim().toUpperCase();
   const prefix = /^[A-Z]{2}/.exec(code)?.[0];
   const byMajor = prefix ? choices.filter((item) => item.majorCode.toUpperCase() === prefix) : [];

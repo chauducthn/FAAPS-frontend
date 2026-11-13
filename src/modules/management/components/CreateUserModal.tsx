@@ -1,37 +1,40 @@
 // Create a Student or Advisor account from the admin User Accounts page.
 // The backend creates every account for Google sign-in (there is no password field), so the form explains that
 // instead of asking for one.
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Info, X } from 'lucide-react';
 import { z } from 'zod';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
-import { useCurriculumsQuery, useSemesterOptions } from '../../academic/hooks/queries/useCurriculumsQuery';
+import { matchCurriculums } from '../../auth/lib/curriculumMatch';
+import { PHONE_MESSAGE, PHONE_PATTERN, STUDENT_CODE_MESSAGE, STUDENT_CODE_PATTERN } from '../../auth/validations/register.schema';
+import {
+  useCurriculumCourses,
+  useCurriculumsQuery,
+  useSemesterOptions,
+} from '../../academic/hooks/queries/useCurriculumsQuery';
+import { currentSemesterCode, estimateGraduation } from '../lib/expectedGraduation';
 import { adminService } from '../services/adminService';
 import type { AdminUserRole } from '../types/admin';
-
-const STUDENT_CODE = /^(SE|IA)1\d{5}$/;
-const PHONE = /^\+?[0-9 .()-]{8,20}$/;
 
 const createUserSchema = z
   .object({
     role: z.enum(['STUDENT', 'ADVISOR']),
     fullName: z.string().trim().min(2, 'Full name is required').max(255, 'At most 255 characters'),
     email: z.string().trim().min(1, 'Email is required').email('Enter a valid email address').max(255, 'At most 255 characters'),
-    phone: z.string().trim().refine((v) => v === '' || PHONE.test(v), 'Enter a valid phone number'),
+    phone: z.string().trim().refine((v) => v === '' || PHONE_PATTERN.test(v), PHONE_MESSAGE),
     studentCode: z.string().trim(),
     curriculumId: z.string(),
     enrollmentSemesterId: z.string(),
-    expectedGraduationSemesterId: z.string(),
     currentSemester: z.string(),
     maxAdvisees: z.string(),
   })
   .superRefine((v, ctx) => {
     const fail = (path: keyof typeof v, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
     if (v.role === 'STUDENT') {
-      if (!STUDENT_CODE.test(v.studentCode)) fail('studentCode', 'Use the format SE173012 or IA173012');
+      if (!STUDENT_CODE_PATTERN.test(v.studentCode)) fail('studentCode', STUDENT_CODE_MESSAGE);
       if (!v.curriculumId) fail('curriculumId', 'Select a curriculum');
       if (!v.enrollmentSemesterId) fail('enrollmentSemesterId', 'Select the enrollment semester');
       const semester = Number(v.currentSemester);
@@ -52,7 +55,6 @@ const emptyValues = (role: AdminUserRole): CreateUserValues => ({
   studentCode: '',
   curriculumId: '',
   enrollmentSemesterId: '',
-  expectedGraduationSemesterId: '',
   currentSemester: '1',
   maxAdvisees: '30',
 });
@@ -104,8 +106,22 @@ export function CreateUserModal({ open, defaultRole, onClose, onCreated }: Props
 
   const role = watch('role');
   const curriculumId = watch('curriculumId');
-  const curriculumList = curriculums.data?.items ?? [];
-  const semesterList = semesters.data ?? [];
+  const studentCode = watch('studentCode') ?? '';
+  const enrollmentSemesterId = watch('enrollmentSemesterId');
+  const currentSemester = Number(watch('currentSemester'));
+  const allCurriculums = curriculums.data?.items;
+  const curriculumList = useMemo(() => allCurriculums ?? [], [allCurriculums]);
+  const semesterList = useMemo(() => semesters.data ?? [], [semesters.data]);
+
+  // The Student ID tells the major (SE...) and the cohort (..19..), so only the fitting curriculums are offered.
+  const match = useMemo(() => matchCurriculums(studentCode, curriculumList), [studentCode, curriculumList]);
+
+  useEffect(() => {
+    if (role !== 'STUDENT') return;
+    if (!match.options.some((c) => c.id === curriculumId)) {
+      setValue('curriculumId', match.preferredId ?? '');
+    }
+  }, [role, match, curriculumId, setValue]);
 
   // The cohort usually starts in its first semester, so offer that as the starting point.
   useEffect(() => {
@@ -113,16 +129,26 @@ export function CreateUserModal({ open, defaultRole, onClose, onCreated }: Props
     if (chosen) setValue('enrollmentSemesterId', chosen.effectiveFromSemesterId, { shouldValidate: true });
   }, [curriculumId, curriculumList, setValue]);
 
+  // The graduation semester is calculated, not typed: curriculum length + enrollment + how far behind the student is.
+  const courses = useCurriculumCourses(role === 'STUDENT' && curriculumId ? curriculumId : null);
+  const curriculumSemesters = useMemo(
+    () => Math.max(0, ...(courses.data ?? []).map((course) => course.semesterNumber)),
+    [courses.data],
+  );
+  const estimate = useMemo(
+    () =>
+      estimateGraduation({
+        enrollmentCode: semesterList.find((s) => s.id === enrollmentSemesterId)?.code,
+        currentCode: currentSemesterCode(semesterList),
+        currentSemester,
+        curriculumSemesters,
+        semesters: semesterList,
+      }),
+    [semesterList, enrollmentSemesterId, currentSemester, curriculumSemesters],
+  );
+
   const submit = handleSubmit(async (v) => {
     const isStudent = v.role === 'STUDENT';
-    if (isStudent && v.expectedGraduationSemesterId) {
-      const enrolled = semesterList.find((s) => s.id === v.enrollmentSemesterId);
-      const graduating = semesterList.find((s) => s.id === v.expectedGraduationSemesterId);
-      if (enrolled?.startDate && graduating?.startDate && graduating.startDate < enrolled.startDate) {
-        setError('expectedGraduationSemesterId', { message: 'Cannot be before the enrollment semester' });
-        return;
-      }
-    }
     try {
       await adminService.createUser({
         role: v.role,
@@ -134,7 +160,7 @@ export function CreateUserModal({ open, defaultRole, onClose, onCreated }: Props
               studentCode: v.studentCode,
               curriculumVersionId: v.curriculumId,
               enrollmentSemesterId: v.enrollmentSemesterId,
-              expectedGraduationSemesterId: v.expectedGraduationSemesterId || undefined,
+              expectedGraduationSemesterId: estimate?.semesterId ?? undefined,
               currentSemester: Number(v.currentSemester),
             }
           : { maxAdvisees: Number(v.maxAdvisees) }),
@@ -208,10 +234,21 @@ export function CreateUserModal({ open, defaultRole, onClose, onCreated }: Props
                     aria-label="Student ID"
                   />
                 </Field>
-                <Field label="Curriculum" required error={errors.curriculumId?.message} hint="The major and cohort the student follows.">
+                <Field
+                  label="Curriculum"
+                  required
+                  error={errors.curriculumId?.message}
+                  hint={
+                    studentCode.trim().length >= 2
+                      ? match.matched
+                        ? `Suggested from the Student ID: ${studentCode.trim().toUpperCase().slice(0, 2)} curriculums.`
+                        : 'No major matches this Student ID, so every curriculum is listed.'
+                      : 'Enter the Student ID first: the system suggests the matching curriculum.'
+                  }
+                >
                   <select {...register('curriculumId')} className={field} aria-label="Curriculum">
                     <option value="">Select a curriculum...</option>
-                    {curriculumList.map((c) => (
+                    {match.options.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.majorCode} {c.version} - {c.name}
                       </option>
@@ -230,15 +267,24 @@ export function CreateUserModal({ open, defaultRole, onClose, onCreated }: Props
                     ))}
                   </select>
                 </Field>
-                <Field label="Expected graduation" error={errors.expectedGraduationSemesterId?.message}>
-                  <select {...register('expectedGraduationSemesterId')} className={field} aria-label="Expected graduation semester">
-                    <option value="">Not set</option>
-                    {semesterList.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.code}
-                      </option>
-                    ))}
-                  </select>
+                <Field
+                  label="Expected graduation"
+                  hint={
+                    estimate
+                      ? estimate.delaySemesters > 0
+                        ? `Calculated by the system, including ${estimate.delaySemesters} semester(s) of delay.`
+                        : estimate.semesterId
+                          ? 'Calculated by the system from the curriculum length.'
+                          : 'Calculated by the system. This semester is not in the semester list yet, so it is not saved.'
+                      : 'Calculated by the system once the curriculum and semesters are known.'
+                  }
+                >
+                  <output
+                    aria-label="Expected graduation semester"
+                    className={`${field} block bg-gray-50 text-gray-700`}
+                  >
+                    {estimate ? estimate.code : '—'}
+                  </output>
                 </Field>
                 <Field label="Current semester" required error={errors.currentSemester?.message}>
                   <input type="number" {...register('currentSemester')} className={field} aria-label="Current semester" />

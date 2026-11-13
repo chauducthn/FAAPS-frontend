@@ -80,6 +80,9 @@ export interface AdminUserSummary {
   role: AdminUserRole;
   status: AdminUserStatus;
   createdAt: string;
+  /** Students only. Missing until the backend adds them to the list response. */
+  majorCode?: string | null;
+  cohort?: string | null;
 }
 
 export interface AdminUserDetail {

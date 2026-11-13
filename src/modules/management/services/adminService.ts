@@ -72,6 +72,8 @@ export const adminService = {
     search?: string;
     /** Narrow the list to one major (uuid). */
     majorId?: string;
+    /** Narrow the list to one cohort: a cohort is one curriculum version of a major. */
+    curriculumVersionId?: string;
     page?: number;
     size?: number;
     sort?: UserSort;

@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { Plus } from 'lucide-react';
+import { Plus, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { StatusBadge } from '../components/StatusBadge';
 import { UserInitials } from '../components/UserInitials';
 import { UserDetailModal } from '../components/UserDetailModal';
 import { CreateUserModal } from '../components/CreateUserModal';
+import { AssignToAdvisorModal } from '../components/AssignToAdvisorModal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { backState } from '../../../shared/lib/backLink';
@@ -14,46 +15,28 @@ import {
   useChangeUserRole,
   useChangeUserStatus,
   useCohortOptions,
-  useRoleCount,
 } from '../hooks/queries/useAdminUsers';
+import { useAssignmentAdvisors } from '../hooks/queries/useAdminAssignments';
 import { useCurriculumsQuery } from '../../academic/hooks/queries/useCurriculumsQuery';
 import { useMajorOptions } from '../hooks/queries/useAdminDashboard';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
 import { useAuth } from '../../auth/stores/useAuth';
 import type { AdminUserRole, AdminUserStatus, AdminUserSummary, UserSort } from '../types/admin';
-import { adminService } from '../services/adminService';
+import { STUDENT_CODE_MESSAGE, STUDENT_CODE_PATTERN } from '../../auth/validations/register.schema';
 import { UserRowMenu } from '../components/UserRowMenu';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 
 const PAGE_SIZE = 10;
-const TABS: { role: AdminUserRole; label: string }[] = [
+const ROLES: { role: AdminUserRole; label: string }[] = [
   { role: 'STUDENT', label: 'Student' },
   { role: 'ADVISOR', label: 'Advisor' },
 ];
 const STATUSES: AdminUserStatus[] = ['ACTIVE', 'SUSPENDED'];
 
-const selectClass =
-  'h-[38px] rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500';
-
-function TabButton({ role, label, active, onClick }: { role: AdminUserRole; label: string; active: boolean; onClick: () => void }) {
-  const { data: count } = useRoleCount(role);
-  return (
-    <button
-      type="button"
-      role="tab"
-      aria-selected={active}
-      onClick={onClick}
-      className={[
-        'flex items-center gap-1.5 rounded-md border-b-2 px-3 py-2 text-sm font-semibold',
-        active ? 'border-[#f37021] bg-[#fff7ed] text-[#f37021]' : 'border-transparent text-[#555f6f] hover:bg-gray-50',
-      ].join(' ')}
-    >
-      {label}
-      <span className="text-xs font-bold">{count ?? '–'}</span>
-    </button>
-  );
-}
+/** Compact select shown under a column title. */
+const headerSelect =
+  'h-8 w-full min-w-[104px] rounded-md border border-[#e5e7eb] bg-white px-2 text-xs font-medium normal-case text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500';
 
 /** The backend sorts users by a whitelist; the table only offers the ones it can serve. */
 function toUserSort(sorting: SortingState): UserSort {
@@ -66,10 +49,15 @@ export default function UserAccounts() {
   const me = useAuth((s) => s.user);
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  // Other pages link here with ?role=STUDENT or ?role=ADVISOR; the role is now a column filter.
   const roleParam = searchParams.get('role');
-  const role: AdminUserRole = TABS.some((t) => t.role === roleParam) ? (roleParam as AdminUserRole) : 'STUDENT';
-  const setRole = (next: AdminUserRole) =>
-    setSearchParams(next === 'STUDENT' ? {} : { role: next }, { replace: true });
+  const [role, setRoleState] = useState<AdminUserRole | ''>(
+    ROLES.some((r) => r.role === roleParam) ? (roleParam as AdminUserRole) : '',
+  );
+  const setRole = (next: AdminUserRole | '') => {
+    setRoleState(next);
+    setSearchParams(next ? { role: next } : {}, { replace: true });
+  };
 
   const [status, setStatus] = useState<AdminUserStatus | ''>('');
   const [majorId, setMajorId] = useState('');
@@ -84,37 +72,30 @@ export default function UserAccounts() {
   const [curriculumId, setCurriculumId] = useState('');
   const [roleError, setRoleError] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [assignTo, setAssignTo] = useState<{ id: string; name: string }[] | null>(null);
 
   const changeStatus = useChangeUserStatus();
   const changeRole = useChangeUserRole();
   const curriculums = useCurriculumsQuery('curriculum', { status: 'ACTIVE', page: 0, size: 100 });
   const majors = useMajorOptions();
   const cohortOptionsQuery = useCohortOptions();
+  const advisors = useAssignmentAdvisors();
 
   const cohortOptions = useMemo(() => cohortOptionsQuery.data ?? [], [cohortOptionsQuery.data]);
-  const cohortOptionsById = useMemo(
-    () => new Map(cohortOptions.map((c) => [c.cohortId, c])),
-    [cohortOptions],
+  // Once a major is chosen the cohort list only offers that major's cohorts.
+  const selectedMajorCode = majors.data?.find((m) => m.id === majorId)?.code;
+  const visibleCohorts = useMemo(
+    () => (selectedMajorCode ? cohortOptions.filter((c) => c.majorCode === selectedMajorCode) : cohortOptions),
+    [cohortOptions, selectedMajorCode],
   );
 
-  /**
-   * A cohort is one version (K19) of a major, so it narrows the account list
-   * down to the major it belongs to. The backend filters users by `majorId`.
-   */
-  const cohortMajorId = useMemo(() => {
-    if (!cohortId) return '';
-    const majorCode = cohortOptionsById.get(cohortId)?.majorCode;
-    if (!majorCode) return '';
-    return majors.data?.find((m) => m.code === majorCode)?.id ?? '';
-  }, [cohortId, cohortOptionsById, majors.data]);
-
-  const effectiveMajorId = cohortMajorId || majorId;
-
   const { data, isLoading, isError, refetch } = useAdminUsers({
-    role,
+    role: role || undefined,
     status: status || undefined,
     search: search || undefined,
-    majorId: effectiveMajorId || undefined,
+    majorId: majorId || undefined,
+    // A cohort is one curriculum version of a major, so its id is the backend's curriculumVersionId.
+    curriculumVersionId: cohortId || undefined,
     page: pagination.pageIndex,
     size: pagination.pageSize,
     sort: toUserSort(sorting),
@@ -123,13 +104,24 @@ export default function UserAccounts() {
   const items = useMemo(() => data?.items ?? [], [data]);
   const total = data?.totalElements ?? 0;
 
-  const hasFilters = !!status || !!search || !!majorId || !!cohortId;
+  const hasFilters = !!role || !!status || !!search || !!majorId || !!cohortId;
   const clearFilters = () => {
+    setRole('');
     setStatus('');
     setSearch('');
     setMajorId('');
     setCohortId('');
     setPagination((p) => ({ ...p, pageIndex: 0 }));
+  };
+
+  const askSetAdvisor = (rows: AdminUserSummary[]) => {
+    const students = rows.filter((u) => u.role === 'STUDENT');
+    if (students.length === 0) return toast.error('Select at least one student: advisors cannot be given an advisor.');
+    if (students.length < rows.length) {
+      const skipped = rows.length - students.length;
+      toast.info(`${skipped} advisor account${skipped > 1 ? 's were' : ' was'} left out of the selection.`);
+    }
+    setAssignTo(students.map((u) => ({ id: u.id, name: u.fullName })));
   };
 
   /** Any change of the query must start again on the first page. */
@@ -170,8 +162,8 @@ export default function UserAccounts() {
     if (!roleChange) return;
     const target = roleChange.role === 'STUDENT' ? 'ADVISOR' : 'STUDENT';
     const curriculum = curriculums.data?.items.find((item) => item.id === curriculumId);
-    if (target === 'STUDENT' && (!/^(SE|IA)1\d{5}$/.test(studentCode.trim().toUpperCase()) || !curriculum)) {
-      setRoleError('Enter a Student ID like SE173012 or IA173012 and select a curriculum.');
+    if (target === 'STUDENT' && (!STUDENT_CODE_PATTERN.test(studentCode.trim().toUpperCase()) || !curriculum)) {
+      setRoleError(`${STUDENT_CODE_MESSAGE}. Then select a curriculum.`);
       return;
     }
     try {
@@ -211,6 +203,25 @@ export default function UserAccounts() {
         accessorKey: 'role',
         header: 'Role',
         enableSorting: false,
+        meta: {
+          headerFilter: (
+            <select
+              value={role}
+              onChange={(e) => {
+                resetPage(setRole)(e.target.value as AdminUserRole | '');
+              }}
+              aria-label="Filter by role"
+              className={headerSelect}
+            >
+              <option value="">All</option>
+              {ROLES.map((r) => (
+                <option key={r.role} value={r.role}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          ),
+        },
         cell: ({ row }) => (
           <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-bold uppercase text-slate-600">
             {row.original.role}
@@ -218,9 +229,78 @@ export default function UserAccounts() {
         ),
       },
       {
+        id: 'major',
+        header: 'Major',
+        enableSorting: false,
+        accessorFn: (user) => user.majorCode ?? '',
+        meta: {
+          headerFilter: (
+            <select
+              value={majorId}
+              onChange={(e) => {
+                resetPage(setMajorId)(e.target.value);
+                // The cohort list follows the major, so a cohort of another major no longer applies.
+                setCohortId('');
+              }}
+              aria-label="Filter by major"
+              className={headerSelect}
+            >
+              <option value="">All</option>
+              {(majors.data ?? []).map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.code}
+                </option>
+              ))}
+            </select>
+          ),
+        },
+        cell: ({ row }) => <span className="text-[#555f6f]">{row.original.majorCode || '—'}</span>,
+      },
+      {
+        id: 'cohort',
+        header: 'Cohort',
+        enableSorting: false,
+        accessorFn: (user) => user.cohort ?? '',
+        meta: {
+          headerFilter: (
+            <select
+              value={cohortId}
+              onChange={(e) => resetPage(setCohortId)(e.target.value)}
+              aria-label="Filter by cohort"
+              className={headerSelect}
+            >
+              <option value="">All</option>
+              {visibleCohorts.map((c) => (
+                <option key={c.cohortId} value={c.cohortId}>
+                  {c.majorCode} {c.cohort}
+                </option>
+              ))}
+            </select>
+          ),
+        },
+        cell: ({ row }) => <span className="text-[#555f6f]">{row.original.cohort || '—'}</span>,
+      },
+      {
         accessorKey: 'status',
         header: 'Status',
         enableSorting: false,
+        meta: {
+          headerFilter: (
+            <select
+              value={status}
+              onChange={(e) => resetPage(setStatus)(e.target.value as AdminUserStatus | '')}
+              aria-label="Filter by status"
+              className={headerSelect}
+            >
+              <option value="">All</option>
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s.charAt(0) + s.slice(1).toLowerCase()}
+                </option>
+              ))}
+            </select>
+          ),
+        },
         cell: ({ row }) => <StatusBadge status={row.original.status} />,
       },
       {
@@ -240,7 +320,7 @@ export default function UserAccounts() {
                 onAssignments={
                   user.role === 'ADVISOR'
                     ? () => navigate(`/admin/assignments/advisors/${user.id}`, {
-                        state: backState('/admin/users?role=ADVISOR', 'User Accounts · Advisor tab'),
+                        state: backState('/admin/users?role=ADVISOR', 'User Accounts'),
                       })
                     : undefined
                 }
@@ -257,7 +337,9 @@ export default function UserAccounts() {
         },
       },
     ],
-    [me?.id, navigate],
+    // resetPage only calls state setters, so it never changes the result of a render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [me?.id, navigate, role, status, majorId, cohortId, majors.data, visibleCohorts],
   );
 
   return (
@@ -272,23 +354,6 @@ export default function UserAccounts() {
           <Plus className="size-4" /> Create user
         </button>
       </div>
-
-      <section className="rounded-xl bg-white p-4 shadow-sm sm:p-5">
-        <div role="tablist" aria-label="Account type" className="flex gap-1">
-          {TABS.map((t) => (
-            <TabButton
-              key={t.role}
-              role={t.role}
-              label={t.label}
-              active={role === t.role}
-              onClick={() => {
-                setRole(t.role);
-                setPagination((p) => ({ ...p, pageIndex: 0 }));
-              }}
-            />
-          ))}
-        </div>
-      </section>
 
       {isError && !data && (
         <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
@@ -317,69 +382,25 @@ export default function UserAccounts() {
           onSortingChange={setSorting}
           onSearchChange={resetPage(setSearch)}
           filters={
-            <>
-              <select
-                value={status}
-                onChange={(e) => resetPage(setStatus)(e.target.value as AdminUserStatus | '')}
-                aria-label="Filter by status"
-                className={selectClass}
-              >
-                <option value="">Status: All</option>
-                {STATUSES.map((s) => (
-                  <option key={s} value={s}>
-                    Status: {s.charAt(0) + s.slice(1).toLowerCase()}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={majorId}
-                onChange={(e) => {
-                  resetPage(setMajorId)(e.target.value);
-                  // The cohort filter already narrows to a major; the two are exclusive.
-                  setCohortId('');
-                }}
-                aria-label="Filter by major"
-                className={selectClass}
-              >
-                <option value="">Major: All</option>
-                {(majors.data ?? []).map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.code} - {m.name}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={cohortId}
-                onChange={(e) => {
-                  resetPage(setCohortId)(e.target.value);
-                  // A cohort belongs to one major, so the major filter is redundant.
-                  setMajorId('');
-                }}
-                aria-label="Filter by cohort"
-                className={selectClass}
-              >
-                <option value="">Cohort: All</option>
-                {cohortOptions.map((c) => (
-                  <option key={c.cohortId} value={c.cohortId}>
-                    {c.majorCode} {c.cohort} ({c.students})
-                  </option>
-                ))}
-              </select>
-
-              <button
-                type="button"
-                onClick={clearFilters}
-                disabled={!hasFilters}
-                className="h-[38px] rounded-lg px-3 text-sm font-medium text-[#555f6f] hover:bg-gray-50 disabled:opacity-40"
-              >
-                Clear filters
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={clearFilters}
+              disabled={!hasFilters}
+              className="h-[38px] rounded-lg px-3 text-sm font-medium text-[#555f6f] hover:bg-gray-50 disabled:opacity-40"
+            >
+              Clear filters
+            </button>
           }
           bulkActions={(selectedRows) => (
             <>
+              <button
+                type="button"
+                onClick={() => askSetAdvisor(selectedRows)}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#fff7ed] px-4 py-2 text-sm font-semibold text-[#c2410c] hover:bg-orange-100"
+              >
+                <UserCheck className="size-4" aria-hidden />
+                Set advisor
+              </button>
               <button
                 type="button"
                 onClick={() => askBulk(selectedRows, 'SUSPENDED')}
@@ -401,9 +422,17 @@ export default function UserAccounts() {
 
       <UserDetailModal userId={detailId} onClose={() => setDetailId(null)} />
 
+      <AssignToAdvisorModal
+        open={!!assignTo}
+        onClose={() => setAssignTo(null)}
+        students={assignTo ?? []}
+        advisors={advisors.data ?? []}
+        onDone={() => refetch()}
+      />
+
       <CreateUserModal
         open={creating}
-        defaultRole={role}
+        defaultRole={role || 'STUDENT'}
         onClose={() => setCreating(false)}
         onCreated={async (name) => {
           toast.success(`${name} was added.`);

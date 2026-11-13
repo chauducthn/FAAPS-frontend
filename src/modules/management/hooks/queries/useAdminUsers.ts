@@ -8,6 +8,8 @@ export const useAdminUsers = (params: {
   search?: string;
   /** Narrow the list to one major (uuid). */
   majorId?: string;
+  /** Narrow the list to one cohort (a curriculum version). */
+  curriculumVersionId?: string;
   page?: number;
   size?: number;
   sort?: UserSort;
