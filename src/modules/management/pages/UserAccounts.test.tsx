@@ -205,18 +205,19 @@ describe('UserAccounts', () => {
   });
 
   describe('bulk actions', () => {
-    it('offers Set advisor for students and Reset password for every role', async () => {
+    it('offers Reset password, Suspend and Activate for the selected rows', async () => {
       const user = userEvent.setup();
       renderPage();
       await screen.findByText('Nguyen Van A');
 
       await user.click(screen.getByLabelText('Select row 1'));
 
-      expect(screen.getByRole('button', { name: /set advisor/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /reset password/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /suspend/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /activate/i })).toBeInTheDocument();
     });
 
-    it('hides Set advisor when the selection mixes roles', async () => {
+    it('offers the same bulk actions when the selection mixes roles', async () => {
       const user = userEvent.setup();
       listUsers.mockResolvedValue({
         items: [
@@ -250,7 +251,6 @@ describe('UserAccounts', () => {
       await user.click(screen.getByLabelText('Select row 1'));
       await user.click(screen.getByLabelText('Select row 2'));
 
-      expect(screen.queryByRole('button', { name: /set advisor/i })).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: /reset password/i })).toBeInTheDocument();
     });
   });
@@ -268,13 +268,22 @@ describe('UserAccounts', () => {
   });
 
   describe('create user modal', () => {
-    it('explains that accounts have no password and validates required fields', async () => {
+    it('keeps the form free of helper paragraphs and validates required fields', async () => {
       const user = userEvent.setup();
       renderPage();
       await screen.findByText('Nguyen Van A');
 
       await user.click(screen.getByRole('button', { name: /create user/i }));
-      expect(await screen.findByText(/No password is set/i)).toBeInTheDocument();
+
+      // The guidance paragraphs are gone: only the label and the placeholder carry the format.
+      expect(screen.queryByText(/No password is set/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/The identity of the person/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Must be an @fpt\.edu\.vn address/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Optional\. A Vietnamese mobile number/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Two letters for the major/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/The major and cohort the student follows/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Suggested from the enrollment semester/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/From 1 to 9/i)).not.toBeInTheDocument();
 
       await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
       expect(await screen.findByText('Full name is required')).toBeInTheDocument();
@@ -309,6 +318,30 @@ describe('UserAccounts', () => {
 
       expect(await screen.findByText(/Advisor accounts must use an @fe\.edu\.vn/)).toBeInTheDocument();
       expect(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!).toBeDisabled();
+    });
+
+    it('shows the student fields and hides the advisor ones', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByRole('button', { name: /create user/i }));
+
+      expect(await screen.findByLabelText('Student ID')).toBeInTheDocument();
+      expect(screen.getByLabelText('Curriculum')).toBeInTheDocument();
+      expect(screen.getByLabelText('Enrollment semester')).toBeInTheDocument();
+      expect(screen.getByLabelText('Current semester')).toBeInTheDocument();
+      expect(screen.getByLabelText('Expected graduation semester')).toBeInTheDocument();
+      expect(screen.queryByLabelText('Max advisees')).not.toBeInTheDocument();
+
+      await user.click(await screen.findByText('Advisor', { selector: 'label' }));
+
+      await waitFor(() => {
+        expect(screen.queryByLabelText('Student ID')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Curriculum')).not.toBeInTheDocument();
+        expect(screen.queryByLabelText('Current semester')).not.toBeInTheDocument();
+      });
+      expect(screen.getByLabelText('Max advisees')).toBeInTheDocument();
     });
 
     it('fills the major, cohort and curriculum from the Student ID', async () => {
@@ -361,7 +394,8 @@ describe('UserAccounts', () => {
       expect(createUser).not.toHaveBeenCalled();
     });
 
-    it('creates an advisor from the advisor fields', async () => {      const user = userEvent.setup();
+    it('creates an advisor from the advisor fields', async () => {
+      const user = userEvent.setup();
       createUser.mockResolvedValue({});
       renderPage();
       await screen.findByText('Nguyen Van A');
@@ -370,9 +404,7 @@ describe('UserAccounts', () => {
       await user.click(await screen.findByText('Advisor', { selector: 'label' }));
       await user.type(screen.getByLabelText('Full name'), 'Tran Advisor');
       await user.type(screen.getByLabelText('Email'), 'advisor@fe.edu.vn');
-      await user.type(screen.getByLabelText('Advisor Code'), 'ADV001');
-      await user.clear(screen.getByLabelText('Maximum advisees'));
-      await user.type(screen.getByLabelText('Maximum advisees'), '12');
+      await user.type(screen.getByLabelText('Max advisees'), '12');
       await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
 
       await waitFor(() =>
@@ -381,11 +413,11 @@ describe('UserAccounts', () => {
             role: 'ADVISOR',
             fullName: 'Tran Advisor',
             email: 'advisor@fe.edu.vn',
-            advisorCode: 'ADV001',
             maxAdvisees: 12,
           }),
         ),
       );
+      expect(createUser.mock.calls[0][0]).not.toHaveProperty('advisorCode');
     });
   });
 });

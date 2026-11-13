@@ -4,14 +4,17 @@
 // the validation rules: the identifier formats, the mail domain each role
 // must use, and the academic fields that follow from the Student ID.
 //
-// Accounts are created for Google sign-in, so the form explains that instead
-// of asking for a password. The admin can still issue a temporary password
-// later with "Reset password" on the account row.
+// Accounts are created for Google sign-in, so no password is asked for here.
+// The admin can still issue a temporary password later with "Reset password"
+// on the account row.
+//
+// The fields are deliberately terse: a label above, a placeholder inside, and
+// the Zod error under the input that is wrong. No helper paragraphs.
 
 import { useEffect, useMemo, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertTriangle, GraduationCap, Info, Loader2, Sparkles, UserRound, X } from 'lucide-react';
+import { AlertTriangle, GraduationCap, Loader2, Sparkles, UserRound, X } from 'lucide-react';
 import { z } from 'zod';
 import { cn } from '@/shared/lib/utils';
 import { Modal } from '../../../shared/components/ui/Modal';
@@ -20,15 +23,13 @@ import { useCurriculumsQuery, useSemesterOptions } from '../../academic/hooks/qu
 import { useMajorOptions } from '../hooks/queries/useAdminDashboard';
 import { adminService } from '../services/adminService';
 import {
-  ADVISOR_CODE_ERROR_MESSAGE,
-  ADVISOR_CODE_PATTERN,
   PHONE_ERROR_MESSAGE,
   PHONE_PATTERN,
   STUDENT_ID_ERROR_MESSAGE,
   STUDENT_ID_PATTERN,
-  emailDomainErrorMessage,
-  emailMatchesRole,
+  STUDENT_ID_PLACEHOLDER,
   emailRoleErrorMessage,
+  emailMatchesRole,
   hasAllowedEmailDomain,
   isAfterSemester,
   parseStudentId,
@@ -44,7 +45,6 @@ const createUserSchema = z
     email: z.string().trim().min(1, 'Email is required').email('Enter a valid email address').max(255, 'At most 255 characters'),
     phone: z.string().trim(),
     studentCode: z.string().trim(),
-    advisorCode: z.string().trim(),
     curriculumId: z.string(),
     enrollmentSemesterId: z.string(),
     expectedGraduationSemesterId: z.string(),
@@ -71,7 +71,6 @@ const createUserSchema = z
       const semester = Number(v.currentSemester);
       if (!Number.isInteger(semester) || semester < 1 || semester > 9) fail('currentSemester', 'Enter a number from 1 to 9');
     } else {
-      if (!ADVISOR_CODE_PATTERN.test(v.advisorCode.toUpperCase())) fail('advisorCode', ADVISOR_CODE_ERROR_MESSAGE);
       const max = Number(v.maxAdvisees);
       if (!Number.isInteger(max) || max < 1 || max > 500) fail('maxAdvisees', 'Enter a number from 1 to 500');
     }
@@ -85,16 +84,22 @@ const emptyValues = (role: AdminUserRole): CreateUserValues => ({
   email: '',
   phone: '',
   studentCode: '',
-  advisorCode: '',
   curriculumId: '',
   enrollmentSemesterId: '',
   expectedGraduationSemesterId: '',
-  currentSemester: '1',
-  maxAdvisees: '30',
+  currentSemester: '',
+  maxAdvisees: '',
 });
 
-const field =
-  'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3.5 py-2.5 text-[13px] font-medium text-gray-900 placeholder:font-normal placeholder:text-gray-400 transition-all focus:border-[#F26F21] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20 disabled:cursor-not-allowed disabled:opacity-60';
+const fieldBase =
+  'w-full rounded-xl border bg-gray-50/50 px-3.5 py-2.5 text-[13px] font-medium text-gray-900 placeholder:font-normal placeholder:text-gray-500 transition-all focus:bg-white focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:opacity-60';
+
+/** The input skin: neutral until it is wrong, red once Zod has spoken. */
+const fieldClass = (invalid?: boolean) =>
+  invalid
+    ? `${fieldBase} border-red-300 bg-red-50/60 focus:border-red-400 focus:ring-red-200`
+    : `${fieldBase} border-gray-200 focus:border-[#F26F21] focus:ring-[#F26F21]/20`;
+
 const labelClass = 'mb-1.5 block text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500';
 
 interface Props {
@@ -132,7 +137,6 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
         fullName: user.fullName,
         email: user.email,
         studentCode: user.role === 'STUDENT' ? user.userId : '',
-        advisorCode: user.role === 'ADVISOR' ? user.userId : '',
       });
       return;
     }
@@ -141,9 +145,7 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
 
   const role = watch('role');
   const studentCode = watch('studentCode');
-  const advisorCode = watch('advisorCode');
   const email = watch('email');
-  const curriculumId = watch('curriculumId');
   const enrollmentSemesterId = watch('enrollmentSemesterId');
   const expectedGraduationSemesterId = watch('expectedGraduationSemesterId');
 
@@ -208,6 +210,8 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
     hasAllowedEmailDomain(email) &&
     !emailMatchesRole(email, role);
 
+  const emailError = errors.email?.message ?? (emailRoleConflict ? emailRoleErrorMessage(role) : undefined);
+
   const submit = handleSubmit(async (v) => {
     const isStudent = v.role === 'STUDENT';
 
@@ -239,7 +243,6 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
                 currentSemester: Number(v.currentSemester),
               }
             : {
-                advisorCode: v.advisorCode.toUpperCase(),
                 maxAdvisees: Number(v.maxAdvisees),
               }),
         });
@@ -254,34 +257,28 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
     setValue('role', next, { shouldValidate: true });
     // The identifiers belong to one role each, so they are cleared on a switch.
     if (next === 'STUDENT') {
-      setValue('advisorCode', '');
+      setValue('maxAdvisees', '');
     } else {
       setValue('studentCode', '');
       setValue('curriculumId', '');
       setValue('enrollmentSemesterId', '');
       setValue('expectedGraduationSemesterId', '');
+      setValue('currentSemester', '');
     }
-    clearErrors(['studentCode', 'advisorCode', 'curriculumId', 'enrollmentSemesterId', 'expectedGraduationSemesterId']);
+    clearErrors(['studentCode', 'curriculumId', 'enrollmentSemesterId', 'expectedGraduationSemesterId', 'currentSemester', 'maxAdvisees']);
   };
 
   return (
     <Modal open={open} onClose={onClose} title={isEdit ? 'Edit user' : 'Create user'} className="max-w-2xl">
       <form noValidate onSubmit={submit} className="flex min-h-0 flex-col">
-        <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#fff7ed] to-white px-6 py-5">
-          <div className="flex items-start gap-3">
+        <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#fff7ed] to-white px-6 py-4">
+          <div className="flex items-center gap-3">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
               {role === 'STUDENT' ? <GraduationCap className="size-5" /> : <UserRound className="size-5" />}
             </span>
-            <div>
-              <h2 className="text-base font-extrabold tracking-tight text-gray-900">
-                {isEdit ? 'Edit user' : 'Create user'}
-              </h2>
-              <p className="mt-0.5 text-xs leading-relaxed text-gray-500">
-                {isEdit
-                  ? 'Change the role or the details of this account. The role decides which mail domain the address must use.'
-                  : 'Add a Student or an Advisor account to FAAPS.'}
-              </p>
-            </div>
+            <h2 className="text-base font-extrabold tracking-tight text-gray-900">
+              {isEdit ? 'Edit user' : 'Create user'}
+            </h2>
           </div>
           <button
             type="button"
@@ -294,16 +291,7 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
         </div>
 
         <div className="space-y-4 overflow-y-auto px-6 py-5 text-[13px]">
-          <div role="note" className="flex gap-2.5 rounded-xl border border-blue-100 bg-blue-50 px-3.5 py-3 text-blue-900">
-            <Info className="mt-0.5 size-4 shrink-0" />
-            <p className="text-[12px] leading-relaxed">
-              <strong>No password is set at creation.</strong> Accounts sign in with Google, so the person must use exactly
-              the email entered below. A temporary password can be issued later with <strong>Reset password</strong> on the
-              account row.
-            </p>
-          </div>
-
-          <Section title="Account" hint="The identity of the person and the role they hold.">
+          <Section title="Account">
             <Field label="Role" required>
               <div className="grid grid-cols-2 gap-2 rounded-xl bg-gray-100 p-1" role="radiogroup" aria-label="Role">
                 {(['STUDENT', 'ADVISOR'] as const).map((r) => (
@@ -331,50 +319,52 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Full name" required error={errors.fullName?.message}>
-                <input {...register('fullName')} placeholder="Nguyen Van A" className={field} aria-label="Full name" />
+                <input
+                  {...register('fullName')}
+                  placeholder="Nguyen Van A"
+                  className={fieldClass(!!errors.fullName)}
+                  aria-label="Full name"
+                />
               </Field>
-              <Field
-                label="Email"
-                required
-                error={errors.email?.message}
-                hint={role === 'STUDENT' ? 'Must be an @fpt.edu.vn address' : 'Must be an @fe.edu.vn address'}
-              >
+              <Field label="Email" required error={emailError}>
                 <input
                   type="email"
                   {...register('email')}
                   placeholder={role === 'STUDENT' ? 'name@fpt.edu.vn' : 'name@fe.edu.vn'}
-                  className={cn(field, emailRoleConflict && 'border-red-300 bg-red-50/60 focus:border-red-400 focus:ring-red-200')}
+                  className={fieldClass(!!emailError)}
                   aria-label="Email"
                 />
               </Field>
             </div>
 
-            {emailRoleConflict && (
-              <p role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-[12px] font-semibold leading-relaxed text-red-700">
-                <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-                {emailRoleErrorMessage(role)}
-              </p>
-            )}
-
-            <Field label="Phone" error={errors.phone?.message} hint="Optional. A Vietnamese mobile number, for example 0901234567.">
-              <input {...register('phone')} placeholder="0901234567" className={field} aria-label="Phone" />
+            <Field label="Phone" error={errors.phone?.message}>
+              <input
+                {...register('phone')}
+                placeholder="0901234567"
+                className={fieldClass(!!errors.phone)}
+                aria-label="Phone"
+              />
             </Field>
           </Section>
 
           {role === 'STUDENT' ? (
-            <Section title="Student profile" hint="The Student ID carries the major and the cohort.">
+            <Section title="Student profile">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Student ID" required error={errors.studentCode?.message} hint="Two letters for the major, then six digits.">
+                <Field label="Student ID" required error={errors.studentCode?.message}>
                   <input
                     {...register('studentCode', { setValueAs: (v: string) => v.toUpperCase() })}
                     maxLength={8}
-                    placeholder="SE173012"
-                    className={cn(field, 'font-mono font-bold uppercase')}
+                    placeholder={STUDENT_ID_PLACEHOLDER}
+                    className={cn(fieldClass(!!errors.studentCode), 'font-mono font-bold uppercase')}
                     aria-label="Student ID"
                   />
                 </Field>
-                <Field label="Curriculum" required error={errors.curriculumId?.message} hint="The major and cohort the student follows.">
-                  <select {...register('curriculumId')} className={field} aria-label="Curriculum">
+                <Field label="Curriculum" required error={errors.curriculumId?.message}>
+                  <select
+                    {...register('curriculumId')}
+                    className={fieldClass(!!errors.curriculumId)}
+                    aria-label="Curriculum"
+                  >
                     <option value="">Select a curriculum…</option>
                     {curriculumList.map((c) => (
                       <option key={c.id} value={c.id}>
@@ -385,22 +375,21 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
                 </Field>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500">Derived from the ID</span>
-                {identity ? (
-                  <>
-                    <DerivedChip icon={<GraduationCap className="size-3" />} label={`Major ${major?.name ?? identity.majorCode}`} />
-                    <DerivedChip icon={<Sparkles className="size-3" />} label={`Cohort ${identity.cohort}`} />
-                    {!major && <DerivedChip tone="warn" label="No matching major" />}
-                  </>
-                ) : (
-                  <span className="text-[11px] text-gray-400">Enter a Student ID to resolve the major and cohort.</span>
-                )}
-              </div>
+              {identity && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <DerivedChip icon={<GraduationCap className="size-3" />} label={`Major ${major?.name ?? identity.majorCode}`} />
+                  <DerivedChip icon={<Sparkles className="size-3" />} label={`Cohort ${identity.cohort}`} />
+                  {!major && <DerivedChip tone="warn" label="No matching major" />}
+                </div>
+              )}
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <Field label="Enrollment semester" required error={errors.enrollmentSemesterId?.message}>
-                  <select {...register('enrollmentSemesterId')} className={field} aria-label="Enrollment semester">
+                  <select
+                    {...register('enrollmentSemesterId')}
+                    className={fieldClass(!!errors.enrollmentSemesterId)}
+                    aria-label="Enrollment semester"
+                  >
                     <option value="">Select…</option>
                     {semesterList.map((s) => (
                       <option key={s.id} value={s.id}>
@@ -409,17 +398,24 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
                     ))}
                   </select>
                 </Field>
-                <Field label="Current semester" required error={errors.currentSemester?.message} hint="From 1 to 9.">
-                  <input type="number" min={1} max={9} {...register('currentSemester')} className={field} aria-label="Current semester" />
+                <Field label="Current semester" required error={errors.currentSemester?.message}>
+                  <input
+                    type="number"
+                    min={1}
+                    max={9}
+                    {...register('currentSemester')}
+                    placeholder="1"
+                    className={fieldClass(!!errors.currentSemester)}
+                    aria-label="Current semester"
+                  />
                 </Field>
                 <Field
                   label="Expected graduation"
-                  error={errors.expectedGraduationSemesterId?.message}
-                  hint="Suggested from the enrollment semester."
+                  error={errors.expectedGraduationSemesterId?.message ?? (graduationConflict ? 'The graduation semester must come after the enrollment semester' : undefined)}
                 >
                   <select
                     {...register('expectedGraduationSemesterId')}
-                    className={cn(field, graduationConflict && 'border-red-300 bg-red-50/60 focus:border-red-400 focus:ring-red-200')}
+                    className={fieldClass(!!errors.expectedGraduationSemesterId || graduationConflict)}
                     aria-label="Expected graduation semester"
                   >
                     <option value="">Not set</option>
@@ -431,35 +427,26 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
                   </select>
                 </Field>
               </div>
-
-              {graduationConflict && (
-                <p role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-[12px] font-semibold leading-relaxed text-red-700">
-                  <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-                  The graduation semester must come after the enrollment semester.
-                </p>
-              )}
             </Section>
           ) : (
-            <Section title="Advisor profile" hint="The Advisor Code and how many students can be assigned.">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Advisor Code" required error={errors.advisorCode?.message} hint="ADV followed by three digits.">
-                  <input
-                    {...register('advisorCode', { setValueAs: (v: string) => v.toUpperCase() })}
-                    maxLength={6}
-                    placeholder="ADV001"
-                    className={cn(field, 'font-mono font-bold uppercase')}
-                    aria-label="Advisor Code"
-                  />
-                </Field>
-                <Field label="Maximum advisees" required error={errors.maxAdvisees?.message} hint="How many students this advisor can take at the same time.">
-                  <input type="number" min={1} max={500} {...register('maxAdvisees')} className={field} aria-label="Maximum advisees" />
-                </Field>
-              </div>
+            <Section title="Advisor profile">
+              <Field label="Max advisees" required error={errors.maxAdvisees?.message}>
+                <input
+                  type="number"
+                  min={1}
+                  max={500}
+                  {...register('maxAdvisees')}
+                  placeholder="30"
+                  className={fieldClass(!!errors.maxAdvisees)}
+                  aria-label="Max advisees"
+                />
+              </Field>
             </Section>
           )}
 
           {errors.root?.message && (
-            <p role="alert" className="rounded-xl border border-red-100 bg-red-50 px-3.5 py-2.5 text-[12px] font-semibold text-red-700">
+            <p role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-[12px] font-semibold leading-relaxed text-red-700">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
               {errors.root.message}
             </p>
           )}
@@ -488,11 +475,10 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
   );
 }
 
-function Section({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-      <h3 className="text-[13px] font-extrabold tracking-tight text-gray-900">{title}</h3>
-      <p className="mb-3.5 mt-0.5 text-[11px] text-gray-400">{hint}</p>
+      <h3 className="mb-3.5 text-[13px] font-extrabold tracking-tight text-gray-900">{title}</h3>
       <div className="space-y-4">{children}</div>
     </section>
   );
@@ -501,13 +487,11 @@ function Section({ title, hint, children }: { title: string; hint: string; child
 function Field({
   label,
   required,
-  hint,
   error,
   children,
 }: {
   label: string;
   required?: boolean;
-  hint?: string;
   error?: string;
   children: ReactNode;
 }) {
@@ -515,12 +499,12 @@ function Field({
     <div>
       <label className={labelClass}>
         {label}
-        {required && <span className="ml-0.5 text-[#F26F21]">*</span>}
+        {required && <span className="ml-0.5 text-[#C2410C]">*</span>}
       </label>
       {children}
-      {hint && !error && <p className="mt-1 text-[11px] text-gray-400">{hint}</p>}
       {error && (
-        <p role="alert" className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-red-600">
+        <p role="alert" className="mt-1.5 flex items-start gap-1 text-[11px] font-semibold leading-snug text-red-600">
+          <AlertTriangle className="mt-px size-3 shrink-0" />
           {error}
         </p>
       )}
