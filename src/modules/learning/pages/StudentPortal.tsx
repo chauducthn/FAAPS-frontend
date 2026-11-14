@@ -42,6 +42,18 @@ export default function StudentPortal() {
         </p>
       </div>
 
+      {profileQuery.data && !profileQuery.data.curriculumVersionId && (
+        <div
+          role="note"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900"
+        >
+          <span>You have not chosen your major and curriculum yet. Choose them in your Profile to see your progress and study plan.</span>
+          <Link to="/student/profile" className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-[13px] font-bold text-white hover:bg-[#e05f14]">
+            Go to Profile
+          </Link>
+        </div>
+      )}
+
       <ProgressSummary progress={progressQuery.data} isLoading={progressQuery.isLoading} />
 
 

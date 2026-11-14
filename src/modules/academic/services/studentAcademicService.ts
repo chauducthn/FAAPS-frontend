@@ -56,6 +56,9 @@ export const studentAcademicService = {
   profile: () => get<AcademicStudentProfile>('/profile'),
   updateProfile: async (body: { fullName: string; phone: string }) =>
     (await apiClient.put<AcademicStudentProfile>('/student/profile', body, { headers: await getCsrfHeaders() })).data,
+  /** Saves the major / curriculum the student follows (chosen in the Profile page). */
+  changeCurriculum: async (curriculumVersionId: string) =>
+    (await apiClient.put<AcademicStudentProfile>('/student/profile/curriculum', { curriculumVersionId }, { headers: await getCsrfHeaders() })).data,
   transcript: () => get<TranscriptRow[]>('/transcript'),
   progress: () => get<Progress>('/progress'),
   courses: (search = '', page = 0) => get<Course[]>('/courses', { search, page, size: 20 }),

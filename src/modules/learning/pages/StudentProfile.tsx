@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { studentAcademicService } from '../../academic/services/studentAcademicService';
+import { MajorCurriculumCard } from '../components/MajorCurriculumCard';
 import { StudentProfileCard } from '../components/StudentProfileCard';
 import { useMyProfile } from '../hooks/queries/useStudentQueries';
 import { profileSchema, type ProfileFormValues } from '../validations/profile.schema';
@@ -65,7 +66,7 @@ export default function StudentProfile() {
       <div>
         <p className="text-xs text-[#555f6f]">Student / Profile</p>
         <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">My Profile</h1>
-        <p className="mt-1 text-sm text-[#555f6f]">Keep your contact details up to date. Academic data is managed by the university.</p>
+        <p className="mt-1 text-sm text-[#555f6f]">Keep your contact details up to date and choose your major and curriculum.</p>
       </div>
 
       {isError ? (
@@ -154,7 +155,10 @@ export default function StudentProfile() {
             </form>
           </section>
 
-          <StudentProfileCard profile={data} />
+          <div className="flex flex-col gap-5">
+            <MajorCurriculumCard profile={data} />
+            <StudentProfileCard profile={data} />
+          </div>
         </div>
       )}
     </div>

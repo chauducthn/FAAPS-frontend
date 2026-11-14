@@ -12,12 +12,14 @@ export interface CurriculumChoice {
 
 export interface CompleteRegistrationBody {
   studentCode: string;
-  curriculumVersionId: string;
   dateOfBirth: string;
-  phone?: string;
+  phone: string;
 }
 
-/** Second step of student registration: the first Google sign-in has no academic profile yet. */
+/**
+ * Second step of student registration: the first Google sign-in has no academic profile yet.
+ * The major and curriculum are chosen later in the Profile page.
+ */
 export const onboardingService = {
   curriculums: async (): Promise<CurriculumChoice[]> =>
     (await apiClient.get<CurriculumChoice[]>('/student/onboarding/curriculums')).data,

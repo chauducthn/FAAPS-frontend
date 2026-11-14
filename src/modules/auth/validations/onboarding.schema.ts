@@ -4,7 +4,6 @@ import { dateOfBirthSchema, phoneSchema, studentCodeSchema } from './register.sc
 export const completeRegistrationSchema = z.object({
   studentCode: studentCodeSchema,
   dateOfBirth: dateOfBirthSchema,
-  curriculumVersionId: z.string().min(1, 'Select your curriculum'),
   phone: phoneSchema,
 });
 

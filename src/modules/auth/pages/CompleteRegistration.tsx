@@ -1,6 +1,5 @@
-import { useEffect, useMemo } from 'react';
 import { Navigate, useNavigate } from 'react-router';
-import { Controller, useForm, useWatch } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -10,10 +9,8 @@ import { useAuth } from '@/modules/auth/stores/useAuth';
 import { authService } from '@/modules/auth/services/authService';
 import type { AcademicStudentProfile } from '@/modules/academic/services/studentAcademicService';
 import { DateOfBirthField } from '../components/DateOfBirthField';
-import { matchCurriculums } from '../lib/curriculumMatch';
-import { clearPendingStudentCode, readPendingStudentCode } from '../lib/pendingStudentCode';
 import { onboardingService } from '../services/onboardingService';
-import { ONBOARDING_KEYS, useCurriculumChoices, useRegistrationProfile } from '../hooks/queries/useStudentOnboarding';
+import { ONBOARDING_KEYS, useRegistrationProfile } from '../hooks/queries/useStudentOnboarding';
 import {
   completeRegistrationSchema,
   type CompleteRegistrationInput,
@@ -24,57 +21,33 @@ const input =
   'block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500';
 
 /**
- * Step 2 of registration: choose the major / curriculum. Used after a manual sign-up (the Student ID is already
- * known) and after the first Google sign-in (the student also gives the Student ID, birth date and phone here).
- * Only the curriculums that fit the Student ID are offered.
+ * Second step for a student who signed in with Google for the first time: the Student ID, birth date and phone.
+ * The major and curriculum are not asked here; the student chooses them later in the Profile page.
  */
 function RegistrationForm({ profile }: { profile: AcademicStudentProfile }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user, logout } = useAuth();
-  const curriculums = useCurriculumChoices();
 
   const {
     register,
     control,
     handleSubmit,
     setError,
-    setValue,
-    getValues,
     formState: { errors },
   } = useForm<CompleteRegistrationInput, unknown, CompleteRegistrationValues>({
     resolver: zodResolver(completeRegistrationSchema),
-    defaultValues: {
-      studentCode: readPendingStudentCode(),
-      dateOfBirth: profile.dateOfBirth ?? '',
-      curriculumVersionId: '',
-      phone: profile.phone ?? '',
-    },
+    defaultValues: { studentCode: '', dateOfBirth: profile.dateOfBirth ?? '', phone: profile.phone ?? '' },
   });
-
-  const studentCode = useWatch({ control, name: 'studentCode' }) ?? '';
-  const match = useMemo(
-    () => matchCurriculums(studentCode, curriculums.data ?? []),
-    [studentCode, curriculums.data],
-  );
-
-  // The Student ID decides which curriculums are offered: drop a choice that no longer fits and pick the cohort's own.
-  useEffect(() => {
-    const current = getValues('curriculumVersionId');
-    const stillOffered = match.options.some((item) => item.id === current);
-    if (!stillOffered) setValue('curriculumVersionId', match.preferredId ?? '');
-  }, [match, getValues, setValue]);
 
   const save = useMutation({
     mutationFn: (values: CompleteRegistrationValues) =>
       onboardingService.complete({
         studentCode: values.studentCode,
-        curriculumVersionId: values.curriculumVersionId,
         dateOfBirth: values.dateOfBirth,
         phone: values.phone,
       }),
     onSuccess: (saved) => {
-      clearPendingStudentCode();
       queryClient.setQueryData(ONBOARDING_KEYS.profile, saved);
       toast.success('Registration complete. Welcome to FAAPS!');
       navigate('/student', { replace: true });
@@ -82,35 +55,24 @@ function RegistrationForm({ profile }: { profile: AcademicStudentProfile }) {
     onError: (error) => setError('root', { message: apiErrorMessage(error) }),
   });
 
-  const grouped = useMemo(() => {
-    const byMajor = new Map<string, { label: string; items: typeof match.options }>();
-    for (const item of match.options) {
-      const entry = byMajor.get(item.majorCode) ?? { label: `${item.majorCode} - ${item.majorName}`, items: [] };
-      entry.items.push(item);
-      byMajor.set(item.majorCode, entry);
-    }
-    return [...byMajor.values()];
-  }, [match]);
-
   const signOut = async () => {
     try {
       await authService.logout();
     } finally {
-      clearPendingStudentCode();
       logout();
       window.location.assign('/login');
     }
   };
-
-  const hasStudentCode = studentCode.trim().length > 0;
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
       <div className="w-full max-w-md space-y-6 rounded-2xl border border-gray-200 bg-white p-10 shadow-sm">
         <div className="text-center">
           <Logo className="mb-2 justify-center" />
-          <h1 className="mt-4 text-xl font-semibold text-gray-900">Choose your major</h1>
-          <p className="mt-2 text-sm text-gray-500">One last step so FAAPS can build your study plan.</p>
+          <h1 className="mt-4 text-xl font-semibold text-gray-900">Complete your registration</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Add your student details. You can choose your major in your Profile after signing in.
+          </p>
         </div>
 
         <div className="rounded-lg bg-gray-50 p-4 text-sm">
@@ -126,36 +88,6 @@ function RegistrationForm({ profile }: { profile: AcademicStudentProfile }) {
             </label>
             <input id="studentCode" {...register('studentCode')} maxLength={8} placeholder="SE190001" className={input} />
             {errors.studentCode && <p className="mt-1 text-xs text-red-500">{errors.studentCode.message}</p>}
-          </div>
-
-          <div>
-            <label htmlFor="curriculumVersionId" className="mb-1 block text-sm font-medium text-gray-700">
-              Major / Curriculum <span className="text-red-500">*</span>
-            </label>
-            <select id="curriculumVersionId" {...register('curriculumVersionId')} className={input} disabled={curriculums.isLoading}>
-              <option value="">{curriculums.isLoading ? 'Loading...' : 'Select your major and cohort...'}</option>
-              {grouped.map((group) => (
-                <optgroup key={group.label} label={group.label}>
-                  {group.items.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.version} - {item.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            {errors.curriculumVersionId && <p className="mt-1 text-xs text-red-500">{errors.curriculumVersionId.message}</p>}
-            {curriculums.isError && <p className="mt-1 text-xs text-red-500">Could not load the curriculums. Please reload the page.</p>}
-            {!curriculums.isLoading && !curriculums.isError && hasStudentCode && (
-              <p className="mt-1 text-xs text-gray-500">
-                {match.matched
-                  ? `Showing the curriculums that fit your Student ID (${studentCode.trim().toUpperCase().slice(0, 2)}).`
-                  : 'No major matches this Student ID yet, so all curriculums are shown.'}
-              </p>
-            )}
-            {!curriculums.isLoading && !curriculums.isError && grouped.length === 0 && (
-              <p className="mt-1 text-xs text-amber-700">No curriculum is open for registration yet. Please contact an administrator.</p>
-            )}
           </div>
 
           <div>

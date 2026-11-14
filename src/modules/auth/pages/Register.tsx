@@ -9,7 +9,6 @@ import { useAuth } from '@/modules/auth/stores/useAuth';
 import { useAuthMutations } from '@/modules/auth/hooks/mutations/useAuthMutations';
 import { authService } from '@/modules/auth/services/authService';
 import { DateOfBirthField } from '../components/DateOfBirthField';
-import { savePendingStudentCode } from '../lib/pendingStudentCode';
 import { registerSchema, type RegisterInput, type RegisterValues } from '../validations/register.schema';
 
 const inputClass =
@@ -76,9 +75,8 @@ export default function Register() {
         studentCode: values.studentCode,
         phone: values.phone,
       }),
-    onSuccess: (user, values) => {
-      // The major is chosen on the next step, which only offers the curriculums that fit this Student ID.
-      savePendingStudentCode(values.studentCode);
+    onSuccess: (user) => {
+      // Registration is complete: the student goes to the Dashboard and chooses the major later, in the Profile page.
       setUser(user);
       window.location.assign('/student');
     },
@@ -162,7 +160,7 @@ export default function Register() {
 
             <p className="text-[11px] leading-relaxed text-gray-500">
               Password: at least 8 characters with an uppercase letter, a lowercase letter, a digit and a special character, and
-              it must not contain your Student ID, name or email. You will choose your major in the next step.
+              it must not contain your Student ID, name or email. After signing in you can choose your major in your Profile.
             </p>
 
             {errors.root?.message && (
