@@ -61,11 +61,6 @@ export interface DataTableColumnMeta {
    * Numeric columns are right-aligned automatically when omitted.
    */
   align?: 'left' | 'center' | 'right';
-  /**
-   * A filter control (usually a small select) shown right under the column title.
-   * The table only places it; the parent owns the filter state and the query.
-   */
-  headerFilter?: ReactNode;
 }
 
 /**
@@ -196,64 +191,6 @@ function Checkbox({ checked, indeterminate = false, onChange, label, className }
   );
 }
 
-/** Type a page number and press Enter (or "Go") to open that page. Out-of-range numbers are clamped. */
-function PageJump({
-  totalPages,
-  disabled,
-  onJump,
-}: {
-  totalPages: number;
-  disabled: boolean;
-  onJump: (page: number) => void;
-}) {
-  const [value, setValue] = useState('');
-
-  const go = () => {
-    const wanted = Number.parseInt(value, 10);
-    if (Number.isNaN(wanted)) return;
-    onJump(Math.min(Math.max(wanted, 1), totalPages));
-    setValue('');
-  };
-
-  return (
-    <form
-      onSubmit={(event) => {
-        event.preventDefault();
-        go();
-      }}
-      className="flex items-center gap-1.5 text-[13px] text-slate-500"
-    >
-      <label htmlFor="data-table-go-to-page">Go to page</label>
-      <input
-        id="data-table-go-to-page"
-        type="number"
-        inputMode="numeric"
-        min={1}
-        max={totalPages}
-        value={value}
-        disabled={disabled}
-        onChange={(event) => setValue(event.target.value)}
-        placeholder={`1-${totalPages}`}
-        className={cn(
-          'h-8 w-20 rounded-md border border-slate-200 bg-white px-2 text-[13px] font-medium text-[#151c27]',
-          'outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40 disabled:bg-slate-50',
-        )}
-      />
-      <button
-        type="submit"
-        disabled={disabled || value.trim() === ''}
-        className={cn(
-          'h-8 rounded-md px-2.5 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40',
-          'disabled:pointer-events-none disabled:opacity-40',
-        )}
-      >
-        Go
-      </button>
-    </form>
-  );
-}
-
 interface SortIconProps {
   sorted: false | 'asc' | 'desc';
 }
@@ -262,6 +199,69 @@ function SortIcon({ sorted }: SortIconProps) {
   if (sorted === 'asc') return <ArrowUp className="size-3.5 text-[#F26F21]" aria-hidden />;
   if (sorted === 'desc') return <ArrowDown className="size-3.5 text-[#F26F21]" aria-hidden />;
   return <ChevronsUpDown className="size-3.5 text-slate-400" aria-hidden />;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Page jump control                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A compact "go to page" field for long admin lists: the admin types a page
+ * number and presses Enter to jump there. The value is kept local so a
+ * half-typed number never moves the list.
+ */
+function PageJumpInput({
+  pageIndex,
+  totalPages,
+  onJump,
+}: {
+  pageIndex: number;
+  totalPages: number;
+  onJump: (pageIndex: number) => void;
+}) {
+  const [value, setValue] = useState(String(pageIndex + 1));
+
+  // Follow the table when it moves by other means (filters, next/previous).
+  useEffect(() => {
+    setValue(String(pageIndex + 1));
+  }, [pageIndex]);
+
+  const commit = () => {
+    const parsed = Number.parseInt(value.trim(), 10);
+    if (!Number.isFinite(parsed)) {
+      setValue(String(pageIndex + 1));
+      return;
+    }
+    const target = Math.min(Math.max(parsed, 1), totalPages) - 1;
+    onJump(target);
+    setValue(String(target + 1));
+  };
+
+  return (
+    <label className="flex items-center gap-2 text-[13px] text-slate-500">
+      Go to
+      <input
+        type="number"
+        min={1}
+        max={totalPages}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault();
+            commit();
+          }
+        }}
+        aria-label="Go to page"
+        className={cn(
+          'h-8 w-16 rounded-md border border-slate-200 bg-white px-2 text-center text-[13px] font-semibold text-[#151c27]',
+          'tabular-nums outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
+          '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+        )}
+      />
+    </label>
+  );
 }
 
 /* -------------------------------------------------------------------------- */
@@ -296,11 +296,18 @@ export interface DataTableProps<TData extends RowData, TValue = any> {
   onColumnFiltersChange?: (filters: ColumnFiltersState) => void;
   /** Replaces the table body with skeleton rows. */
   isLoading?: boolean;
-  /**
-   * The first value is the default page size. There is no page-size picker any more: pages are
-   * reached with the pager and the "Go to page" box.
-   */
+  /** Available page sizes. */
   pageSizes?: number[];
+  /**
+   * Shows the "Rows per page" selector next to the pagination controls.
+   * Turn it off when the page size is fixed by the server contract.
+   */
+  showPageSizeSelect?: boolean;
+  /**
+   * Shows a compact "go to page" field in the pagination bar. The admin types
+   * a page number and presses Enter to jump there.
+   */
+  showPageJump?: boolean;
   /** Stable row id. Defaults to the row index. */
   getRowId?: (row: TData, index: number) => string;
   /** Placeholder of the search input. */
@@ -351,6 +358,8 @@ export function DataTable<TData extends RowData, TValue = any>({
   onColumnFiltersChange,
   isLoading = false,
   pageSizes = [10, 25, 50, 100],
+  showPageSizeSelect = true,
+  showPageJump = false,
   getRowId,
   searchPlaceholder = 'Search...',
   emptyText = 'No data found.',
@@ -536,8 +545,6 @@ export function DataTable<TData extends RowData, TValue = any>({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stableData, stableColumns]);
 
-  const hasHeaderFilters = table.getAllLeafColumns().some((column) => !!column.columnDef.meta?.headerFilter);
-
   const allSelected = table.getIsAllRowsSelected();
   const someSelected = table.getIsSomeRowsSelected();
 
@@ -635,19 +642,6 @@ export function DataTable<TData extends RowData, TValue = any>({
                 })}
               </tr>
             ))}
-            {hasHeaderFilters ? (
-              <tr className="bg-slate-50" data-testid="header-filters">
-                {table.getAllLeafColumns().map((column) =>
-                  column.id === SELECT_COLUMN_ID ? (
-                    <th key={column.id} className="w-12 px-4 pb-3" />
-                  ) : (
-                    <th key={column.id} className="px-4 pb-3 align-top font-normal normal-case tracking-normal">
-                      {column.columnDef.meta?.headerFilter ?? null}
-                    </th>
-                  ),
-                )}
-              </tr>
-            ) : null}
           </thead>
 
           <tbody>
@@ -735,15 +729,34 @@ export function DataTable<TData extends RowData, TValue = any>({
         </p>
 
         <div className="flex flex-wrap items-center gap-3">
+          {showPageSizeSelect && (
+            <label className="flex items-center gap-2 text-[13px] text-slate-500">
+              Rows per page
+              <select
+                value={pageSize}
+                onChange={(event) => table.setPageSize(Number(event.target.value))}
+                aria-label="Rows per page"
+                className={cn(
+                  'h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] font-medium text-[#151c27]',
+                  'outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
+                )}
+              >
+                {pageSizes.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+
           <span className="text-[13px] font-semibold text-slate-700">
             Page {pageIndex + 1} of {totalPages}
           </span>
 
-          <PageJump
-            totalPages={totalPages}
-            disabled={totalPages <= 1}
-            onJump={(page) => table.setPageIndex(page - 1)}
-          />
+          {showPageJump ? (
+            <PageJumpInput pageIndex={pageIndex} totalPages={totalPages} onJump={(index) => table.setPageIndex(index)} />
+          ) : null}
 
           <div className="flex items-center gap-1">
             <button

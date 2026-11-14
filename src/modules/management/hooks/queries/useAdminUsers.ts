@@ -70,3 +70,15 @@ export const useChangeUserRole = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 };
+
+/** Resets the password of one account. */
+export const useResetUserPassword = () =>
+  useMutation({
+    mutationFn: (id: string) => adminService.resetUserPassword(id),
+  });
+
+/** Resets the password of several accounts in one call. */
+export const useBulkResetUserPassword = () =>
+  useMutation({
+    mutationFn: (userIds: string[]) => adminService.bulkResetUserPassword(userIds),
+  });

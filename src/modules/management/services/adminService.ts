@@ -15,6 +15,12 @@ import type {
   UserSort,
 } from '../types/admin';
 
+/** What a password reset returns: how many accounts changed and the new password. */
+export interface PasswordResetResult {
+  updated: number;
+  defaultPassword: string;
+}
+
 export const adminService = {
   getDashboardAccounts: async (): Promise<DashboardAccounts> => {
     const { data } = await apiClient.get<DashboardAccounts>('/admin/dashboard/accounts');
@@ -93,6 +99,7 @@ export const adminService = {
     fullName: string;
     phone?: string;
     studentCode?: string;
+    advisorCode?: string;
     curriculumVersionId?: string;
     enrollmentSemesterId?: string;
     expectedGraduationSemesterId?: string;
@@ -131,6 +138,28 @@ export const adminService = {
     const { data } = await apiClient.post<{ updated: number }>(
       '/admin/users/status',
       { userIds, status },
+      { headers: await getCsrfHeaders() }
+    );
+    return data;
+  },
+
+  /**
+   * Resets the password of one account and returns the new default password.
+   */
+  resetUserPassword: async (id: string): Promise<PasswordResetResult> => {
+    const { data } = await apiClient.post<PasswordResetResult>(
+      `/admin/users/${id}/reset-password`,
+      null,
+      { headers: await getCsrfHeaders() }
+    );
+    return data;
+  },
+
+  /** Resets the password of several accounts at once. */
+  bulkResetUserPassword: async (userIds: string[]): Promise<PasswordResetResult> => {
+    const { data } = await apiClient.post<PasswordResetResult>(
+      '/admin/users/reset-password',
+      { userIds },
       { headers: await getCsrfHeaders() }
     );
     return data;
