@@ -50,13 +50,13 @@ vi.mock('../hooks/queries/useAdminAssignments', () => ({
   useAssignStudents: () => ({ mutateAsync: assignStudents, isPending: false }),
 }));
 
-function renderPage() {
+function renderPage(path = '/admin/users') {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   return render(
     <QueryClientProvider client={client}>
-      <MemoryRouter initialEntries={['/admin/users']}>
+      <MemoryRouter initialEntries={[path]}>
         <UserAccounts />
       </MemoryRouter>
     </QueryClientProvider>,
@@ -102,6 +102,30 @@ describe('UserAccounts', () => {
     expect(screen.getByRole('columnheader', { name: /Email/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /Role/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /Status/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Major/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Cohort/i })).toBeInTheDocument();
+  });
+
+  it('shows the major and cohort of a student and a dash for an advisor', async () => {
+    listUsers.mockResolvedValue({
+      items: [
+        { id: 'u1', userId: 'SE173012', fullName: 'Nguyen Van A', email: 'a@fpt.edu.vn', role: 'STUDENT', status: 'ACTIVE', createdAt: '2026-01-01T00:00:00Z', majorCode: 'SE', cohort: 'K17' },
+        { id: 'u2', userId: 'b@fe.edu.vn', fullName: 'Tran Advisor', email: 'b@fe.edu.vn', role: 'ADVISOR', status: 'ACTIVE', createdAt: '2026-01-01T00:00:00Z', majorCode: null, cohort: null },
+      ],
+      page: 0, size: 10, totalElements: 2, totalPages: 1,
+    });
+    renderPage();
+    const student = (await screen.findByText('Nguyen Van A')).closest('tr')!;
+    expect(student).toHaveTextContent('SE');
+    expect(student).toHaveTextContent('K17');
+    const advisor = screen.getByText('Tran Advisor').closest('tr')!;
+    expect(advisor).toHaveTextContent('—');
+  });
+
+  it('starts with the role from the link (?role=ADVISOR)', async () => {
+    renderPage('/admin/users?role=ADVISOR');
+    await waitFor(() => expect(listUsers.mock.calls.at(-1)?.[0]).toMatchObject({ role: 'ADVISOR' }));
+    expect(screen.getByLabelText('Filter by role')).toHaveValue('ADVISOR');
   });
 
   it('offers the role, status, major and cohort filters', async () => {
@@ -145,7 +169,7 @@ describe('UserAccounts', () => {
     });
   });
 
-  it('resolves the cohort filter to the major of that cohort', async () => {
+  it('filters by the exact cohort, not by the whole major', async () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByText('Nguyen Van A');
@@ -154,7 +178,8 @@ describe('UserAccounts', () => {
 
     await waitFor(() => {
       const call = listUsers.mock.calls.at(-1)?.[0];
-      expect(call).toMatchObject({ majorId: 'm1' });
+      expect(call).toMatchObject({ curriculumVersionId: 'c1' });
+      expect(call.majorId).toBeUndefined();
     });
   });
 
@@ -381,13 +406,13 @@ describe('UserAccounts', () => {
       expect(screen.getByText(/Cohort K17/)).toBeInTheDocument();
     });
 
-    it('rejects a Student ID that does not follow the format', async () => {
+    it.each(['SE17', 'SE990001', 'SE000001'])('rejects the Student ID %s (format and cohort 01 to 22)', async (code) => {
       const user = userEvent.setup();
       renderPage();
       await screen.findByText('Nguyen Van A');
 
       await user.click(screen.getByRole('button', { name: /create user/i }));
-      await user.type(await screen.findByLabelText('Student ID'), 'SE17');
+      await user.type(await screen.findByLabelText('Student ID'), code);
       await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
 
       expect(await screen.findByText(/Enter a valid Student ID/)).toBeInTheDocument();

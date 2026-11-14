@@ -5,10 +5,15 @@
 // the mock data all read them from here. Changing a rule means changing it
 // once.
 
+import { STUDENT_CODE_PATTERN } from '../../auth/validations/register.schema';
+
 export type AccountRole = 'STUDENT' | 'ADVISOR';
 
-/** `SE173012` — two letters for the major, six digits for the admission. */
-export const STUDENT_ID_PATTERN = /^[A-Z]{2}\d{6}$/;
+/**
+ * `SE173012` — two letters for the major, the cohort (01 to 22) and four digits. The same rule as the registration
+ * page and the backend, so an ID the form accepts is never refused when it is saved.
+ */
+export const STUDENT_ID_PATTERN = STUDENT_CODE_PATTERN;
 
 /** `ADV001` — three digits after the `ADV` prefix. */
 export const ADVISOR_CODE_PATTERN = /^ADV\d{3}$/;
@@ -25,7 +30,7 @@ export const PHONE_ERROR_MESSAGE =
   'Please enter a valid phone number (10 digits, starting with 03, 05, 07, 08, or 09).';
 
 export const STUDENT_ID_ERROR_MESSAGE =
-  'Enter a valid Student ID: two letters for the major followed by six digits (for example SE173012).';
+  'Enter a valid Student ID: two letters for the major, the cohort from 01 to 22 and four digits (for example SE173012).';
 
 export const ADVISOR_CODE_ERROR_MESSAGE =
   'Enter a valid Advisor Code: ADV followed by three digits (for example ADV001).';
@@ -73,7 +78,8 @@ export interface StudentIdentity {
 export const parseStudentId = (raw: string): StudentIdentity | null => {
   const code = raw.trim().toUpperCase();
   if (!STUDENT_ID_PATTERN.test(code)) return null;
-  return { code, majorCode: code.slice(0, 2), cohort: `K${code.slice(2, 4)}` };
+  // Curriculum versions are written without a leading zero (K7, K17), so "07" becomes K7.
+  return { code, majorCode: code.slice(0, 2), cohort: `K${Number(code.slice(2, 4))}` };
 };
 
 /**

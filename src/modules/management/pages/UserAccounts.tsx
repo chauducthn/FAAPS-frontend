@@ -9,7 +9,7 @@
 // strip of three equal cards, a filter card and the list card.
 
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import {
   ChevronDown,
   CircleAlert,
@@ -48,6 +48,8 @@ import type { AdminUserRole, AdminUserStatus, AdminUserSummary, UserSort } from 
 
 const PAGE_SIZE = 10;
 
+const ROLES: AdminUserRole[] = ['STUDENT', 'ADVISOR'];
+
 const STATUSES: AdminUserStatus[] = ['ACTIVE', 'SUSPENDED', 'LOCKED', 'INACTIVE'];
 
 const ROLE_LABEL: Record<AdminUserRole, string> = {
@@ -72,7 +74,12 @@ function toUserSort(sorting: SortingState): UserSort {
 export default function UserAccounts() {
   const me = useAuth((s) => s.user);
   const navigate = useNavigate();
-  const [role, setRole] = useState<AdminUserRole | ''>('');
+  // Other screens link here with ?role=STUDENT or ?role=ADVISOR (for example the back link of an advisor page).
+  const [searchParams] = useSearchParams();
+  const roleParam = searchParams.get('role');
+  const [role, setRole] = useState<AdminUserRole | ''>(
+    ROLES.includes(roleParam as AdminUserRole) ? (roleParam as AdminUserRole) : '',
+  );
   const [status, setStatus] = useState<AdminUserStatus | ''>('');
   const [majorId, setMajorId] = useState('');
   const [cohortId, setCohortId] = useState('');
@@ -95,29 +102,14 @@ export default function UserAccounts() {
   const debouncedSearch = useDebounce(search.trim(), 300);
 
   const cohortOptions = useMemo(() => cohortOptionsQuery.data ?? [], [cohortOptionsQuery.data]);
-  const cohortOptionsById = useMemo(
-    () => new Map(cohortOptions.map((c) => [c.cohortId, c])),
-    [cohortOptions],
-  );
-
-  /**
-   * A cohort is one version (K19) of a major, so it narrows the account list
-   * down to the major it belongs to. The backend filters users by `majorId`.
-   */
-  const cohortMajorId = useMemo(() => {
-    if (!cohortId) return '';
-    const majorCode = cohortOptionsById.get(cohortId)?.majorCode;
-    if (!majorCode) return '';
-    return majors.data?.find((m) => m.code === majorCode)?.id ?? '';
-  }, [cohortId, cohortOptionsById, majors.data]);
-
-  const effectiveMajorId = cohortMajorId || majorId;
 
   const { data, isLoading, isError, isFetching, refetch } = useAdminUsers({
     role: role || undefined,
     status: status || undefined,
     search: debouncedSearch || undefined,
-    majorId: effectiveMajorId || undefined,
+    majorId: majorId || undefined,
+    // A cohort is one curriculum version (K19) of a major: filter by that exact version, not by the whole major.
+    curriculumVersionId: cohortId || undefined,
     page: pagination.pageIndex,
     size: pagination.pageSize,
     sort: toUserSort(sorting),
@@ -211,6 +203,20 @@ export default function UserAccounts() {
               Advisor
             </span>
           ),
+      },
+      {
+        id: 'major',
+        header: 'Major',
+        enableSorting: false,
+        accessorFn: (user) => user.majorCode ?? '',
+        cell: ({ row }) => <span className="text-[#555f6f]">{row.original.majorCode || '—'}</span>,
+      },
+      {
+        id: 'cohort',
+        header: 'Cohort',
+        enableSorting: false,
+        accessorFn: (user) => user.cohort ?? '',
+        cell: ({ row }) => <span className="text-[#555f6f]">{row.original.cohort || '—'}</span>,
       },
       {
         accessorKey: 'status',
@@ -408,7 +414,7 @@ export default function UserAccounts() {
             <div>
               <p className="text-sm font-bold text-gray-900">Could not load accounts</p>
               <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
-                The list failed to load. Check your connection or the mock flag, then try again — your filters are kept.
+                The list failed to load. Check your connection, then try again — your filters are kept.
               </p>
             </div>
             <button
