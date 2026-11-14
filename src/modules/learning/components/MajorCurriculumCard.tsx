@@ -3,6 +3,7 @@
 // match it, so every active curriculum is offered.
 
 import { useEffect, useMemo, useState } from 'react';
+import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { GraduationCap, Info } from 'lucide-react';
 import { toast } from 'sonner';
@@ -11,6 +12,19 @@ import { studentAcademicService } from '@/modules/academic/services/studentAcade
 import { useCurriculumChoices } from '@/modules/auth/hooks/queries/useStudentOnboarding';
 import type { StudentProfile } from '../../advising/types/advising';
 import { STUDENT_QUERY_KEYS } from '../hooks/queries/useStudentQueries';
+
+/**
+ * The backend refuses with 404 (curriculum no longer available) or 409 (grades already recorded), sometimes without
+ * a readable message (Spring's default body only says "Not Found"), so the status decides the text.
+ */
+function saveErrorMessage(error: unknown): string {
+  const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+  const message = axios.isAxiosError(error) ? (error.response?.data as { message?: string } | undefined)?.message : undefined;
+  if (message) return message;
+  if (status === 409) return 'Your transcript already has grades, so only the Academic Office can change your curriculum.';
+  if (status === 404) return 'This curriculum is no longer available. Reload the page and choose another one.';
+  return apiErrorMessage(error);
+}
 
 export function MajorCurriculumCard({ profile }: { profile: StudentProfile }) {
   const queryClient = useQueryClient();
@@ -41,7 +55,7 @@ export function MajorCurriculumCard({ profile }: { profile: StudentProfile }) {
       await queryClient.invalidateQueries({ queryKey: STUDENT_QUERY_KEYS.all });
       toast.success('Your major and curriculum were saved.');
     },
-    onError: (err) => setError(apiErrorMessage(err)),
+    onError: (err) => setError(saveErrorMessage(err)),
   });
 
   const isSet = !!current;

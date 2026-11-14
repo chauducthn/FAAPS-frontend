@@ -95,4 +95,24 @@ describe('MajorCurriculumCard', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/only be changed by the Academic Office/);
   });
+
+  it.each([
+    [409, /only the Academic Office can change your curriculum/],
+    [404, /no longer available/],
+  ])('explains a %s refusal that comes without a message', async (status, text) => {
+    changeCurriculum.mockRejectedValue(
+      Object.assign(new Error('x'), {
+        isAxiosError: true,
+        response: { status, data: { status, error: status === 404 ? 'Not Found' : 'Conflict', path: '/api/student/profile/curriculum' } },
+      }),
+    );
+    const user = userEvent.setup();
+    renderCard(profileWith('c-se19'));
+    await waitForOptions();
+
+    await user.selectOptions(screen.getByLabelText(/major \/ curriculum/i), 'c-ai19');
+    await user.click(screen.getByRole('button', { name: 'Update' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(text);
+  });
 });
