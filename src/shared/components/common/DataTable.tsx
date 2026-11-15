@@ -44,6 +44,7 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type PaginationState,
+  type Row,
   type RowData,
   type SortingState,
 } from '@tanstack/react-table';
@@ -166,28 +167,58 @@ interface CheckboxProps {
   onChange: (event: never) => void;
   label: string;
   className?: string;
+  /** The checkbox is shown but cannot be changed. */
+  disabled?: boolean;
+  /** Why the checkbox is disabled. Shown as its tooltip. */
+  disabledReason?: string;
 }
 
-function Checkbox({ checked, indeterminate = false, onChange, label, className }: CheckboxProps) {
+function Checkbox({
+  checked,
+  indeterminate = false,
+  onChange,
+  label,
+  className,
+  disabled = false,
+  disabledReason,
+}: CheckboxProps) {
   const ref = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (ref.current) ref.current.indeterminate = indeterminate && !checked;
   }, [indeterminate, checked]);
 
-  return (
+  const input = (
     <input
       ref={ref}
       type="checkbox"
       checked={checked}
       onChange={onChange}
+      disabled={disabled}
       aria-label={label}
       className={cn(
-        'size-4 shrink-0 cursor-pointer rounded border-gray-300 accent-[#F26F21]',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40',
+        'size-4 shrink-0 rounded border-gray-300 accent-[#F26F21]',
+        disabled
+          ? 'cursor-not-allowed border-gray-200 bg-gray-100'
+          : 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40',
         className,
       )}
     />
+  );
+
+  // A disabled input cannot show a tooltip, so the reason rides along in the label.
+  if (!disabled || !disabledReason) return input;
+
+  return (
+    <span className="group relative inline-flex" title={disabledReason}>
+      {input}
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1.5 w-48 -translate-x-1/2 rounded-lg bg-gray-900 px-2.5 py-1.5 text-left text-[11px] font-medium leading-snug text-white opacity-0 shadow-lg transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
+      >
+        {disabledReason}
+      </span>
+    </span>
   );
 }
 
@@ -310,6 +341,13 @@ export interface DataTableProps<TData extends RowData, TValue = any> {
   showPageJump?: boolean;
   /** Stable row id. Defaults to the row index. */
   getRowId?: (row: TData, index: number) => string;
+  /**
+   * Rows the admin cannot select. A disabled row shows a greyed-out
+   * checkbox and a tooltip naming the reason.
+   */
+  isRowSelectable?: (row: TData) => boolean;
+  /** Why a row cannot be selected. Shown as the tooltip of its checkbox. */
+  rowSelectDisabledReason?: (row: TData) => string;
   /** Placeholder of the search input. */
   searchPlaceholder?: string;
   /** Empty-state headline. */
@@ -361,6 +399,8 @@ export function DataTable<TData extends RowData, TValue = any>({
   showPageSizeSelect = true,
   showPageJump = false,
   getRowId,
+  isRowSelectable,
+  rowSelectDisabledReason,
   searchPlaceholder = 'Search...',
   emptyText = 'No data found.',
   className,
@@ -420,6 +460,10 @@ export function DataTable<TData extends RowData, TValue = any>({
     enableMultiSort: false,
     enableSortingRemoval: true,
     enableRowSelection: true,
+    // A row the admin cannot act on stays out of the selection.
+    ...(isRowSelectable
+      ? { enableRowSelection: (row: Row<typeof dataTableFeatures, TData>) => isRowSelectable(row.original) }
+      : {}),
     getRowId: getRowId ? (row, index) => getRowId(row, index) : undefined,
     // In server-side mode the parent owns filtering, sorting and pagination.
     manualFiltering: manual,
@@ -681,6 +725,7 @@ export function DataTable<TData extends RowData, TValue = any>({
             ) : (
               rows.map((row) => {
                 const isSelected = row.getIsSelected();
+                const selectable = isRowSelectable ? isRowSelectable(row.original) : true;
                 return (
                   <tr
                     key={row.id}
@@ -697,6 +742,10 @@ export function DataTable<TData extends RowData, TValue = any>({
                               checked={isSelected}
                               onChange={row.getToggleSelectedHandler()}
                               label={`Select row ${row.index + 1}`}
+                              disabled={!selectable}
+                              disabledReason={
+                                !selectable && rowSelectDisabledReason ? rowSelectDisabledReason(row.original) : undefined
+                              }
                             />
                           </td>
                         );

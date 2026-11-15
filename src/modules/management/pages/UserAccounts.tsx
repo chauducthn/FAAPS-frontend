@@ -29,13 +29,16 @@ import { UserDetailModal } from '../components/UserDetailModal';
 import { CreateUserModal } from '../components/CreateUserModal';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { SetRoleModal } from '../components/SetRoleModal';
-import { ResetPasswordModal } from '../components/ResetPasswordModal';
-import { UserRowMenu } from '../components/UserRowMenu';
+import { ResetPasswordConfirmDialog, type ResetPasswordTarget } from '../components/ResetPasswordConfirmDialog';
+import { ResetPasswordResultModal } from '../components/ResetPasswordResultModal';
+import { NO_PASSWORD_REASON, UserRowMenu } from '../components/UserRowMenu';
+import { canResetPassword } from '../utils/passwordReset';
 import { backState } from '../../../shared/lib/backLink';
 import {
   useAdminUsers,
   useChangeUserStatus,
   useCohortOptions,
+  useResetPasswords,
   useRoleCount,
 } from '../hooks/queries/useAdminUsers';
 import { useMajorOptions } from '../hooks/queries/useAdminDashboard';
@@ -44,7 +47,7 @@ import { useDebounce } from '@/shared/hooks/useDebounce';
 import { useAuth } from '../../auth/stores/useAuth';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 import { cn } from '@/shared/lib/utils';
-import type { AdminUserRole, AdminUserStatus, AdminUserSummary, UserSort } from '../types/admin';
+import type { AdminUserRole, AdminUserStatus, AdminUserSummary, PasswordResetEntry, UserSort } from '../types/admin';
 
 const PAGE_SIZE = 10;
 
@@ -83,9 +86,14 @@ export default function UserAccounts() {
   const [confirm, setConfirm] = useState<{ ids: string[]; status: 'ACTIVE' | 'SUSPENDED'; label: string } | null>(null);
   const [roleChange, setRoleChange] = useState<AdminUserSummary | null>(null);
   const [creating, setCreating] = useState(false);
-  const [resetPasswordFor, setResetPasswordFor] = useState<{ id: string; fullName: string }[] | null>(null);
+  // The two steps of the reset: the accounts waiting for a confirmation, then
+  // the passwords the backend handed back.
+  const [resetTargets, setResetTargets] = useState<ResetPasswordTarget[] | null>(null);
+  const [resetResults, setResetResults] = useState<PasswordResetEntry[] | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
 
   const changeStatus = useChangeUserStatus();
+  const resetPasswords = useResetPasswords();
   const majors = useMajorOptions();
   const cohortOptionsQuery = useCohortOptions();
   const studentCount = useRoleCount('STUDENT');
@@ -151,6 +159,50 @@ export default function UserAccounts() {
       return;
     }
     setConfirm({ ids, status: target, label: `${ids.length} selected account${ids.length > 1 ? 's' : ''}` });
+  };
+
+  /**
+   * Opens the confirmation for the reset. Only accounts with a local
+   * password make it into the list — a Google-only account has nothing to
+   * reset.
+   */
+  const askReset = (rows: AdminUserSummary[]) => {
+    const eligible = rows.filter((row) => canResetPassword(row));
+    const skipped = rows.length - eligible.length;
+    if (eligible.length === 0) {
+      toast.error('No selected account has a password. Google-only accounts cannot be reset.');
+      return;
+    }
+    if (skipped > 0) {
+      toast.warning(`${skipped} Google-only account${skipped === 1 ? '' : 's'} will be left alone.`);
+    }
+    setResetError(null);
+    setResetTargets(eligible.map((row) => ({ id: row.id, fullName: row.fullName, email: row.email })));
+  };
+
+  /**
+   * Runs the reset and hands the results to the result dialog.
+   *
+   * The passwords live in the result dialog's own state and nowhere else:
+   * they are never written to the query cache, a store or the console.
+   */
+  const runReset = async () => {
+    if (!resetTargets) return;
+    setResetError(null);
+    try {
+      const response = await resetPasswords.run(resetTargets.map((target) => target.id));
+      setResetTargets(null);
+      setResetResults(response.resetResults ?? []);
+      await refetch();
+    } catch {
+      // The hook already captured the message for the dialog.
+    }
+  };
+
+  /** Closes the result dialog and drops the passwords for good. */
+  const closeResetResults = () => {
+    setResetResults(null);
+    setResetError(null);
   };
 
   const runConfirm = async () => {
@@ -232,7 +284,7 @@ export default function UserAccounts() {
                 isSelf={user.id === me?.id}
                 onView={() => setDetailId(user.id)}
                 onRole={() => setRoleChange(user)}
-                onResetPassword={() => setResetPasswordFor([{ id: user.id, fullName: user.fullName }])}
+                onResetPassword={() => askReset([user])}
                 onAssignments={
                   user.role === 'ADVISOR'
                     ? () =>
@@ -437,6 +489,9 @@ export default function UserAccounts() {
                 getRowId={(row) => row.id}
                 isLoading={isLoading}
                 totalRowCount={total}
+                // A Google-only account cannot be reset, so it stays out of the selection.
+                isRowSelectable={(row) => canResetPassword(row)}
+                rowSelectDisabledReason={() => NO_PASSWORD_REASON}
                 pagination={pagination}
                 onPaginationChange={setPagination}
                 sorting={sorting}
@@ -447,11 +502,7 @@ export default function UserAccounts() {
                   <>
                     <button
                       type="button"
-                      onClick={() =>
-                        setResetPasswordFor(
-                          selectedRows.map((row) => ({ id: row.id, fullName: row.fullName })),
-                        )
-                      }
+                      onClick={() => askReset(selectedRows)}
                       className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#151c27] ring-1 ring-[#e5e7eb] transition-colors hover:bg-gray-50"
                     >
                       <KeyRound className="size-4" aria-hidden /> Reset password
@@ -498,10 +549,22 @@ export default function UserAccounts() {
         onDone={() => void refetch()}
       />
 
-      <ResetPasswordModal
-        open={!!resetPasswordFor}
-        users={resetPasswordFor ?? []}
-        onClose={() => setResetPasswordFor(null)}
+      <ResetPasswordConfirmDialog
+        open={!!resetTargets}
+        users={resetTargets ?? []}
+        isPending={resetPasswords.isPending}
+        error={resetError ?? resetPasswords.error}
+        onConfirm={() => void runReset()}
+        onCancel={() => {
+          setResetTargets(null);
+          setResetError(null);
+        }}
+      />
+
+      <ResetPasswordResultModal
+        open={!!resetResults}
+        results={resetResults ?? []}
+        onClose={closeResetResults}
       />
 
       <ConfirmDialog
