@@ -5,6 +5,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { ChevronRight, CircleAlert } from 'lucide-react';
 import { toast } from 'sonner';
+import { apiMessage } from '../../../shared/lib/apiMessage';
 import CurriculumHeader from '../components/curriculum/CurriculumHeader';
 import CurriculumKanban from '../components/curriculum/CurriculumKanban';
 import CurriculumModals from '../components/curriculum/CurriculumModals';
@@ -125,6 +126,8 @@ export default function CurriculumDetailPage() {
       id,
       courseId: course.courseId,
       semesterNumber,
+    }).catch((error) => {
+      toast.error(apiMessage(error), { description: 'The course was not moved.' });
     });
   };
 
@@ -137,6 +140,8 @@ export default function CurriculumDetailPage() {
       id,
       courseId: course.courseId,
       semesterNumber,
+    }).catch((error) => {
+      toast.error(apiMessage(error), { description: 'The course was not moved.' });
     });
   };
 
@@ -220,7 +225,9 @@ export default function CurriculumDetailPage() {
         onArchive={() => setArchiving(true)}
         onPickFile={handlePickFile}
         onPublish={() => {
-          updateStatus({ id, status: 'ACTIVE' }).catch(() => undefined);
+          updateStatus({ id, status: 'ACTIVE' }).catch((error) => {
+            toast.error(apiMessage(error), { description: 'The curriculum was not published.' });
+          });
         }}
       />
 
