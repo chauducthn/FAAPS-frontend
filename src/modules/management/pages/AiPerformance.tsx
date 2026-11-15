@@ -7,14 +7,17 @@ import {
   AlertTriangle,
   CircleAlert,
   Clock,
+  Download,
   RotateCcw,
   TrendingUp,
   Zap,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAiConfigsQuery, useAiPerformanceQuery } from '../../ai/hooks/queries/useAiConfigQuery';
 import AiPerformanceChart from '../components/ai-config/AiPerformanceChart';
 import type { AiPerformanceFilterParams, AiPurpose } from '../../ai/types/ai-config';
 import { cn } from '@/shared/lib/utils';
+import { buildCsv, csvFilename, downloadCsv } from '@/shared/lib/csv';
 
 const PURPOSES: { value: 'ALL' | AiPurpose; label: string }[] = [
   { value: 'ALL', label: 'Purpose: All' },
@@ -106,6 +109,89 @@ export default function AiPerformancePage() {
   const hasFilters = purpose !== 'ALL' || configId !== '' || startDate !== daysAgo(29) || endDate !== today();
   const showEmpty = !isLoading && !isError && !rangeError && daily.length === 0;
 
+  const handleExport = () => {
+    if (rangeError) {
+      toast.error(rangeError);
+      return;
+    }
+    const summary = data?.summary ?? [];
+    const configName = configId
+      ? (configsQuery.data?.items ?? []).find((c) => c.id === configId)?.name ?? configId
+      : 'All configurations';
+
+    const csv = buildCsv([
+      {
+        title: 'Filters',
+        rows: [
+          ['Field', 'Value'],
+          ['Configuration', configName],
+          ['Purpose', purpose === 'ALL' ? 'All' : purpose],
+          ['Start date', startDate],
+          ['End date', endDate],
+        ],
+      },
+      {
+        title: 'Totals',
+        rows: [
+          ['Metric', 'Value'],
+          ['Total requests', totals.totalRequests],
+          ['Success requests', totals.totalRequests - totals.totalFailed],
+          ['Failed requests', totals.totalFailed],
+          ['Fallback requests', totals.totalFallback],
+          ['Avg latency (ms)', totals.weightedLatency],
+          ['Error rate (%)', totals.errorRate.toFixed(2)],
+          ['Success rate (%)', totals.successRate.toFixed(1)],
+          ['Prompt tokens', totals.promptTokens],
+          ['Completion tokens', totals.completionTokens],
+        ],
+      },
+      {
+        title: 'Daily usage',
+        rows: [
+          ['Date', 'Requests', 'Failed', 'Avg latency (ms)', 'Prompt tokens', 'Completion tokens'],
+          ...daily.map((d) => [
+            d.date,
+            d.requests,
+            d.failed,
+            Math.round(d.averageLatencyMs),
+            d.promptTokens,
+            d.completionTokens,
+          ]),
+        ],
+      },
+      {
+        title: 'Per-configuration summary',
+        rows: [
+          [
+            'Configuration',
+            'Purpose',
+            'Requests',
+            'Success',
+            'Failed',
+            'Fallback',
+            'Avg latency (ms)',
+            'Prompt tokens',
+            'Completion tokens',
+          ],
+          ...summary.map((s) => [
+            s.configName,
+            s.purpose,
+            s.totalRequests,
+            s.successRequests,
+            s.failedRequests,
+            s.fallbackRequests,
+            Math.round(s.averageLatencyMs),
+            s.totalPromptTokens,
+            s.totalCompletionTokens,
+          ]),
+        ],
+      },
+    ]);
+
+    downloadCsv(csv, csvFilename('ai-performance'));
+    toast.success('Performance data exported.');
+  };
+
   return (
     <div className="w-full space-y-5">
       {/* Header */}
@@ -133,6 +219,14 @@ export default function AiPerformancePage() {
             className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-600 shadow-xs transition-all hover:border-[#F26F21] hover:text-[#C2410C]"
           >
             <RotateCcw className="size-3.5" /> Refresh
+          </button>
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={isLoading}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:-translate-y-px hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+          >
+            <Download className="size-3.5" /> Export CSV
           </button>
         </div>
       </div>

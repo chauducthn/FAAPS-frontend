@@ -1,35 +1,44 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Filter } from 'lucide-react';
-import { useMajorOptions, useNewStudents } from '../hooks/queries/useAdminDashboard';
+import { useMajorOptions } from '../hooks/queries/useAdminDashboard';
 import { MonthPicker } from './MonthPicker';
-import { defaultMonthRange, formatMonthLabel, monthSpan, monthsBetween } from '../../../shared/lib/months';
+import { formatMonthLabel, monthSpan, monthsBetween } from '../../../shared/lib/months';
+import type { MonthlyCount } from '../types/admin';
 
-const MAX_MONTHS = 36;
+export const MAX_MONTHS = 36;
 
-export function NewStudentsChart() {
-  const initial = useMemo(() => defaultMonthRange(12), []);
-  const [startMonth, setStartMonth] = useState(initial.start);
-  const [endMonth, setEndMonth] = useState(initial.end);
-  const [majorId, setMajorId] = useState('');
+export interface NewStudentsChartProps {
+  startMonth: string;
+  endMonth: string;
+  majorId: string;
+  /** Month range is invalid (reversed or too long) — nothing is fetched. */
+  rangeError: string | null;
+  /** Rows per month, gap-filled with zeros. */
+  chartData: { month: string; label: string; students: number }[];
+  isLoading: boolean;
+  isError: boolean;
+  onStartMonthChange: (month: string) => void;
+  onEndMonthChange: (month: string) => void;
+  onMajorIdChange: (majorId: string) => void;
+  onRetry: () => void;
+}
+
+export function NewStudentsChart({
+  startMonth,
+  endMonth,
+  majorId,
+  rangeError,
+  chartData,
+  isLoading,
+  isError,
+  onStartMonthChange,
+  onEndMonthChange,
+  onMajorIdChange,
+  onRetry,
+}: NewStudentsChartProps) {
   const [showFilters, setShowFilters] = useState(true);
   const majors = useMajorOptions();
-
-  const span = monthSpan(startMonth, endMonth);
-  const rangeError =
-    span === 0 ? 'Start month must not be after end month.' : span > MAX_MONTHS ? 'Range can be at most 36 months.' : null;
-
-  const { data, isLoading, isError, refetch } = useNewStudents(startMonth, endMonth, !rangeError, majorId);
-
-  // The API only returns months that have data; fill the gaps with 0.
-  const chartData = useMemo(() => {
-    if (rangeError || !data) return [];
-    const byMonth = new Map(data.map((d) => [d.month, d.students]));
-    return monthsBetween(startMonth, endMonth).map((month) => ({
-      label: formatMonthLabel(month),
-      students: byMonth.get(month) ?? 0,
-    }));
-  }, [data, startMonth, endMonth, rangeError]);
 
   return (
     <section className="flex flex-col gap-5 rounded-xl bg-white p-4 shadow-sm sm:p-6">
@@ -48,13 +57,13 @@ export function NewStudentsChart() {
 
       {showFilters && (
         <div className="grid gap-3 sm:grid-cols-3">
-          <MonthPicker label="Start month" value={startMonth} onChange={setStartMonth} />
-          <MonthPicker label="End month" value={endMonth} onChange={setEndMonth} />
+          <MonthPicker label="Start month" value={startMonth} onChange={onStartMonthChange} />
+          <MonthPicker label="End month" value={endMonth} onChange={onEndMonthChange} />
           <div className="flex flex-col gap-1 text-xs font-medium text-[#555f6f]">
             Major
             <select
               value={majorId}
-              onChange={(e) => setMajorId(e.target.value)}
+              onChange={(e) => onMajorIdChange(e.target.value)}
               aria-label="Major"
               className="h-[38px] rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
             >
@@ -74,7 +83,7 @@ export function NewStudentsChart() {
       ) : isError ? (
         <div className="flex h-[280px] flex-col items-center justify-center gap-2 text-sm text-[#555f6f]">
           Could not load chart data.
-          <button type="button" onClick={() => refetch()} className="font-semibold text-orange-600 hover:underline">
+          <button type="button" onClick={onRetry} className="font-semibold text-orange-600 hover:underline">
             Retry
           </button>
         </div>
@@ -99,4 +108,27 @@ export function NewStudentsChart() {
       )}
     </section>
   );
+}
+
+/** Fills the gaps of the API answer with zero so the chart has no holes. */
+export function buildStudentsChartData(
+  rows: MonthlyCount[] | undefined,
+  startMonth: string,
+  endMonth: string,
+): { month: string; label: string; students: number }[] {
+  if (!rows) return [];
+  const byMonth = new Map(rows.map((d) => [d.month, d.students]));
+  return monthsBetween(startMonth, endMonth).map((month) => ({
+    month,
+    label: formatMonthLabel(month),
+    students: byMonth.get(month) ?? 0,
+  }));
+}
+
+/** The error shown when the picked months cannot be used. */
+export function studentsRangeError(startMonth: string, endMonth: string): string | null {
+  const span = monthSpan(startMonth, endMonth);
+  if (span === 0) return 'Start month must not be after end month.';
+  if (span > MAX_MONTHS) return 'Range can be at most 36 months.';
+  return null;
 }
