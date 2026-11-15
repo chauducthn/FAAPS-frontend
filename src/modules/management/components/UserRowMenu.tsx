@@ -8,7 +8,11 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { MoreHorizontal } from 'lucide-react';
 import { cn } from '../../../shared/lib/utils';
+import { canResetPassword, NO_PASSWORD_REASON } from '../utils/passwordReset';
 import type { AdminUserSummary } from '../types/admin';
+
+/** Why a Google-only account cannot be reset. */
+export { NO_PASSWORD_REASON };
 
 type Props = {
   user: AdminUserSummary;
@@ -68,6 +72,10 @@ export function UserRowMenu({
   }, [open]);
 
   const suspended = user.status === 'SUSPENDED';
+  // A Google-only account has no local password, so there is nothing to reset.
+  // When the backend does not tell us either way, we let the request through:
+  // the backend answers SKIPPED for an account it cannot reset.
+  const canReset = canResetPassword(user);
   const item = 'block w-full px-3 py-2 text-left text-xs font-semibold hover:bg-gray-50';
   const action = (handler: () => void) => {
     setOpen(false);
@@ -107,9 +115,22 @@ export function UserRowMenu({
             <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onRole)}>
               Set role: {user.role === 'STUDENT' ? 'Advisor' : 'Student'}
             </button>
-            <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onResetPassword)}>
-              Reset password
-            </button>
+            {canReset ? (
+              <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onResetPassword)}>
+                Reset password
+              </button>
+            ) : (
+              // A disabled button cannot hold a tooltip, so the reason sits in the title.
+              <button
+                role="menuitem"
+                disabled
+                title={NO_PASSWORD_REASON}
+                aria-label={`Reset password (unavailable: ${NO_PASSWORD_REASON})`}
+                className={cn(item, 'cursor-not-allowed text-gray-400')}
+              >
+                Reset password
+              </button>
+            )}
             {(user.status === 'ACTIVE' || suspended) && (
               <button
                 role="menuitem"
