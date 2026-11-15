@@ -34,8 +34,9 @@ type ListTab = 'upcoming' | 'history';
 const ACTIVE_STATUSES: AdvisorAppointment['status'][] = ['PENDING', 'ACCEPTED'];
 const HISTORY_STATUSES: AdvisorAppointment['status'][] = ['COMPLETED', 'NO_SHOW', 'CANCELLED', 'REJECTED'];
 
-function initialsOf(name: string) {
-  return name
+/** The backend may omit the name — never call `.split` on undefined. */
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)
@@ -81,9 +82,9 @@ export default function AdvisorAppointments() {
       .filter((a) => {
         if (!keyword) return true;
         return (
-          a.studentName.toLowerCase().includes(keyword) ||
+          (a.studentName ?? '').toLowerCase().includes(keyword) ||
           (a.studentCode ?? '').toLowerCase().includes(keyword) ||
-          a.reason.toLowerCase().includes(keyword)
+          (a.reason ?? '').toLowerCase().includes(keyword)
         );
       })
       .sort((a, b) =>
@@ -117,7 +118,7 @@ export default function AdvisorAppointments() {
                   onClick={() => setSelected(a)}
                   className="block max-w-full truncate text-left text-[15px] font-bold text-slate-900 hover:text-[#F26F21] hover:underline"
                 >
-                  {a.studentName}
+                  {a.studentName ?? '—'}
                 </button>
                 <p className="mt-0.5 truncate text-sm font-medium text-slate-600">
                   {a.studentCode ?? '—'} · {formatIsoDay(a.startTime)}
@@ -151,8 +152,11 @@ export default function AdvisorAppointments() {
         header: 'Reason',
         enableSorting: false,
         cell: ({ row }) => (
-          <p className="max-w-64 truncate text-sm font-medium text-slate-700" title={row.original.reason}>
-            {row.original.reason}
+          <p
+            className="max-w-64 truncate text-sm font-medium text-slate-700"
+            title={row.original.reason ?? undefined}
+          >
+            {row.original.reason ?? '—'}
           </p>
         ),
       },
