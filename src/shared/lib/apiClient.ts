@@ -3,9 +3,14 @@ import { handleApiError } from './errorHandler';
 
 const baseURL = import.meta.env.VITE_API_URL || '/api';
 
+/** Timeout toàn cục cho mọi request (30 giây). */
+const REQUEST_TIMEOUT_MS = 30_000;
+
 export const apiClient = axios.create({
   baseURL,
   withCredentials: true,
+  // Không có timeout ⇒ request treo mãi (AI generate, available-slots…) làm UI xoay vô hạn.
+  timeout: REQUEST_TIMEOUT_MS,
   headers: {
     'Content-Type': 'application/json',
   },
