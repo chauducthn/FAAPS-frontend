@@ -30,6 +30,7 @@ export const handleApiError = (error: unknown) => {
     const status = axiosError.response?.status;
     const errorData = axiosError.response?.data;
     const requestUrl = axiosError.config?.url;
+    const errorMessage = String(axiosError.message ?? '').toLowerCase();
 
     // Silent auth bootstrap: when the app boots and there's no session yet,
     // /auth/me returns 401. That is expected - never surface it as a toast.
@@ -51,6 +52,16 @@ export const handleApiError = (error: unknown) => {
         window.location.assign(SESSION_EXPIRED_URL);
       }
       return;
+    }
+
+    // The request took too long (client-side timeout). The server may still be working on it.
+    if (
+      axiosError.code === 'ECONNABORTED' ||
+      axiosError.code === 'ETIMEDOUT' ||
+      errorMessage.includes('timeout')
+    ) {
+      showError('http:timeout', 'The server took too long to respond. Please try again.');
+      return errorData;
     }
 
     // Spring endpoints reply with { error }, the shared contract uses { message }.

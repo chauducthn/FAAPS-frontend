@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router';
 import { lazy, Suspense } from 'react';
 import { PageSkeleton } from '../shared/components/common/PageSkeleton';
+import { RouteErrorElement } from '../shared/components/common/ErrorBoundary';
 import { ProtectedRoute } from './ProtectedRoute';
 import { RequireStudentProfile } from './RequireStudentProfile';
 import Login from '../modules/auth/pages/Login';
@@ -55,16 +56,18 @@ const suspense = (element: React.ReactNode) => (
 );
 
 export const router = createBrowserRouter([
-  { path: '/', element: <LandingPage /> },
-  { path: '/login', element: <Login /> },
-  { path: '/register', element: <Register /> },
+  { path: '/', element: <LandingPage />, errorElement: <RouteErrorElement /> },
+  { path: '/login', element: <Login />, errorElement: <RouteErrorElement /> },
+  { path: '/register', element: <Register />, errorElement: <RouteErrorElement /> },
   {
     element: <ProtectedRoute allowedRoles={['STUDENT']} />,
+    errorElement: <RouteErrorElement />,
     children: [{ path: '/register/complete', element: <CompleteRegistration /> }],
   },
-  { path: '/auth/callback', element: <AuthCallback /> },
+  { path: '/auth/callback', element: <AuthCallback />, errorElement: <RouteErrorElement /> },
   {
     element: <ProtectedRoute allowedRoles={['ADMIN']} />,
+    errorElement: <RouteErrorElement />,
     children: [
       {
         element: <AdminLayout />,
@@ -92,12 +95,15 @@ export const router = createBrowserRouter([
   },
   {
     element: <StudentLayout />,
+    errorElement: <RouteErrorElement />,
     children: [
       {
         element: <ProtectedRoute allowedRoles={['STUDENT']} />,
+        errorElement: <RouteErrorElement />,
         children: [
           {
             element: <RequireStudentProfile />,
+            errorElement: <RouteErrorElement />,
             children: [
               { path: '/student', element: suspense(<StudentPortal />) },
               { path: '/student/ai-chat', element: suspense(<StudentAiChat />) },
@@ -121,9 +127,11 @@ export const router = createBrowserRouter([
   },
   {
     element: <AdvisorLayout />,
+    errorElement: <RouteErrorElement />,
     children: [
       {
         element: <ProtectedRoute allowedRoles={['ADVISOR']} />,
+        errorElement: <RouteErrorElement />,
         children: [
           { path: '/advisor', element: suspense(<AdvisorPortal />) },
           { path: '/advisor/advising-requests', element: suspense(<AdvisorAdvisingRequests />) },
@@ -137,5 +145,5 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  { path: '*', element: <Navigate to="/login" replace /> },
+  { path: '*', element: <Navigate to="/login" replace />, errorElement: <RouteErrorElement /> },
 ]);
