@@ -4,14 +4,23 @@
 import type { TranscriptRow } from '../../../academic/services/studentAcademicService';
 
 interface Props {
-  transcript: TranscriptRow[];
+  /** The backend may omit the field entirely — the tab must never crash on it. */
+  transcript?: TranscriptRow[] | null;
 }
 
 export default function StudentTranscriptTab({ transcript }: Props) {
+  // A missing payload must not become `transcript.length` on undefined.
+  const rows = transcript ?? [];
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white">
-      {transcript.length === 0 ? (
-        <p className="p-8 text-center text-sm text-slate-500">No transcript records.</p>
+      {rows.length === 0 ? (
+        <div className="flex flex-col items-center gap-1 p-8 text-center">
+          <p className="text-sm font-semibold text-slate-700">No transcript records.</p>
+          <p className="max-w-sm text-[13px] text-slate-500">
+            The student has no imported or recorded results yet.
+          </p>
+        </div>
       ) : (
         <table className="w-full text-left text-sm">
           <thead>
@@ -23,7 +32,7 @@ export default function StudentTranscriptTab({ transcript }: Props) {
             </tr>
           </thead>
           <tbody>
-            {transcript.map((row) => (
+            {rows.map((row) => (
               <tr key={row.id} className="border-t border-slate-100 hover:bg-slate-50/60">
                 <td className="px-4 py-3">
                   <strong className="text-[#151c27]">{row.courseCode}</strong>

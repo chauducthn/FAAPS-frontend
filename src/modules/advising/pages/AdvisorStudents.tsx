@@ -5,6 +5,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { GraduationCap, TriangleAlert, UserCheck, UsersRound } from 'lucide-react';
+import { toast } from 'sonner';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
 import { useAdviseeStudents } from '../hooks/queries/useAdvisorQueries';
@@ -12,6 +13,7 @@ import { advisorService, type AdvisorStudentDetail } from '../services/advisorSe
 import type { AcademicStatus, AdviseeStudent } from '../types/advising';
 import { Student360Modal } from '../components/Student360Modal';
 import { cn } from '@/shared/lib/utils';
+import { apiMessage } from '../../../shared/lib/apiMessage';
 
 const PAGE_SIZE = 10;
 const REQUIRED_CREDITS = 132;
@@ -117,6 +119,9 @@ export default function AdvisorStudents() {
     try {
       const result = await advisorService.getStudentDetail(student.id);
       setDetail(result);
+    } catch (error) {
+      // Không được để lỗi thoát ra ngoài: modal sẽ không mở và user không biết vì sao.
+      toast.error(apiMessage(error));
     } finally {
       setLoadingId(null);
     }

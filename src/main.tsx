@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { Toaster } from "./shared/components/ui/sonner";
 import { AuthProvider } from "./modules/auth/providers/AuthProvider";
+import { ErrorBoundary } from "./shared/components/common/ErrorBoundary";
 import { router } from "./routes";
 import "./index.css";
 
@@ -16,7 +17,10 @@ createRoot(document.getElementById("root")!).render(
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <RouterProvider router={router} />
+          {/* Chặn lỗi render ở tầng gốc: một màn hình lỗi không được làm trắng cả app. */}
+          <ErrorBoundary>
+            <RouterProvider router={router} />
+          </ErrorBoundary>
           <Toaster />
         </AuthProvider>
       </QueryClientProvider>

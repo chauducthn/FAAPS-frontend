@@ -80,9 +80,18 @@ export interface AdminUserSummary {
   role: AdminUserRole;
   status: AdminUserStatus;
   createdAt: string;
-  /** Students only. Missing until the backend adds them to the list response. */
+  /** Students only. */
   majorCode?: string | null;
   cohort?: string | null;
+  /**
+   * Whether the account has a local password. Google-only accounts
+   * (`password_hash IS NULL`) cannot be reset — they sign in through Google.
+   *
+   * Optional on purpose: the current backend does not send this field on
+   * `GET /admin/users`, so it must not be treated as "false" when missing.
+   * See `canResetPassword` in `../utils/passwordReset`.
+   */
+  hasPassword?: boolean;
 }
 
 export interface AdminUserDetail {
@@ -111,6 +120,33 @@ export interface UserEditOptions {
 }
 
 export type UserSort = 'createdAt,desc' | 'createdAt,asc' | 'fullName,asc' | 'fullName,desc' | 'userId,asc' | 'userId,desc';
+
+/**
+ * Outcome of one account inside a password reset.
+ *
+ * - `SUCCESS` — a new random password was issued and is returned once.
+ * - `SKIPPED` — the account was left alone (no local password, so there is
+ *   nothing to reset).
+ * - `FAILED` — the reset did not go through for this account.
+ */
+export type PasswordResetStatus = 'SUCCESS' | 'SKIPPED' | 'FAILED';
+
+/** One row of the reset result: which account, what happened, and its new password. */
+export interface PasswordResetEntry {
+  userId: string;
+  email: string;
+  fullName?: string;
+  status: PasswordResetStatus;
+  /** Only present for `SUCCESS`. Never persisted, never logged. */
+  newPassword?: string | null;
+  /** Why the account was skipped or failed. */
+  reason?: string | null;
+}
+
+/** The body of a password reset response. */
+export interface PasswordResetResponse {
+  resetResults: PasswordResetEntry[];
+}
 
 export interface AssignmentAdvisor {
   id: string;

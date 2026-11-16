@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
@@ -13,6 +13,8 @@ const createUser = vi.fn();
 const getAdvisors = vi.fn();
 const previewAssign = vi.fn();
 const assignStudents = vi.fn();
+const resetUserPassword = vi.fn();
+const bulkResetUserPassword = vi.fn();
 const semesters = { items: [] as { id: string; code: string; startDate: string | null }[] };
 const curriculums = {
   items: [] as {
@@ -33,8 +35,8 @@ vi.mock('../services/adminService', () => ({
     changeUserStatus: vi.fn(),
     changeUserRole: vi.fn(),
     bulkChangeUserStatus: vi.fn(),
-    resetUserPassword: vi.fn(),
-    bulkResetUserPassword: vi.fn(),
+    resetUserPassword: (...args: unknown[]) => resetUserPassword(...args),
+    bulkResetUserPassword: (...args: unknown[]) => bulkResetUserPassword(...args),
     getUser: vi.fn(),
   },
 }));
@@ -77,6 +79,7 @@ describe('UserAccounts', () => {
           email: 'a@fpt.edu.vn',
           role: 'STUDENT',
           status: 'ACTIVE',
+          hasPassword: true,
           createdAt: '2026-01-01T00:00:00Z',
         },
       ],
@@ -253,6 +256,7 @@ describe('UserAccounts', () => {
             email: 'a@fpt.edu.vn',
             role: 'STUDENT',
             status: 'ACTIVE',
+            hasPassword: true,
             createdAt: '2026-01-01T00:00:00Z',
           },
           {
@@ -262,6 +266,7 @@ describe('UserAccounts', () => {
             email: 'b@fe.edu.vn',
             role: 'ADVISOR',
             status: 'ACTIVE',
+            hasPassword: true,
             createdAt: '2026-01-01T00:00:00Z',
           },
         ],
@@ -289,6 +294,164 @@ describe('UserAccounts', () => {
       await user.click(screen.getByLabelText('Actions for Nguyen Van A'));
 
       expect(await screen.findByRole('menuitem', { name: /reset password/i })).toBeInTheDocument();
+    });
+
+    it('disables Reset password for a Google-only account', async () => {
+      const user = userEvent.setup();
+      listUsers.mockResolvedValue({
+        items: [
+          {
+            id: 'u1',
+            userId: 'SE173012',
+            fullName: 'Nguyen Van A',
+            email: 'a@fpt.edu.vn',
+            role: 'STUDENT',
+            status: 'ACTIVE',
+            hasPassword: false,
+            createdAt: '2026-01-01T00:00:00Z',
+          },
+        ],
+        page: 0,
+        size: 10,
+        totalElements: 1,
+        totalPages: 1,
+      });
+      renderPage();
+      await screen.findByText('Nguyen Van A');
+
+      await user.click(screen.getByLabelText('Actions for Nguyen Van A'));
+
+      const item = await screen.findByRole('menuitem', { name: /reset password/i });
+      expect(item).toBeDisabled();
+      expect(item).toHaveAttribute('title', expect.stringContaining('Google'));
+    });
+  });
+
+  describe('password reset', () => {
+    /** A list with one password account and one Google-only account. */
+    const twoUsers = () =>
+      listUsers.mockResolvedValue({
+        items: [
+          {
+            id: 'u1',
+            userId: 'SE173012',
+            fullName: 'Nguyen Van A',
+            email: 'a@fpt.edu.vn',
+            role: 'STUDENT',
+            status: 'ACTIVE',
+            hasPassword: true,
+            createdAt: '2026-01-01T00:00:00Z',
+          },
+          {
+            id: 'u2',
+            userId: 'SE173099',
+            fullName: 'Le Van B',
+            email: 'b@fpt.edu.vn',
+            role: 'STUDENT',
+            status: 'ACTIVE',
+            hasPassword: false,
+            createdAt: '2026-01-01T00:00:00Z',
+          },
+        ],
+        page: 0,
+        size: 10,
+        totalElements: 2,
+        totalPages: 1,
+      });
+
+    it('disables the checkbox of a Google-only account', async () => {
+      twoUsers();
+      renderPage();
+      await screen.findByText('Le Van B');
+
+      expect(screen.getByLabelText('Select row 1')).not.toBeDisabled();
+      expect(screen.getByLabelText('Select row 2')).toBeDisabled();
+    });
+
+    it('lists the accounts in the confirmation and gates the reset on the checkbox', async () => {
+      const user = userEvent.setup();
+      twoUsers();
+      renderPage();
+      await screen.findByText('Le Van B');
+
+      await user.click(screen.getByLabelText('Select row 1'));
+      await user.click(screen.getByRole('button', { name: /reset password/i }));
+
+      // The confirmation names the account that is about to be reset.
+      const dialog = await screen.findByRole('dialog', { name: /reset this password/i });
+      expect(within(dialog).getByText('a@fpt.edu.vn')).toBeInTheDocument();
+      expect(within(dialog).getByText('Nguyen Van A')).toBeInTheDocument();
+
+      const confirm = within(dialog).getByRole('button', { name: /^reset password$/i });
+      expect(confirm).toBeDisabled();
+
+      await user.click(within(dialog).getByRole('checkbox', { name: /Tôi hiểu password chỉ hiện 1 lần/i }));
+      expect(confirm).toBeEnabled();
+    });
+
+    it('shows the issued passwords in the result modal', async () => {
+      const user = userEvent.setup();
+      twoUsers();
+      resetUserPassword.mockResolvedValue({
+        resetResults: [
+          {
+            userId: 'SE173012',
+            email: 'a@fpt.edu.vn',
+            status: 'SUCCESS',
+            newPassword: 'Aa1!zzzz',
+          },
+        ],
+      });
+      renderPage();
+      await screen.findByText('Le Van B');
+
+      await user.click(screen.getByLabelText('Select row 1'));
+      await user.click(screen.getByRole('button', { name: /reset password/i }));
+      const confirm = within(await screen.findByRole('dialog', { name: /reset this password/i })).getByRole(
+        'button',
+        { name: /^reset password$/i },
+      );
+      await user.click(within(screen.getByRole('dialog')).getByRole('checkbox', { name: /Tôi hiểu/i }));
+      await user.click(confirm);
+
+      // The result dialog opens with the warning and the new password.
+      const result = await screen.findByRole('dialog', { name: /password reset results/i });
+      expect(within(result).getByText('Lưu ngay kẻo mất')).toBeInTheDocument();
+      expect(resetUserPassword).toHaveBeenCalledWith('u1');
+
+      await user.click(within(result).getByRole('button', { name: /show/i }));
+      expect(within(result).getByText('Aa1!zzzz')).toBeInTheDocument();
+    });
+
+    it('does not close the result modal when the backdrop is clicked', async () => {
+      const user = userEvent.setup();
+      twoUsers();
+      resetUserPassword.mockResolvedValue({
+        resetResults: [
+          { userId: 'SE173012', email: 'a@fpt.edu.vn', status: 'SUCCESS', newPassword: 'Aa1!zzzz' },
+        ],
+      });
+      renderPage();
+      await screen.findByText('Le Van B');
+
+      await user.click(screen.getByLabelText('Select row 1'));
+      await user.click(screen.getByRole('button', { name: /reset password/i }));
+      const confirm = within(await screen.findByRole('dialog', { name: /reset this password/i })).getByRole(
+        'button',
+        { name: /^reset password$/i },
+      );
+      await user.click(within(screen.getByRole('dialog')).getByRole('checkbox', { name: /Tôi hiểu/i }));
+      await user.click(confirm);
+
+      const result = await screen.findByRole('dialog', { name: /password reset results/i });
+      expect(within(result).getByText('Lưu ngay kẻo mất')).toBeInTheDocument();
+
+      // The backdrop is the dim layer behind the dialog.
+      const backdrop = document.querySelector('div.fixed.inset-0 > div.absolute');
+      expect(backdrop).not.toBeNull();
+      await user.click(backdrop!);
+
+      expect(within(screen.getByRole('dialog', { name: /password reset results/i })).getByText('Lưu ngay kẻo mất')).toBeInTheDocument();
     });
   });
 

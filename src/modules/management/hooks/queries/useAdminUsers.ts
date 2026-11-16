@@ -1,6 +1,13 @@
+import { useState } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminService } from '../../services/adminService';
-import type { AdminUserRole, AdminUserStatus, UserSort } from '../../types/admin';
+import { apiErrorMessage } from '../../../../shared/lib/apiError';
+import type {
+  AdminUserRole,
+  AdminUserStatus,
+  PasswordResetResponse,
+  UserSort,
+} from '../../types/admin';
 
 export const useAdminUsers = (params: {
   role?: AdminUserRole;
@@ -71,14 +78,32 @@ export const useChangeUserRole = () => {
   });
 };
 
-/** Resets the password of one account. */
-export const useResetUserPassword = () =>
-  useMutation({
-    mutationFn: (id: string) => adminService.resetUserPassword(id),
-  });
+/**
+ * Resets the password of one or several accounts.
+ *
+ * This deliberately does not use `useMutation`: React Query keeps the
+ * resolved response in its mutation cache, and that response carries the new
+ * passwords. The caller gets the response through `run` and holds it for as
+ * long as the result dialog is open — nothing else keeps a copy.
+ */
+export const useResetPasswords = () => {
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-/** Resets the password of several accounts in one call. */
-export const useBulkResetUserPassword = () =>
-  useMutation({
-    mutationFn: (userIds: string[]) => adminService.bulkResetUserPassword(userIds),
-  });
+  const run = async (ids: string[]): Promise<PasswordResetResponse> => {
+    setIsPending(true);
+    setError(null);
+    try {
+      return ids.length === 1
+        ? await adminService.resetUserPassword(ids[0])
+        : await adminService.bulkResetUserPassword(ids);
+    } catch (cause) {
+      setError(apiErrorMessage(cause));
+      throw cause;
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  return { run, isPending, error, setError };
+};

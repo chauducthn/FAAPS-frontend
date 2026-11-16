@@ -35,7 +35,7 @@ export function Student360Modal({
   onClose: () => void;
 }) {
   const [tab, setTab] = useState<TabKey>('overview');
-  const studentId = detail?.profile.id ?? '';
+  const studentId = detail?.profile?.id ?? '';
 
   // Lịch sử tư vấn: API advisor trả về toàn bộ request — lọc theo sinh viên đang xem.
   const requestsQuery = useQuery({
@@ -82,32 +82,32 @@ export function Student360Modal({
             />
             <div className="relative flex flex-wrap items-center gap-4">
               <span className="flex size-14 items-center justify-center rounded-2xl bg-white/95 text-lg font-bold text-[#F26F21] shadow">
-                {initialsOf(detail.profile.fullName)}
+                {initialsOf(detail.profile?.fullName ?? '')}
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/80">
-                  Student 360 Profile · {detail.profile.studentCode ?? '—'}
+                  Student 360 Profile · {detail.profile?.studentCode ?? '—'}
                 </p>
-                <h2 className="mt-0.5 truncate text-xl font-bold">{detail.profile.fullName}</h2>
+                <h2 className="mt-0.5 truncate text-xl font-bold">{detail.profile?.fullName ?? '—'}</h2>
                 <p className="mt-0.5 text-[13px] text-white/90">
-                  {detail.profile.majorName ?? '—'} · {detail.profile.cohort ?? '—'} · Semester{' '}
-                  {detail.profile.currentSemester ?? '—'}
+                  {detail.profile?.majorName ?? '—'} · {detail.profile?.cohort ?? '—'} · Semester{' '}
+                  {detail.profile?.currentSemester ?? '—'}
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                <AcademicStatusPill status={detail.profile.academicStatus} />
+                <AcademicStatusPill status={detail.profile?.academicStatus ?? null} />
                 <span className="rounded-full bg-[#151c27]/85 px-3 py-1 text-[11px] font-bold">
-                  GPA {detail.progress.currentGpa?.toFixed(2) ?? '—'}
+                  GPA {detail.progress?.currentGpa?.toFixed(2) ?? '—'}
                 </span>
               </div>
             </div>
             {/* Quick stats */}
             <div className="relative mt-4 grid grid-cols-3 gap-2">
               {[
-                { label: 'Credits', value: `${detail.progress.earnedCredits}/${detail.progress.requiredCredits}` },
+                { label: 'Credits', value: `${detail.progress?.earnedCredits ?? 0}/${detail.progress?.requiredCredits ?? 0}` },
                 {
                   label: 'Courses done',
-                  value: `${detail.progress.completedCourses}/${detail.progress.curriculumCourses}`,
+                  value: `${detail.progress?.completedCourses ?? 0}/${detail.progress?.curriculumCourses ?? 0}`,
                 },
                 { label: 'Requests', value: String(history.length) },
               ].map((s) => (
