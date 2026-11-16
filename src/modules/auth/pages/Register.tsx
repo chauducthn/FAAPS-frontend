@@ -19,16 +19,18 @@ function Field({
   htmlFor,
   required,
   error,
+  className,
   children,
 }: {
   label: string;
   htmlFor?: string;
   required?: boolean;
   error?: string;
+  className?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className={className}>
       <div className="mb-1 flex items-center justify-between">
         <label htmlFor={htmlFor} className="text-xs font-medium text-gray-700">
           {label} {required && <span className="text-red-500">*</span>}
@@ -141,7 +143,7 @@ export default function Register() {
                 <input id="phone" {...register('phone')} autoComplete="tel" inputMode="numeric" maxLength={10} placeholder="0901234567" className={inputClass} />
               </Field>
 
-              <Field label="Date of birth" required error={errors.dateOfBirth?.message}>
+              <Field label="Date of birth" required error={errors.dateOfBirth?.message} className="sm:col-span-2">
                 <Controller
                   control={control}
                   name="dateOfBirth"
