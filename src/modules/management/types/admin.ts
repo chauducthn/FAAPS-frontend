@@ -80,9 +80,6 @@ export interface AdminUserSummary {
   role: AdminUserRole;
   status: AdminUserStatus;
   createdAt: string;
-  /** Students only. */
-  majorCode?: string | null;
-  cohort?: string | null;
   /**
    * Whether the account has a local password. Google-only accounts
    * (`password_hash IS NULL`) cannot be reset — they sign in through Google.
@@ -92,6 +89,9 @@ export interface AdminUserSummary {
    * See `canResetPassword` in `../utils/passwordReset`.
    */
   hasPassword?: boolean;
+  /** Students only. */
+  majorCode?: string | null;
+  cohort?: string | null;
 }
 
 export interface AdminUserDetail {
