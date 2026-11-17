@@ -10,6 +10,7 @@ import {
   FolderOpen,
   GraduationCap,
   ChevronDown,
+  ClipboardCheck,
   Cpu,
   LayoutDashboard,
   LogOut,
@@ -45,6 +46,7 @@ const NAV_SECTIONS: { title?: string; items: NavItem[] }[] = [
     items: [
       { label: 'Curriculum', to: '/admin/curriculum', icon: BookOpen },
       { label: 'Courses', to: '/admin/courses', icon: Book },
+      { label: 'Attendance', to: '/admin/attendance', icon: ClipboardCheck },
     ],
   },
   {

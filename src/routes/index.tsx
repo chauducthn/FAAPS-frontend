@@ -26,6 +26,7 @@ const CohortsPage = lazy(() => import('../modules/management/pages/Cohorts'));
 const CurriculumPage = lazy(() => import('../modules/management/pages/Curriculum'));
 const CurriculumDetailPage = lazy(() => import('../modules/management/pages/CurriculumDetail'));
 const CoursesPage = lazy(() => import('../modules/management/pages/Courses'));
+const AttendancePage = lazy(() => import('../modules/management/pages/Attendance'));
 const AcademicRulesPage = lazy(() => import('../modules/management/pages/AcademicRules'));
 const AiConfigPage = lazy(() => import('../modules/management/pages/AiConfig'));
 const AiPerformancePage = lazy(() => import('../modules/management/pages/AiPerformance'));
@@ -79,6 +80,7 @@ export const router = createBrowserRouter([
           { path: '/admin/curriculum', element: suspense(<CurriculumPage />) },
           { path: '/admin/curriculum/:id', element: suspense(<CurriculumDetailPage />) },
           { path: '/admin/courses', element: suspense(<CoursesPage />) },
+          { path: '/admin/attendance', element: suspense(<AttendancePage />) },
           { path: '/admin/rules', element: suspense(<AcademicRulesPage />) },
           { path: '/admin/ai-config', element: suspense(<AiConfigPage />) },
           { path: '/admin/ai-performance', element: suspense(<AiPerformancePage />) },
