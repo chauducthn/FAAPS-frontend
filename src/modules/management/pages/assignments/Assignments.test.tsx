@@ -169,7 +169,7 @@ describe('AssignmentsOverview — unassigned students', () => {
     await user.click(screen.getByLabelText('Select row 1'));
 
     expect(await screen.findByRole('button', { name: /Assign to Advisor/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Auto Assign/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Auto Assign' })).toBeInTheDocument();
   });
 
   it('opens the advisor dropdown modal from the bulk action bar', async () => {
@@ -209,7 +209,7 @@ describe('AssignmentsOverview — unassigned students', () => {
     await user.click(screen.getByLabelText('Select row 1'));
     await user.click(screen.getByLabelText('Select row 2'));
 
-    await user.click(await screen.findByRole('button', { name: /Auto Assign/i }));
+    await user.click(await screen.findByRole('button', { name: 'Auto Assign' }));
 
     await waitFor(() =>
       expect(autoAssignStudents).toHaveBeenCalledWith([
@@ -224,7 +224,7 @@ describe('AssignmentsOverview — unassigned students', () => {
     const user = await openUnassignedTab();
 
     await user.click(screen.getByLabelText('Select row 2'));
-    await user.click(await screen.findByRole('button', { name: /Auto Assign/i }));
+    await user.click(await screen.findByRole('button', { name: 'Auto Assign' }));
 
     await waitFor(() => expect(autoAssignStudents).toHaveBeenCalledWith([
       expect.objectContaining({ id: 's2', cohortId: 'c1' }),
@@ -238,7 +238,7 @@ describe('AssignmentsOverview — unassigned students', () => {
 
     expect(await screen.findByText('2 rows selected')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /Auto Assign/i }));
+    await user.click(screen.getByRole('button', { name: 'Auto Assign' }));
 
     await waitFor(() => expect(autoAssignStudents).toHaveBeenCalledWith([
       expect.objectContaining({ id: 's1', cohortId: 'c1' }),
@@ -282,5 +282,80 @@ describe('AssignmentsOverview — unassigned students', () => {
       const call = getUnassigned.mock.calls.at(-1)?.[0];
       expect(call).toMatchObject({ cohortId: 'c1' });
     });
+  });
+});
+
+describe('AssignmentsOverview — advisors and cohort cards', () => {
+  beforeEach(() => {
+    getUnassigned.mockResolvedValue({ items: [], page: 0, size: 10, totalElements: 0, totalPages: 0 });
+    getSummary.mockResolvedValue({
+      total: 4,
+      assigned: 3,
+      unassigned: 1,
+      missingAcademicProfile: 0,
+      pendingAdvisorRequests: 0,
+      cohorts: [
+        { cohortId: 'c-ia17', cohort: 'K17', majorCode: 'IA', total: 2, assigned: 1, unassigned: 1 },
+        { cohortId: 'c-se17', cohort: 'K17', majorCode: 'SE', total: 2, assigned: 2, unassigned: 0 },
+      ],
+    });
+    getAdvisors.mockResolvedValue(ADVISORS);
+    getAdvisorCohorts.mockResolvedValue([
+      { advisorId: 'ad1', email: 'advisor1@fpt.edu.vn', fullName: 'Tran Thi C', maxAdvisees: 30, cohortId: 'c-ia17', majorCode: 'IA', cohort: 'K17', inPool: true, studentCount: 1 },
+      { advisorId: 'ad2', email: 'advisor2@fpt.edu.vn', fullName: 'Pham Van D', maxAdvisees: 30, cohortId: 'c-se17', majorCode: 'SE', cohort: 'K17', inPool: true, studentCount: 2 },
+    ]);
+  });
+
+  function renderAt(path: string) {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    return render(
+      <QueryClientProvider client={client}>
+        <MemoryRouter initialEntries={[path]}>
+          <AssignmentsOverview />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+  }
+
+  it('has only the Advisors and Unassigned students tabs, Advisors first', async () => {
+    renderAt('/admin/assignments');
+    await screen.findByText('Tran Thi C');
+    expect(screen.getAllByRole('tab').map((t) => t.textContent)).toEqual(['Advisors', expect.stringMatching(/^Unassigned students/)]);
+    expect(screen.getByRole('tab', { name: 'Advisors' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('lists only the cohorts with unassigned students in the Auto assign dialog', async () => {
+    const user = userEvent.setup();
+    renderAt('/admin/assignments');
+    await screen.findByText('Tran Thi C');
+    expect(screen.getByText('in 1 cohort')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Auto assign' }));
+    const dialog = within(await screen.findByRole('dialog'));
+    expect(dialog.getByText('IA K17')).toBeInTheDocument();
+    expect(dialog.queryByText('SE K17')).not.toBeInTheDocument();
+    expect(dialog.getByRole('button', { name: 'Auto assign IA K17' })).toBeInTheDocument();
+  });
+
+  it('filters the advisors by major and by cohort', async () => {
+    const user = userEvent.setup();
+    renderAt('/admin/assignments');
+    await screen.findByText('Pham Van D');
+
+    await user.selectOptions(screen.getByLabelText('Filter by major'), 'IA');
+    expect(screen.getByText('Tran Thi C')).toBeInTheDocument();
+    expect(screen.queryByText('Pham Van D')).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('Filter by major'), '');
+    await user.selectOptions(screen.getByLabelText('Filter by cohort'), 'c-se17');
+    expect(screen.getByText('Pham Van D')).toBeInTheDocument();
+    expect(screen.queryByText('Tran Thi C')).not.toBeInTheDocument();
+  });
+
+  it('assigns a cohort and opens details from each advisor row', async () => {
+    renderAt('/admin/assignments');
+    const row = (await screen.findByText('Tran Thi C')).closest('tr')!;
+    expect(within(row).getByRole('button', { name: 'Assign cohort' })).toBeInTheDocument();
+    expect(within(row).getByRole('link', { name: /Details & history/ })).toHaveAttribute('href', '/admin/assignments/advisors/ad1');
   });
 });
