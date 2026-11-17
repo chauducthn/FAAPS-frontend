@@ -62,6 +62,17 @@ export const studentAcademicService = {
   transcript: () => get<TranscriptRow[]>('/transcript'),
   progress: () => get<Progress>('/progress'),
   courses: (search = '', page = 0) => get<Course[]>('/courses', { search, page, size: 20 }),
+  /** The whole catalogue: the backend returns bare pages with no total, so read pages until one comes back short. */
+  allCourses: async (search = ''): Promise<Course[]> => {
+    const size = 100; // the backend's maximum page size
+    const all: Course[] = [];
+    for (let page = 0; page < 50; page++) {
+      const batch = await get<Course[]>('/courses', { search, page, size });
+      all.push(...batch);
+      if (batch.length < size) break;
+    }
+    return all;
+  },
   course: (id: string) => get<CourseDetail>(`/courses/${id}`),
   curriculum: () => get<Curriculum>('/curriculum'),
   curriculumCourses: () => get<CurriculumCourse[]>('/curriculum/courses'),

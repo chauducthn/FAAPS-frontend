@@ -38,7 +38,7 @@ export default function StudentCourses() {
 
   const catalog = useQuery({
     queryKey: ['student', 'courses-exploration', debouncedSearch],
-    queryFn: () => studentAcademicService.courses(debouncedSearch, 0),
+    queryFn: () => studentAcademicService.allCourses(debouncedSearch),
     placeholderData: keepPreviousData,
   });
   const detail = useQuery({
