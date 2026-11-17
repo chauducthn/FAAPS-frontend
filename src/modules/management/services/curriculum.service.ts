@@ -137,8 +137,11 @@ export const curriculumService = {
     return (await apiClient.post<CurriculumImportPreview>(`/admin/curriculums/${id}/import/preview`, body,
       { headers: { ...await getCsrfHeaders(), 'Content-Type': 'multipart/form-data' } })).data;
   },
-  confirmImport: async (id: string, preview: unknown): Promise<number> => {
-    return (await apiClient.post<{ importedCount: number }>(`/admin/curriculums/${id}/import/confirm`, preview,
+  /** Sends only the valid rows: the backend rejects the whole request if any row still has errors. */
+  confirmImport: async (id: string, preview: CurriculumImportPreview): Promise<number> => {
+    const items = preview.items.filter((row) => row.errors.length === 0);
+    const body: CurriculumImportPreview = { totalRows: items.length, validRows: items.length, errorRows: 0, items };
+    return (await apiClient.post<{ importedCount: number }>(`/admin/curriculums/${id}/import/confirm`, body,
       { headers: await getCsrfHeaders() })).data.importedCount;
   },
 };

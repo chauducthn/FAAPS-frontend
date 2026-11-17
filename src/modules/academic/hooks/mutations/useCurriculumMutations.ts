@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { toastBadRequest } from '../../../../shared/lib/apiError';
 import { cohortService } from '../../../management/services/cohort.service';
 import { curriculumService } from '../../../management/services/curriculum.service';
-import type { AddCurriculumCoursesInput, CurriculumInput, CurriculumStatus } from '../../types/curriculum';
+import type { AddCurriculumCoursesInput, CurriculumImportPreview, CurriculumInput, CurriculumStatus } from '../../types/curriculum';
 import { CURRICULUM_QUERY_KEYS, serviceFor, type CurriculumKind } from '../queries/useCurriculumsQuery';
 
 export const useCurriculumMutations = (kind: CurriculumKind) => {
@@ -76,7 +76,7 @@ export const useCurriculumMutations = (kind: CurriculumKind) => {
 
   const confirmImport = useMutation({
     onError: toastBadRequest,
-    mutationFn: ({ id, preview }: { id: string; preview: unknown }) => curriculumService.confirmImport(id, preview),
+    mutationFn: ({ id, preview }: { id: string; preview: CurriculumImportPreview }) => curriculumService.confirmImport(id, preview),
     onSuccess: (count) => {
       toast.success(`Imported ${count} course${count === 1 ? '' : 's'} from spreadsheet`);
       refresh();
