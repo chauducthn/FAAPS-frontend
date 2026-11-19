@@ -16,10 +16,15 @@ import {
   TriangleAlert,
   UsersRound,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../auth/stores/useAuth';
 import { useAdviseeStudents, useAdvisorAdvisingRequests } from '../hooks/queries/useAdvisorQueries';
 import { RequestListTable } from '../components/RequestListTable';
+import { AtRiskStudentsWidget } from '../components/AtRiskStudentsWidget';
+import { Student360Modal } from '../components/Student360Modal';
+import { advisorService, type AdvisorStudentDetail } from '../services/advisorService';
 import { cn } from '@/shared/lib/utils';
+import { apiMessage } from '@/shared/lib/apiMessage';
 import type { AcademicStatus } from '../types/advising';
 
 const COUNT_SIZE = 50;
@@ -77,6 +82,7 @@ function greeting() {
 export default function AdvisorPortal() {
   const user = useAuth((s) => s.user);
   const [search, setSearch] = useState('');
+  const [riskDetail, setRiskDetail] = useState<AdvisorStudentDetail | null>(null);
 
   const studentsQuery = useAdviseeStudents({ page: 0, size: COUNT_SIZE });
   const pendingQuery = useAdvisorAdvisingRequests({ status: 'PENDING' });
@@ -131,6 +137,16 @@ export default function AdvisorPortal() {
       topBar: 'bg-emerald-600',
     },
   ];
+
+  // Mở Student 360 Modal từ widget "Sinh viên có nguy cơ".
+  const openRiskDetail = async (studentId: string) => {
+    try {
+      const result = await advisorService.getStudentDetail(studentId);
+      setRiskDetail(result);
+    } catch (error) {
+      toast.error(apiMessage(error));
+    }
+  };
 
   return (
     <div className="w-full space-y-6 pb-4">
@@ -189,6 +205,9 @@ export default function AdvisorPortal() {
           </div>
         ))}
       </div>
+
+      {/* ── Sinh viên có nguy cơ (Flow 3 — Passive warning): ngay dưới KPI ── */}
+      <AtRiskStudentsWidget onViewDetail={openRiskDetail} />
 
       {/* ── Quick links = clickable: viền, bóng, hover nâng nhẹ + mũi tên cam ── */}
       <div className="grid gap-5 sm:grid-cols-3">
@@ -408,6 +427,9 @@ export default function AdvisorPortal() {
           )}
         </div>
       </section>
+
+      {/* ── Student 360 Modal — mở từ widget "Sinh viên có nguy cơ" ── */}
+      <Student360Modal detail={riskDetail} onClose={() => setRiskDetail(null)} />
     </div>
   );
 }
