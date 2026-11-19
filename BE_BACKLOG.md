@@ -81,3 +81,97 @@ FE không dùng nhưng BE có thể giữ hoặc bỏ. Nếu bỏ, cần đảm 
 - Hiện trạng: Reject dùng `IN_PROGRESS` + `resolutionSummary`. Không phân biệt được với "đang xử lý" thật.
 - Đề xuất BE: thêm enum `REJECTED`. FE sẽ đổi mapping 1 dòng trong `useAdvisingMutations.ts`.
 - Workaround tạm: filter theo `status=IN_PROGRESS AND resolutionSummary IS NOT NULL` → coi là "đã từ chối".
+
+---
+
+## Blocker (P0)
+
+### Advisor — Students At Risk (widget "Sinh viên có nguy cơ")
+
+**Trạng thái:** BE **chưa có** endpoint. FE đã viết đầy đủ service + hook + component
+và mount vào Advisor Dashboard, nhưng widget sẽ hiển thị trạng thái lỗi cho tới khi
+BE triển khai endpoint dưới đây.
+
+**Method + Endpoint:**
+
+```
+GET /advisor/at-risk-students
+```
+
+**Query params:** (không có — endpoint hiện trả về toàn bộ danh sách SV của advisor)
+
+**Payload / Response shape:**
+
+```jsonc
+{
+  "data": [
+    {
+      "id": "uuid",              // students.user_id — dùng mở Student 360 Modal
+      "studentCode": "SE123456", // MSSV
+      "fullName": "Nguyễn Văn A",// users.full_name (nullable)
+      "majorCode": "SE",         // majors.code (nullable)
+      "majorName": "Software Engineering", // majors.name (nullable)
+      "currentSemester": 7,     // students.current_semester (nullable)
+      "currentGpa": 4.2,        // students.current_gpa — thang 10.00 (nullable)
+      "riskLevel": "HIGH",      // HIGH | MEDIUM | LOW
+      "reasons": ["LOW_GPA", "HIGH_ABSENCE"], // LOW_GPA | HIGH_ABSENCE | FAILED_COURSES
+      "reasonDetails": "GPA 4.20 < 5.00",     // nullable — mô tả chi tiết
+      "totalCreditsEarned": 96,  // students.total_credits_earned
+      "detectedAt": "2026-11-19T00:00:00Z"    // ISO-8601, nullable
+    }
+  ],
+  "total": 7
+}
+```
+
+**Enum cần BE thống nhất:**
+
+| Enum | Giá trị | Ý nghĩa |
+| --- | --- | --- |
+| `riskLevel` | `HIGH` \| `MEDIUM` \| `LOW` | Mức độ nguy cơ do BE chấm |
+| `reasons[]` | `LOW_GPA` \| `HIGH_ABSENCE` \| `FAILED_COURSES` | GPA thấp / vắng nhiều / nợ môn |
+
+**File FE đang chờ endpoint này:**
+
+- `src/modules/advising/services/advisorAtRiskApi.ts` — service gọi API (có `// TODO(BE): implement GET /advisor/at-risk-students`)
+- `src/modules/advising/types/at-risk.ts` — type `RiskLevel`, `RiskReason`, `AtRiskStudent`, `AtRiskStudentResponse`
+- `src/modules/advising/hooks/queries/useAtRiskStudents.ts` — hook `useAtRiskStudents` (query key `['advisor','at-risk-students']`)
+- `src/modules/advising/components/AtRiskStudentsWidget.tsx` — widget UI
+- `src/modules/advising/pages/AdvisorPortal.tsx` — mount widget dưới KPI + mở `Student360Modal`
+
+**Priority:** P0 — chặn Flow 3 (Passive warning).
+
+---
+
+## Gap phát sinh thêm (P1 / P2)
+
+### P1 — Lọc / phân trang / sắp xếp danh sách at-risk
+
+Widget hiện render toàn bộ `data` trả về, không có phân trang. Khi BE có thêm người dùng,
+danh sách sẽ dài và không scroll được trên mobile.
+
+| Method | Path | Query | Response | File FE đang chờ |
+| --- | --- | --- | --- | --- |
+| GET | `/advisor/at-risk-students` | `riskLevel` (`HIGH`\|`MEDIUM`\|`LOW`), `reason` (`LOW_GPA`\|`HIGH_ABSENCE`\|`FAILED_COURSES`), `page`, `size` | `{ data: AtRiskStudent[]; total: number; page: number; size: number; totalPages: number }` | `src/modules/advising/services/advisorAtRiskApi.ts` |
+
+**Priority:** P1 — không chặn MVP nhưng cần trước khi dữ liệu thực.
+
+### P1 — Đếm theo mức độ nguy cơ (cho KPI cards)
+
+Dashboard cần đếm nhanh số SV theo từng mức độ mà không tải cả danh sách.
+
+| Method | Path | Query | Response | File FE đang chờ |
+| --- | --- | --- | --- | --- |
+| GET | `/advisor/at-risk-students/counts` | — | `{ high: number; medium: number; low: number; total: number }` | `src/modules/advising/components/AtRiskStudentsWidget.tsx` |
+
+**Priority:** P1 — hiện badge đếm dùng `total` từ response chính.
+
+### P2 — Ghi nhận / đóng cảnh báo học vụ
+
+Advisor cần đánh dấu đã xử lý một cảnh báo để nó không hiện lại ở kỳ sau.
+
+| Method | Path | Payload | Response | File FE đang chờ |
+| --- | --- | --- | --- | --- |
+| POST | `/advisor/at-risk-students/{studentId}/acknowledge` | `{ note?: string }` | `AtRiskStudent` | (chưa có — widget chỉ read-only) |
+
+**Priority:** P2 — ngoài phạm vi Flow 3 hiện tại.
