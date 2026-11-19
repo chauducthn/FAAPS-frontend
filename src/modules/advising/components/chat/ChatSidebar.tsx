@@ -144,7 +144,7 @@ export default function ChatSidebar({
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center justify-between gap-2">
-                        <span className="truncate text-[15px] font-bold text-slate-900">{r.studentName}</span>
+                        <span className="truncate text-[15px] font-bold text-slate-900">{r.studentName ?? '—'}</span>
                         <span className="shrink-0 text-xs font-semibold tabular-nums text-slate-500">
                           {formatDay(r.updatedAt)}
                         </span>

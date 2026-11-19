@@ -34,8 +34,8 @@ const formatDateTime = (iso: string) =>
     minute: '2-digit',
   });
 
-function initialsOf(name: string) {
-  return name
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)
@@ -100,7 +100,7 @@ export function RequestActionModal({ request, decision, onClose }: Props) {
               <p className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[13px] text-white/90">
                 <span className="inline-flex items-center gap-1">
                   <User className="size-3.5" aria-hidden />
-                  {request.studentName}
+                  {request.studentName ?? '—'}
                 </span>
                 <span className="inline-flex items-center gap-1">
                   <CalendarDays className="size-3.5" aria-hidden />

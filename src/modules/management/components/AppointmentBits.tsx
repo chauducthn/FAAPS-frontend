@@ -113,10 +113,11 @@ const STUDENT_TONES = [
 ];
 
 /** A stable tone per name, so the same person always looks the same. */
-function hashName(name: string) {
+function hashName(name: string | null | undefined) {
+  const safe = name ?? '';
   let hash = 0;
-  for (let index = 0; index < name.length; index += 1) {
-    hash = (hash * 31 + name.charCodeAt(index)) | 0;
+  for (let index = 0; index < safe.length; index += 1) {
+    hash = (hash * 31 + safe.charCodeAt(index)) | 0;
   }
   return Math.abs(hash);
 }
@@ -130,7 +131,8 @@ export function AppointmentAvatar({
   kind = 'student',
   className,
 }: {
-  name: string;
+  /** The backend may omit the name — never call `.replace` on undefined. */
+  name: string | null | undefined;
   kind?: 'student' | 'advisor';
   className?: string;
 }) {

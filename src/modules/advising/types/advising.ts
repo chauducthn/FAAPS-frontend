@@ -47,8 +47,8 @@ export interface StudentProfile {
   id: string;
   /** students.student_code */
   studentCode: string;
-  /** users.full_name */
-  fullName: string;
+  /** users.full_name — có thể null nếu API không trả tên */
+  fullName: string | null;
   /** users.email */
   email: string;
   /** users.phone */
@@ -88,8 +88,8 @@ export interface AdvisorInfo {
   id: string;
   /** advisors.advisor_code */
   advisorCode: string;
-  /** users.full_name */
-  fullName: string;
+  /** users.full_name — có thể null nếu API không trả tên */
+  fullName: string | null;
   /** users.email */
   email: string;
   /** users.phone */
@@ -114,8 +114,8 @@ export interface AdviseeStudent {
   id: string;
   /** students.student_code */
   studentCode: string;
-  /** users.full_name */
-  fullName: string;
+  /** users.full_name — có thể null nếu API không trả tên */
+  fullName: string | null;
   /** users.email */
   email: string;
   /** majors.code */
@@ -147,7 +147,7 @@ export interface AdvisingRequest {
   id: string;
   /** students.user_id */
   studentId: string;
-  studentName: string;
+  studentName: string | null;
   studentCode: string | null;
   /** advisors.user_id — NULL tới khi có advisor nhận request */
   advisorId: string | null;
