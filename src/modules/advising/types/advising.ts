@@ -16,7 +16,7 @@ export type AdvisingRequestStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'CA
 
 /**
  * Các trạng thái advisor được chuyển request sang.
- * RESOLVED = Chấp nhận, CANCELLED = Từ chối, IN_PROGRESS = Tiếp nhận xử lý.
+ * RESOLVED = Chấp nhận, IN_PROGRESS = Từ chối (kèm lý do) hoặc Tiếp nhận xử lý.
  */
 export type AdvisingRequestDecision = 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED';
 
@@ -196,8 +196,8 @@ export interface CreateAdvisingRequestDto {
 
 /** Body của PUT /advisor/advising-requests/{id}/status */
 export interface UpdateAdvisingRequestStatusDto {
-  /** RESOLVED = Chấp nhận, CANCELLED = Từ chối, IN_PROGRESS = Tiếp nhận xử lý. */
+  /** RESOLVED = Chấp nhận, IN_PROGRESS = Từ chối / Tiếp nhận xử lý. */
   status: AdvisingRequestDecision;
-  /** advising_requests.resolution_summary — text, nullable. Bắt buộc khi Từ chối. */
+  /** advising_requests.resolution_summary — text. Bắt buộc (non-blank) cho cả Accept lẫn Reject. */
   resolutionSummary?: string;
 }

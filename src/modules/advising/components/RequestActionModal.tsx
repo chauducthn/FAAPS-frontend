@@ -3,8 +3,11 @@
 // hero cam FPT + body bg-[#fafbfd] + cards rounded-2xl + footer chuẩn.
 //
 // Mapping trạng thái (DB không có ACCEPTED/REJECTED):
-//   Chấp nhận → status = 'RESOLVED'
-//   Từ chối   → status = 'CANCELLED'  (bắt buộc có resolutionSummary)
+//   Chấp nhận → status = 'RESOLVED'  + resolutionSummary (bắt buộc)
+//   Từ chối   → status = 'IN_PROGRESS' + resolutionSummary (bắt buộc)
+// Lưu ý: BE chỉ nhận 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED' cho
+// PUT /advisor/advising-requests/{id}/status — không có 'REJECTED', nên từ chối
+// phải đi qua 'IN_PROGRESS' kèm resolutionSummary nêu rõ lý do.
 
 import { useEffect, useState } from 'react';
 import { CalendarDays, CheckCircle2, User, XCircle } from 'lucide-react';
@@ -56,18 +59,20 @@ export function RequestActionModal({ request, decision, onClose }: Props) {
   if (!request) return null;
 
   const isReject = decision === 'reject';
-  const noteMissing = isReject && touched && note.trim().length === 0;
+  const summaryMissing = touched && note.trim().length === 0;
+  const summaryEmpty = note.trim().length === 0;
 
   const handleSubmit = async () => {
     setTouched(true);
-    if (isReject && note.trim().length === 0) return;
+    // BE yêu cầu resolutionSummary non-blank cho cả Accept lẫn Reject.
+    if (note.trim().length === 0) return;
 
     try {
       await updateMutation.mutateAsync({
         id: request.id,
         body: {
-          status: isReject ? 'CANCELLED' : 'RESOLVED',
-          resolutionSummary: note.trim() || undefined,
+          status: isReject ? 'IN_PROGRESS' : 'RESOLVED',
+          resolutionSummary: note.trim(),
         },
       });
       onClose();
@@ -126,8 +131,8 @@ export function RequestActionModal({ request, decision, onClose }: Props) {
 
             <div className="rounded-2xl border border-slate-100 bg-white p-4">
               <label htmlFor="request-note" className="text-xs font-semibold text-slate-600">
-                {isReject ? 'Reason for rejection' : 'Note to student'}{' '}
-                {isReject && <span className="text-red-500">*</span>}
+                {isReject ? 'Reason for rejection' : 'Resolution summary'}{' '}
+                <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="request-note"
@@ -139,13 +144,17 @@ export function RequestActionModal({ request, decision, onClose }: Props) {
                 placeholder={
                   isReject
                     ? 'Explain the reason so the student can make adjustments...'
-                    : 'Add an optional note for the student...'
+                    : 'Summarise the outcome for the student...'
                 }
                 className="mt-2 w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm text-[#151c27] outline-none placeholder:text-slate-400 focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40"
               />
               <div className="mt-1 flex items-center justify-between">
-                <p className={cn('text-[11px]', noteMissing ? 'font-semibold text-red-500' : 'text-slate-400')}>
-                  {noteMissing ? 'A rejection reason is required.' : isReject ? 'The student will see this reason.' : 'The student will see this note.'}
+                <p className={cn('text-[11px]', summaryMissing ? 'font-semibold text-red-500' : 'text-slate-400')}>
+                  {summaryMissing
+                    ? 'A resolution summary is required.'
+                    : isReject
+                      ? 'The student will see this reason.'
+                      : 'The student will see this summary.'}
                 </p>
                 <p className="text-[11px] text-slate-400">
                   {note.length}/{MAX_NOTE}
@@ -155,7 +164,7 @@ export function RequestActionModal({ request, decision, onClose }: Props) {
 
             {isReject && (
               <p className="rounded-xl border border-dashed border-red-200 bg-red-50/60 px-3 py-2 text-xs text-red-600">
-                Rejected requests move to the Resolved tab with a Rejected badge — the reason above is required.
+                Rejected requests move to the In progress tab — the reason above is required.
               </p>
             )}
             {!isReject && (
@@ -180,7 +189,7 @@ export function RequestActionModal({ request, decision, onClose }: Props) {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={updateMutation.isPending}
+              disabled={updateMutation.isPending || summaryEmpty}
               className="inline-flex items-center gap-1.5 rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
             >
               <XCircle className="size-4" aria-hidden />
@@ -190,7 +199,7 @@ export function RequestActionModal({ request, decision, onClose }: Props) {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={updateMutation.isPending}
+              disabled={updateMutation.isPending || summaryEmpty}
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
             >
               <CheckCircle2 className="size-4" aria-hidden />
