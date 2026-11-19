@@ -80,7 +80,7 @@ export default function AdvisorConversationWorkspace() {
       })
       .filter((r) => {
         if (!q) return true;
-        return r.studentName.toLowerCase().includes(q) || r.title.toLowerCase().includes(q);
+        return r.studentName?.toLowerCase().includes(q) || r.title.toLowerCase().includes(q);
       })
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }, [all, filter, inboxSearch]);

@@ -26,7 +26,7 @@ export const useCreateAdvisingRequest = () => {
 
 /**
  * Advisor chuyển trạng thái yêu cầu.
- * RESOLVED = Chấp nhận, CANCELLED = Từ chối, IN_PROGRESS = Tiếp nhận xử lý.
+ * RESOLVED = Chấp nhận, IN_PROGRESS + resolutionSummary = Từ chối, IN_PROGRESS = Tiếp nhận xử lý.
  */
 export const useUpdateAdvisingRequestStatus = () => {
   const queryClient = useQueryClient();
@@ -35,9 +35,12 @@ export const useUpdateAdvisingRequestStatus = () => {
     mutationFn: ({ id, body }: { id: string; body: UpdateAdvisingRequestStatusDto }) =>
       advisorService.updateRequestStatus(id, body),
     onSuccess: (_data, variables) => {
-      const { status } = variables.body;
+      const { status, resolutionSummary } = variables.body;
       if (status === 'RESOLVED') toast.success('Request accepted');
       else if (status === 'CANCELLED') toast.success('Request rejected');
+      // Từ chối cũng dùng IN_PROGRESS nhưng kèm resolutionSummary (lý do từ chối).
+      else if (status === 'IN_PROGRESS' && resolutionSummary?.trim())
+        toast.success('Request rejected', { description: 'The student has been notified.' });
       else toast.success('Request is now in progress');
       queryClient.invalidateQueries({ queryKey: ADVISOR_QUERY_KEYS.all });
     },

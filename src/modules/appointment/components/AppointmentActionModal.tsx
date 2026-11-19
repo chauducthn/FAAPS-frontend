@@ -17,7 +17,7 @@ import {
 import { Modal } from '../../../shared/components/ui/Modal';
 import { BookingStatusBadge } from './AppointmentBits';
 import { formatIsoDay, formatIsoTime } from '../../../shared/lib/appointmentDate';
-import { useUpdateAppointmentStatusMutation } from '../hooks/mutations/useAppointmentMutations';
+import { useUpdateAppointmentStatusMutation, useCancelAppointmentMutation } from '../hooks/mutations/useAppointmentMutations';
 import type { AdvisorAppointment } from '../types/appointment';
 import { cn } from '@/shared/lib/utils';
 import { useAdvisorAppointmentDetail } from '../hooks/queries/useAppointmentQueries';
@@ -27,7 +27,7 @@ interface AppointmentActionModalProps {
   onClose: () => void;
 }
 
-type Mode = 'idle' | 'reject' | 'cancel' | 'complete' | 'editSummary';
+type Mode = 'idle' | 'reject' | 'cancel' | 'complete' | 'noShow' | 'editSummary';
 
 function initialsOf(name: string | null | undefined) {
   return (name ?? '')
@@ -44,6 +44,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
   const [summary, setSummary] = useState('');
   const [touched, setTouched] = useState(false);
   const mutation = useUpdateAppointmentStatusMutation();
+  const cancelMutation = useCancelAppointmentMutation();
   const detailQuery = useAdvisorAppointmentDetail(appointment?.id ?? null);
 
   useEffect(() => {
@@ -69,7 +70,8 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
   const isAccepted = shown.status === 'ACCEPTED';
   const isCompleted = shown.status === 'COMPLETED';
 
-  const reasonMissing = (mode === 'reject' || mode === 'cancel') && touched && reason.trim().length === 0;
+  const reasonMissing =
+    (mode === 'reject' || mode === 'cancel' || mode === 'noShow') && touched && reason.trim().length === 0;
   const summaryMissing = (mode === 'complete' || mode === 'editSummary') && touched && summary.trim().length === 0;
 
   const resetForm = () => {
@@ -100,12 +102,25 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
     if (reason.trim().length === 0) return;
     runMutation({ status: 'REJECTED', reason: reason.trim() });
   };
+  // Hủy lịch: dùng endpoint chuyên biệt PUT /appointments/{id}/cancel
+  // (KHÔNG dùng PUT /advisor/appointments/{id}/status với status = 'CANCELLED').
   const handleCancel = () => {
     setTouched(true);
     if (reason.trim().length === 0) return;
-    runMutation({ status: 'CANCELLED', reason: reason.trim() });
+    cancelMutation.mutate(
+      { id: shown.id, reason: reason.trim() },
+      {
+        onSuccess: () => {
+          onClose();
+        },
+      },
+    );
   };
-  const handleNoShow = () => runMutation({ status: 'NO_SHOW' });
+  const handleNoShow = () => {
+    setTouched(true);
+    if (reason.trim().length === 0) return;
+    runMutation({ status: 'NO_SHOW', reason: reason.trim() });
+  };
   const handleComplete = () => {
     setTouched(true);
     if (summary.trim().length === 0) return;
@@ -117,7 +132,8 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
     runMutation({ status: 'COMPLETED', consultationSummary: summary.trim() }, true);
   };
 
-  const reasonLabel = mode === 'cancel' ? 'Lý do hủy lịch' : 'Lý do từ chối';
+  const reasonLabel =
+    mode === 'cancel' ? 'Lý do hủy lịch' : mode === 'noShow' ? 'Lý do vắng mặt' : 'Lý do từ chối';
 
   return (
     <Modal open={!!appointment} onClose={onClose} title="Appointment details" className="max-w-2xl">
@@ -235,8 +251,8 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
               </div>
             )}
 
-            {/* Form lý do Hủy / Từ chối */}
-            {(mode === 'reject' || mode === 'cancel') && (
+            {/* Form lý do Hủy / Từ chối / Vắng mặt */}
+            {(mode === 'reject' || mode === 'cancel' || mode === 'noShow') && (
               <div className="rounded-2xl border border-slate-100 bg-white p-4">
                 <label htmlFor="cancel-reason" className="text-xs font-semibold text-slate-600">
                   {reasonLabel} <span className="text-red-500">*</span>
@@ -251,7 +267,9 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
                   placeholder={
                     mode === 'cancel'
                       ? 'Nhập lý do hủy để sinh viên chủ động đặt lại lịch...'
-                      : 'Cho sinh viên biết vì sao yêu cầu này không được chấp nhận...'
+                      : mode === 'noShow'
+                        ? 'Nhập lý do sinh viên không tham dự buổi tư vấn...'
+                        : 'Cho sinh viên biết vì sao yêu cầu này không được chấp nhận...'
                   }
                   className="mt-2 w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm text-[#151c27] outline-none placeholder:text-slate-400 focus:border-red-400 focus:ring-1 focus:ring-red-400"
                 />
@@ -265,7 +283,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
             {isAccepted && mode === 'idle' && (
               <p className="rounded-xl border border-dashed border-[#F26F21]/30 bg-[#fff7f0] px-3 py-2 text-xs text-[#9a4a12]">
                 Ca hẹn đã được chấp nhận — bạn có thể Hủy (báo trước cho sinh viên), đánh dấu Hoàn thành kèm
-                tóm tắt, hoặc đánh dấu Vắng mặt nếu sinh viên không tham gia.
+                tóm tắt, hoặc đánh dấu Vắng mặt kèm lý do nếu sinh viên không tham gia.
               </p>
             )}
             {isPending && mode === 'idle' && (
@@ -281,7 +299,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
           <button
             type="button"
             onClick={mode === 'idle' ? onClose : resetForm}
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || cancelMutation.isPending}
             className="rounded-lg border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
           >
             {mode === 'idle' ? 'Close' : 'Back'}
@@ -332,7 +350,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
                   setMode('cancel');
                   setTouched(false);
                 }}
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || cancelMutation.isPending}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
               >
                 <XCircle className="size-4" aria-hidden />
@@ -340,8 +358,11 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
               </button>
               <button
                 type="button"
-                onClick={handleNoShow}
-                disabled={mutation.isPending}
+                onClick={() => {
+                  setMode('noShow');
+                  setTouched(false);
+                }}
+                disabled={mutation.isPending || cancelMutation.isPending}
                 className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2 text-sm font-bold text-purple-700 transition-colors hover:bg-purple-100 disabled:opacity-50"
               >
                 <UserX className="size-4" aria-hidden />
@@ -353,7 +374,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
                   setMode('complete');
                   setTouched(false);
                 }}
-                disabled={mutation.isPending}
+                disabled={mutation.isPending || cancelMutation.isPending}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
               >
                 <CheckCircle2 className="size-4" aria-hidden />
@@ -366,10 +387,21 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
             <button
               type="button"
               onClick={handleCancel}
-              disabled={mutation.isPending}
+              disabled={cancelMutation.isPending}
               className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
             >
-              {mutation.isPending ? 'Cancelling...' : 'Xác nhận hủy'}
+              {cancelMutation.isPending ? 'Cancelling...' : 'Xác nhận hủy'}
+            </button>
+          )}
+
+          {isAccepted && mode === 'noShow' && (
+            <button
+              type="button"
+              onClick={handleNoShow}
+              disabled={mutation.isPending}
+              className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
+            >
+              {mutation.isPending ? 'Saving...' : 'Xác nhận vắng mặt'}
             </button>
           )}
 

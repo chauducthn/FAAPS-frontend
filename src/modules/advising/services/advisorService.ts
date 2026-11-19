@@ -100,7 +100,7 @@ export const advisorService = {
     return filterRequests(data ?? [], params);
   },
 
-  /** Chuyển trạng thái request: RESOLVED = Chấp nhận, CANCELLED = Từ chối. */
+  /** Chuyển trạng thái request: RESOLVED = Chấp nhận, IN_PROGRESS = Từ chối (kèm lý do). */
   updateRequestStatus: async (
     id: string,
     body: UpdateAdvisingRequestStatusDto,

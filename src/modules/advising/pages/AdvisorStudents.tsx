@@ -77,7 +77,7 @@ export default function AdvisorStudents() {
 
   const { data, isLoading, isError, refetch } = useAdviseeStudents(queryParams);
   // Tập full (không phân trang) để vẽ stat cards + đếm chips.
-  const statsQuery = useAdviseeStudents({ page: 0, size: 200 });
+  const statsQuery = useAdviseeStudents({ page: 0, size: 100 });
   const items = useMemo(() => data?.items ?? [], [data]);
   const totalItems = data?.totalElements ?? 0;
   const allStudents = useMemo(
@@ -230,7 +230,7 @@ export default function AdvisorStudents() {
         header: 'Status',
         enableSorting: false,
         cell: ({ row }) => {
-          const style = STATUS_STYLES[row.original.academicStatus];
+          const style = STATUS_STYLES[row.original.academicStatus] ?? STATUS_STYLES.ACTIVE;
           return (
             <span
               className={cn(

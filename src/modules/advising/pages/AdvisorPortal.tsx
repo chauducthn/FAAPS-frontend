@@ -332,7 +332,7 @@ export default function AdvisorPortal() {
           ) : (
             <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {topStudents.map((s) => {
-                const style = STATUS_STYLES[s.academicStatus];
+                const style = STATUS_STYLES[s.academicStatus] ?? STATUS_STYLES.ACTIVE;
                 const pct = Math.min(100, Math.round((s.totalCreditsEarned / REQUIRED_CREDITS) * 100));
                 const gpaColor =
                   s.currentGpa === null
