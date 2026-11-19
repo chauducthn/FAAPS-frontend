@@ -2,7 +2,7 @@ import type { CurriculumPlan } from '../../academic/services/studentAcademicServ
 
 export type StudyPlanDecision = 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION';
 export type StudyPlanSummary = {
-  id: string; studentId: string; studentCode: string; studentName: string;
+  id: string; studentId: string; studentCode: string | null; studentName: string | null;
   semesterCode: string; version: number; totalCredits: number;
   status: string; submittedAt: string | null;
 };
@@ -11,5 +11,5 @@ export type StudyPlanPage = {
   totalElements: number; totalPages: number;
 };
 export type AdvisorStudyPlanDetail = {
-  studentId: string; studentCode: string; studentName: string; plan: CurriculumPlan;
+  studentId: string; studentCode: string | null; studentName: string | null; plan: CurriculumPlan;
 };

@@ -29,8 +29,8 @@ interface AppointmentActionModalProps {
 
 type Mode = 'idle' | 'reject' | 'cancel' | 'complete' | 'editSummary';
 
-function initialsOf(name: string) {
-  return name
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)

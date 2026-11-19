@@ -1,14 +1,15 @@
 import { cn } from '@/shared/lib/utils';
 
 interface UserInitialsProps {
-  name: string;
+  /** The backend may omit the name — never call `.replace` on undefined. */
+  name: string | null | undefined;
   className?: string;
 }
 
 /** Last two words of the name, ignoring anything in brackets such as "(K18 HCM)". */
-export function initialsOf(name: string): string {
+export function initialsOf(name: string | null | undefined): string {
   return (
-    name
+    (name ?? '')
       .replace(/\([^)]*\)/g, ' ')
       .split(/[^\p{L}\p{N}]+/u)
       .filter(Boolean)

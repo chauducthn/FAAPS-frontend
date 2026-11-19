@@ -73,25 +73,31 @@ export default function Appointments() {
         accessorKey: 'studentName',
         header: 'Student',
         enableSorting: false,
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2.5">
-            <AppointmentAvatar name={row.original.studentName} />
-            <span className="truncate font-semibold text-[#151c27]">
-              {row.original.studentName}
-            </span>
-          </div>
-        ),
+        cell: ({ row }) => {
+          // The backend may omit the student name — never call `.replace` on undefined.
+          const studentName = row.original.studentName ?? 'Unknown';
+          return (
+            <div className="flex items-center gap-2.5">
+              <AppointmentAvatar name={studentName} />
+              <span className="truncate font-semibold text-[#151c27]">{studentName}</span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'advisorName',
         header: 'Advisor',
         enableSorting: false,
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2.5">
-            <AppointmentAvatar name={row.original.advisorName} kind="advisor" />
-            <span className="truncate text-[#151c27]">{row.original.advisorName}</span>
-          </div>
-        ),
+        cell: ({ row }) => {
+          // The backend may omit the advisor name — never call `.replace` on undefined.
+          const advisorName = row.original.advisorName ?? 'Unknown';
+          return (
+            <div className="flex items-center gap-2.5">
+              <AppointmentAvatar name={advisorName} kind="advisor" />
+              <span className="truncate text-[#151c27]">{advisorName}</span>
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'scheduledAt',
@@ -125,7 +131,7 @@ export default function Appointments() {
         cell: ({ row }) => (
           <div className="flex justify-end">
             <ViewActionButton
-              label={row.original.studentName}
+              label={row.original.studentName ?? 'Unknown'}
               onClick={() => setOpenId(row.original.id)}
             />
           </div>

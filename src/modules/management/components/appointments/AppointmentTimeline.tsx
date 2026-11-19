@@ -98,11 +98,11 @@ export function AppointmentTimeline({ items, isLoading = false, onOpen }: Appoin
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                         <span className="text-[13px] font-semibold text-[#151c27]">
-                          {appointment.studentName}
+                          {appointment.studentName ?? '—'}
                         </span>
                         <span className="text-[12px] text-[#5b6577]">with</span>
                         <span className="text-[13px] text-[#555f6f]">
-                          {appointment.advisorName}
+                          {appointment.advisorName ?? '—'}
                         </span>
                       </div>
                       <p className="mt-1 truncate text-[12px] text-[#555f6f]">

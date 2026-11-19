@@ -57,8 +57,8 @@ function TermTip({ term, tip }: { term: string; tip: string }) {
   );
 }
 
-function initialsOf(name: string) {
-  return name
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)
@@ -358,7 +358,7 @@ export default function AdvisorPortal() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[15px] font-bold text-slate-900">
-                          {s.fullName}
+                          {s.fullName ?? '—'}
                         </span>
                         <span className="mt-0.5 block truncate text-sm font-medium text-slate-600">
                           {s.studentCode} · {s.majorCode} · Sem {s.currentSemester}

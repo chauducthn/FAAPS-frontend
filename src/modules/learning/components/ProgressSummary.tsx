@@ -83,7 +83,9 @@ export function ProgressSummary({ progress, isLoading }: { progress: Progress | 
       <Card icon={Award} label="Latest standing">
         <p className="text-base font-semibold text-[#151c27]">{latest ? standingLabel(latest.standing) : '—'}</p>
         <p className="mt-1 text-[11px] text-[#98a2b3]">
-          {latest ? `${latest.name} · GPA ${latest.semesterGpa.toFixed(2)}` : 'Import your transcript to see it'}
+          {latest
+            ? `${latest.name} · GPA ${latest.semesterGpa?.toFixed(2) ?? '—'}`
+            : 'Import your transcript to see it'}
         </p>
       </Card>
     </div>

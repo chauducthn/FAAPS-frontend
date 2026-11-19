@@ -57,8 +57,8 @@ export function SemesterSummary({ semesters }: { semesters: Progress['semesters'
                   <td className="px-5 py-2.5 font-medium text-[#151c27]">{s.name || s.code}</td>
                   <td className="px-3 py-2.5 text-right tabular-nums">{s.creditsEnrolled}</td>
                   <td className="px-3 py-2.5 text-right tabular-nums">{s.creditsEarned}</td>
-                  <td className="px-3 py-2.5 text-right tabular-nums">{s.semesterGpa.toFixed(2)}</td>
-                  <td className="px-3 py-2.5 text-right tabular-nums">{s.cumulativeGpa.toFixed(2)}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">{s.semesterGpa?.toFixed(2) ?? '—'}</td>
+                  <td className="px-3 py-2.5 text-right tabular-nums">{s.cumulativeGpa?.toFixed(2) ?? '—'}</td>
                   <td className="px-5 py-2.5 text-[#555f6f]">{STANDING_LABEL[s.standing] ?? s.standing}</td>
                 </tr>
               ))}

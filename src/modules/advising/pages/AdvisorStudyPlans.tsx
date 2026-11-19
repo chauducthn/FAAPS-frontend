@@ -76,8 +76,8 @@ const DECISIONS: { key: StudyPlanDecision; label: string; hint: string; active: 
   },
 ];
 
-function initialsOf(name: string) {
-  return name
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)
@@ -215,8 +215,8 @@ export default function AdvisorStudyPlans() {
     if (!q) return items;
     return items.filter(
       (p) =>
-        p.studentName.toLowerCase().includes(q) ||
-        p.studentCode.toLowerCase().includes(q) ||
+        p.studentName?.toLowerCase().includes(q) ||
+        p.studentCode?.toLowerCase().includes(q) ||
         p.semesterCode.toLowerCase().includes(q),
     );
   }, [plans.data, search]);
@@ -376,7 +376,7 @@ export default function AdvisorStudyPlans() {
                         {initialsOf(plan.studentName)}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[15px] font-bold text-slate-900">{plan.studentName}</p>
+                        <p className="truncate text-[15px] font-bold text-slate-900">{plan.studentName ?? '—'}</p>
                         <p className="mt-0.5 truncate text-sm font-medium text-slate-600">
                           {plan.studentCode} · {plan.semesterCode} · v{plan.version}
                         </p>
