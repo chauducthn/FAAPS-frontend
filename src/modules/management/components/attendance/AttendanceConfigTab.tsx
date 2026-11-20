@@ -268,7 +268,7 @@ export function AttendanceConfigTab() {
           saving={saveOverride.isPending}
           onClose={() => setEditing(null)}
           onSave={async (rule) => {
-            await saveOverride.mutateAsync({ courseId: editing.id, courseCode: editing.code, courseName: editing.name, rule });
+            await saveOverride.mutateAsync({ courseId: editing.id, rule });
             toast.success(`Attendance condition saved for ${editing.code}.`);
             setEditing(null);
           }}

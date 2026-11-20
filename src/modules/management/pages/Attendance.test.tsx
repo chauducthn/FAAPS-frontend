@@ -4,8 +4,48 @@ import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router';
 import Attendance from './Attendance';
-import { parseAttendanceCsv, resetAttendanceMock } from '../services/attendance.service';
-import { attendanceResult, maxAbsentSessions } from '../types/attendance';
+import { attendanceResult, maxAbsentSessions, type AttendanceImportPreview, type AttendanceRule, type CourseAttendanceOverride } from '../types/attendance';
+
+// A stand-in for the backend, so the page can be driven end to end.
+const api = vi.hoisted(() => ({
+  defaultRule: { totalSessions: 20, minAttendancePercent: 80, warnAbsentSessions: 3 } as AttendanceRule,
+  overrides: new Map<string, CourseAttendanceOverride>(),
+  history: [] as { id: string; fileName: string; rowCount: number; warningCount: number; failCount: number; confirmedAt: string }[],
+  nextPreview: null as AttendanceImportPreview | null,
+  previewError: null as Error | null,
+}));
+vi.mock('../services/attendance.service', async (importActual) => {
+  const actual = await importActual<typeof import('../services/attendance.service')>();
+  const names: Record<string, [string, string]> = { c1: ['PRF192', 'Programming Fundamentals'], c2: ['SWP391', 'Software Project'] };
+  return {
+    ...actual,
+    attendanceService: {
+      getDefaultRule: async () => ({ ...api.defaultRule }),
+      saveDefaultRule: async (rule: AttendanceRule) => (api.defaultRule = { ...rule }),
+      listOverrides: async () => [...api.overrides.values()],
+      saveOverride: async (courseId: string, rule: AttendanceRule) => {
+        const [courseCode, courseName] = names[courseId];
+        const saved = { ...rule, courseId, courseCode, courseName, updatedAt: '' };
+        api.overrides.set(courseId, saved);
+        return saved;
+      },
+      removeOverride: async (courseId: string) => void api.overrides.delete(courseId),
+      previewImport: async () => {
+        if (api.previewError) throw api.previewError;
+        return api.nextPreview as AttendanceImportPreview;
+      },
+      confirmImport: async (id: string) => {
+        const p = api.nextPreview as AttendanceImportPreview;
+        const valid = p.rows.filter((r) => !r.error);
+        const item = { id, fileName: p.fileName, rowCount: valid.length, warningCount: valid.filter((r) => r.result === 'WARNING').length,
+          failCount: valid.filter((r) => r.result === 'FAIL').length, confirmedAt: '2026-11-20T00:00:00Z' };
+        api.history.unshift(item);
+        return item;
+      },
+      listImports: async () => [...api.history],
+    },
+  };
+});
 
 vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() } }));
 
@@ -40,11 +80,15 @@ function renderAt(path = '/admin/attendance') {
   );
 }
 
-const csv = (body: string) =>
-  new File([`Student ID,Semester,Course code,Total sessions,Absent sessions\n${body}`], 'attendance.csv', { type: 'text/csv' });
+const previewRow = (lineNumber: number, studentCode: string, absentSessions: number, result: 'OK' | 'WARNING' | 'FAIL' | null, error: string | null = null) =>
+  ({ lineNumber, studentCode, semesterCode: 'FA25', courseCode: 'PRF192', totalSessions: 20, absentSessions, error, result });
 
 beforeEach(() => {
-  resetAttendanceMock();
+  api.defaultRule = { totalSessions: 20, minAttendancePercent: 80, warnAbsentSessions: 3 };
+  api.overrides.clear();
+  api.history.length = 0;
+  api.nextPreview = null;
+  api.previewError = null;
   listCourses.mockReset();
   listCourses.mockResolvedValue({
     items: [course('c1', 'PRF192', 'Programming Fundamentals'), course('c2', 'SWP391', 'Software Project')],
@@ -64,20 +108,6 @@ describe('attendance rules', () => {
     expect(attendanceResult(rule, 4)).toBe('WARNING');
     expect(attendanceResult(rule, 5)).toBe('FAIL');
   });
-
-  it('flags invalid and duplicate rows when reading a CSV', () => {
-    const rows = parseAttendanceCsv(
-      'Student ID,Semester,Course code,Total sessions,Absent sessions\nSE1,FA25,PRF192,20,6\nSE1,FA25,PRF192,20,1\nSE2,FA25,PRF192,20,25\n,FA25,PRF192,20,1\n',
-    );
-    expect(rows.map((r) => r.result)).toEqual(['FAIL', null, null, null]);
-    expect(rows[1].error).toMatch(/Duplicate/);
-    expect(rows[2].error).toMatch(/cannot be more/);
-    expect(rows[3].error).toMatch(/required/);
-  });
-
-  it('rejects a file with the wrong columns', () => {
-    expect(() => parseAttendanceCsv('Name,Score\nA,1')).toThrow(/must start with the columns/);
-  });
 });
 
 describe('Attendance page', () => {
@@ -86,7 +116,14 @@ describe('Attendance page', () => {
     renderAt();
     expect(screen.getByRole('tab', { name: 'Import' })).toHaveAttribute('aria-selected', 'true');
 
-    await user.upload(screen.getByLabelText('Upload attendance file'), csv('SE1,FA25,PRF192,20,1\nSE2,FA25,PRF192,20,3\nSE3,FA25,PRF192,20,9\nSE4,FA25,PRF192,x,1\n'));
+    api.nextPreview = {
+      importId: 'imp-1',
+      fileName: 'attendance.csv',
+      rows: [previewRow(2, 'SE1', 1, 'OK'), previewRow(3, 'SE2', 3, 'WARNING'), previewRow(4, 'SE3', 9, 'FAIL'), previewRow(5, 'SE4', 1, null, 'Student not found')],
+      validRows: 3,
+      errorRows: 1,
+    };
+    await user.upload(screen.getByLabelText('Upload attendance file'), new File(['x'], 'attendance.csv'));
 
     expect(await screen.findByText('Valid: 3')).toBeInTheDocument();
     expect(screen.getByText('Errors: 1')).toBeInTheDocument();
@@ -98,11 +135,12 @@ describe('Attendance page', () => {
     expect(await within(history).findByText('attendance.csv')).toBeInTheDocument();
   });
 
-  it('asks for the CSV template when an Excel file is uploaded', async () => {
+  it('shows why the server refused the file', async () => {
     const user = userEvent.setup();
+    api.previewError = new Error('The file must start with the columns: Student ID, Semester, Course code, Total sessions, Absent sessions.');
     renderAt();
     await user.upload(screen.getByLabelText('Upload attendance file'), new File(['x'], 'attendance.xlsx'));
-    expect(await screen.findByRole('alert')).toHaveTextContent(/upload the CSV template/);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/must start with the columns/);
   });
 
   it('gives a course its own condition and can reset it to the default', async () => {

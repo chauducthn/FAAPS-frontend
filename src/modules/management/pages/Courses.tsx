@@ -125,16 +125,9 @@ export default function CoursesPage() {
   const totalItems = data?.totalItems ?? 0;
   const categories = categoriesQuery.data ?? [];
 
-  /**
-   * The mock + backend filter by `credits` server-side, but the unit-test
-   * double (and older backends) return unfiltered rows — so keep a
-   * client-side pass as a safety net. When the API already filters it is a no-op.
-   */
-  const visibleItems = useMemo(
-    () => (credits === 'ALL' ? items : items.filter((c) => c.credits === credits)),
-    [items, credits],
-  );
-  const totalRowCount = credits === 'ALL' ? totalItems : visibleItems.length;
+  /** The backend filters by `credits`, so the page and its total come straight from the API. */
+  const visibleItems = items;
+  const totalRowCount = totalItems;
 
   /** Any change of the query must start again on the first page. */
   const resetPage = <T,>(setter: (value: T) => void) => (value: T) => {

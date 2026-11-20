@@ -16,8 +16,8 @@ export function useAttendanceConfigMutations() {
   return {
     saveDefault: useMutation({ mutationFn: attendanceService.saveDefaultRule, onSuccess: refresh }),
     saveOverride: useMutation({
-      mutationFn: (v: { courseId: string; courseCode: string; courseName: string; rule: AttendanceRule }) =>
-        attendanceService.saveOverride(v.courseId, v.courseCode, v.courseName, v.rule),
+      mutationFn: (v: { courseId: string; rule: AttendanceRule }) =>
+        attendanceService.saveOverride(v.courseId, v.rule),
       onSuccess: refresh,
     }),
     removeOverride: useMutation({ mutationFn: attendanceService.removeOverride, onSuccess: refresh }),

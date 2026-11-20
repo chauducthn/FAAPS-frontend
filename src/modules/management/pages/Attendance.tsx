@@ -22,10 +22,6 @@ export default function Attendance() {
         <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">Attendance</h1>
       </div>
 
-      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-        Preview mode: the server for attendance is not ready yet, so data here is kept only until the page is reloaded.
-      </div>
-
       <div role="tablist" aria-label="Attendance view" className="flex flex-wrap gap-1 rounded-xl bg-white p-1.5 shadow-sm">
         {TABS.map((t) => (
           <button

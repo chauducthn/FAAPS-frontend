@@ -87,12 +87,10 @@ function renderPage() {
 
 describe('Courses', () => {
   beforeEach(() => {
-    listCourses.mockResolvedValue({
-      items: COURSES,
-      page: 0,
-      pageSize: 10,
-      totalItems: 2,
-      totalPages: 1,
+    // Filters by credits like the backend does.
+    listCourses.mockImplementation(async (params?: { credits?: number }) => {
+      const items = COURSES.filter((c) => params?.credits === undefined || c.credits === params.credits);
+      return { items, page: 0, pageSize: 10, totalItems: items.length, totalPages: 1 };
     });
     listCategories.mockResolvedValue([
       { id: 'cat1', code: 'SE', name: 'Software Engineering' },
