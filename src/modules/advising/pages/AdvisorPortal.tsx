@@ -384,7 +384,7 @@ export default function AdvisorPortal() {
                         </span>
                       </span>
                       <span className={cn('text-lg font-bold tabular-nums', gpaColor)}>
-                        {s.currentGpa !== null ? s.currentGpa.toFixed(2) : '—'}
+                        {s.currentGpa != null ? s.currentGpa.toFixed(2) : '—'}
                       </span>
                     </Link>
                     <div className="mt-3 flex items-center justify-between gap-2 px-1">

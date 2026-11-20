@@ -203,7 +203,7 @@ export default function AdvisorStudents() {
           return (
             <div className="min-w-24">
               <p className={cn('text-sm font-bold tabular-nums', tone.text)}>
-                {row.original.currentGpa !== null ? row.original.currentGpa.toFixed(2) : '—'}
+                {row.original.currentGpa != null ? row.original.currentGpa.toFixed(2) : '—'}
               </p>
               <div className="mt-1.5 h-1.5 w-20 overflow-hidden rounded-full bg-slate-100">
                 <div
