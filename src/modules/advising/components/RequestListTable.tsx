@@ -139,7 +139,7 @@ export function RequestListTable({ search = '' }: { search?: string }) {
       }
       if (!keyword) return true;
       return (
-        request.title.toLowerCase().includes(keyword) ||
+        request.title?.toLowerCase().includes(keyword) ||
         request.studentName?.toLowerCase().includes(keyword) ||
         (request.studentCode ?? '').toLowerCase().includes(keyword)
       );

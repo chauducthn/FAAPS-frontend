@@ -126,7 +126,7 @@ function AtRiskCard({
             </span>
           );
         })}
-        {student.currentGpa !== null && (
+        {student.currentGpa != null && (
           <span className="inline-flex h-6 items-center rounded-full bg-slate-100 px-2.5 text-xs font-bold tabular-nums text-slate-700">
             GPA {student.currentGpa.toFixed(2)}
           </span>

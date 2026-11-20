@@ -228,7 +228,7 @@ export default function AdvisorStudyPlans() {
       (p) =>
         p.studentName?.toLowerCase().includes(q) ||
         p.studentCode?.toLowerCase().includes(q) ||
-        p.semesterCode.toLowerCase().includes(q),
+        p.semesterCode?.toLowerCase().includes(q),
     );
   }, [plans.data, search]);
 

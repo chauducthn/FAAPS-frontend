@@ -1,5 +1,6 @@
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
+import { DEFAULT_RESOLUTION_SUMMARY } from './advisorService';
 import type { AcademicAdvisingDetail, AcademicAdvisingRequest } from '../../academic/services/studentAcademicService';
 
 /**
@@ -25,7 +26,12 @@ export const advisorConversationService = {
     status: 'IN_PROGRESS' | 'RESOLVED',
     resolutionSummary?: string,
   ): Promise<AcademicAdvisingDetail> => {
+    // BE validate `resolutionSummary` non-blank cho mọi lần chuyển trạng thái.
+    // "Mark in progress" không có ô nhập nội dung ⇒ gắn default để không nhận 400.
+    const summary = resolutionSummary?.trim()
+      ? resolutionSummary.trim()
+      : DEFAULT_RESOLUTION_SUMMARY;
     return (await apiClient.patch<AcademicAdvisingDetail>(`/advisor/advising-requests/${id}/status`,
-      { status, resolutionSummary }, { headers: await getCsrfHeaders() })).data;
+      { status, resolutionSummary: summary }, { headers: await getCsrfHeaders() })).data;
   },
 };

@@ -55,7 +55,7 @@ export default function AdvisorConversationWorkspace() {
   useEffect(() => {
     const el = threadRef.current;
     if (el) el.scrollTop = el.scrollHeight;
-  }, [detail.data?.messages.length, selectedId]);
+  }, [detail.data?.messages?.length, selectedId]);
 
   const stats = useMemo(
     () => ({
@@ -80,7 +80,7 @@ export default function AdvisorConversationWorkspace() {
       })
       .filter((r) => {
         if (!q) return true;
-        return r.studentName?.toLowerCase().includes(q) || r.title.toLowerCase().includes(q);
+        return r.studentName?.toLowerCase().includes(q) || r.title?.toLowerCase().includes(q);
       })
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   }, [all, filter, inboxSearch]);
