@@ -20,6 +20,16 @@ import type { AcademicStudentProfile, Progress, TranscriptRow } from '../../acad
 export type AdvisorStudentDetail = { profile: AcademicStudentProfile; progress: Progress; transcript: TranscriptRow[] };
 export type AdvisorProfile = { id: string; fullName: string; email: string; phone: string | null; specialization: string | null; maxAdvisees: number; activeAdvisees: number; status: string; assignmentStartDate: string | null };
 
+/**
+ * BE yêu cầu `resolutionSummary` non-blank cho MỌI lần chuyển trạng thái request
+ * (xem `BE_BACKLOG.md` → "Ràng buộc kỹ thuật bắt buộc cho BE").
+ *
+ * Thao tác "Mark in progress" không có ô nhập nội dung, nên default được gắn ở tầng
+ * service — body mà toast đọc vẫn giữ nguyên (không có `resolutionSummary`) nên
+ * phân biệt "Request rejected" vs "Request is now in progress" không bị ảnh hưởng.
+ */
+export const DEFAULT_RESOLUTION_SUMMARY = 'Your advisor is now processing this request.';
+
 /** Lọc danh sách yêu cầu theo status và từ khoá (client-side). */
 const filterRequests = (
   requests: AdvisingRequest[],
@@ -36,8 +46,8 @@ const filterRequests = (
     }
     if (!keyword) return true;
     return (
-      request.title.toLowerCase().includes(keyword) ||
-      request.studentName.toLowerCase().includes(keyword) ||
+      request.title?.toLowerCase().includes(keyword) ||
+      request.studentName?.toLowerCase().includes(keyword) ||
       (request.studentCode ?? '').toLowerCase().includes(keyword)
     );
   });
@@ -100,14 +110,22 @@ export const advisorService = {
     return filterRequests(data ?? [], params);
   },
 
-  /** Chuyển trạng thái request: RESOLVED = Chấp nhận, CANCELLED = Từ chối. */
+  /** Chuyển trạng thái request: RESOLVED = Chấp nhận, IN_PROGRESS = Từ chối (kèm lý do). */
   updateRequestStatus: async (
     id: string,
     body: UpdateAdvisingRequestStatusDto,
   ): Promise<AdvisingRequest> => {
+    // BE validate `resolutionSummary` non-blank cho mọi lần chuyển trạng thái.
+    // Đảm bảo payload luôn có giá trị ⇒ không bao giờ nhận 400 vì thiếu trường này.
+    const payload: UpdateAdvisingRequestStatusDto = {
+      ...body,
+      resolutionSummary: body.resolutionSummary?.trim()
+        ? body.resolutionSummary.trim()
+        : DEFAULT_RESOLUTION_SUMMARY,
+    };
     const { data } = await apiClient.put<AdvisingRequest>(
       `/advisor/advising-requests/${id}/status`,
-      body,
+      payload,
       { headers: await getCsrfHeaders() },
     );
     return data;

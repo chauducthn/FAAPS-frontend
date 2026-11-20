@@ -34,12 +34,13 @@ describe('AdvisorSidebar', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the four section labels in order', () => {
+  it('renders the section labels in order', () => {
     renderSidebar('/advisor');
     const nav = screen.getByRole('navigation', { name: /portal navigation/i });
 
+    // Phân khu "RESOURCES" đã bị ẩn vì BE chưa có endpoint /advisor/academic/*.
     const labels = Array.from(nav.querySelectorAll('p')).map((p) => p.textContent);
-    expect(labels).toEqual(['WORKSPACE', 'ADVISING', 'APPOINTMENTS', 'RESOURCES']);
+    expect(labels).toEqual(['WORKSPACE', 'ADVISING', 'APPOINTMENTS']);
   });
 
   it('lists every navigation item under its section', () => {
@@ -47,6 +48,7 @@ describe('AdvisorSidebar', () => {
     const nav = screen.getByRole('navigation', { name: /portal navigation/i });
     const links = Array.from(nav.querySelectorAll('a')).map((a) => a.textContent?.trim());
 
+    // "Academic Search" đã bị ẩn vì BE chưa có endpoint /advisor/academic/*.
     expect(links).toEqual([
       'Overview',
       'My Students',
@@ -55,7 +57,6 @@ describe('AdvisorSidebar', () => {
       'Advising Conversations',
       'Study Plan Reviews',
       'Appointments',
-      'Academic Search',
     ]);
   });
 

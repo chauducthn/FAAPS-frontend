@@ -1,6 +1,16 @@
 student-academic-controller
 
 
+PUT
+/api/student/profile/curriculum
+
+
+
+PUT
+/student/profile/curriculum
+
+
+
 GET
 /api/student/profile
 
@@ -12,7 +22,27 @@ PUT
 
 
 GET
+/student/profile
+
+
+
+PUT
+/student/profile
+
+
+
+GET
+/student/transcript
+
+
+
+GET
 /api/student/transcript
+
+
+
+GET
+/student/progress
 
 
 
@@ -22,12 +52,32 @@ GET
 
 
 GET
+/api/student/curriculum/courses
+
+
+
+GET
+/student/curriculum/courses
+
+
+
+GET
 /api/student/curriculum
 
 
 
 GET
-/api/student/curriculum/courses
+/student/curriculum
+
+
+
+GET
+/api/student/courses/{id}
+
+
+
+GET
+/student/courses/{id}
 
 
 
@@ -37,7 +87,19 @@ GET
 
 
 GET
-/api/student/courses/{id}
+/student/courses
+
+
+student-onboarding-controller
+
+
+PUT
+/api/student/onboarding
+
+
+
+GET
+/api/student/onboarding/curriculums
 
 
 appointment-slots-controller
@@ -833,11 +895,45 @@ GET
 /api/student/advising-requests/{id}
 
 
+universal-import-controller
+
+
+POST
+/api/imports/preview
+
+
+
+POST
+/api/imports/confirm
+
+
+
+GET
+/api/imports/transcripts/{id}/errors.xlsx
+
+
+student-registration-controller
+
+
+POST
+/api/auth/register
+
+
+
+GET
+/api/auth/register/curriculums
+
+
 auth-controller
 
 
 POST
 /api/auth/refresh
+
+
+
+POST
+/api/auth/login
 
 
 
@@ -897,6 +993,46 @@ POST
 admin-user-controller
 
 
+POST
+/api/admin/users/{id}/reset-password
+
+
+
+POST
+/admin/users/{id}/reset-password
+
+
+
+POST
+/admin/users/status
+
+
+
+POST
+/api/admin/users/status
+
+
+
+POST
+/admin/users/reset-password
+
+
+
+POST
+/api/admin/users/reset-password
+
+
+
+GET
+/admin/users
+
+
+
+POST
+/admin/users
+
+
+
 GET
 /api/admin/users
 
@@ -907,13 +1043,18 @@ POST
 
 
 
-POST
-/api/admin/users/status
+PATCH
+/api/admin/users/{id}/status
 
 
 
 PATCH
-/api/admin/users/{id}/status
+/admin/users/{id}/status
+
+
+
+PATCH
+/admin/users/{id}/role
 
 
 
@@ -924,6 +1065,11 @@ PATCH
 
 GET
 /api/admin/users/{id}
+
+
+
+GET
+/admin/users/{id}
 
 
 admin-overview-controller

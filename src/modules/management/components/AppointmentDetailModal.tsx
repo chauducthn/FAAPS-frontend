@@ -49,13 +49,13 @@ export function AppointmentDetailModal({ appointmentId, onClose }: AppointmentDe
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-[#555f6f]">
                   <User className="size-4" /> Student
                 </p>
-                <p className="mt-2 text-base font-semibold text-[#151c27]">{a.studentName}</p>
+                <p className="mt-2 text-base font-semibold text-[#151c27]">{a.studentName ?? '—'}</p>
               </div>
               <div>
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-[#555f6f]">
                   <Briefcase className="size-4" /> Advisor
                 </p>
-                <p className="mt-2 text-base font-semibold text-[#151c27]">{a.advisorName}</p>
+                <p className="mt-2 text-base font-semibold text-[#151c27]">{a.advisorName ?? '—'}</p>
               </div>
             </div>
 

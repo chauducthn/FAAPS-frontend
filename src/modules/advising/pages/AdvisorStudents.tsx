@@ -40,8 +40,8 @@ const STATUS_STYLES: Record<AcademicStatus, { pill: string; dot: string; label: 
 const selectClass =
   'h-11 rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 shadow-sm focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/30';
 
-function initialsOf(name: string) {
-  return name
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)
@@ -77,7 +77,7 @@ export default function AdvisorStudents() {
 
   const { data, isLoading, isError, refetch } = useAdviseeStudents(queryParams);
   // Tập full (không phân trang) để vẽ stat cards + đếm chips.
-  const statsQuery = useAdviseeStudents({ page: 0, size: 200 });
+  const statsQuery = useAdviseeStudents({ page: 0, size: 100 });
   const items = useMemo(() => data?.items ?? [], [data]);
   const totalItems = data?.totalElements ?? 0;
   const allStudents = useMemo(
@@ -203,7 +203,7 @@ export default function AdvisorStudents() {
           return (
             <div className="min-w-24">
               <p className={cn('text-sm font-bold tabular-nums', tone.text)}>
-                {row.original.currentGpa !== null ? row.original.currentGpa.toFixed(2) : '—'}
+                {row.original.currentGpa != null ? row.original.currentGpa.toFixed(2) : '—'}
               </p>
               <div className="mt-1.5 h-1.5 w-20 overflow-hidden rounded-full bg-slate-100">
                 <div
@@ -230,7 +230,7 @@ export default function AdvisorStudents() {
         header: 'Status',
         enableSorting: false,
         cell: ({ row }) => {
-          const style = STATUS_STYLES[row.original.academicStatus];
+          const style = STATUS_STYLES[row.original.academicStatus] ?? STATUS_STYLES.ACTIVE;
           return (
             <span
               className={cn(

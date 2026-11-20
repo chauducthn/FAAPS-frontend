@@ -112,7 +112,7 @@ export function WeeklyCalendar({ weekAnchor, appointments, isLoading, onSelect }
                           {formatIsoTime(appointment.startTime)}
                         </p>
                         <p className="mt-0.5 truncate text-[12px] font-medium text-[#151c27]">
-                          {appointment.studentName}
+                          {appointment.studentName ?? '—'}
                         </p>
                         <p className="mt-1 line-clamp-2 text-[11px] text-[#555f6f]">{appointment.reason}</p>
                         <div className="mt-1.5">

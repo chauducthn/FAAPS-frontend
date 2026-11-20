@@ -10,8 +10,8 @@ export const TYPE_LABELS: Record<string, string> = {
 };
 
 /** Up to two uppercase initials of a person's name. */
-export function initialsOf(name: string) {
-  return name
+export function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)

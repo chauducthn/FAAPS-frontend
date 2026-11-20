@@ -12,7 +12,6 @@ import {
   BookOpenCheck,
   CalendarDays,
   CircleCheckBig,
-  CircleX,
   Check,
   Clock3,
   FileEdit,
@@ -38,14 +37,14 @@ function creditLoadLabel(total: number) {
   return { label: 'Heavy load', className: 'bg-red-100 text-red-950 ring-red-300' };
 }
 
-type StatusFilter = 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'NEEDS_REVISION' | 'ALL';
+// BE chỉ hỗ trợ 3 trạng thái: SUBMITTED, APPROVED, NEEDS_REVISION.
+// Không có 'ALL' hay 'REJECTED' trong API advisor/study-plans.
+type StatusFilter = 'SUBMITTED' | 'APPROVED' | 'NEEDS_REVISION';
 
 const TABS: { key: StatusFilter; label: string; icon: typeof Inbox }[] = [
   { key: 'SUBMITTED', label: 'Submitted', icon: Inbox },
   { key: 'APPROVED', label: 'Approved', icon: CircleCheckBig },
   { key: 'NEEDS_REVISION', label: 'Needs revision', icon: FileEdit },
-  { key: 'REJECTED', label: 'Rejected', icon: CircleX },
-  { key: 'ALL', label: 'All', icon: BookOpenCheck },
 ];
 
 const STATUS_BADGE: Record<string, string> = {
@@ -76,8 +75,8 @@ const DECISIONS: { key: StudyPlanDecision; label: string; hint: string; active: 
   },
 ];
 
-function initialsOf(name: string) {
-  return name
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)
@@ -106,9 +105,19 @@ export default function AdvisorStudyPlans() {
     queryKey: ['advisor', 'study-plans', status, page],
     queryFn: () => advisorStudyPlanService.list(status, page, 20),
   });
-  const countsQuery = useQuery({
-    queryKey: ['advisor', 'study-plans', 'ALL', 0],
-    queryFn: () => advisorStudyPlanService.list('ALL', 0, 100),
+  // BE không hỗ trợ status = 'ALL' — vì vậy đếm KPI bằng 3 query riêng cho
+  // từng trạng thái thay vì 1 query tổng hợp.
+  const submittedCountQuery = useQuery({
+    queryKey: ['advisor', 'study-plans', 'count', 'SUBMITTED'],
+    queryFn: () => advisorStudyPlanService.list('SUBMITTED', 0, 1),
+  });
+  const approvedCountQuery = useQuery({
+    queryKey: ['advisor', 'study-plans', 'count', 'APPROVED'],
+    queryFn: () => advisorStudyPlanService.list('APPROVED', 0, 1),
+  });
+  const revisionCountQuery = useQuery({
+    queryKey: ['advisor', 'study-plans', 'count', 'NEEDS_REVISION'],
+    queryFn: () => advisorStudyPlanService.list('NEEDS_REVISION', 0, 1),
   });
   const detail = useQuery({
     queryKey: ['advisor', 'study-plan', selectedId],
@@ -134,14 +143,16 @@ export default function AdvisorStudyPlans() {
   }, [courseCatalog.data]);
 
   const counts = useMemo(() => {
-    const items = countsQuery.data?.items ?? [];
+    const submitted = submittedCountQuery.data?.totalElements ?? 0;
+    const approved = approvedCountQuery.data?.totalElements ?? 0;
+    const revision = revisionCountQuery.data?.totalElements ?? 0;
     return {
-      total: items.length,
-      submitted: items.filter((p) => p.status === 'SUBMITTED').length,
-      approved: items.filter((p) => p.status === 'APPROVED').length,
-      revision: items.filter((p) => p.status === 'NEEDS_REVISION').length,
+      total: submitted + approved + revision,
+      submitted,
+      approved,
+      revision,
     };
-  }, [countsQuery.data]);
+  }, [submittedCountQuery.data, approvedCountQuery.data, revisionCountQuery.data]);
 
   // Enriched context for the review modal: who the student is + what they passed.
   const student = studentDetail.data?.profile ?? null;
@@ -215,17 +226,20 @@ export default function AdvisorStudyPlans() {
     if (!q) return items;
     return items.filter(
       (p) =>
-        p.studentName.toLowerCase().includes(q) ||
-        p.studentCode.toLowerCase().includes(q) ||
-        p.semesterCode.toLowerCase().includes(q),
+        p.studentName?.toLowerCase().includes(q) ||
+        p.studentCode?.toLowerCase().includes(q) ||
+        p.semesterCode?.toLowerCase().includes(q),
     );
   }, [plans.data, search]);
 
+  const countsLoading =
+    submittedCountQuery.isLoading || approvedCountQuery.isLoading || revisionCountQuery.isLoading;
+
   const kpis = [
-    { label: 'Total plans', value: countsQuery.isLoading ? '–' : String(counts.total), sub: 'all semesters', icon: BookOpenCheck, iconBox: 'bg-slate-900 text-white shadow-[0_6px_16px_-6px_rgba(15,23,42,0.5)]', topBar: 'bg-slate-900' },
-    { label: 'Submitted', value: countsQuery.isLoading ? '–' : String(counts.submitted), sub: 'needs review', icon: Inbox, iconBox: 'bg-[#F26F21] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.6)]', topBar: 'bg-[#F26F21]' },
-    { label: 'Approved', value: countsQuery.isLoading ? '–' : String(counts.approved), sub: 'ready to go', icon: CircleCheckBig, iconBox: 'bg-emerald-600 text-white shadow-[0_6px_16px_-6px_rgba(5,150,105,0.5)]', topBar: 'bg-emerald-600' },
-    { label: 'Needs revision', value: countsQuery.isLoading ? '–' : String(counts.revision), sub: 'waiting on student', icon: FileEdit, iconBox: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200', topBar: 'bg-slate-300' },
+    { label: 'Total plans', value: countsLoading ? '–' : String(counts.total), sub: 'all semesters', icon: BookOpenCheck, iconBox: 'bg-slate-900 text-white shadow-[0_6px_16px_-6px_rgba(15,23,42,0.5)]', topBar: 'bg-slate-900' },
+    { label: 'Submitted', value: countsLoading ? '–' : String(counts.submitted), sub: 'needs review', icon: Inbox, iconBox: 'bg-[#F26F21] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.6)]', topBar: 'bg-[#F26F21]' },
+    { label: 'Approved', value: countsLoading ? '–' : String(counts.approved), sub: 'ready to go', icon: CircleCheckBig, iconBox: 'bg-emerald-600 text-white shadow-[0_6px_16px_-6px_rgba(5,150,105,0.5)]', topBar: 'bg-emerald-600' },
+    { label: 'Needs revision', value: countsLoading ? '–' : String(counts.revision), sub: 'waiting on student', icon: FileEdit, iconBox: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200', topBar: 'bg-slate-300' },
   ];
 
   return (
@@ -376,7 +390,7 @@ export default function AdvisorStudyPlans() {
                         {initialsOf(plan.studentName)}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[15px] font-bold text-slate-900">{plan.studentName}</p>
+                        <p className="truncate text-[15px] font-bold text-slate-900">{plan.studentName ?? '—'}</p>
                         <p className="mt-0.5 truncate text-sm font-medium text-slate-600">
                           {plan.studentCode} · {plan.semesterCode} · v{plan.version}
                         </p>

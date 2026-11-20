@@ -16,7 +16,7 @@ export type AdvisingRequestStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'CA
 
 /**
  * Các trạng thái advisor được chuyển request sang.
- * RESOLVED = Chấp nhận, CANCELLED = Từ chối, IN_PROGRESS = Tiếp nhận xử lý.
+ * RESOLVED = Chấp nhận, IN_PROGRESS = Từ chối (kèm lý do) hoặc Tiếp nhận xử lý.
  */
 export type AdvisingRequestDecision = 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED';
 
@@ -47,8 +47,8 @@ export interface StudentProfile {
   id: string;
   /** students.student_code */
   studentCode: string;
-  /** users.full_name */
-  fullName: string;
+  /** users.full_name — có thể null nếu API không trả tên */
+  fullName: string | null;
   /** users.email */
   email: string;
   /** users.phone */
@@ -88,8 +88,8 @@ export interface AdvisorInfo {
   id: string;
   /** advisors.advisor_code */
   advisorCode: string;
-  /** users.full_name */
-  fullName: string;
+  /** users.full_name — có thể null nếu API không trả tên */
+  fullName: string | null;
   /** users.email */
   email: string;
   /** users.phone */
@@ -114,8 +114,8 @@ export interface AdviseeStudent {
   id: string;
   /** students.student_code */
   studentCode: string;
-  /** users.full_name */
-  fullName: string;
+  /** users.full_name — có thể null nếu API không trả tên */
+  fullName: string | null;
   /** users.email */
   email: string;
   /** majors.code */
@@ -147,7 +147,7 @@ export interface AdvisingRequest {
   id: string;
   /** students.user_id */
   studentId: string;
-  studentName: string;
+  studentName: string | null;
   studentCode: string | null;
   /** advisors.user_id — NULL tới khi có advisor nhận request */
   advisorId: string | null;
@@ -196,8 +196,8 @@ export interface CreateAdvisingRequestDto {
 
 /** Body của PUT /advisor/advising-requests/{id}/status */
 export interface UpdateAdvisingRequestStatusDto {
-  /** RESOLVED = Chấp nhận, CANCELLED = Từ chối, IN_PROGRESS = Tiếp nhận xử lý. */
+  /** RESOLVED = Chấp nhận, IN_PROGRESS = Từ chối / Tiếp nhận xử lý. */
   status: AdvisingRequestDecision;
-  /** advising_requests.resolution_summary — text, nullable. Bắt buộc khi Từ chối. */
+  /** advising_requests.resolution_summary — text. Bắt buộc (non-blank) cho cả Accept lẫn Reject. */
   resolutionSummary?: string;
 }

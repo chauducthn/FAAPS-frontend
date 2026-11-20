@@ -32,8 +32,8 @@ const STATUS_STYLES: Record<string, { pill: string; dot: string; label: string }
   ON_LEAVE: { pill: 'bg-amber-100 text-amber-900 ring-amber-300', dot: 'bg-amber-500', label: 'On leave' },
 };
 
-function initialsOf(name: string) {
-  return name
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)
@@ -161,7 +161,7 @@ export default function AdvisorProfile() {
             <div className="px-6 pb-6">
               <div className="-mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                 <p className="flex items-center gap-1.5 text-lg font-extrabold tracking-tight text-slate-900">
-                  {data.fullName}
+                  {data.fullName ?? '—'}
                   <BadgeCheck className="size-4 shrink-0 text-[#F26F21]" aria-label="Verified advisor" />
                 </p>
                 <p className="mt-0.5 text-sm font-medium text-slate-600">Academic Advisor</p>

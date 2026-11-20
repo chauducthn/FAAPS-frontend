@@ -45,7 +45,7 @@ export default function StudentProfile() {
   });
 
   useEffect(() => {
-    if (data) reset({ fullName: data.fullName, phone: data.phone ?? '' });
+    if (data) reset({ fullName: data.fullName ?? '', phone: data.phone ?? '' });
   }, [data, reset]);
 
   const onSubmit = handleSubmit(async (values) => {
@@ -93,7 +93,7 @@ export default function StudentProfile() {
                 {(data.fullName || user?.fullName || 'S').trim().charAt(0).toUpperCase()}
               </span>
               <div className="min-w-0">
-                <h2 className="truncate text-sm font-semibold text-[#151c27]">{data.fullName}</h2>
+                <h2 className="truncate text-sm font-semibold text-[#151c27]">{data.fullName ?? '—'}</h2>
                 <p className="truncate text-[13px] text-[#555f6f]">{data.email}</p>
               </div>
             </div>
@@ -139,7 +139,7 @@ export default function StudentProfile() {
                 <button
                   type="button"
                   disabled={!isDirty || isSubmitting}
-                  onClick={() => reset({ fullName: data.fullName, phone: data.phone ?? '' })}
+                  onClick={() => reset({ fullName: data.fullName ?? '', phone: data.phone ?? '' })}
                   className="rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm font-semibold text-[#555f6f] hover:bg-gray-50 disabled:opacity-50"
                 >
                   Reset

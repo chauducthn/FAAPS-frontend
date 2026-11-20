@@ -16,10 +16,15 @@ import {
   TriangleAlert,
   UsersRound,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../auth/stores/useAuth';
 import { useAdviseeStudents, useAdvisorAdvisingRequests } from '../hooks/queries/useAdvisorQueries';
 import { RequestListTable } from '../components/RequestListTable';
+import { AtRiskStudentsWidget } from '../components/AtRiskStudentsWidget';
+import { Student360Modal } from '../components/Student360Modal';
+import { advisorService, type AdvisorStudentDetail } from '../services/advisorService';
 import { cn } from '@/shared/lib/utils';
+import { apiMessage } from '@/shared/lib/apiMessage';
 import type { AcademicStatus } from '../types/advising';
 
 const COUNT_SIZE = 50;
@@ -57,8 +62,8 @@ function TermTip({ term, tip }: { term: string; tip: string }) {
   );
 }
 
-function initialsOf(name: string) {
-  return name
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)
@@ -77,6 +82,7 @@ function greeting() {
 export default function AdvisorPortal() {
   const user = useAuth((s) => s.user);
   const [search, setSearch] = useState('');
+  const [riskDetail, setRiskDetail] = useState<AdvisorStudentDetail | null>(null);
 
   const studentsQuery = useAdviseeStudents({ page: 0, size: COUNT_SIZE });
   const pendingQuery = useAdvisorAdvisingRequests({ status: 'PENDING' });
@@ -131,6 +137,16 @@ export default function AdvisorPortal() {
       topBar: 'bg-emerald-600',
     },
   ];
+
+  // Mở Student 360 Modal từ widget "Sinh viên có nguy cơ".
+  const openRiskDetail = async (studentId: string) => {
+    try {
+      const result = await advisorService.getStudentDetail(studentId);
+      setRiskDetail(result);
+    } catch (error) {
+      toast.error(apiMessage(error));
+    }
+  };
 
   return (
     <div className="w-full space-y-6 pb-4">
@@ -189,6 +205,9 @@ export default function AdvisorPortal() {
           </div>
         ))}
       </div>
+
+      {/* ── Sinh viên có nguy cơ (Flow 3 — Passive warning): ngay dưới KPI ── */}
+      <AtRiskStudentsWidget onViewDetail={openRiskDetail} />
 
       {/* ── Quick links = clickable: viền, bóng, hover nâng nhẹ + mũi tên cam ── */}
       <div className="grid gap-5 sm:grid-cols-3">
@@ -332,7 +351,7 @@ export default function AdvisorPortal() {
           ) : (
             <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {topStudents.map((s) => {
-                const style = STATUS_STYLES[s.academicStatus];
+                const style = STATUS_STYLES[s.academicStatus] ?? STATUS_STYLES.ACTIVE;
                 const pct = Math.min(100, Math.round((s.totalCreditsEarned / REQUIRED_CREDITS) * 100));
                 const gpaColor =
                   s.currentGpa === null
@@ -358,14 +377,14 @@ export default function AdvisorPortal() {
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-[15px] font-bold text-slate-900">
-                          {s.fullName}
+                          {s.fullName ?? '—'}
                         </span>
                         <span className="mt-0.5 block truncate text-sm font-medium text-slate-600">
                           {s.studentCode} · {s.majorCode} · Sem {s.currentSemester}
                         </span>
                       </span>
                       <span className={cn('text-lg font-bold tabular-nums', gpaColor)}>
-                        {s.currentGpa !== null ? s.currentGpa.toFixed(2) : '—'}
+                        {s.currentGpa != null ? s.currentGpa.toFixed(2) : '—'}
                       </span>
                     </Link>
                     <div className="mt-3 flex items-center justify-between gap-2 px-1">
@@ -408,6 +427,9 @@ export default function AdvisorPortal() {
           )}
         </div>
       </section>
+
+      {/* ── Student 360 Modal — mở từ widget "Sinh viên có nguy cơ" ── */}
+      <Student360Modal detail={riskDetail} onClose={() => setRiskDetail(null)} />
     </div>
   );
 }

@@ -28,8 +28,8 @@ const TABS: { key: TabKey; label: string }[] = [
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
-function initialsOf(name: string) {
-  return name
+function initialsOf(name: string | null | undefined) {
+  return (name ?? '')
     .split(' ')
     .filter(Boolean)
     .slice(-2)
@@ -139,8 +139,8 @@ export function RequestListTable({ search = '' }: { search?: string }) {
       }
       if (!keyword) return true;
       return (
-        request.title.toLowerCase().includes(keyword) ||
-        request.studentName.toLowerCase().includes(keyword) ||
+        request.title?.toLowerCase().includes(keyword) ||
+        request.studentName?.toLowerCase().includes(keyword) ||
         (request.studentCode ?? '').toLowerCase().includes(keyword)
       );
     });
@@ -232,7 +232,7 @@ export function RequestListTable({ search = '' }: { search?: string }) {
                           </span>
                           <div className="min-w-0">
                             <p className="block max-w-full truncate text-sm font-bold text-slate-900">
-                              {r.studentName}
+                              {r.studentName ?? '—'}
                             </p>
                             <p className="mt-0.5 truncate text-sm font-medium text-slate-600">
                               {r.studentCode ?? '—'}
@@ -281,7 +281,7 @@ export function RequestListTable({ search = '' }: { search?: string }) {
                                   type="button"
                                   aria-haspopup="menu"
                                   aria-expanded={menuOpen}
-                                  aria-label={`More actions for ${r.studentName}`}
+                                  aria-label={`More actions for ${r.studentName ?? '—'}`}
                                   onClick={() => setMenuOpenId(menuOpen ? null : r.id)}
                                   className={cn(
                                     'inline-flex h-11 w-11 items-center justify-center rounded-xl border bg-white text-slate-700 shadow-sm transition-colors',

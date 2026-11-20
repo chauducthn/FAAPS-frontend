@@ -347,9 +347,10 @@ export type AppointmentStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CAN
 export interface Appointment {
   id: string;
   studentId: string;
-  studentName: string;
+  /** The API may omit a name; renderers must fall back to a placeholder. */
+  studentName: string | null;
   advisorId: string;
-  advisorName: string;
+  advisorName: string | null;
   scheduledAt: string | null;
   endedAt: string | null;
   location: string | null;

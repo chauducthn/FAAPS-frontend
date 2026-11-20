@@ -6,7 +6,7 @@
 
 import { useMemo } from 'react';
 import {
-  BookOpen,
+  // BookOpen, // dùng lại khi bật lại mục "Academic Search"
   CalendarDays,
   ClipboardCheck,
   Inbox,
@@ -44,10 +44,12 @@ const NAV_SECTIONS: PortalNavSection[] = [
     title: 'APPOINTMENTS',
     items: [{ label: 'Appointments', to: '/advisor/appointments', icon: CalendarDays }],
   },
-  {
-    title: 'RESOURCES',
-    items: [{ label: 'Academic Search', to: '/advisor/academic-lookup', icon: BookOpen }],
-  },
+  // Phân khu "RESOURCES" — tạm ẩn vì BE chưa có endpoint /advisor/academic/*.
+  // Xem BE_BACKLOG.md mục "Advisor — Academic Search" để bật lại khi BE sẵn sàng.
+  // {
+  //   title: 'RESOURCES',
+  //   items: [{ label: 'Academic Search', to: '/advisor/academic-lookup', icon: BookOpen }],
+  // },
 ];
 
 /** Bản tĩnh — dùng khi cần khai báo route/label ngoài component. */

@@ -11,10 +11,11 @@ export type AcademicStudentProfile = {
 export type TranscriptRow = { id: string; courseCode: string; courseName: string; credits: number;
   semesterCode: string; semesterName: string; finalScore: number | null; status: string;
   attemptNumber: number; creditsEarned: number };
-export type Progress = { requiredCredits: number; earnedCredits: number; curriculumCourses: number;
+  export type Progress = { requiredCredits: number; earnedCredits: number; curriculumCourses: number;
   completedCourses: number; currentGpa: number | null;
   semesters: { code: string; name: string; creditsEnrolled: number; creditsEarned: number;
-    semesterGpa: number; cumulativeGpa: number; standing: string }[] };
+    /** The API may omit the GPA values; renderers must fall back to a placeholder. */
+    semesterGpa: number | null; cumulativeGpa: number | null; standing: string }[] };
 export type Course = { id: string; code: string; name: string; credits: number; category: string;
   description: string | null; objectives: string | null; learningOutcomes: string | null };
 export type CourseDetail = { course: Course; prerequisites: { id: string; courseCode: string;
