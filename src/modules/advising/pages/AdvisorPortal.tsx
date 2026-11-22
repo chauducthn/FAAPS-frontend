@@ -21,6 +21,7 @@ import { useAuth } from '../../auth/stores/useAuth';
 import { useAdviseeStudents, useAdvisorAdvisingRequests } from '../hooks/queries/useAdvisorQueries';
 import { RequestListTable } from '../components/RequestListTable';
 import { AtRiskStudentsWidget } from '../components/AtRiskStudentsWidget';
+import { StudentsAtRiskWidget } from '../components/StudentsAtRiskWidget';
 import { Student360Modal } from '../components/Student360Modal';
 import { advisorService, type AdvisorStudentDetail } from '../services/advisorService';
 import { cn } from '@/shared/lib/utils';
@@ -205,6 +206,9 @@ export default function AdvisorPortal() {
           </div>
         ))}
       </div>
+
+      {/* ── Tổng quan cảnh báo theo mức độ (data thật từ /at-risk-students/counts) ── */}
+      <StudentsAtRiskWidget />
 
       {/* ── Sinh viên có nguy cơ (Flow 3 — Passive warning): ngay dưới KPI ── */}
       <AtRiskStudentsWidget onViewDetail={openRiskDetail} />

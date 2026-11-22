@@ -49,6 +49,7 @@ const AdvisorConversationWorkspace = lazy(() => import('../modules/advising/page
 const AdvisorStudyPlans = lazy(() => import('../modules/advising/pages/AdvisorStudyPlans'));
 const AdvisorStudents = lazy(() => import('../modules/advising/pages/AdvisorStudents'));
 const AdvisorAcademicLookup = lazy(() => import('../modules/advising/pages/AdvisorAcademicLookup'));
+const AdvisorReports = lazy(() => import('../modules/advising/pages/AdvisorReports'));
 const AdvisorProfile = lazy(() => import('../modules/advising/pages/AdvisorProfile'));
 
 /** Bọc mọi route lazy bằng Suspense + skeleton để không nháy màn trắng khi tải chunk. */
@@ -142,6 +143,7 @@ export const router = createBrowserRouter([
           { path: '/advisor/conversations', element: suspense(<AdvisorConversationWorkspace />) },
           { path: '/advisor/study-plans', element: suspense(<AdvisorStudyPlans />) },
           { path: '/advisor/academic-lookup', element: suspense(<AdvisorAcademicLookup />) },
+          { path: '/advisor/reports', element: suspense(<AdvisorReports />) },
           { path: '/advisor/profile', element: suspense(<AdvisorProfile />) },
         ],
       },

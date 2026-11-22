@@ -1,7 +1,7 @@
 // src/pages/advising/Student360Modal.tsx
 // Modal "Student 360 Profile" — 5 tabs: Overview | Transcript | Advising History | Appointments | Graduation.
 // Lịch sử tư vấn và lịch hẹn lấy từ API thật của advisor (lọc theo sinh viên),
-// graduation suy ra từ progress + transcript.
+// điều kiện tốt nghiệp lấy từ API graduation-check của BE.
 
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -11,7 +11,7 @@ import { cn } from '@/shared/lib/utils';
 import type { AdvisorStudentDetail } from '../services/advisorService';
 import { advisorService } from '../services/advisorService';
 import { appointmentService } from '../../appointment/services/appointmentService';
-import StudentGraduationTab, { buildGraduationSummary } from './student360/StudentGraduationTab';
+import StudentGraduationTab from './student360/StudentGraduationTab';
 import StudentHistoryTab, { StudentAppointmentsTab } from './student360/StudentHistoryTab';
 import StudentOverviewTab from './student360/StudentOverviewTab';
 import StudentTranscriptTab from './student360/StudentTranscriptTab';
@@ -63,8 +63,6 @@ export function Student360Modal({
       .filter((a) => a.studentId === studentId)
       .sort((a, b) => b.startTime.localeCompare(a.startTime));
   }, [appointmentsQuery.data, studentId]);
-
-  const graduation = useMemo(() => (detail ? buildGraduationSummary(detail) : null), [detail]);
 
   return (
     <Modal open={detail !== null} onClose={onClose} title="Student 360 Profile" className="max-w-4xl">
@@ -178,7 +176,7 @@ export function Student360Modal({
               />
             )}
 
-            {tab === 'graduation' && <StudentGraduationTab detail={detail} graduation={graduation} />}
+            {tab === 'graduation' && <StudentGraduationTab studentId={studentId} />}
           </div>
 
           {/* Footer */}

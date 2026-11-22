@@ -43,3 +43,18 @@ export interface AtRiskStudentResponse {
   data: AtRiskStudent[];
   total: number;
 }
+
+/**
+ * Số lượng sinh viên bị cảnh báo theo mức độ.
+ * Response của `GET /advisor/at-risk-students/counts`.
+ */
+export interface AtRiskCounts {
+  /** Mức nguy cơ cao — cần ưu tiên xử lý. */
+  high: number;
+  /** Mức nguy cơ trung bình. */
+  medium: number;
+  /** Mức nguy cơ thấp. */
+  low: number;
+  /** Tổng số sinh viên bị cảnh báo. */
+  total: number;
+}

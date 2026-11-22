@@ -21,6 +21,18 @@ export type AdvisorStudentDetail = { profile: AcademicStudentProfile; progress: 
 export type AdvisorProfile = { id: string; fullName: string; email: string; phone: string | null; specialization: string | null; maxAdvisees: number; activeAdvisees: number; status: string; assignmentStartDate: string | null };
 
 /**
+ * Kết quả kiểm tra điều kiện tốt nghiệp — `GET /advisor/students/{studentId}/graduation-check`.
+ * `ojtStatus` là chuỗi do BE quyết định (NOT_STARTED / IN_PROGRESS / COMPLETED).
+ */
+export interface GraduationCheck {
+  eligible: boolean;
+  requiredCredits: number;
+  earnedCredits: number;
+  ojtStatus: string;
+  unmetPrerequisites: string[];
+}
+
+/**
  * BE yêu cầu `resolutionSummary` non-blank cho MỌI lần chuyển trạng thái request
  * (xem `BE_BACKLOG.md` → "Ràng buộc kỹ thuật bắt buộc cho BE").
  *
@@ -73,6 +85,11 @@ export const advisorService = {
 
   getStudentDetail: async (studentId: string): Promise<AdvisorStudentDetail> => {
     return (await apiClient.get<AdvisorStudentDetail>(`/advisor/students/${studentId}`)).data;
+  },
+
+  /** Điều kiện tốt nghiệp — BE tự tính, không suy ra từ progress/transcript ở client. */
+  getGraduationCheck: async (studentId: string): Promise<GraduationCheck> => {
+    return (await apiClient.get<GraduationCheck>(`/advisor/students/${studentId}/graduation-check`)).data;
   },
 
   getNotifications: async (): Promise<Page<StudentNotification>> => {

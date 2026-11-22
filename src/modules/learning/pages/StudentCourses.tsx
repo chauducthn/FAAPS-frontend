@@ -1,15 +1,15 @@
 // Student / Course Exploration — Operate-mode catalogue.
 // Reuses the shared DataTable and CourseDetailModal, backed by the real
-// student academic API (GET /student/courses, GET /student/courses/:id).
-import { useMemo, useState } from 'react';
+// student academic API (GET /student/courses/paged, GET /student/courses/:id).
+import { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import type { PaginationState } from '@tanstack/react-table';
 import {
   BookOpenCheck,
   CircleAlert,
   Eye,
   RotateCcw,
   Search,
-  SearchX,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
@@ -20,6 +20,9 @@ import {
 } from '../../academic/services/studentAcademicService';
 import type { CourseDetail as AdminCourseDetail } from '../../academic/types/course';
 import { useDebounce } from '../../../shared/hooks/useDebounce';
+
+/** Số môn học mỗi trang — khớp `size` gửi lên GET /student/courses/paged. */
+const PAGE_SIZE = 20;
 
 const selectClass =
   'appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-3.5 pr-9 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20';
@@ -35,10 +38,16 @@ export default function StudentCourses() {
   const [category, setCategory] = useState('ALL');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const debouncedSearch = useDebounce(search, 300);
+  // Phân trang do server điều khiển: DataTable chỉ render trang hiện tại.
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: PAGE_SIZE,
+  });
 
   const catalog = useQuery({
-    queryKey: ['student', 'courses-exploration', debouncedSearch],
-    queryFn: () => studentAcademicService.courses(debouncedSearch, 0),
+    queryKey: ['student', 'courses-exploration', debouncedSearch, pagination.pageIndex, pagination.pageSize],
+    queryFn: () =>
+      studentAcademicService.courses(debouncedSearch, pagination.pageIndex, pagination.pageSize),
     placeholderData: keepPreviousData,
   });
   const detail = useQuery({
@@ -47,11 +56,21 @@ export default function StudentCourses() {
     enabled: !!selectedId,
   });
 
-  const items = useMemo(() => catalog.data ?? [], [catalog.data]);
-  const categories = useMemo(
-    () => Array.from(new Set(items.map((c) => c.category).filter(Boolean))).sort(),
-    [items],
-  );
+  const items = useMemo(() => catalog.data?.items ?? [], [catalog.data]);
+  const totalItems = catalog.data?.totalItems ?? 0;
+  const totalPages = catalog.data?.totalPages ?? 0;
+  // Danh mục category đến từ các trang đã xem: BE không có endpoint categories
+  // cho student, nên ta gom dần để dropdown không bị mất lựa chọn khi sang trang.
+  const [knownCategories, setKnownCategories] = useState<string[]>([]);
+  useEffect(() => {
+    const names = items.map((c) => c.category).filter(Boolean);
+    if (names.length === 0) return;
+    setKnownCategories((current) => {
+      const merged = Array.from(new Set([...current, ...names])).sort();
+      return merged.length === current.length ? current : merged;
+    });
+  }, [items]);
+  const categories = knownCategories;
   const filtered = useMemo(
     () => (category === 'ALL' ? items : items.filter((c) => c.category === category)),
     [items, category],
@@ -61,6 +80,7 @@ export default function StudentCourses() {
   const clearFilters = () => {
     setSearch('');
     setCategory('ALL');
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
   };
 
   // The shared modal speaks the admin CourseDetail shape — adapt the student payload to it.
@@ -198,7 +218,7 @@ export default function StudentCourses() {
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <span className="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-bold tabular-nums ring-1 ring-white/25">
-              {items.length} course{items.length === 1 ? '' : 's'}
+              {totalItems} course{totalItems === 1 ? '' : 's'}
             </span>
             <span className="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-bold tabular-nums ring-1 ring-white/25">
               {categories.length} categor{categories.length === 1 ? 'y' : 'ies'}
@@ -215,7 +235,11 @@ export default function StudentCourses() {
             <input
               type="text"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                // Từ khoá mới ⇒ kết quả mới ⇒ về trang đầu.
+                setPagination((p) => ({ ...p, pageIndex: 0 }));
+              }}
               placeholder="Search by course code or name..."
               aria-label="Search by course code or name"
               role="searchbox"
@@ -235,7 +259,11 @@ export default function StudentCourses() {
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) => {
+                setCategory(e.target.value);
+                // Đổi bộ lọc thì về trang đầu, nếu không có thể rơi vào trang trống.
+                setPagination((p) => ({ ...p, pageIndex: 0 }));
+              }}
               aria-label="Filter by category"
               className={selectClass}
             >
@@ -284,31 +312,6 @@ export default function StudentCourses() {
               <RotateCcw className="size-3.5" /> Retry
             </button>
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-[#fff7ed] text-[#F26F21]">
-              <SearchX className="size-6" />
-            </span>
-            <div>
-              <p className="text-sm font-bold text-gray-900">
-                {hasActiveFilters ? 'No courses match your filters' : 'No courses available'}
-              </p>
-              <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-gray-500">
-                {hasActiveFilters
-                  ? 'Try a different keyword, or clear the category filter to see the full catalog.'
-                  : 'There are no courses in the catalog yet. Please check back later.'}
-              </p>
-            </div>
-            {hasActiveFilters && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
         ) : (
           <div className="relative p-4 sm:p-5">
             {catalog.isFetching && (
@@ -316,15 +319,26 @@ export default function StudentCourses() {
                 <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
               </div>
             )}
+            {/* Bảng luôn được render (kể cả khi trang hiện tại rỗng) để thanh
+                phân trang vẫn truy cập được — nếu thay bằng empty state riêng,
+                người dùng sẽ bị kẹt ở một trang không có dữ liệu. */}
             <DataTable
-              key={`${debouncedSearch}|${category}`}
+              manual
               columns={columns}
               data={filtered}
               searchKey="name"
               showSearch={false}
               searchPlaceholder="Search by code or name..."
-              emptyText={hasActiveFilters ? 'No courses match your filters.' : 'No courses available.'}
+              emptyText={
+                hasActiveFilters ? 'No courses match your filters.' : 'No courses available.'
+              }
               getRowId={(row) => row.id}
+              // Phân trang server-side: tổng số trang / tổng số dòng do BE quyết định.
+              totalRowCount={totalItems}
+              pageCount={totalPages}
+              pagination={pagination}
+              onPaginationChange={setPagination}
+              showPageSizeSelect={false}
             />
           </div>
         )}
