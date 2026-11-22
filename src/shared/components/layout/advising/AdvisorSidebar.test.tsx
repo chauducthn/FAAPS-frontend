@@ -40,7 +40,7 @@ describe('AdvisorSidebar', () => {
 
     // Phân khu "RESOURCES" đã bị ẩn vì BE chưa có endpoint /advisor/academic/*.
     const labels = Array.from(nav.querySelectorAll('p')).map((p) => p.textContent);
-    expect(labels).toEqual(['WORKSPACE', 'ADVISING', 'APPOINTMENTS']);
+    expect(labels).toEqual(['WORKSPACE', 'ADVISING', 'APPOINTMENTS', 'INSIGHTS']);
   });
 
   it('lists every navigation item under its section', () => {
@@ -57,6 +57,7 @@ describe('AdvisorSidebar', () => {
       'Advising Conversations',
       'Study Plan Reviews',
       'Appointments',
+      'Reports & Analytics',
     ]);
   });
 

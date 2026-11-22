@@ -375,6 +375,14 @@ export interface DataTableProps<TData extends RowData, TValue = any> {
   onSearchChange?: (value: string) => void;
   /** Total number of rows across every page. Required in server-side mode. */
   totalRowCount?: number;
+  /**
+   * Total number of pages, when the server knows it. Optional: the table can
+   * derive the page count from `totalRowCount` and the page size. Pass it when
+   * the backend returns its own `totalPages`, so the page count matches the
+   * server exactly (this also drives the enabled/disabled state of the
+   * Previous/Next buttons).
+   */
+  pageCount?: number;
   /** Controlled pagination state. */
   pagination?: PaginationState;
   /** Receives the next pagination state. */
@@ -408,6 +416,7 @@ export function DataTable<TData extends RowData, TValue = any>({
   searchValue,
   onSearchChange,
   totalRowCount,
+  pageCount,
   pagination,
   onPaginationChange,
   sorting,
@@ -470,6 +479,8 @@ export function DataTable<TData extends RowData, TValue = any>({
     manualSorting: manual,
     manualPagination: manual,
     ...(manual && totalRowCount !== undefined ? { rowCount: totalRowCount } : {}),
+    // The server's own page count wins over the one derived from `rowCount`.
+    ...(manual && pageCount !== undefined ? { pageCount } : {}),
     // The parent must receive the next state; the default updater only writes
     // to the table's internal atom, which a controlled slice ignores.
     ...(manual && onPaginationChange
@@ -557,9 +568,11 @@ export function DataTable<TData extends RowData, TValue = any>({
 
   const { pageIndex, pageSize } = table.state.pagination;
   const totalRows = manual ? (totalRowCount ?? rows.length) : table.getRowCount();
+  // The server's `totalPages` wins when provided; otherwise derive it from the
+  // row count. `Math.max(..., 1)` keeps the label readable when the list is empty.
   const totalPages = Math.max(
     manual
-      ? Math.ceil(totalRows / Math.max(pageSize, 1))
+      ? (pageCount ?? Math.ceil(totalRows / Math.max(pageSize, 1)))
       : table.getPageCount(),
     1,
   );

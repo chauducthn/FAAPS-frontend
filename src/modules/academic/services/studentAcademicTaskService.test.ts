@@ -20,16 +20,14 @@ describe('course learning task progress API', () => {
 describe('student course catalogue', () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it('reads every page, so courses past the first page are listed', async () => {
-    const course = (n: number) => ({ id: `c${n}` });
-    vi.mocked(apiClient.get)
-      .mockResolvedValueOnce({ data: Array.from({ length: 100 }, (_, i) => course(i)) })
-      .mockResolvedValueOnce({ data: [course(100), course(101)] });
+  it('reads one server page and maps the Spring page to PaginatedData', async () => {
+    vi.mocked(apiClient.get).mockResolvedValue({
+      data: { items: [{ id: 'c21' }], page: 1, size: 20, totalElements: 69, totalPages: 4 },
+    });
 
-    const all = await studentAcademicService.allCourses('se');
+    const result = await studentAcademicService.courses('se', 1, 20);
 
-    expect(all).toHaveLength(102);
-    expect(apiClient.get).toHaveBeenNthCalledWith(1, '/student/courses', { params: { search: 'se', page: 0, size: 100 } });
-    expect(apiClient.get).toHaveBeenNthCalledWith(2, '/student/courses', { params: { search: 'se', page: 1, size: 100 } });
+    expect(result).toEqual({ items: [{ id: 'c21' }], page: 1, pageSize: 20, totalItems: 69, totalPages: 4 });
+    expect(apiClient.get).toHaveBeenCalledWith('/student/courses/paged', { params: { search: 'se', page: 1, size: 20 } });
   });
 });
