@@ -105,19 +105,10 @@ export default function AdvisorStudyPlans() {
     queryKey: ['advisor', 'study-plans', status, page],
     queryFn: () => advisorStudyPlanService.list(status, page, 20),
   });
-  // BE không hỗ trợ status = 'ALL' — vì vậy đếm KPI bằng 3 query riêng cho
-  // từng trạng thái thay vì 1 query tổng hợp.
-  const submittedCountQuery = useQuery({
-    queryKey: ['advisor', 'study-plans', 'count', 'SUBMITTED'],
-    queryFn: () => advisorStudyPlanService.list('SUBMITTED', 0, 1),
-  });
-  const approvedCountQuery = useQuery({
-    queryKey: ['advisor', 'study-plans', 'count', 'APPROVED'],
-    queryFn: () => advisorStudyPlanService.list('APPROVED', 0, 1),
-  });
-  const revisionCountQuery = useQuery({
-    queryKey: ['advisor', 'study-plans', 'count', 'NEEDS_REVISION'],
-    queryFn: () => advisorStudyPlanService.list('NEEDS_REVISION', 0, 1),
+  // Số KPI theo trạng thái lấy từ endpoint chuyên dụng (1 request thay vì 3 lần list()).
+  const countsQuery = useQuery({
+    queryKey: ['advisor', 'study-plans', 'counts'],
+    queryFn: () => advisorStudyPlanService.getCounts(),
   });
   const detail = useQuery({
     queryKey: ['advisor', 'study-plan', selectedId],
@@ -142,17 +133,7 @@ export default function AdvisorStudyPlans() {
     return map;
   }, [courseCatalog.data]);
 
-  const counts = useMemo(() => {
-    const submitted = submittedCountQuery.data?.totalElements ?? 0;
-    const approved = approvedCountQuery.data?.totalElements ?? 0;
-    const revision = revisionCountQuery.data?.totalElements ?? 0;
-    return {
-      total: submitted + approved + revision,
-      submitted,
-      approved,
-      revision,
-    };
-  }, [submittedCountQuery.data, approvedCountQuery.data, revisionCountQuery.data]);
+  const counts = countsQuery.data ?? null;
 
   // Enriched context for the review modal: who the student is + what they passed.
   const student = studentDetail.data?.profile ?? null;
@@ -232,14 +213,17 @@ export default function AdvisorStudyPlans() {
     );
   }, [plans.data, search]);
 
-  const countsLoading =
-    submittedCountQuery.isLoading || approvedCountQuery.isLoading || revisionCountQuery.isLoading;
+  const countsLoading = countsQuery.isLoading;
+  const countsFailed = countsQuery.isError;
+  // Đang tải ⇒ skeleton; lỗi ⇒ '–' (fallback) thay vì số 0 gây hiểu nhầm.
+  const countValue = (value: number | undefined) =>
+    countsLoading ? null : countsFailed ? '–' : String(value ?? 0);
 
   const kpis = [
-    { label: 'Total plans', value: countsLoading ? '–' : String(counts.total), sub: 'all semesters', icon: BookOpenCheck, iconBox: 'bg-slate-900 text-white shadow-[0_6px_16px_-6px_rgba(15,23,42,0.5)]', topBar: 'bg-slate-900' },
-    { label: 'Submitted', value: countsLoading ? '–' : String(counts.submitted), sub: 'needs review', icon: Inbox, iconBox: 'bg-[#F26F21] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.6)]', topBar: 'bg-[#F26F21]' },
-    { label: 'Approved', value: countsLoading ? '–' : String(counts.approved), sub: 'ready to go', icon: CircleCheckBig, iconBox: 'bg-emerald-600 text-white shadow-[0_6px_16px_-6px_rgba(5,150,105,0.5)]', topBar: 'bg-emerald-600' },
-    { label: 'Needs revision', value: countsLoading ? '–' : String(counts.revision), sub: 'waiting on student', icon: FileEdit, iconBox: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200', topBar: 'bg-slate-300' },
+    { label: 'Total plans', value: countValue(counts?.total), sub: 'all semesters', icon: BookOpenCheck, iconBox: 'bg-slate-900 text-white shadow-[0_6px_16px_-6px_rgba(15,23,42,0.5)]', topBar: 'bg-slate-900' },
+    { label: 'Submitted', value: countValue(counts?.submitted), sub: 'needs review', icon: Inbox, iconBox: 'bg-[#F26F21] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.6)]', topBar: 'bg-[#F26F21]' },
+    { label: 'Approved', value: countValue(counts?.approved), sub: 'ready to go', icon: CircleCheckBig, iconBox: 'bg-emerald-600 text-white shadow-[0_6px_16px_-6px_rgba(5,150,105,0.5)]', topBar: 'bg-emerald-600' },
+    { label: 'Needs revision', value: countValue(counts?.needsRevision), sub: 'waiting on student', icon: FileEdit, iconBox: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200', topBar: 'bg-slate-300' },
   ];
 
   return (
@@ -256,9 +240,13 @@ export default function AdvisorStudyPlans() {
               Study Plan Reviews
             </h1>
             <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-white/95">
-              {counts.submitted > 0
-                ? `${counts.submitted} plan${counts.submitted === 1 ? '' : 's'} waiting for your review.`
-                : 'No plans waiting for review right now. Nice work!'}
+              {countsLoading
+                ? 'Loading the plans that need your review…'
+                : countsFailed
+                  ? 'Could not load the review counts right now.'
+                  : (counts?.submitted ?? 0) > 0
+                    ? `${counts?.submitted} plan${counts?.submitted === 1 ? '' : 's'} waiting for your review.`
+                    : 'No plans waiting for review right now. Nice work!'}
             </p>
           </div>
           <Link
@@ -282,7 +270,16 @@ export default function AdvisorStudyPlans() {
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">{s.label}</p>
-                <p className="mt-2.5 text-[30px] font-extrabold leading-none tabular-nums text-slate-900">{s.value}</p>
+                {s.value === null ? (
+                  <span
+                    aria-hidden
+                    className="mt-3 block h-7 w-20 animate-pulse rounded-lg bg-slate-200"
+                  />
+                ) : (
+                  <p className="mt-2.5 text-[30px] font-extrabold leading-none tabular-nums text-slate-900">
+                    {s.value}
+                  </p>
+                )}
                 <p className="mt-2 text-sm font-medium text-slate-600">{s.sub}</p>
               </div>
               <span className={cn('flex size-11 shrink-0 items-center justify-center rounded-xl', s.iconBox)}>

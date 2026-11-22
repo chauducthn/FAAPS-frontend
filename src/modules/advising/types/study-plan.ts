@@ -13,3 +13,7 @@ export type StudyPlanPage = {
 export type AdvisorStudyPlanDetail = {
   studentId: string; studentCode: string | null; studentName: string | null; plan: CurriculumPlan;
 };
+/** Số kế hoạch theo trạng thái — `GET /advisor/study-plans/counts`. */
+export type StudyPlanCounts = {
+  submitted: number; approved: number; needsRevision: number; total: number;
+};

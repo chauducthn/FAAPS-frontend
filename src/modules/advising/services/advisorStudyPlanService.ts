@@ -1,6 +1,6 @@
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
-import type { AdvisorStudyPlanDetail, StudyPlanDecision, StudyPlanPage } from '../types/study-plan';
+import type { AdvisorStudyPlanDetail, StudyPlanDecision, StudyPlanCounts, StudyPlanPage } from '../types/study-plan';
 
 const base = '/advisor/study-plans';
 
@@ -10,6 +10,11 @@ const base = '/advisor/study-plans';
 export const advisorStudyPlanService = {
   list: async (status: string, page = 0, size = 20): Promise<StudyPlanPage> => {
     return (await apiClient.get<StudyPlanPage>(base, { params: { status, page, size } })).data;
+  },
+
+  /** Số kế hoạch theo trạng thái — dùng cho KPI cards, thay vì gọi list() 3 lần. */
+  getCounts: async (): Promise<StudyPlanCounts> => {
+    return (await apiClient.get<StudyPlanCounts>(`${base}/counts`)).data;
   },
 
   detail: async (id: string): Promise<AdvisorStudyPlanDetail> => {

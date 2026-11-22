@@ -1,5 +1,6 @@
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
+import type { PaginatedData } from '../../../shared/types/api';
 
 export type AcademicStudentProfile = {
   id: string; fullName: string; email: string; phone: string | null; accountStatus: string;
@@ -62,7 +63,23 @@ export const studentAcademicService = {
     (await apiClient.put<AcademicStudentProfile>('/student/profile/curriculum', { curriculumVersionId }, { headers: await getCsrfHeaders() })).data,
   transcript: () => get<TranscriptRow[]>('/transcript'),
   progress: () => get<Progress>('/progress'),
-  courses: (search = '', page = 0) => get<Course[]>('/courses', { search, page, size: 20 }),
+  /**
+   * Danh sách môn học có phân trang (GET /student/courses/paged).
+   * BE trả `Page` trần (items/page/size/totalElements/totalPages) — được chuẩn hoá
+   * về `PaginatedData` (pageSize/totalItems) để UI dùng chung một kiểu.
+   */
+  courses: async (search = '', page = 0, size = 20): Promise<PaginatedData<Course>> => {
+    const data = await get<{
+      items: Course[]; page: number; size: number; totalElements: number; totalPages: number;
+    }>('/courses/paged', { search: search || undefined, page, size });
+    return {
+      items: data.items,
+      page: data.page,
+      pageSize: data.size,
+      totalItems: data.totalElements,
+      totalPages: data.totalPages,
+    };
+  },
   course: (id: string) => get<CourseDetail>(`/courses/${id}`),
   curriculum: () => get<Curriculum>('/curriculum'),
   curriculumCourses: () => get<CurriculumCourse[]>('/curriculum/courses'),
