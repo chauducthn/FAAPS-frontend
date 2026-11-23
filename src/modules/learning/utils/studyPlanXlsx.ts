@@ -44,14 +44,16 @@ function colName(i: number): string {
 
 export type XlsxRow = (string | number)[];
 
-function sheetXml(rows: XlsxRow[]): string {
+const STUDY_PLAN_WIDTHS = [14, 16, 42, 12, 30];
+
+function sheetXml(rows: XlsxRow[], widths: number[] = STUDY_PLAN_WIDTHS, header = true): string {
   const body = rows
     .map((row, r) => {
       const cells = row
         .map((v, c) => {
           const ref = `${colName(c)}${r + 1}`;
           if (typeof v === 'number') return `<c r="${ref}" s="1"><v>${v}</v></c>`;
-          return `<c r="${ref}" s="${r === 0 ? 2 : 1}" t="inlineStr"><is><t>${escapeXml(String(v))}</t></is></c>`;
+          return `<c r="${ref}" s="${header && r === 0 ? 2 : 1}" t="inlineStr"><is><t>${escapeXml(String(v))}</t></is></c>`;
         })
         .join('');
       return `<row r="${r + 1}">${cells}</row>`;
@@ -64,7 +66,7 @@ function sheetXml(rows: XlsxRow[]): string {
     `<dimension ref="A1:${lastCol}${rows.length}"/>` +
     `<sheetViews><sheetView workbookViewId="0"><selection activeCell="A1" sqref="A1"/></sheetView></sheetViews>` +
     `<sheetFormat defaultRowHeight="18"/>` +
-    `<cols><col min="1" max="1" width="14"/><col min="2" max="2" width="16"/><col min="3" max="3" width="42"/><col min="4" max="4" width="12"/><col min="5" max="5" width="30"/></cols>` +
+    `<cols>${widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}"/>`).join('')}</cols>` +
     `<sheetData>${body}</sheetData></worksheet>`
   );
 }
@@ -85,10 +87,10 @@ const RELS =
   `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>` +
   `</Relationships>`;
 
-const WORKBOOK =
+const workbookXml = (sheetName: string) =>
   `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>` +
   `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
-  `<sheets><sheet name="Study Plan" sheetId="1" r:id="rId1"/></sheets></workbook>`;
+  `<sheets><sheet name="${escapeXml(sheetName)}" sheetId="1" r:id="rId1"/></sheets></workbook>`;
 
 const WORKBOOK_RELS =
   `<?xml version="1.0" encoding="UTF-8"?>` +
@@ -103,7 +105,7 @@ const STYLES =
   `<fonts><font><sz val="11"/><name val="Calibri"/></font><font><sz val="11"/><b/><name val="Calibri"/></font></fonts>` +
   `<fills><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill>` +
   `<fill><patternFill patternType="solid"><fgColor rgb="FFF26F21"/><bgColor indexed="64"/></patternFill></fill></fills>` +
-  `<borders><border><left/><right/><top/><bottom/><diagonal/></border></border>` +
+  `<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>` +
   `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>` +
   `<cellXfs count="3">` +
   `<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>` +
@@ -186,15 +188,20 @@ function buildZip(entries: ZipEntry[]): Blob {
   });
 }
 
-export function buildStudyPlanXlsx(rows: XlsxRow[]): Blob {
+/** A one-sheet workbook; unless `header` is false, the first row is styled as the header. */
+export function buildXlsx(rows: XlsxRow[], options: { sheetName?: string; widths?: number[]; header?: boolean } = {}): Blob {
   return buildZip([
     { name: '[Content_Types].xml', data: enc.encode(CONTENT_TYPES) },
     { name: '_rels/.rels', data: enc.encode(RELS) },
-    { name: 'xl/workbook.xml', data: enc.encode(WORKBOOK) },
+    { name: 'xl/workbook.xml', data: enc.encode(workbookXml(options.sheetName ?? 'Sheet1')) },
     { name: 'xl/_rels/workbook.xml.rels', data: enc.encode(WORKBOOK_RELS) },
     { name: 'xl/styles.xml', data: enc.encode(STYLES) },
-    { name: 'xl/worksheets/sheet1.xml', data: enc.encode(sheetXml(rows)) },
+    { name: 'xl/worksheets/sheet1.xml', data: enc.encode(sheetXml(rows, options.widths, options.header ?? true)) },
   ]);
+}
+
+export function buildStudyPlanXlsx(rows: XlsxRow[]): Blob {
+  return buildXlsx(rows, { sheetName: 'Study Plan' });
 }
 
 export function downloadBlob(blob: Blob, filename: string) {

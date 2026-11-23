@@ -2,9 +2,12 @@
 // Master catalogue — Operate-mode redesign synced with the Curriculum ecosystem:
 // gradient header, KPI strip, skeleton / error / empty states, orange focus.
 import { useMemo, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   BookOpenCheck,
+  CheckCircle2,
   CircleAlert,
+  CircleOff,
   GraduationCap,
   Layers,
   Loader2,
@@ -23,28 +26,78 @@ import {
   CourseImportPreviewModal,
 } from '../components/courses';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { ExampleSheetButton, ImportCheckDialog, type ExampleSheet } from '../components/ImportCheckDialog';
+import {
+  checkCourseImport,
+  courseSyllabusExample,
+  courseTableExample,
+  isAllowedCredits,
+  type ImportProblem,
+} from '../utils/importChecks';
+import { downloadBlob } from '../../learning/utils/studyPlanXlsx';
 import { StatusBadge } from '../components/StatusBadge';
 import { RowActionMenu } from '../components/RowActionMenu';
 import {
   useCoursesQuery,
   useCourse,
   useCourseCategoriesQuery,
+  COURSE_QUERY_KEYS,
 } from '../../academic/hooks/queries/useCoursesQuery';
 import { useCourseMutations } from '../../academic/hooks/mutations/useCourseMutations';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 import type {
   CourseDetail,
+  CourseStatus,
   CourseSummary,
   CourseFilterParams,
   CourseImportPreview,
 } from '../../academic/types/course';
-import type { CreateCourseFormValues } from '../../academic/validations/course.schema';
+import {
+  CREDIT_OPTIONS,
+  CREDIT_OPTIONS_MESSAGE,
+  type CreateCourseFormValues,
+} from '../../academic/validations/course.schema';
 
 const PAGE_SIZE = 10;
 
-/** Credit values offered by the "Credits" filter (FE-03). */
-const CREDIT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+/**
+ * The backend accepts 1-30 credits on import; the catalogue rule is CREDIT_OPTIONS.
+ * Other values are marked as errors so they are never confirmed
+ * (needed for .xls files, which are not checked before upload).
+ */
+function withCreditLimit(preview: CourseImportPreview): CourseImportPreview {
+  const message = CREDIT_OPTIONS_MESSAGE;
+  const items = preview.items.map((item) =>
+    !isAllowedCredits(item.credits) && !item.errors.includes(message)
+      ? { ...item, status: 'ERROR', errors: [...item.errors, message] }
+      : item,
+  );
+  const errorRows = items.filter((i) => i.errors.length > 0).length;
+  return { ...preview, items, errorRows, validRows: items.length - errorRows };
+}
+
+/** Form values to the request body. The syllabus texts are not sent, so editing keeps what is stored. */
+function toCourseBody(values: CreateCourseFormValues, isCreate: boolean) {
+  const body = {
+    code: values.code,
+    name: values.name,
+    credits: values.credits,
+    categoryId: values.categoryId,
+    status: values.status,
+    materialLink: values.materialLink ? values.materialLink : null,
+  };
+  if (!isCreate) return body;
+  return {
+    ...body,
+    prerequisites: (values.prerequisiteIds ?? []).map((id, i) => ({
+      prerequisiteCourseId: id,
+      groupNo: i + 1,
+      type: 'PREREQUISITE' as const,
+    })),
+  };
+}
+
 
 const selectClass =
   'appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-3.5 pr-9 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20';
@@ -85,6 +138,10 @@ export default function CoursesPage() {
   const [importFileName, setImportFileName] = useState('spreadsheet.xlsx');
   const [importPreview, setImportPreview] = useState<CourseImportPreview | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [importProblems, setImportProblems] = useState<ImportProblem[]>([]);
+  const [bulkStatus, setBulkStatus] = useState<{ rows: CourseSummary[]; status: CourseStatus } | null>(null);
+  const [bulkStatusSaving, setBulkStatusSaving] = useState(false);
+  const queryClient = useQueryClient();
 
   const params: CourseFilterParams = useMemo(
     () => ({
@@ -147,15 +204,27 @@ export default function CoursesPage() {
   const activeOnPage = visibleItems.filter((c) => c.status === 'ACTIVE').length;
   const creditsOnPage = visibleItems.reduce((sum, c) => sum + c.credits, 0);
 
-  // ---- Import XLSX (preview → confirm) ----
+  const examples: ExampleSheet[] = [
+    { label: 'Table layout (.xlsx)', download: () => downloadBlob(courseTableExample(categories), 'course-import-example.xlsx') },
+    { label: 'Syllabus layout (.xlsx)', download: () => downloadBlob(courseSyllabusExample(categories), 'course-syllabus-import-example.xlsx') },
+  ];
+
+  // ---- Import XLSX (check → preview → confirm) ----
   const handlePickFile = async (file: File | undefined) => {
     if (!file) return;
     setImportFileName(file.name);
     setImportPreview(null);
-    setImportOpen(true);
     setImporting(true);
+    // The sheet is checked here first; a file with problems is not uploaded.
+    const check = await checkCourseImport(file, categories);
+    if (check.problems.length > 0) {
+      setImportProblems(check.problems);
+      setImporting(false);
+      return;
+    }
+    setImportOpen(true);
     try {
-      const preview = await courseService.previewImport(file);
+      const preview = withCreditLimit(await courseService.previewImport(file));
       setImportPreview(preview);
       if (preview.errorRows > 0) {
         toast.warning(`${preview.errorRows} invalid row(s) found`, {
@@ -185,6 +254,22 @@ export default function CoursesPage() {
     } finally {
       setImporting(false);
     }
+  };
+
+  // ---- Bulk status ----
+  const handleBulkStatus = async () => {
+    if (!bulkStatus) return;
+    setBulkStatusSaving(true);
+    const targets = bulkStatus.rows.filter((c) => c.status !== bulkStatus.status);
+    const results = await Promise.allSettled(targets.map((c) => courseService.update(c.id, { status: bulkStatus.status })));
+    const failed = targets.filter((_, i) => results[i].status === 'rejected').map((c) => c.code);
+    const done = targets.length - failed.length;
+    const label = bulkStatus.status === 'ACTIVE' ? 'active' : 'inactive';
+    if (failed.length < targets.length || targets.length === 0) toast.success(`${done} course${done === 1 ? '' : 's'} set to ${label}`);
+    if (failed.length > 0) toast.error(`Could not update ${failed.join(', ')}`);
+    await queryClient.invalidateQueries({ queryKey: COURSE_QUERY_KEYS.all });
+    setBulkStatusSaving(false);
+    setBulkStatus(null);
   };
 
   const handleDownloadErrors = async () => {
@@ -223,9 +308,6 @@ export default function CoursesPage() {
             >
               {row.original.name}
             </button>
-            <p className="mt-0.5 truncate text-[11px] font-medium text-gray-400">
-              {row.original.categoryCode} | {row.original.categoryName}
-            </p>
           </div>
         ),
       },
@@ -236,6 +318,20 @@ export default function CoursesPage() {
           <span className="inline-flex min-w-9 items-center justify-center rounded-md bg-orange-50 px-2 py-0.5 font-mono text-[12px] font-bold tabular-nums text-[#9a3412] ring-1 ring-orange-200">
             {row.original.credits}
           </span>
+        ),
+      },
+      {
+        accessorKey: 'categoryCode',
+        header: 'Category',
+        // The backend sorts by code and credits only.
+        enableSorting: false,
+        cell: ({ row }) => (
+          <div className="min-w-0" title={row.original.categoryName}>
+            <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 font-mono text-[11px] font-bold text-gray-700">
+              {row.original.categoryCode}
+            </span>
+            <p className="mt-0.5 max-w-[180px] truncate text-[11px] font-medium text-gray-400">{row.original.categoryName}</p>
+          </div>
         ),
       },
       {
@@ -318,6 +414,7 @@ export default function CoursesPage() {
           </div>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <ExampleSheetButton examples={examples} />
           <label
             className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-700 shadow-xs transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#9a3412]"
           >
@@ -325,7 +422,8 @@ export default function CoursesPage() {
             {importing && !importOpen ? 'Reading…' : 'Import XLSX'}
             <input
               type="file"
-              accept=".xlsx,.xls,.csv"
+              accept=".xlsx,.xls"
+              aria-label="Import courses from Excel"
               className="hidden"
               disabled={importing}
               onChange={(event) => {
@@ -517,6 +615,21 @@ export default function CoursesPage() {
               onSearchChange={resetPage(setSearch)}
               showSearch={false}
               bulkActions={(selectedRows) => (
+                <>
+                <button
+                  type="button"
+                  onClick={() => setBulkStatus({ rows: selectedRows, status: 'ACTIVE' })}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 font-bold text-white hover:bg-emerald-700"
+                >
+                  <CheckCircle2 className="size-3.5" /> Set active
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBulkStatus({ rows: selectedRows, status: 'INACTIVE' })}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gray-700 px-3 py-1.5 font-bold text-white hover:bg-gray-800"
+                >
+                  <CircleOff className="size-3.5" /> Set inactive
+                </button>
                 <button
                   type="button"
                   onClick={() => {
@@ -536,6 +649,7 @@ export default function CoursesPage() {
                 >
                   <Trash2 className="size-3.5" /> Delete selected
                 </button>
+                </>
               )}
             />
           </div>
@@ -554,9 +668,9 @@ export default function CoursesPage() {
         onSubmit={async (values: CreateCourseFormValues) => {
           try {
             if (editing) {
-              await update({ id: editing.id, body: values });
+              await update({ id: editing.id, body: toCourseBody(values, false) });
             } else {
-              await create(values);
+              await create(toCourseBody(values, true));
             }
             setFormOpen(false);
           } catch {
@@ -622,6 +736,30 @@ export default function CoursesPage() {
           }
           setDeleting(null);
         }}
+      />
+
+      <ImportCheckDialog
+        open={importProblems.length > 0}
+        fileName={importFileName}
+        problems={importProblems}
+        examples={examples}
+        onClose={() => setImportProblems([])}
+      />
+
+      <ConfirmDialog
+        open={!!bulkStatus}
+        title={bulkStatus?.status === 'ACTIVE' ? 'Set selected courses active?' : 'Set selected courses inactive?'}
+        message={
+          bulkStatus
+            ? `Change ${bulkStatus.rows.length} selected course${bulkStatus.rows.length === 1 ? '' : 's'} to ${
+                bulkStatus.status === 'ACTIVE' ? 'Active' : 'Inactive'
+              }: ${bulkStatus.rows.map((c) => c.code).join(', ')}.`
+            : ''
+        }
+        confirmLabel={bulkStatus?.status === 'ACTIVE' ? 'Set active' : 'Set inactive'}
+        isLoading={bulkStatusSaving}
+        onCancel={() => setBulkStatus(null)}
+        onConfirm={handleBulkStatus}
       />
 
       <ConfirmDialog
