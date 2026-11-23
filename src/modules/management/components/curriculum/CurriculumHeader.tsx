@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { StatusBadge } from '../StatusBadge';
+import { ExampleSheetButton } from '../ImportCheckDialog';
 
 interface Props {
   /** The curriculum identity shown in the header. */
@@ -37,6 +38,8 @@ interface Props {
   onEdit: () => void;
   onArchive: () => void;
   onPickFile: (file: File | undefined) => void;
+  /** Downloads the example import sheet. */
+  onDownloadExample: () => void;
   onPublish: () => void;
 }
 
@@ -51,6 +54,7 @@ export default function CurriculumHeader({
   onEdit,
   onArchive,
   onPickFile,
+  onDownloadExample,
   onPublish,
 }: Props) {
   return (
@@ -110,6 +114,10 @@ export default function CurriculumHeader({
           >
             <Archive className="size-3.5" /> Archive
           </button>
+          <ExampleSheetButton
+            examples={[{ label: 'Example sheet', download: onDownloadExample }]}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-700 shadow-xs transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#9a3412]"
+          />
           <label
             className={cn(
               'inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-700 shadow-xs transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#9a3412]',
@@ -120,7 +128,7 @@ export default function CurriculumHeader({
             {isPreviewingImport ? 'Reading…' : 'Import XLSX'}
             <input
               type="file"
-              accept=".xlsx,.xls,.csv"
+              accept=".xlsx,.xls"
               className="hidden"
               disabled={isPreviewingImport}
               onChange={(event) => {

@@ -26,6 +26,8 @@ export interface CourseSummary {
   /** FPT narrow specialization (Chuyên ngành hẹp), e.g. "Node.js", ".NET", "Game Development". Null = foundation/common. */
   specialization?: string | null;
   status: CourseStatus;
+  /** Link to the course materials. The backend does not store it yet (see BE_TODO_courses.md). */
+  materialLink?: string | null;
   prerequisiteCount: number;
   usedInCurriculumCount: number;
   createdAt: string;
@@ -73,11 +75,13 @@ export interface CreateCourseDto {
   description?: string | null;
   objectives?: string | null;
   learningOutcomes?: string | null;
+  status?: CourseStatus;
+  materialLink?: string | null;
+  /** Saved with the course on create (POST /admin/courses `prerequisites`). */
+  prerequisites?: { prerequisiteCourseId: string; groupNo: number; type: PrerequisiteType }[];
 }
 
-export interface UpdateCourseDto extends Partial<CreateCourseDto> {
-  status?: CourseStatus;
-}
+export type UpdateCourseDto = Partial<Omit<CreateCourseDto, 'prerequisites'>>;
 
 export interface AddCourseRelationDto {
   kind: RelationKind;

@@ -2,21 +2,23 @@
 // Operate-mode redesign synced with CurriculumFormModal: gradient header,
 // sectioned layout, inline hints, FPT orange focus.
 import { useEffect, type ReactNode } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BookOpenText, Loader2, X } from 'lucide-react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
 import {
+  CREDIT_OPTIONS,
   createCourseSchema,
   type CreateCourseFormValues,
 } from '../../../academic/validations/course.schema';
 import type { CourseCategory, CourseDetail } from '../../../academic/types/course';
+import PrerequisitePicker from './PrerequisitePicker';
 
 interface Props {
   open: boolean;
   mode: 'create' | 'edit';
-  /** Full course (the list rows do not carry description, objectives or outcomes). */
+  /** Full course, loaded for editing. */
   initial?: CourseDetail | null;
   isLoadingInitial?: boolean;
   categories: CourseCategory[];
@@ -43,14 +45,16 @@ export default function CourseFormModal({
 
   const {
     register,
+    control,
     handleSubmit,
     reset,
     watch,
     formState: { errors, isValid },
   } = useForm<CreateCourseFormValues>({
     resolver: zodResolver(createCourseSchema),
-    defaultValues: { code: '', name: '', credits: 3, categoryId: '' },
-    mode: 'onChange',
+    defaultValues: { code: '', name: '', credits: Number.NaN, categoryId: '', status: 'ACTIVE', materialLink: '', prerequisiteIds: [] },
+    // Validate on change and on blur, so leaving a required field empty shows its message.
+    mode: 'all',
   });
 
   useEffect(() => {
@@ -61,17 +65,16 @@ export default function CourseFormModal({
         name: initial.name,
         credits: initial.credits,
         categoryId: initial.categoryId,
-        description: initial.description ?? '',
-        objectives: initial.objectives ?? '',
-        learningOutcomes: initial.learningOutcomes ?? '',
         status: initial.status,
+        materialLink: initial.materialLink ?? '',
       });
     } else {
-      reset({ code: '', name: '', credits: 3, categoryId: '' });
+      reset({ code: '', name: '', credits: Number.NaN, categoryId: '', status: 'ACTIVE', materialLink: '', prerequisiteIds: [] });
     }
   }, [open, initial, reset]);
 
   const status = watch('status');
+  const code = watch('code');
 
   return (
     <Modal open={open} onClose={onClose} title={isCreate ? 'Create course' : 'Edit course'} className="max-w-2xl">
@@ -113,14 +116,18 @@ export default function CourseFormModal({
                     <input {...register('code')} placeholder="SE101" className={cn(field, 'font-mono font-bold uppercase')} aria-label="Course code" />
                   </Field>
                   <Field label="Credits" required error={errors.credits?.message}>
-                    <input
-                      type="number"
-                      min={1}
-                      max={20}
+                    <select
                       {...register('credits', { valueAsNumber: true })}
                       aria-label="Credits"
                       className={cn(field, 'font-mono font-bold tabular-nums')}
-                    />
+                    >
+                      <option value="">Select…</option>
+                      {CREDIT_OPTIONS.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                    </select>
                   </Field>
                   <Field label="Category" required error={errors.categoryId?.message}>
                     <select {...register('categoryId')} aria-label="Category" className={field}>
@@ -136,39 +143,43 @@ export default function CourseFormModal({
                 <Field label="Name" required error={errors.name?.message}>
                   <input {...register('name')} placeholder="Introduction to Programming" aria-label="Course name" className={field} />
                 </Field>
-                {!isCreate && (
-                  <Field label="Status" error={errors.status?.message}>
-                    <div className="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1" role="radiogroup" aria-label="Status">
-                      {(['ACTIVE', 'INACTIVE'] as const).map((s) => (
-                        <label
-                          key={s}
-                          className={cn(
-                            'cursor-pointer rounded-lg px-3 py-2 text-center text-xs font-bold transition-all',
-                            status === s
-                              ? s === 'ACTIVE'
-                                ? 'bg-white text-emerald-700 shadow-xs ring-1 ring-emerald-200'
-                                : 'bg-white text-gray-600 shadow-xs ring-1 ring-gray-200'
-                              : 'text-gray-400 hover:text-gray-600',
-                          )}
-                        >
-                          <input type="radio" value={s} {...register('status')} className="sr-only" />
-                          {s === 'ACTIVE' ? '● Active' : '○ Inactive'}
-                        </label>
-                      ))}
-                    </div>
-                  </Field>
-                )}
+                <Field label="Status" error={errors.status?.message} hint={isCreate ? 'New courses are Active unless you choose Inactive.' : undefined}>
+                  <div className="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1" role="radiogroup" aria-label="Status">
+                    {(['ACTIVE', 'INACTIVE'] as const).map((s) => (
+                      <label
+                        key={s}
+                        className={cn(
+                          'cursor-pointer rounded-lg px-3 py-2 text-center text-xs font-bold transition-all',
+                          status === s
+                            ? s === 'ACTIVE'
+                              ? 'bg-white text-emerald-700 shadow-xs ring-1 ring-emerald-200'
+                              : 'bg-white text-gray-600 shadow-xs ring-1 ring-gray-200'
+                            : 'text-gray-400 hover:text-gray-600',
+                        )}
+                      >
+                        <input type="radio" value={s} {...register('status')} className="sr-only" />
+                        {s === 'ACTIVE' ? '● Active' : '○ Inactive'}
+                      </label>
+                    ))}
+                  </div>
+                </Field>
               </Section>
 
-              <Section title="Syllabus — Đề cương" hint="Shown in the course detail modal and used by advisors when consulting students.">
-                <Field label="Description" error={errors.description?.message}>
-                  <textarea rows={3} {...register('description')} placeholder="What this course covers…" aria-label="Description" className={cn(field, 'resize-none leading-relaxed')} />
-                </Field>
-                <Field label="Objectives" error={errors.objectives?.message}>
-                  <textarea rows={2} {...register('objectives')} placeholder="What students should aim for…" aria-label="Objectives" className={cn(field, 'resize-none leading-relaxed')} />
-                </Field>
-                <Field label="Learning outcomes" error={errors.learningOutcomes?.message}>
-                  <textarea rows={2} {...register('learningOutcomes')} placeholder="What students can do after passing…" aria-label="Learning outcomes" className={cn(field, 'resize-none leading-relaxed')} />
+              <Section
+                title={isCreate ? 'Prerequisites & materials' : 'Materials'}
+                hint={isCreate ? 'Both are optional. More relations can be managed later from the course detail.' : 'Prerequisites are managed from the course detail.'}
+              >
+                {isCreate && (
+                  <Field label="Prerequisites" hint="Students must pass every course listed here first.">
+                    <Controller
+                      control={control}
+                      name="prerequisiteIds"
+                      render={({ field: f }) => <PrerequisitePicker value={f.value ?? []} onChange={f.onChange} excludeCode={code} />}
+                    />
+                  </Field>
+                )}
+                <Field label="Material link" error={errors.materialLink?.message} hint="Slides, syllabus PDF or a shared folder, e.g. https://drive.google.com/…">
+                  <input type="url" {...register('materialLink')} placeholder="https://" aria-label="Material link" className={field} />
                 </Field>
               </Section>
             </>

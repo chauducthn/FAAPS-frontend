@@ -10,6 +10,9 @@ import CurriculumHeader from '../components/curriculum/CurriculumHeader';
 import CurriculumKanban from '../components/curriculum/CurriculumKanban';
 import CurriculumModals from '../components/curriculum/CurriculumModals';
 import { CourseDetailModal } from '../components/courses';
+import { ImportCheckDialog } from '../components/ImportCheckDialog';
+import { checkCurriculumImport, curriculumExample, type ImportProblem } from '../utils/importChecks';
+import { downloadBlob } from '../../learning/utils/studyPlanXlsx';
 import { buildRoadmap } from '../../academic/roadmap/buildRoadmap';
 import { resolveMilestone } from '../../academic/roadmap/milestones';
 import { useCurriculum, useCurriculumCourses } from '../../academic/hooks/queries/useCurriculumsQuery';
@@ -45,6 +48,8 @@ export default function CurriculumDetailPage() {
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importPreview, setImportPreview] = useState<CurriculumImportPreview | null>(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [importProblems, setImportProblems] = useState<{ fileName: string; problems: ImportProblem[] } | null>(null);
+  const downloadExample = () => downloadBlob(curriculumExample(), 'curriculum-import-example.xlsx');
 
   // The rules carry the milestone thresholds (how many credits an internship needs).
   const rules = useAcademicRulesQuery({ curriculumVersionId: id, size: 100 });
@@ -152,6 +157,12 @@ export default function CurriculumDetailPage() {
 
   const handlePickFile = async (file: File | undefined) => {
     if (!file) return;
+    // The sheet is checked here first; a file with problems is not uploaded.
+    const check = await checkCurriculumImport(file);
+    if (check.problems.length > 0) {
+      setImportProblems({ fileName: file.name, problems: check.problems });
+      return;
+    }
     setImportFile(file);
     setImportPreview(null);
     setImportOpen(true);
@@ -224,6 +235,7 @@ export default function CurriculumDetailPage() {
         onEdit={() => setEditing(true)}
         onArchive={() => setArchiving(true)}
         onPickFile={handlePickFile}
+        onDownloadExample={downloadExample}
         onPublish={() => {
           updateStatus({ id, status: 'ACTIVE' }).catch((error) => {
             toast.error(apiMessage(error), { description: 'The curriculum was not published.' });
@@ -243,6 +255,15 @@ export default function CurriculumDetailPage() {
         onViewCourse={(courseId) => setViewingId(courseId)}
         onRetry={() => void courses.refetch()}
         onPickFile={handlePickFile}
+        onDownloadExample={downloadExample}
+      />
+
+      <ImportCheckDialog
+        open={!!importProblems}
+        fileName={importProblems?.fileName ?? ''}
+        problems={importProblems?.problems ?? []}
+        examples={[{ label: 'Example sheet', download: downloadExample }]}
+        onClose={() => setImportProblems(null)}
       />
 
       <CurriculumModals

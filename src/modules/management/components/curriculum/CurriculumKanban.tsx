@@ -21,6 +21,8 @@ interface Props {
   onRetry: () => void;
   /** Open the import picker (used by the empty state). */
   onPickFile: (file: File | undefined) => void;
+  /** Downloads the example import sheet (used by the empty state). */
+  onDownloadExample: () => void;
 }
 
 export default function CurriculumKanban({
@@ -35,6 +37,7 @@ export default function CurriculumKanban({
   onViewCourse,
   onRetry,
   onPickFile,
+  onDownloadExample,
 }: Props) {
   if (isLoading) return <DetailBoardSkeleton />;
 
@@ -85,7 +88,7 @@ export default function CurriculumKanban({
             Import XLSX instead
             <input
               type="file"
-              accept=".xlsx,.xls,.csv"
+              accept=".xlsx,.xls"
               className="hidden"
               onChange={(event) => {
                 void onPickFile(event.target.files?.[0]);
@@ -93,6 +96,13 @@ export default function CurriculumKanban({
               }}
             />
           </label>
+          <button
+            type="button"
+            onClick={onDownloadExample}
+            className="rounded-xl px-3 py-2 text-xs font-bold text-[#C2410C] underline-offset-2 hover:underline"
+          >
+            Example sheet
+          </button>
         </div>
       </div>
     );
