@@ -87,6 +87,7 @@ export const useMarkAdvisorNotificationRead = () => {
       queryClient.invalidateQueries({
         queryKey: ['advisor', 'notifications'],
       }),
+    onError: (error) => toast.error(apiErrorMessage(error, 'Unable to update notifications.')),
   });
 };
 

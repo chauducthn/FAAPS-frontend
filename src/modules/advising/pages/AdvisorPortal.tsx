@@ -19,6 +19,7 @@ import {
 import { toast } from 'sonner';
 import { useAuth } from '../../auth/stores/useAuth';
 import { useAdviseeStudents, useAdvisorAdvisingRequests } from '../hooks/queries/useAdvisorQueries';
+import { useRequiredCredits } from '../hooks/queries/useRequiredCredits';
 import { RequestListTable } from '../components/RequestListTable';
 import { AtRiskStudentsWidget } from '../components/AtRiskStudentsWidget';
 import { StudentsAtRiskWidget } from '../components/StudentsAtRiskWidget';
@@ -29,7 +30,6 @@ import { apiMessage } from '@/shared/lib/apiMessage';
 import type { AcademicStatus } from '../types/advising';
 
 const COUNT_SIZE = 50;
-const REQUIRED_CREDITS = 132;
 
 const STATUS_STYLES: Record<AcademicStatus, { pill: string; dot: string; label: string }> = {
   ACTIVE: { pill: 'bg-emerald-100 text-emerald-900 ring-emerald-300', dot: 'bg-emerald-600', label: 'Active' },
@@ -89,6 +89,8 @@ export default function AdvisorPortal() {
   const pendingQuery = useAdvisorAdvisingRequests({ status: 'PENDING' });
   const inProgressQuery = useAdvisorAdvisingRequests({ status: 'IN_PROGRESS' });
   const resolvedQuery = useAdvisorAdvisingRequests({ status: 'RESOLVED' });
+  // Số tín chỉ yêu cầu đến từ API chương trình đào tạo (không hardcode).
+  const { requiredCreditsFor, defaultRequiredCredits } = useRequiredCredits();
 
   const students = useMemo(() => studentsQuery.data?.items ?? [], [studentsQuery.data?.items]);
   const totalStudents = studentsQuery.data?.totalElements ?? students.length;
@@ -317,7 +319,7 @@ export default function AdvisorPortal() {
           </span>
           <span className="inline-flex items-center gap-1">
             Credits
-            <TermTip term="Credits" tip="Tín chỉ tích lũy / 132 tín chỉ yêu cầu tốt nghiệp. Thanh tiến trình bên dưới mỗi thẻ cho biết % hoàn thành." />
+            <TermTip term="Credits" tip="Tín chỉ tích lũy / tổng tín chỉ yêu cầu tốt nghiệp của chương trình đào tạo. Thanh tiến trình bên dưới mỗi thẻ cho biết % hoàn thành." />
           </span>
         </div>
 
@@ -356,7 +358,9 @@ export default function AdvisorPortal() {
             <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {topStudents.map((s) => {
                 const style = STATUS_STYLES[s.academicStatus] ?? STATUS_STYLES.ACTIVE;
-                const pct = Math.min(100, Math.round((s.totalCreditsEarned / REQUIRED_CREDITS) * 100));
+                // Số tín chỉ yêu cầu theo chương trình của SV; fallback về mặc định khi BE chưa trả.
+                const requiredCredits = requiredCreditsFor(s) ?? defaultRequiredCredits;
+                const pct = Math.min(100, Math.round((s.totalCreditsEarned / requiredCredits) * 100));
                 const gpaColor =
                   s.currentGpa === null
                     ? 'text-slate-600'
@@ -408,7 +412,7 @@ export default function AdvisorPortal() {
                         )}
                       </span>
                       <span className="text-sm font-semibold tabular-nums text-slate-600">
-                        {s.totalCreditsEarned}/{REQUIRED_CREDITS} credits
+                        {s.totalCreditsEarned}/{requiredCredits} credits
                       </span>
                     </div>
                     <div

@@ -139,23 +139,16 @@ export default function AdvisorStudyPlans() {
   const student = studentDetail.data?.profile ?? null;
   const progress = studentDetail.data?.progress ?? null;
   const transcript = useMemo(() => studentDetail.data?.transcript ?? [], [studentDetail.data]);
-  // Transcript uses legacy SE*** codes while the course catalog uses PRF192/DBI202/... —
-  // treat known equivalents as passed so the prereq check is fair.
-  const CODE_EQUIV: Record<string, string[]> = {
-    SE101: ['PRF192'],
-    SE104: ['DSA204'],
-    SE203: ['DBI202'],
-    SE301: ['SWE201', 'SE301'],
-  };
+  // Prerequisite check dựa 100% vào mã môn học BE trả về (transcript + catalog).
+  // Trước đây có map tay `CODE_EQUIV` (SE101→PRF192...) để bù lệch mã giữa transcript
+  // cũ và catalog mới — nhưng đó là dữ liệu nghiệp vụ nằm sai chỗ, và sai ngay khi BE
+  // đã đồng bộ mã. Bỏ hẳn: nếu mã không khớp thì coi như chưa hoàn thành.
   const passedByCode = useMemo(() => {
     const map = new Map<string, number | null>();
     for (const row of transcript) {
-      const done = row.status === 'COMPLETED' || row.creditsEarned > 0;
+      const done = row.status === 'COMPLETED' || row.status === 'PASSED' || row.creditsEarned > 0;
       if (!done) continue;
       if (!map.has(row.courseCode)) map.set(row.courseCode, row.finalScore);
-      for (const alias of CODE_EQUIV[row.courseCode] ?? []) {
-        if (!map.has(alias)) map.set(alias, row.finalScore);
-      }
     }
     return map;
   }, [transcript]);
@@ -513,7 +506,7 @@ export default function AdvisorStudyPlans() {
                     <div className="h-4 w-2/3 animate-pulse rounded bg-slate-200/70" />
                     <div className="h-4 w-1/2 animate-pulse rounded bg-slate-200/70" />
                   </div>
-                ) : student ? (
+                ) : student && progress ? (
                   <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
                     <span className="font-extrabold text-slate-900">{student.fullName}</span>
                     <span className="font-medium text-slate-600">{student.studentCode} · {student.majorCode} · Sem {student.currentSemester}</span>
@@ -521,7 +514,18 @@ export default function AdvisorStudyPlans() {
                       GPA {student.currentGpa != null ? student.currentGpa.toFixed(2) : '—'}
                     </span>
                     <span className="font-semibold tabular-nums text-slate-700">
-                      {student.totalCreditsEarned ?? 0}/132 credits
+                      {student.totalCreditsEarned ?? 0}/{progress.requiredCredits} credits
+                    </span>
+                    <span className="inline-flex h-7 items-center rounded-full bg-slate-900 px-2.5 text-xs font-bold text-white">
+                      {student.academicStatus ?? 'ACTIVE'}
+                    </span>
+                  </div>
+                ) : student ? (
+                  <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                    <span className="font-extrabold text-slate-900">{student.fullName}</span>
+                    <span className="font-medium text-slate-600">{student.studentCode} · {student.majorCode} · Sem {student.currentSemester}</span>
+                    <span className={cn('text-sm font-extrabold tabular-nums', gpaTone)}>
+                      GPA {student.currentGpa != null ? student.currentGpa.toFixed(2) : '—'}
                     </span>
                     <span className="inline-flex h-7 items-center rounded-full bg-slate-900 px-2.5 text-xs font-bold text-white">
                       {student.academicStatus ?? 'ACTIVE'}

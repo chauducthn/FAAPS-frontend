@@ -2,6 +2,16 @@
 // Chi tiết lịch hẹn của advisor — đồng bộ style Student360Modal (hero cam FPT):
 // Accept/Reject (pending) · Cancel (bắt buộc lý do) · Complete (bắt buộc consultation summary)
 // · No-show · Xem/sửa Consultation Summary khi đã hoàn thành.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// TẠM ẨN "Hoàn thành" / "Vắng mặt" — BE chưa hỗ trợ (xem APPOINTMENT_RESULT_UPDATE_ENABLED).
+// `PUT /advisor/appointments/{id}/status` hiện chỉ nhận `ACCEPTED` | `REJECTED`;
+// gửi `COMPLETED` / `NO_SHOW` sẽ bị BE từ chối (HTTP 400) và `consultationSummary`
+// không có trong `UpdateAppointmentStatusDto`. Hai nút này được disable kèm tooltip
+// để không bán tính năng chết cho demo. Bật lại bằng cách đặt hằng số dưới = true
+// khi BE đã deploy endpoint cập nhật kết quả buổi tư vấn.
+// ─────────────────────────────────────────────────────────────────────────────
+const APPOINTMENT_RESULT_UPDATE_ENABLED = false;
 
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -28,6 +38,9 @@ interface AppointmentActionModalProps {
 }
 
 type Mode = 'idle' | 'reject' | 'cancel' | 'complete' | 'noShow' | 'editSummary';
+
+/** Nhãn tooltip chung cho 2 nút đang tạm ẩn vì BE chưa hỗ trợ. */
+const FEATURE_PENDING_TOOLTIP = 'Tính năng đang cập nhật';
 
 function initialsOf(name: string | null | undefined) {
   return (name ?? '')
@@ -117,16 +130,19 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
     );
   };
   const handleNoShow = () => {
+    if (!APPOINTMENT_RESULT_UPDATE_ENABLED) return;
     setTouched(true);
     if (reason.trim().length === 0) return;
     runMutation({ status: 'NO_SHOW', reason: reason.trim() });
   };
   const handleComplete = () => {
+    if (!APPOINTMENT_RESULT_UPDATE_ENABLED) return;
     setTouched(true);
     if (summary.trim().length === 0) return;
     runMutation({ status: 'COMPLETED', consultationSummary: summary.trim() });
   };
   const handleSaveSummary = () => {
+    if (!APPOINTMENT_RESULT_UPDATE_ENABLED) return;
     setTouched(true);
     if (summary.trim().length === 0) return;
     runMutation({ status: 'COMPLETED', consultationSummary: summary.trim() }, true);
@@ -282,8 +298,17 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
             {/* Gợi ý ngữ cảnh */}
             {isAccepted && mode === 'idle' && (
               <p className="rounded-xl border border-dashed border-[#F26F21]/30 bg-[#fff7f0] px-3 py-2 text-xs text-[#9a4a12]">
-                Ca hẹn đã được chấp nhận — bạn có thể Hủy (báo trước cho sinh viên), đánh dấu Hoàn thành kèm
-                tóm tắt, hoặc đánh dấu Vắng mặt kèm lý do nếu sinh viên không tham gia.
+                {APPOINTMENT_RESULT_UPDATE_ENABLED ? (
+                  <>
+                    Ca hẹn đã được chấp nhận — bạn có thể Hủy (báo trước cho sinh viên), đánh dấu Hoàn thành kèm
+                    tóm tắt, hoặc đánh dấu Vắng mặt kèm lý do nếu sinh viên không tham gia.
+                  </>
+                ) : (
+                  <>
+                    Ca hẹn đã được chấp nhận — bạn có thể Hủy (báo trước cho sinh viên). Tính năng cập nhật kết quả
+                    buổi tư vấn (Hoàn thành / Vắng mặt) đang được phát triển.
+                  </>
+                )}
               </p>
             )}
             {isPending && mode === 'idle' && (
@@ -362,8 +387,10 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
                   setMode('noShow');
                   setTouched(false);
                 }}
-                disabled={mutation.isPending || cancelMutation.isPending}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2 text-sm font-bold text-purple-700 transition-colors hover:bg-purple-100 disabled:opacity-50"
+                disabled={mutation.isPending || cancelMutation.isPending || !APPOINTMENT_RESULT_UPDATE_ENABLED}
+                title={APPOINTMENT_RESULT_UPDATE_ENABLED ? undefined : FEATURE_PENDING_TOOLTIP}
+                aria-disabled={!APPOINTMENT_RESULT_UPDATE_ENABLED}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2 text-sm font-bold text-purple-700 transition-colors hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-purple-50"
               >
                 <UserX className="size-4" aria-hidden />
                 Vắng mặt
@@ -374,8 +401,10 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
                   setMode('complete');
                   setTouched(false);
                 }}
-                disabled={mutation.isPending || cancelMutation.isPending}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
+                disabled={mutation.isPending || cancelMutation.isPending || !APPOINTMENT_RESULT_UPDATE_ENABLED}
+                title={APPOINTMENT_RESULT_UPDATE_ENABLED ? undefined : FEATURE_PENDING_TOOLTIP}
+                aria-disabled={!APPOINTMENT_RESULT_UPDATE_ENABLED}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#F26F21]"
               >
                 <CheckCircle2 className="size-4" aria-hidden />
                 Hoàn thành
@@ -424,8 +453,10 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
                 setMode('editSummary');
                 setTouched(false);
               }}
-              disabled={mutation.isPending}
-              className="rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
+              disabled={mutation.isPending || !APPOINTMENT_RESULT_UPDATE_ENABLED}
+              title={APPOINTMENT_RESULT_UPDATE_ENABLED ? undefined : FEATURE_PENDING_TOOLTIP}
+              aria-disabled={!APPOINTMENT_RESULT_UPDATE_ENABLED}
+              className="rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#F26F21]"
             >
               Sửa tóm tắt
             </button>

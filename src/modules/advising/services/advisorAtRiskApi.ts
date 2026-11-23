@@ -1,11 +1,11 @@
 // src/modules/advising/services/advisorAtRiskApi.ts
 // API danh sách sinh viên có nguy cơ (Flow 3 — Passive warning) của advisor.
 //
-// TODO(BE): implement GET /advisor/at-risk-students
-//   → trả về `{ data: AtRiskStudent[]; total: number }`
-//   (role ADVISOR, chỉ đọc — danh sách sinh viên được phân công cho advisor hiện tại
-//    đang bị cảnh báo học vụ: GPA thấp / vắng nhiều / nợ môn).
-// Chi tiết contract: xem `BE_BACKLOG.md` mục "Advisor — Students At Risk (P0)".
+// Endpoint BE đã hiện thực (role ADVISOR, chỉ đọc):
+//   GET /advisor/at-risk-students        → `{ data: AtRiskStudent[]; total: number }`
+//   GET /advisor/at-risk-students/counts → `{ high, medium, low, total }`
+// Danh sách gồm sinh viên được phân công cho advisor hiện tại đang bị cảnh báo
+// học vụ: GPA thấp / vắng nhiều / nợ môn.
 
 import { apiClient } from '../../../shared/lib/apiClient';
 import type { AtRiskCounts, AtRiskStudent, AtRiskStudentResponse } from '../types/at-risk';
