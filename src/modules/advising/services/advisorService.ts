@@ -92,9 +92,29 @@ export const advisorService = {
     return (await apiClient.get<GraduationCheck>(`/advisor/students/${studentId}/graduation-check`)).data;
   },
 
+  /** 5 thông báo mới nhất dùng cho dropdown chuông ở header. */
   getNotifications: async (): Promise<Page<StudentNotification>> => {
     return (await apiClient.get<Page<StudentNotification>>('/advisor/notifications',
-      { params: { page: 0, size: 8 } })).data;
+      { params: { page: 0, size: 5 } })).data;
+  },
+
+  /**
+   * Danh sách thông báo có phân trang + lọc "chỉ chưa đọc" — server-side.
+   * BE: `GET /advisor/notifications?unreadOnly=&page=&size=`.
+   */
+  getNotificationList: async (params: {
+    unreadOnly?: boolean;
+    page?: number;
+    size?: number;
+  } = {}): Promise<Page<StudentNotification>> => {
+    const { data } = await apiClient.get<Page<StudentNotification>>('/advisor/notifications', {
+      params: {
+        unreadOnly: params.unreadOnly ?? false,
+        page: params.page ?? 0,
+        size: params.size ?? 20,
+      },
+    });
+    return data;
   },
 
   getUnreadNotificationCount: async (): Promise<number> => {

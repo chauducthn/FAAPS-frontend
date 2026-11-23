@@ -20,9 +20,18 @@ export const advisorReportService = {
     return { semesters: data?.semesters ?? [] };
   },
 
-  /** Phan bo trang thai hoc vu: { ACTIVE: 10, PROBATION: 2, ... }. */
+  /**
+   * Phan bo trang thai hoc vu: { ACTIVE: 10, PROBATION: 2, ... }.
+   *
+   * KHÔNG nuốt lỗi: response rỗng / sai shape sẽ throw, để hook báo `isError` và UI
+   * hiển thị trạng thái lỗi + nút retry. Trước đây `data ?? {}` khiến BE lỗi hoặc
+   * trả body rỗng bị hiển thị như "không có sinh viên nào" — một con số sai âm thầm.
+   */
   getStatusDistribution: async (): Promise<StatusDistribution> => {
     const { data } = await apiClient.get<StatusDistribution>(`${base}/status-distribution`);
-    return data ?? {};
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new Error('Invalid status distribution payload: expected an object of { status: count }.');
+    }
+    return data;
   },
 };

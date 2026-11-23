@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
 import { useAdviseeStudents } from '../hooks/queries/useAdvisorQueries';
+import { useRequiredCredits } from '../hooks/queries/useRequiredCredits';
 import { advisorService, type AdvisorStudentDetail } from '../services/advisorService';
 import type { AcademicStatus, AdviseeStudent } from '../types/advising';
 import { Student360Modal } from '../components/Student360Modal';
@@ -16,7 +17,6 @@ import { cn } from '@/shared/lib/utils';
 import { apiMessage } from '../../../shared/lib/apiMessage';
 
 const PAGE_SIZE = 10;
-const REQUIRED_CREDITS = 132;
 
 const STATUS_OPTIONS: { value: 'ALL' | AcademicStatus; label: string }[] = [
   { value: 'ALL', label: 'Status: All' },
@@ -78,6 +78,8 @@ export default function AdvisorStudents() {
   const { data, isLoading, isError, refetch } = useAdviseeStudents(queryParams);
   // Tập full (không phân trang) để vẽ stat cards + đếm chips.
   const statsQuery = useAdviseeStudents({ page: 0, size: 100 });
+  // Số tín chỉ yêu cầu đến từ API chương trình đào tạo (không hardcode).
+  const { requiredCreditsFor, defaultRequiredCredits } = useRequiredCredits();
   const items = useMemo(() => data?.items ?? [], [data]);
   const totalItems = data?.totalElements ?? 0;
   const allStudents = useMemo(
@@ -218,12 +220,16 @@ export default function AdvisorStudents() {
       {
         accessorKey: 'totalCreditsEarned',
         header: 'Credits',
-        cell: ({ row }) => (
-          <p className="text-sm tabular-nums">
-            <span className="font-bold text-slate-900">{row.original.totalCreditsEarned}</span>
-            <span className="text-sm font-medium text-slate-600">/{REQUIRED_CREDITS}</span>
-          </p>
-        ),
+        cell: ({ row }) => {
+          // Mỗi SV có thể thuộc chương trình khác nhau → số tín chỉ yêu cầu lấy theo SV.
+          const required = requiredCreditsFor(row.original) ?? defaultRequiredCredits;
+          return (
+            <p className="text-sm tabular-nums">
+              <span className="font-bold text-slate-900">{row.original.totalCreditsEarned}</span>
+              <span className="text-sm font-medium text-slate-600">/{required}</span>
+            </p>
+          );
+        },
       },
       {
         accessorKey: 'academicStatus',
@@ -263,7 +269,7 @@ export default function AdvisorStudents() {
         ),
       },
     ],
-    [loadingId],
+    [loadingId, requiredCreditsFor, defaultRequiredCredits],
   );
 
   return (

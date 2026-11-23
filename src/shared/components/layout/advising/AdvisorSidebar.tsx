@@ -7,6 +7,7 @@
 import { useMemo } from 'react';
 import {
   // BookOpen, // dùng lại khi bật lại mục "Academic Search"
+  Bell,
   CalendarDays,
   ChartNoAxesCombined,
   ClipboardCheck,
@@ -47,7 +48,10 @@ const NAV_SECTIONS: PortalNavSection[] = [
   },
   {
     title: 'INSIGHTS',
-    items: [{ label: 'Reports & Analytics', to: '/advisor/reports', icon: ChartNoAxesCombined }],
+    items: [
+      { label: 'Notifications', to: '/advisor/notifications', icon: Bell },
+      { label: 'Reports & Analytics', to: '/advisor/reports', icon: ChartNoAxesCombined },
+    ],
   },
   // Phân khu "RESOURCES" — tạm ẩn vì BE chưa có endpoint /advisor/academic/*.
   // Xem BE_BACKLOG.md mục "Advisor — Academic Search" để bật lại khi BE sẵn sàng.

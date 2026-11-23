@@ -153,10 +153,22 @@ export interface StudyRoadmap {
   semesters: RoadmapSemester[];
 }
 
+/** Định hướng nghề nghiệp mà sinh viên chọn — quyết định trọng tâm của lộ trình. */
+export type RoadmapOrientation = 'ACADEMIC' | 'JOB' | 'RESEARCH' | 'ENTREPRENEURIAL';
+
 /** Body của POST /student/ai/roadmap */
 export interface GenerateRoadmapDto {
   /** Mục tiêu tự do của sinh viên, vd "Ra trường đúng hạn, GPA >= 8.0". */
   goal?: string;
   /** Giới hạn tín chỉ mỗi kỳ mà sinh viên muốn. */
   maxCreditsPerSemester?: number;
+  /**
+   * Kỳ học dự kiến tốt nghiệp (semesters.id). Lấy từ `GET /student/semesters`.
+   * Hiện BE chưa dùng field này — vẫn gửi lên để payload đúng thiết kế đã duyệt.
+   */
+  expectedGraduationSemesterId?: string;
+  /** Định hướng nghề nghiệp. Hiện BE chưa dùng field này — vẫn gửi lên. */
+  orientation?: RoadmapOrientation;
+  /** GPA mục tiêu (0.00 - 10.00). Hiện BE chưa dùng field này — vẫn gửi lên. */
+  targetGpa?: number;
 }

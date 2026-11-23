@@ -8,11 +8,22 @@ export const ADVISOR_QUERY_KEYS = {
   all: ['advisor'] as const,
   notifications: ['advisor', 'notifications'] as const,
   unreadNotifications: ['advisor', 'notifications', 'unread-count'] as const,
+  /** Danh sách thông báo có phân trang — dùng cho trang /advisor/notifications. */
+  notificationList: (params: { unreadOnly: boolean; page: number; size: number }) =>
+    ['advisor', 'notifications', 'list', params] as const,
   students: (params: { search?: string; status?: AcademicStatus | 'ALL'; page: number; size: number }) =>
     ['advisor', 'students', params] as const,
   advisingRequests: (params: { status?: AdvisingRequestStatus; search?: string }) =>
     ['advisor', 'advising-requests', params] as const,
 };
+
+/**
+ * Chuông thông báo — poll mỗi 30s.
+ *
+ * BE chưa có WebSocket cho advisor, nên dùng polling. `refetchInterval` bị tắt khi tab
+ * ẩn (mặc định của react-query) để không đốt băng thông khi người dùng đang ở tab khác.
+ */
+export const ADVISOR_NOTIFICATION_POLL_MS = 30_000;
 
 export const useAdvisorNotifications = () => {
   const user = useAuth((state) => state.user);
@@ -22,6 +33,7 @@ export const useAdvisorNotifications = () => {
     queryFn: advisorService.getNotifications,
     // Chưa đăng nhập thì không gọi API (tránh spam 401).
     enabled: !!user?.id,
+    refetchInterval: ADVISOR_NOTIFICATION_POLL_MS,
   });
 };
 
@@ -32,6 +44,7 @@ export const useUnreadAdvisorNotificationCount = () => {
     queryKey: ADVISOR_QUERY_KEYS.unreadNotifications,
     queryFn: advisorService.getUnreadNotificationCount,
     enabled: !!user?.id,
+    refetchInterval: ADVISOR_NOTIFICATION_POLL_MS,
   });
 };
 
@@ -60,4 +73,23 @@ export const useAdvisorAdvisingRequests = (params: {
     queryKey: ADVISOR_QUERY_KEYS.advisingRequests(params),
     queryFn: () => advisorService.getAdvisingRequests(params),
     placeholderData: keepPreviousData,
+  });
+
+/**
+ * Danh sách thông báo có phân trang + lọc "chỉ chưa đọc" (server-side).
+ *
+ * Dùng cho trang `/advisor/notifications`. Vẫn poll 30s để danh sách không bị cũ
+ * khi advisor để tab mở trong lúc chờ sinh viên phản hồi.
+ */
+export const useAdvisorNotificationList = (params: {
+  unreadOnly: boolean;
+  page: number;
+  size: number;
+}) =>
+  useQuery({
+    queryKey: ADVISOR_QUERY_KEYS.notificationList(params),
+    queryFn: () => advisorService.getNotificationList(params),
+    enabled: !!useAuth.getState().user?.id,
+    placeholderData: keepPreviousData,
+    refetchInterval: ADVISOR_NOTIFICATION_POLL_MS,
   });

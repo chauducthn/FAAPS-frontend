@@ -57,6 +57,7 @@ describe('AdvisorSidebar', () => {
       'Advising Conversations',
       'Study Plan Reviews',
       'Appointments',
+      'Notifications',
       'Reports & Analytics',
     ]);
   });

@@ -4,15 +4,14 @@ import type { LookupCourse, LookupCurriculum } from '../types/academic-lookup';
 /**
  * Tra cứu học vụ cho Advisor (read-only).
  *
- * GHI CHÚ CHO BACKEND — các endpoint dưới đây chưa tồn tại, cần BE bổ sung
- * (role ADVISOR, chỉ đọc):
+ * Endpoint BE đã hiện thực (role ADVISOR, chỉ đọc) — xem `AdvisorAcademicLookupController`:
  *
  *   GET /advisor/academic/courses?search=&category=
  *     → LookupCourse[]   (course gồm prerequisites; syllabus có thể rỗng)
  *   GET /advisor/academic/courses/{id}
  *     → LookupCourse     (chi tiết + prerequisites đầy đủ)
  *   GET /advisor/academic/curriculums
- *     → LookupCurriculum[] (kèm semesters[].courses = mã môn học)
+ *     → LookupCurriculum[] (kèm semesters[].courses = mã môn học, totalCredits = tín chỉ yêu cầu)
  */
 export const academicLookupService = {
   getCourses: async (params: { search?: string; category?: string } = {}): Promise<LookupCourse[]> => {

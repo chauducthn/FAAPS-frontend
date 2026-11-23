@@ -1,35 +1,75 @@
 // src/components/ai/RoadmapPanel.tsx
 // Panel "Lộ trình học": form yêu cầu AI sinh roadmap + timeline đồ họa.
 // Dùng cho trang /student/ai-roadmap của sinh viên.
+//
+// Form gồm 5 tham số:
+//   goal                       — mục tiêu tự do (vd "Ra trường đúng hạn, GPA >= 8.0")
+//   maxCreditsPerSemester      — giới hạn tín chỉ mỗi kỳ
+//   expectedGraduationSemesterId — kỳ học dự kiến tốt nghiệp (từ GET /student/semesters)
+//   orientation                — định hướng nghề nghiệp
+//   targetGpa                  — GPA mục tiêu (0 - 10)
+//
+// Lưu ý: BE hiện tại (`StudentRoadmapService.generate()`) mới chỉ xử lý
+// `maxCreditsPerSemester`; `goal` chỉ được nối vào mô tả. Ba tham số còn lại vẫn được
+// gửi lên payload để khớp thiết kế đã duyệt, và sẽ có tác dụng ngay khi BE bổ sung.
 
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Route, Sparkles } from 'lucide-react';
 import { useStudyRoadmap } from '../hooks/queries/useAiStudentQueries';
 import { useGenerateRoadmap } from '../hooks/mutations/useAiStudentMutations';
+import { studentAcademicService } from '../../academic/services/studentAcademicService';
+import type { RoadmapOrientation } from '../types/ai-student';
 import { RoadmapTimeline } from './RoadmapTimeline';
 
 const MAX_GOAL = 500;
 const field =
   'w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#151c27] outline-none placeholder:text-[#98a2b3] focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]';
 
+const ORIENTATIONS: { value: RoadmapOrientation; label: string; hint: string }[] = [
+  { value: 'ACADEMIC', label: 'Academic', hint: 'Ưu tiên học thuật, GPA cao, chuyên sâu' },
+  { value: 'JOB', label: 'Job', hint: 'Ưu tiên môn thực hành, kỹ năng nghề nghiệp' },
+  { value: 'RESEARCH', label: 'Research', hint: 'Ưu tiên môn nghiên cứu, đồ án, thực tập nghiên cứu' },
+  { value: 'ENTREPRENEURIAL', label: 'Entrepreneurial', hint: 'Ưu tiên môn khởi nghiệp, quản trị, dự án' },
+];
+
 export function RoadmapPanel() {
   const roadmapQuery = useStudyRoadmap();
   const generate = useGenerateRoadmap();
 
+  // Danh sách kỳ học để chọn "kỳ dự kiến tốt nghiệp".
+  const semestersQuery = useQuery({
+    queryKey: ['student', 'semesters'],
+    queryFn: studentAcademicService.semesters,
+    staleTime: 5 * 60 * 1000,
+  });
+
   const [goal, setGoal] = useState('');
   const [maxCredits, setMaxCredits] = useState('');
+  const [expectedGraduationSemesterId, setExpectedGraduationSemesterId] = useState('');
+  const [orientation, setOrientation] = useState<RoadmapOrientation | ''>('');
+  const [targetGpa, setTargetGpa] = useState('');
 
   const roadmap = roadmapQuery.data ?? null;
 
   const handleGenerate = (e: React.FormEvent) => {
     e.preventDefault();
     const credits = Number(maxCredits);
+    const gpa = Number(targetGpa);
     generate.mutate({
       goal: goal.trim() ? goal.trim() : undefined,
       maxCreditsPerSemester:
         maxCredits.trim() && Number.isFinite(credits) && credits > 0 ? Math.round(credits) : undefined,
+      expectedGraduationSemesterId: expectedGraduationSemesterId || undefined,
+      orientation: orientation || undefined,
+      targetGpa:
+        targetGpa.trim() && Number.isFinite(gpa) && gpa >= 0 && gpa <= 10
+          ? Math.round(gpa * 100) / 100
+          : undefined,
     });
   };
+
+  const semesters = semestersQuery.data ?? [];
 
   return (
     <div className="flex flex-col gap-4">
@@ -81,6 +121,87 @@ export function RoadmapPanel() {
             </button>
           </div>
         </form>
+
+        {/* ── Tham số nâng cao: kỳ tốt nghiệp, định hướng, GPA mục tiêu ── */}
+        <div className="mt-4 grid gap-3 border-t border-[#f1f5f9] pt-4 sm:grid-cols-3">
+          <div>
+            <label
+              htmlFor="roadmap-graduation-semester"
+              className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#555f6f]"
+            >
+              Expected Graduation Semester
+            </label>
+            <select
+              id="roadmap-graduation-semester"
+              value={expectedGraduationSemesterId}
+              onChange={(e) => setExpectedGraduationSemesterId(e.target.value)}
+              disabled={semestersQuery.isLoading || semesters.length === 0}
+              className={`${field} disabled:cursor-not-allowed disabled:bg-[#f7f8fa] disabled:opacity-70`}
+            >
+              <option value="">
+                {semestersQuery.isLoading ? 'Loading semesters...' : 'Select a semester'}
+              </option>
+              {semesters.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.code} · {s.name}
+                </option>
+              ))}
+            </select>
+            {semestersQuery.isError && (
+              <p className="mt-1 text-[11px] text-amber-700">Could not load semesters — leave this blank.</p>
+            )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="roadmap-orientation"
+              className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#555f6f]"
+            >
+              Orientation
+            </label>
+            <select
+              id="roadmap-orientation"
+              value={orientation}
+              onChange={(e) => setOrientation(e.target.value as RoadmapOrientation | '')}
+              className={field}
+            >
+              <option value="">Not specified</option>
+              {ORIENTATIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+            <p className="mt-1 text-[11px] text-[#98a2b3]">
+              {ORIENTATIONS.find((o) => o.value === orientation)?.hint ?? 'Pick the focus of your roadmap.'}
+            </p>
+          </div>
+
+          <div>
+            <label
+              htmlFor="roadmap-target-gpa"
+              className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-[#555f6f]"
+            >
+              Target GPA (0 - 10)
+            </label>
+            <input
+              id="roadmap-target-gpa"
+              type="number"
+              min={0}
+              max={10}
+              step={0.1}
+              value={targetGpa}
+              onChange={(e) => setTargetGpa(e.target.value)}
+              placeholder="e.g. 8.0"
+              className={field}
+            />
+            <p className="mt-1 text-[11px] text-[#98a2b3]">
+              {targetGpa.trim() && (Number(targetGpa) < 0 || Number(targetGpa) > 10)
+                ? 'Must be between 0 and 10.'
+                : 'The GPA you aim to graduate with.'}
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Kết quả */}

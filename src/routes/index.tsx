@@ -35,11 +35,9 @@ const StudentPortal = lazy(() => import('../modules/learning/pages/StudentPortal
 const StudentAdvisingRequests = lazy(() => import('../modules/learning/pages/AdvisingRequests'));
 const StudentAiChat = lazy(() => import('../modules/learning/pages/AiChat'));
 const StudentAiRoadmap = lazy(() => import('../modules/learning/pages/AiRoadmap'));
-const StudentOverview = lazy(() => import('../modules/learning/pages/StudentOverview'));
 const StudentProfile = lazy(() => import('../modules/learning/pages/StudentProfile'));
 const StudentTranscript = lazy(() => import('../modules/learning/pages/StudentTranscript'));
 const StudentCourses = lazy(() => import('../modules/learning/pages/StudentCourses'));
-const StudentPlans = lazy(() => import('../modules/learning/pages/StudentPlans'));
 const StudentStudyPlan = lazy(() => import('../modules/learning/pages/StudentStudyPlan'));
 const StudentLearningPlan = lazy(() => import('../modules/learning/pages/StudentLearningPlan'));
 const AdvisorAppointments = lazy(() => import('../modules/advising/pages/AdvisorAppointments'));
@@ -51,6 +49,7 @@ const AdvisorStudents = lazy(() => import('../modules/advising/pages/AdvisorStud
 const AdvisorAcademicLookup = lazy(() => import('../modules/advising/pages/AdvisorAcademicLookup'));
 const AdvisorReports = lazy(() => import('../modules/advising/pages/AdvisorReports'));
 const AdvisorProfile = lazy(() => import('../modules/advising/pages/AdvisorProfile'));
+const AdvisorNotifications = lazy(() => import('../modules/advising/pages/AdvisorNotifications'));
 
 /** Bọc mọi route lazy bằng Suspense + skeleton để không nháy màn trắng khi tải chunk. */
 const suspense = (element: React.ReactNode) => (
@@ -113,11 +112,9 @@ export const router = createBrowserRouter([
               { path: '/student/ai-roadmap', element: suspense(<StudentAiRoadmap />) },
               { path: '/student/advising-requests', element: suspense(<StudentAdvisingRequests />) },
               { path: '/student/appointments', element: suspense(<StudentBookAppointment />) },
-              { path: '/student/academic-overview', element: suspense(<StudentOverview />) },
               { path: '/student/profile', element: suspense(<StudentProfile />) },
               { path: '/student/transcript', element: suspense(<StudentTranscript />) },
               { path: '/student/courses', element: suspense(<StudentCourses />) },
-              { path: '/student/plans', element: suspense(<StudentPlans />) },
               { path: '/student/study-plan', element: suspense(<StudentStudyPlan />) },
               { path: '/student/learning-plan', element: suspense(<StudentLearningPlan />) },
               // The conversation with the advisor now lives in the detail of an advising request.
@@ -145,6 +142,7 @@ export const router = createBrowserRouter([
           { path: '/advisor/academic-lookup', element: suspense(<AdvisorAcademicLookup />) },
           { path: '/advisor/reports', element: suspense(<AdvisorReports />) },
           { path: '/advisor/profile', element: suspense(<AdvisorProfile />) },
+          { path: '/advisor/notifications', element: suspense(<AdvisorNotifications />) },
         ],
       },
     ],

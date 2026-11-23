@@ -10,7 +10,7 @@ export const AT_RISK_COUNTS_QUERY_KEY = ['advisor', 'at-risk-students', 'counts'
 /**
  * GET /advisor/at-risk-students/counts
  * - staleTime 2 phút: số đếm thay đổi chậm, tránh gọi lại mỗi lần mount.
- * - retry false: BE có thể chưa deploy endpoint — thử lại nhiều lần chỉ gây nhiễu log.
+ * - retry false: lỗi mạng tạm thời không đáng retry liên tục, widget tự hiển thị trạng thái lỗi.
  */
 export const useAtRiskCounts = () =>
   useQuery({
