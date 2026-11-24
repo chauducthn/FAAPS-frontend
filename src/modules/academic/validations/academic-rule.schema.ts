@@ -14,12 +14,14 @@ export const POLICY_TYPES = [
 
 export const RULE_STATUSES = ['DRAFT', 'ACTIVE', 'INACTIVE'] as const;
 
-// Mock catalogue uses readable ids (cv-0004, rule-gpa-warning), so accept any non-empty id.
-const idRef = z.string().min(1, 'Select a curriculum');
 const jsonObject = z.record(z.string(), z.unknown());
 
 export const createAcademicRuleSchema = z.object({
-  curriculumVersionId: idRef,
+  ruleName: z
+    .string()
+    .trim()
+    .min(1, 'Rule name is required')
+    .max(120, 'Rule name is too long'),
   policyType: z.enum(POLICY_TYPES),
   condition: jsonObject.refine((v) => Object.keys(v).length > 0, {
     message: 'At least one condition is required',
@@ -28,7 +30,8 @@ export const createAcademicRuleSchema = z.object({
   approvalRequired: z.boolean().optional(),
   priority: z.number().int().min(0, 'Priority must be at least 0').max(1000, 'Priority is at most 1000').optional(),
   description: z.string().max(2000, 'Description is too long').optional().nullable(),
-  displayMessage: z.string().max(500, 'Display message is too long').optional().nullable(),
+  /** Numeric boundary of the rule (GPA point, credit count, ...). */
+  grade: z.number().min(0, 'Grade must be at least 0').max(1000, 'Grade is too large').optional().nullable(),
   status: z.enum(RULE_STATUSES).optional(),
   isActive: z.boolean().optional(),
 });

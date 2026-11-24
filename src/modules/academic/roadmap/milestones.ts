@@ -83,7 +83,7 @@ export function resolveMilestone(
   }
 
   const credits = readNumber(rule.condition, CREDIT_KEYS);
-  const description = rule.description ?? rule.displayMessage ?? course.milestone?.description ?? null;
+  const description = rule.description ?? rule.ruleName ?? course.milestone?.description ?? null;
 
   return {
     badge,

@@ -9,6 +9,11 @@
 // Lifecycle (mock + UI): DRAFT -> ACTIVE (Publish) -> INACTIVE (Archive).
 // ACTIVE rules are read-only. The backend only knows `is_active`, so the
 // service maps `status === 'ACTIVE'` <-> `isActive: true` on the wire.
+//
+// Rules are now system-wide: they are no longer attached to a curriculum.
+// The backend still exposes `curriculumVersionId` on its payloads (and still
+// requires it on create), so the field stays optional on the FE types and the
+// service omits it from outgoing payloads.
 
 export type AcademicRuleType =
   | 'ADVANCED_STUDY'
@@ -25,8 +30,8 @@ export type AcademicRuleStatus = 'DRAFT' | 'ACTIVE' | 'INACTIVE';
 
 export interface AcademicRule {
   id: string;
-  curriculumVersionId: string;
-  curriculumName: string;     // BE resolves for display
+  /** Human-readable rule name. Required when creating or editing a rule. */
+  ruleName: string;
   policyType: AcademicRuleType;
   /** Publishing lifecycle. `ACTIVE` rules are read-only in the UI. */
   status: AcademicRuleStatus;
@@ -36,7 +41,11 @@ export interface AcademicRule {
   approvalRequired: boolean;
   priority: number;
   description: string | null;
-  displayMessage: string | null;
+  /**
+   * The numeric boundary of the rule (GPA point, credit count, ...).
+   * Read from the condition payload by the service.
+   */
+  grade: number | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -44,7 +53,6 @@ export interface AcademicRule {
 
 export interface AcademicRuleFilterParams {
   search?: string;
-  curriculumVersionId?: string;
   policyType?: AcademicRuleType | 'ALL';
   /** Preferred filter. Kept side-by-side with `isActive` for backend compat. */
   status?: AcademicRuleStatus | 'ALL';
@@ -55,14 +63,15 @@ export interface AcademicRuleFilterParams {
 }
 
 export interface CreateAcademicRuleDto {
-  curriculumVersionId: string;
+  ruleName: string;
   policyType: AcademicRuleType;
   condition: Record<string, unknown>;
   restriction?: Record<string, unknown>;
   approvalRequired?: boolean;
   priority?: number;
   description?: string | null;
-  displayMessage?: string | null;
+  /** Numeric boundary of the rule, e.g. `5.0` for a GPA warning. */
+  grade?: number | null;
   /** New rules start as DRAFT unless stated otherwise. */
   status?: AcademicRuleStatus;
   isActive?: boolean;

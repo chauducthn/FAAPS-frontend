@@ -1,7 +1,10 @@
 // Create / edit / view form for Academic Rules.
-// Operate-mode, synced with CourseFormModal: gradient header, sectioned layout.
+// Operate-mode, synced with CourseFormModal: sectioned layout, FPT-orange accents.
 // No raw JSON anywhere: the condition is built from a visual sentence-builder
 // per policy type, the restriction from toggle chips. ACTIVE rules stay read-only.
+//
+// Rules are system-wide — there is no curriculum picker anymore.
+// Design System: FPT orange #F37021, 16px cards, 12px buttons, no gradients.
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,14 +23,18 @@ interface Props {
   open: boolean;
   mode: 'create' | 'edit' | 'view';
   initial?: AcademicRule | null;
-  curriculums: { id: string; name: string }[];
   isLoading?: boolean;
   onClose: () => void;
   onSubmit: (values: CreateAcademicRuleFormValues) => void;
 }
 
+/** Card radius from the Design System. */
+const CARD_RADIUS = 'rounded-2xl';
+/** Button radius from the Design System. */
+const BUTTON_RADIUS = 'rounded-xl';
+
 const field =
-  'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3.5 py-2.5 text-[13px] font-medium text-gray-900 placeholder:font-normal placeholder:text-gray-400 transition-all focus:border-[#F26F21] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20 disabled:cursor-not-allowed disabled:opacity-60';
+  'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3.5 py-2.5 text-[13px] font-medium text-gray-900 placeholder:font-normal placeholder:text-gray-400 transition-all focus:border-[#F37021] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F37021]/20 disabled:cursor-not-allowed disabled:opacity-60';
 const labelClass = 'mb-1.5 block text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500';
 const selectClass = cn(field, 'appearance-none pr-9');
 const numClass = cn(field, 'font-mono font-bold tabular-nums');
@@ -183,6 +190,25 @@ function buildCondition(policy: string, d: CondDraft): Record<string, unknown> {
   return out;
 }
 
+/** The numeric boundary of a rule, derived from its condition. */
+function gradeFromCondition(policy: string, d: CondDraft): number | null {
+  const candidate =
+    policy === 'GPA_WARNING' || policy === 'ACADEMIC_PROBATION' || policy === 'ADVANCED_STUDY'
+      ? d.minGpa
+      : policy === 'MAX_CREDITS_PER_SEMESTER'
+        ? d.maxCredits
+        : policy === 'MIN_CREDITS_PER_SEMESTER'
+          ? d.minCredits
+          : policy === 'COURSE_REPEAT_LIMIT'
+            ? d.maxRepeats
+            : policy === 'RETAKE'
+              ? d.maxScoreForRetake
+              : d.otherKind === 'attendance'
+                ? d.minAttendance
+                : d.minCredits;
+  return candidate === '' ? null : candidate;
+}
+
 /** Human sentence shown in the preview box — no code knowledge needed. */
 function describeCondition(policy: string, d: CondDraft): string {
   const gpa = (v: Num) => (v === '' ? '…' : String(v));
@@ -284,7 +310,7 @@ function rangeError(v: Num, min: number, max: number, label: string, required = 
 /* Component                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function RuleFormModal({ open, mode, initial, curriculums, isLoading, onClose, onSubmit }: Props) {
+export default function RuleFormModal({ open, mode, initial, isLoading, onClose, onSubmit }: Props) {
   const isCreate = mode === 'create';
   const isView = mode === 'view';
   const activeReadOnly = initial?.status === 'ACTIVE';
@@ -299,7 +325,7 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
     formState: { errors },
   } = useForm<CreateAcademicRuleFormValues>({
     resolver: zodResolver(createAcademicRuleSchema),
-    defaultValues: { policyType: 'GPA_WARNING', priority: 0, isActive: true },
+    defaultValues: { ruleName: '', policyType: 'GPA_WARNING', priority: 0, isActive: true },
     mode: 'onChange',
   });
 
@@ -314,14 +340,14 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
     if (!open) return;
     if (initial) {
       reset({
-        curriculumVersionId: initial.curriculumVersionId,
+        ruleName: initial.ruleName,
         policyType: initial.policyType,
         condition: initial.condition,
         restriction: initial.restriction,
         approvalRequired: initial.approvalRequired,
         priority: initial.priority,
         description: initial.description ?? '',
-        displayMessage: initial.displayMessage ?? '',
+        grade: initial.grade,
         status: initial.status,
         isActive: initial.isActive,
       });
@@ -329,14 +355,14 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
       setRestr(restrFromObject(initial.restriction));
     } else {
       reset({
-        curriculumVersionId: '',
+        ruleName: '',
         policyType: 'GPA_WARNING',
         condition: {},
         restriction: {},
         approvalRequired: false,
         priority: 0,
         description: '',
-        displayMessage: '',
+        grade: null,
         status: 'DRAFT',
         isActive: false,
       });
@@ -355,6 +381,7 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
 
   const builtCondition = useMemo(() => buildCondition(policyType, cond), [policyType, cond]);
   const builtRestriction = useMemo(() => buildRestriction(restr), [restr]);
+  const builtGrade = useMemo(() => gradeFromCondition(policyType, cond), [policyType, cond]);
 
   // Keep RHF in sync so the zod schema (condition non-empty) stays satisfied.
   useEffect(() => {
@@ -363,6 +390,9 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
   useEffect(() => {
     setValue('restriction', builtRestriction);
   }, [builtRestriction, setValue]);
+  useEffect(() => {
+    setValue('grade', builtGrade);
+  }, [builtGrade, setValue]);
 
   /** Per-field inline errors for the visual builder. */
   const condErrors = useMemo(() => {
@@ -372,34 +402,34 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
     };
     switch (policyType) {
       case 'GPA_WARNING':
-        put('minGpa', rangeError(cond.minGpa, 0, 10, 'GPA threshold'));
+        put('minGpa', rangeError(cond.minGpa, 0, 10, 'Grade'));
         break;
       case 'ACADEMIC_PROBATION':
-        put('minGpa', rangeError(cond.minGpa, 0, 10, 'GPA threshold'));
+        put('minGpa', rangeError(cond.minGpa, 0, 10, 'Grade'));
         put('consecutiveSemesters', rangeError(cond.consecutiveSemesters, 1, 10, 'Consecutive semesters'));
         break;
       case 'MAX_CREDITS_PER_SEMESTER':
-        put('maxCredits', rangeError(cond.maxCredits, 1, 60, 'Max credits'));
+        put('maxCredits', rangeError(cond.maxCredits, 1, 60, 'Grade'));
         break;
       case 'MIN_CREDITS_PER_SEMESTER':
-        put('minCredits', rangeError(cond.minCredits, 1, 60, 'Min credits'));
+        put('minCredits', rangeError(cond.minCredits, 1, 60, 'Grade'));
         break;
       case 'COURSE_REPEAT_LIMIT':
-        put('maxRepeats', rangeError(cond.maxRepeats, 1, 10, 'Max repeats'));
+        put('maxRepeats', rangeError(cond.maxRepeats, 1, 10, 'Grade'));
         break;
       case 'RETAKE':
-        put('maxScoreForRetake', rangeError(cond.maxScoreForRetake, 0, 10, 'Score limit'));
+        put('maxScoreForRetake', rangeError(cond.maxScoreForRetake, 0, 10, 'Grade'));
         put('maxAttempts', rangeError(cond.maxAttempts, 1, 10, 'Max attempts'));
         break;
       case 'ADVANCED_STUDY':
-        put('minGpa', rangeError(cond.minGpa, 0, 10, 'GPA threshold'));
+        put('minGpa', rangeError(cond.minGpa, 0, 10, 'Grade'));
         put('minCreditsEarned', rangeError(cond.minCreditsEarned, 1, 500, 'Credits earned'));
         break;
       default:
         if (cond.otherKind === 'attendance') {
-          put('minAttendance', rangeError(cond.minAttendance, 1, 100, 'Attendance %'));
+          put('minAttendance', rangeError(cond.minAttendance, 1, 100, 'Grade'));
         } else {
-          put('minCredits', rangeError(cond.minCredits, 1, 500, 'Required credits'));
+          put('minCredits', rangeError(cond.minCredits, 1, 500, 'Grade'));
           put('minGpaOpt', rangeError(cond.minGpa, 0, 10, 'GPA threshold', false));
         }
         break;
@@ -423,8 +453,10 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
     if (hasCondError) return;
     onSubmit({
       ...values,
+      ruleName: values.ruleName.trim(),
       condition: builtCondition,
       restriction: builtRestriction,
+      grade: builtGrade,
       status: isCreate ? 'DRAFT' : values.status,
     });
   };
@@ -434,14 +466,14 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
   const setR = <K extends keyof RestrDraft>(key: K, value: RestrDraft[K]) =>
     setRestr((r) => ({ ...r, [key]: value }));
 
-  const title = isCreate ? 'Create rule' : isView ? `Rule ${initial?.policyType ?? ''}` : `Edit ${initial?.policyType ?? 'rule'}`;
+  const title = isCreate ? 'Create rule' : isView ? `Rule ${initial?.ruleName ?? ''}` : `Edit ${initial?.ruleName ?? 'rule'}`;
 
   return (
     <Modal open={open} onClose={onClose} title={title} className="max-w-2xl">
       <form noValidate onSubmit={handleSubmit(submit)} className="flex min-h-0 flex-col">
-        <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#fff7ed] to-white px-6 py-5">
+        <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-[#FFF7ED] px-6 py-5">
           <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
+            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#F37021] text-white">
               <Braces className="size-5" />
             </span>
             <div>
@@ -466,7 +498,7 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
 
         <div className="space-y-5 overflow-y-auto px-6 py-6 text-[13px]">
           {activeReadOnly && !isView && (
-            <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50/70 px-4 py-3 text-xs leading-relaxed text-emerald-800">
+            <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-relaxed text-emerald-800">
               <Lock className="mt-0.5 size-4 shrink-0" />
               <p>
                 <span className="font-bold">This rule is ACTIVE and read-only.</span> Archive it
@@ -475,17 +507,16 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
             </div>
           )}
 
-          <Section title="Identity" hint="Which curriculum this policy belongs to and what kind of check it is.">
+          <Section title="Identity" hint="What the rule is called and what kind of check it is. Rules apply system-wide.">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Curriculum" required error={errors.curriculumVersionId?.message}>
-                <select {...register('curriculumVersionId')} disabled={readOnly || isLoading} aria-label="Curriculum" className={selectClass}>
-                  <option value="">Select a curriculum…</option>
-                  {curriculums.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
+              <Field label="Rule name" required error={errors.ruleName?.message}>
+                <input
+                  {...register('ruleName')}
+                  disabled={readOnly || isLoading}
+                  placeholder="e.g. Semester GPA warning"
+                  aria-label="Rule name"
+                  className={field}
+                />
               </Field>
               <Field label="Policy type" required error={errors.policyType?.message}>
                 <select {...register('policyType')} disabled={readOnly || isLoading} aria-label="Policy type" className={selectClass}>
@@ -507,9 +538,9 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
               errors={condErrors}
               readOnly={readOnly || !!isLoading}
             />
-            <div className="flex items-start gap-2.5 rounded-xl bg-orange-50/70 px-4 py-3 ring-1 ring-orange-100">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#9a3412]" aria-hidden />
-              <p className="text-xs leading-relaxed text-[#7c2d12]">
+            <div className="flex items-start gap-2.5 rounded-xl bg-orange-50 px-4 py-3 ring-1 ring-orange-100">
+              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#9A3412]" aria-hidden />
+              <p className="text-xs leading-relaxed text-[#7C2D12]">
                 <span className="font-bold">In plain words: </span>
                 {summary}
               </p>
@@ -618,7 +649,7 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
                     aria-label="Decrease priority"
                     disabled={readOnly || !!isLoading}
                     onClick={() => setValue('priority', Math.max(0, Number(priority ?? 0) - 1))}
-                    className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F37021] hover:text-[#F37021] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Minus className="size-3.5" />
                   </button>
@@ -639,7 +670,7 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
                     aria-label="Increase priority"
                     disabled={readOnly || !!isLoading}
                     onClick={() => setValue('priority', Math.min(1000, Number(priority ?? 0) + 1))}
-                    className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F37021] hover:text-[#F37021] disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Plus className="size-3.5" />
                   </button>
@@ -660,7 +691,7 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
                   <span
                     className={cn(
                       'relative h-6 w-11 shrink-0 rounded-full transition-colors',
-                      approvalRequired ? 'bg-[#F26F21]' : 'bg-gray-300',
+                      approvalRequired ? 'bg-[#F37021]' : 'bg-gray-300',
                     )}
                   >
                     <span
@@ -698,14 +729,11 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
             <Field label="Description" error={errors.description?.message} hint="Internal note for admins and advisors.">
               <textarea rows={2} {...register('description')} disabled={readOnly || isLoading} placeholder="When does this rule trigger…" aria-label="Description" className={cn(field, 'resize-none leading-relaxed')} />
             </Field>
-            <Field label="Display message" error={errors.displayMessage?.message} hint="Shown to the student when the rule blocks them.">
-              <input {...register('displayMessage')} disabled={readOnly || isLoading} placeholder="You cannot register for more than 24 credits." aria-label="Display message" className={field} />
-            </Field>
           </Section>
         </div>
 
-        <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/60 px-6 py-4">
-          <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+        <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50 px-6 py-4">
+          <button type="button" onClick={onClose} className={cn(BUTTON_RADIUS, 'border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900')}>
             {readOnly ? 'Close' : 'Cancel'}
           </button>
           {!readOnly && (
@@ -713,7 +741,7 @@ export default function RuleFormModal({ open, mode, initial, curriculums, isLoad
               type="submit"
               disabled={!canSubmit}
               title={hasCondError ? 'Answer every required question above to continue' : undefined}
-              className="inline-flex min-w-36 items-center justify-center gap-2 rounded-xl bg-[#F26F21] px-5 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60"
+              className={cn(BUTTON_RADIUS, 'inline-flex min-w-36 items-center justify-center gap-2 bg-[#F37021] px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#D9601A] disabled:cursor-not-allowed disabled:opacity-60')}
             >
               {isLoading && <Loader2 className="size-3.5 animate-spin" />}
               {isLoading ? 'Saving…' : isCreate ? 'Create rule' : 'Save changes'}
@@ -767,16 +795,16 @@ function ConditionFields({
               <option value="<=">At or below ( ≤ )</option>
             </select>
           </Field>
-          <Field label="Threshold" required error={errors.minGpa} hint="e.g. 5.0">
-            <input {...numProps('minGpa')} min={0} max={10} step="0.1" placeholder="5.0" aria-label="GPA threshold" />
+          <Field label="Grade" required error={errors.minGpa} hint="e.g. 5.0">
+            <input {...numProps('minGpa')} min={0} max={10} step="0.1" placeholder="5.0" aria-label="Grade" />
           </Field>
         </div>
       );
     case 'ACADEMIC_PROBATION':
       return (
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="GPA below" required error={errors.minGpa} hint="e.g. 4.5">
-            <input {...numProps('minGpa')} min={0} max={10} step="0.1" placeholder="4.5" aria-label="Probation GPA threshold" />
+          <Field label="Grade" required error={errors.minGpa} hint="e.g. 4.5">
+            <input {...numProps('minGpa')} min={0} max={10} step="0.1" placeholder="4.5" aria-label="Grade" />
           </Field>
           <Field label="Consecutive semesters" required error={errors.consecutiveSemesters} hint="How many terms in a row.">
             <input {...numProps('consecutiveSemesters')} min={1} max={10} placeholder="2" aria-label="Consecutive semesters" />
@@ -786,10 +814,10 @@ function ConditionFields({
     case 'MAX_CREDITS_PER_SEMESTER':
       return (
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Max credits per semester" required error={errors.maxCredits} hint="e.g. 24">
-            <input {...numProps('maxCredits')} min={1} max={60} placeholder="24" aria-label="Max credits per semester" />
+          <Field label="Grade" required error={errors.maxCredits} hint="e.g. 24">
+            <input {...numProps('maxCredits')} min={1} max={60} placeholder="24" aria-label="Grade" />
           </Field>
-          <div className="rounded-xl bg-orange-50/70 px-4 py-3 text-[11px] leading-relaxed text-[#7c2d12] ring-1 ring-orange-100 sm:mt-[26px] sm:self-start">
+          <div className="rounded-xl bg-orange-50 px-4 py-3 text-[11px] leading-relaxed text-[#7C2D12] ring-1 ring-orange-100 sm:mt-[26px] sm:self-start">
             Registrations above this number are blocked automatically.
           </div>
         </div>
@@ -798,8 +826,8 @@ function ConditionFields({
       return (
         <div className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Min credits per semester" required error={errors.minCredits} hint="e.g. 12">
-              <input {...numProps('minCredits')} min={1} max={60} placeholder="12" aria-label="Min credits per semester" />
+            <Field label="Grade" required error={errors.minCredits} hint="e.g. 12">
+              <input {...numProps('minCredits')} min={1} max={60} placeholder="12" aria-label="Grade" />
             </Field>
             <ToggleChip
               checked={cond.fullTimeOnly}
@@ -814,10 +842,10 @@ function ConditionFields({
     case 'COURSE_REPEAT_LIMIT':
       return (
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Max repeats per course" required error={errors.maxRepeats} hint="e.g. 2">
-            <input {...numProps('maxRepeats')} min={1} max={10} placeholder="2" aria-label="Max repeats per course" />
+          <Field label="Grade" required error={errors.maxRepeats} hint="e.g. 2">
+            <input {...numProps('maxRepeats')} min={1} max={10} placeholder="2" aria-label="Grade" />
           </Field>
-          <div className="rounded-xl bg-orange-50/70 px-4 py-3 text-[11px] leading-relaxed text-[#7c2d12] ring-1 ring-orange-100 sm:mt-[26px] sm:self-start">
+          <div className="rounded-xl bg-orange-50 px-4 py-3 text-[11px] leading-relaxed text-[#7C2D12] ring-1 ring-orange-100 sm:mt-[26px] sm:self-start">
             Further attempts need dean approval (toggle below).
           </div>
         </div>
@@ -825,8 +853,8 @@ function ConditionFields({
     case 'RETAKE':
       return (
         <div className="grid gap-4 sm:grid-cols-3">
-          <Field label="Score at or below" required error={errors.maxScoreForRetake} hint="e.g. 5.0">
-            <input {...numProps('maxScoreForRetake')} min={0} max={10} step="0.1" placeholder="5.0" aria-label="Retake score limit" />
+          <Field label="Grade" required error={errors.maxScoreForRetake} hint="e.g. 5.0">
+            <input {...numProps('maxScoreForRetake')} min={0} max={10} step="0.1" placeholder="5.0" aria-label="Grade" />
           </Field>
           <Field label="Comparison" required>
             <select value={cond.operator} disabled={readOnly} onChange={(e) => set('operator', e.target.value)} aria-label="Retake comparison" className={selectClass}>
@@ -835,15 +863,15 @@ function ConditionFields({
             </select>
           </Field>
           <Field label="Max attempts" required error={errors.maxAttempts} hint="e.g. 3">
-            <input {...numProps('maxAttempts')} min={1} max={10} placeholder="3" aria-label="Max retake attempts" />
+            <input {...numProps('maxAttempts')} min={1} max={10} placeholder="3" aria-label="Max attempts" />
           </Field>
         </div>
       );
     case 'ADVANCED_STUDY':
       return (
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="GPA at least" required error={errors.minGpa} hint="e.g. 8.0">
-            <input {...numProps('minGpa')} min={0} max={10} step="0.1" placeholder="8.0" aria-label="Fast-track GPA" />
+          <Field label="Grade" required error={errors.minGpa} hint="e.g. 8.0">
+            <input {...numProps('minGpa')} min={0} max={10} step="0.1" placeholder="8.0" aria-label="Grade" />
           </Field>
           <Field label="Credits earned" required error={errors.minCreditsEarned} hint="e.g. 60">
             <input {...numProps('minCreditsEarned')} min={1} max={500} placeholder="60" aria-label="Credits earned" />
@@ -870,7 +898,7 @@ function ConditionFields({
                 className={cn(
                   'rounded-lg px-3 py-2 text-center text-xs font-bold transition-all disabled:cursor-not-allowed disabled:opacity-60',
                   cond.otherKind === o.v
-                    ? 'bg-white text-[#9a3412] shadow-xs ring-1 ring-orange-200'
+                    ? 'bg-white text-[#9A3412] shadow-xs ring-1 ring-orange-200'
                     : 'text-gray-400 hover:text-gray-600',
                 )}
               >
@@ -880,8 +908,8 @@ function ConditionFields({
           </div>
           {cond.otherKind === 'attendance' ? (
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Warn when attendance below" required error={errors.minAttendance} hint="% of sessions, e.g. 80">
-                <input {...numProps('minAttendance')} min={1} max={100} placeholder="80" aria-label="Attendance percent" />
+              <Field label="Grade" required error={errors.minAttendance} hint="% of sessions, e.g. 80">
+                <input {...numProps('minAttendance')} min={1} max={100} placeholder="80" aria-label="Grade" />
               </Field>
               <Field label="Comparison" required>
                 <select value={cond.operator} disabled={readOnly} onChange={(e) => set('operator', e.target.value)} aria-label="Attendance comparison" className={selectClass}>
@@ -892,8 +920,8 @@ function ConditionFields({
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Required credits" required error={errors.minCredits} hint="e.g. 100">
-                <input {...numProps('minCredits')} min={1} max={500} placeholder="100" aria-label="Required credits" />
+              <Field label="Grade" required error={errors.minCredits} hint="e.g. 100">
+                <input {...numProps('minCredits')} min={1} max={500} placeholder="100" aria-label="Grade" />
               </Field>
               <Field label="Min GPA (optional)" error={errors.minGpaOpt} hint="Leave empty for none.">
                 <input {...numProps('minGpa')} min={0} max={10} step="0.1" placeholder="5.0" aria-label="Milestone min GPA" />
@@ -931,7 +959,7 @@ function ToggleChip({
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/50 p-3 transition-all has-checked:border-orange-300 has-checked:bg-orange-50/50',
+        'flex cursor-pointer items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/50 p-3 transition-colors has-checked:border-orange-300 has-checked:bg-orange-50',
         disabled && 'cursor-not-allowed opacity-60',
       )}
     >
@@ -940,7 +968,7 @@ function ToggleChip({
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
-        className="size-4 shrink-0 accent-[#F26F21]"
+        className="size-4 shrink-0 accent-[#F37021]"
       />
       <span>
         <span className="block text-xs font-bold text-gray-700">{label}</span>
@@ -952,7 +980,7 @@ function ToggleChip({
 
 function Section({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+    <section className={cn(CARD_RADIUS, 'border border-gray-100 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]')}>
       <h3 className="text-[13px] font-extrabold tracking-tight text-gray-900">{title}</h3>
       <p className="mb-3.5 mt-0.5 text-[11px] text-gray-400">{hint}</p>
       <div className="space-y-4">{children}</div>
@@ -965,7 +993,7 @@ function Field({ label, required, error, hint, children }: { label: string; requ
     <div>
       <label className={labelClass}>
         {label}
-        {required && <span className="ml-0.5 text-[#F26F21]">*</span>}
+        {required && <span className="ml-0.5 text-[#F37021]">*</span>}
       </label>
       {children}
       {hint && !error && <p className="mt-1 text-[11px] text-gray-400">{hint}</p>}
