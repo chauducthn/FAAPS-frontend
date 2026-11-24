@@ -1,6 +1,8 @@
 // Academic Rules — Operate-mode redesign synced with the Courses ecosystem:
-// gradient header, KPI strip, filters, DataTable (skeleton, empty state),
+// header, KPI strip, filters, DataTable (skeleton, empty state),
 // Publish / Archive / Reopen lifecycle, read-only ACTIVE rules.
+//
+// Design System: FPT orange #F37021, 16px cards, 12px buttons, no gradients.
 import { useMemo, useState } from 'react';
 import {
   Archive,
@@ -19,7 +21,6 @@ import { RuleTable, RuleFormModal } from '../components/academic-rules';
 import { RuleStatusBadge } from '../components/academic-rules/RuleTable';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useAcademicRulesQuery } from '../../academic/hooks/queries/useAcademicRulesQuery';
-import { useCurriculumsQuery } from '../../academic/hooks/queries/useCurriculumsQuery';
 import { useAcademicRuleMutations } from '../../academic/hooks/mutations/useAcademicRuleMutations';
 import type {
   AcademicRule,
@@ -32,7 +33,7 @@ import type { CreateAcademicRuleFormValues } from '../../academic/validations/ac
 const PAGE_SIZE = 10;
 
 const selectClass =
-  'appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-3.5 pr-9 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20';
+  'appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-3.5 pr-9 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus:border-[#F37021] focus:outline-none focus:ring-2 focus:ring-[#F37021]/20';
 
 type FormMode = 'create' | 'edit' | 'view';
 
@@ -60,7 +61,6 @@ export default function AcademicRulesPage() {
   );
 
   const { data, isLoading, isFetching, isError, refetch } = useAcademicRulesQuery(params);
-  const curriculums = useCurriculumsQuery('curriculum', { page: 0, size: 100 });
   const {
     create,
     isCreating,
@@ -126,20 +126,20 @@ export default function AcademicRulesPage() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_4px_12px_rgba(242,111,33,0.35)]">
-            <ScrollText className="size-5.5" />
+          <span className="flex size-11 items-center justify-center rounded-2xl bg-[#F37021] text-white">
+            <ScrollText className="size-5" />
           </span>
           <div>
             <h1 className="text-xl font-extrabold tracking-tight text-gray-900">Academic Rules</h1>
             <p className="mt-0.5 max-w-[560px] text-xs leading-relaxed text-gray-500">
-              Policies attached to curricula that the system enforces for students — GPA warnings, credit caps, attendance gates
+              System-wide policies the platform enforces for students — GPA warnings, credit caps, attendance gates
             </p>
           </div>
         </div>
         <button
           type="button"
           onClick={openCreate}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:-translate-y-px hover:bg-[#e05f14] hover:shadow-[0_4px_14px_rgba(242,111,33,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50 active:translate-y-0"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F37021] px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#D9601A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F37021]/50"
         >
           <Plus className="size-4" strokeWidth={2.5} /> Create Rule
         </button>
@@ -178,10 +178,10 @@ export default function AcademicRulesPage() {
               type="text"
               value={search}
               onChange={(e) => resetPage(setSearch)(e.target.value)}
-              placeholder="Search by policy type, description, message…"
+              placeholder="Search by rule name, policy type, description…"
               aria-label="Search academic rules"
               role="searchbox"
-              className="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-9 text-xs font-medium text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-9 text-xs font-medium text-gray-900 placeholder:text-gray-400 focus:border-[#F37021] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F37021]/20"
             />
             {search && (
               <button
@@ -224,7 +224,7 @@ export default function AcademicRulesPage() {
                 type="button"
                 onClick={clearFilters}
                 aria-label="Clear filters"
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-3.5 py-2.5 text-xs font-bold text-gray-500 transition-colors hover:border-[#F26F21] hover:text-[#C2410C]"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-3.5 py-2.5 text-xs font-bold text-gray-500 transition-colors hover:border-[#F37021] hover:text-[#D9601A]"
               >
                 <RotateCcw className="size-3.5" /> Reset
               </button>
@@ -243,7 +243,7 @@ export default function AcademicRulesPage() {
             <div>
               <p className="text-sm font-bold text-gray-900">Could not load rules</p>
               <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
-                The rule list failed to load. Check your connection or mock flag, then try again — your filters are kept.
+                The rule list failed to load. Check your connection, then try again — your filters are kept.
               </p>
             </div>
             <button
@@ -256,7 +256,7 @@ export default function AcademicRulesPage() {
           </div>
         ) : !isLoading && items.length === 0 ? (
           <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-            <span className="flex size-12 items-center justify-center rounded-2xl bg-[#fff7ed] text-[#F26F21]">
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-[#FFF7ED] text-[#F37021]">
               <SearchX className="size-6" />
             </span>
             <div>
@@ -266,7 +266,7 @@ export default function AcademicRulesPage() {
               <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-gray-500">
                 {hasFilters
                   ? 'Try a different keyword, or clear the type / status filters to see the full list.'
-                  : 'Create the first rule (e.g. GPA Warning < 5.0) to start enforcing academic policies.'}
+                  : 'Create the first rule (e.g. Semester GPA warning below 5.0) to start enforcing academic policies.'}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function AcademicRulesPage() {
               <button
                 type="button"
                 onClick={openCreate}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#e05f14]"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#F37021] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#D9601A]"
               >
                 <Plus className="size-3.5" strokeWidth={2.5} /> Create rule
               </button>
@@ -304,7 +304,7 @@ export default function AcademicRulesPage() {
               onReopen={(r) => guard(() => reopen(r.id))}
               onDelete={(r) => {
                 if (r.status === 'ACTIVE') {
-                  toast.error(`${r.policyType} is ACTIVE — archive it before deleting.`);
+                  toast.error(`${r.ruleName} is ACTIVE — archive it before deleting.`);
                   return;
                 }
                 setDeleting(r);
@@ -318,10 +318,6 @@ export default function AcademicRulesPage() {
         open={formOpen}
         mode={formMode}
         initial={editing}
-        curriculums={(curriculums.data?.items ?? []).map((item) => ({
-          id: item.id,
-          name: `${item.majorCode}_${item.version} - ${item.name}`,
-        }))}
         isLoading={isCreating || isUpdating}
         onClose={() => setFormOpen(false)}
         onSubmit={async (values: CreateAcademicRuleFormValues) => {
@@ -341,11 +337,7 @@ export default function AcademicRulesPage() {
       <ConfirmDialog
         open={!!deleting}
         title="Delete rule?"
-        message={
-          deleting
-            ? `Delete ${deleting.policyType} on ${deleting.curriculumName}? This cannot be undone.`
-            : ''
-        }
+        message={deleting ? `Delete "${deleting.ruleName}"? This cannot be undone.` : ''}
         confirmLabel="Delete"
         destructive
         isLoading={isRemoving || isChangingStatus}
@@ -374,7 +366,7 @@ function Kpi({ icon, label, value, hint, tone = 'gray' }: { icon: React.ReactNod
   const tones = {
     gray: 'bg-gray-100 text-gray-600',
     green: 'bg-emerald-100 text-emerald-700',
-    orange: 'bg-orange-100 text-[#C2410C]',
+    orange: 'bg-orange-100 text-[#B45309]',
   } as const;
   return (
     <div className="flex items-center gap-3 rounded-2xl border border-gray-200/80 bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">

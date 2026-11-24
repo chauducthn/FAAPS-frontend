@@ -1,6 +1,8 @@
 // Rules table — Operate-mode, synced with the Courses/Curriculum ecosystem:
 // shared DataTable (skeleton, empty state, selection, server pagination),
 // FPT-orange focus, status badges for DRAFT / ACTIVE / INACTIVE.
+//
+// Columns: Rule Name | Policy Type | Condition/Grade | Status | Actions
 import { useMemo } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { DataTable, type DataTableColumnDef } from '../../../../shared/components/common/DataTable';
@@ -25,9 +27,9 @@ interface Props {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  ACTIVE: 'bg-[#ecfdf5] text-[#047857] ring-1 ring-emerald-200',
-  INACTIVE: 'bg-gray-100 text-[#555f6f] ring-1 ring-gray-200',
-  DRAFT: 'bg-[#fff7ed] text-[#9a3412] ring-1 ring-orange-200',
+  ACTIVE: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
+  INACTIVE: 'bg-gray-100 text-gray-600 ring-1 ring-gray-200',
+  DRAFT: 'bg-orange-50 text-[#B45309] ring-1 ring-orange-200',
 };
 
 export function RuleStatusBadge({ status }: { status: string }) {
@@ -44,14 +46,22 @@ export function RuleStatusBadge({ status }: { status: string }) {
   );
 }
 
-/** One-line human summary of a condition JSON, e.g. `min_gpa < 5.0 · scope: semester_gpa`. */
+/** One-line human summary of a condition JSON, e.g. `min_gpa = 5 · scope: semester_gpa`. */
 export function summarizeCondition(condition: Record<string, unknown>): string {
-  const entries = Object.entries(condition);
+  const entries = Object.entries(condition).filter(
+    ([key]) => key !== 'rule_name' && key !== 'grade',
+  );
   if (entries.length === 0) return '—';
   const [firstKey, firstValue] = entries[0];
   const rest = entries.length > 1 ? ` +${entries.length - 1}` : '';
   const value = typeof firstValue === 'object' ? JSON.stringify(firstValue) : String(firstValue);
   return `${firstKey} = ${value}${rest}`;
+}
+
+/** Formats the numeric boundary of a rule for the Condition/Grade column. */
+function formatGrade(grade: number | null): string | null {
+  if (grade === null) return null;
+  return Number.isInteger(grade) ? String(grade) : grade.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
 export default function RuleTable({
@@ -71,71 +81,53 @@ export default function RuleTable({
   const columns = useMemo<DataTableColumnDef<AcademicRule>[]>(
     () => [
       {
+        accessorKey: 'ruleName',
+        header: 'Rule name',
+        cell: ({ row }) => (
+          <button
+            type="button"
+            onClick={() => onView(row.original)}
+            title={`View ${row.original.ruleName}`}
+            className="block max-w-[280px] truncate text-left text-[13px] font-bold text-[#151c27] transition-colors hover:text-[#F37021]"
+          >
+            {row.original.ruleName}
+          </button>
+        ),
+      },
+      {
         accessorKey: 'policyType',
         header: 'Policy type',
-        cell: ({ row }) => (
-          <div className="min-w-0">
-            <button
-              type="button"
-              onClick={() => onView(row.original)}
-              title={`View ${row.original.policyType}`}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-2.5 py-1 font-mono text-[11px] font-bold text-white transition-colors hover:bg-[#C2410C]"
-            >
-              <ShieldCheck className="size-3.5 text-orange-300" aria-hidden />
-              {row.original.policyType}
-            </button>
-            <p className="mt-1 max-w-[260px] truncate text-[11px] font-medium text-gray-400">
-              {row.original.description ?? 'No description'}
-            </p>
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'curriculumName',
-        header: 'Curriculum',
         enableSorting: false,
         cell: ({ row }) => (
-          <span className="block max-w-[200px] truncate text-[13px] font-semibold text-gray-700">
-            {row.original.curriculumName}
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1 font-mono text-[11px] font-bold text-gray-700">
+            <ShieldCheck className="size-3.5 text-[#F37021]" aria-hidden />
+            {row.original.policyType}
           </span>
         ),
       },
       {
+        id: 'condition',
         accessorKey: 'condition',
-        header: 'Condition',
+        header: 'Condition / Grade',
         enableSorting: false,
-        cell: ({ row }) => (
-          <code
-            title={JSON.stringify(row.original.condition, null, 2)}
-            className="block max-w-[220px] truncate rounded-md bg-orange-50/70 px-2 py-1 font-mono text-[11px] font-medium text-[#9a3412] ring-1 ring-orange-100"
-          >
-            {summarizeCondition(row.original.condition)}
-          </code>
-        ),
-      },
-      {
-        accessorKey: 'priority',
-        header: 'Priority',
-        meta: { align: 'center' },
-        cell: ({ row }) => (
-          <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-gray-100 px-2.5 py-1 text-[12px] font-bold tabular-nums text-gray-800">
-            {row.original.priority}
-          </span>
-        ),
-      },
-      {
-        accessorKey: 'approvalRequired',
-        header: 'Approval',
-        enableSorting: false,
-        meta: { align: 'center' },
-        cell: ({ row }) =>
-          row.original.approvalRequired ? (
-            <span className="inline-flex rounded-full bg-amber-100/80 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-700">
-              Required
-            </span>
-          ) : (
-            <span className="text-gray-300">—</span>
-          ),
+        cell: ({ row }) => {
+          const grade = formatGrade(row.original.grade);
+          return (
+            <div className="flex min-w-0 flex-col gap-1">
+              <code
+                title={JSON.stringify(row.original.condition, null, 2)}
+                className="block max-w-[240px] truncate rounded-md bg-orange-50 px-2 py-1 font-mono text-[11px] font-medium text-[#9A3412] ring-1 ring-orange-100"
+              >
+                {summarizeCondition(row.original.condition)}
+              </code>
+              {grade && (
+                <span className="inline-flex w-fit items-center rounded-md bg-[#F37021] px-2 py-0.5 text-[11px] font-bold tabular-nums text-white">
+                  Grade {grade}
+                </span>
+              )}
+            </div>
+          );
+        },
       },
       {
         accessorKey: 'status',
@@ -154,7 +146,7 @@ export default function RuleTable({
           return (
             <div className="flex justify-end">
               <RowActionMenu
-                label={`Actions for ${rule.policyType}`}
+                label={`Actions for ${rule.ruleName}`}
                 actions={[
                   { label: 'View detail', onSelect: () => onView(rule) },
                   { label: 'Edit rule', onSelect: () => onEdit(rule), disabled: isActive },
@@ -182,14 +174,14 @@ export default function RuleTable({
     <div className="relative">
       {isFetching && !isLoading && (
         <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden rounded-full bg-orange-100">
-          <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
+          <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F37021]" />
         </div>
       )}
       <DataTable
         manual
         columns={columns}
         data={data}
-        searchKey="policyType"
+        searchKey="ruleName"
         showSearch={false}
         getRowId={(row) => row.id}
         isLoading={isLoading}

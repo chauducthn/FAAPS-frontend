@@ -47,7 +47,8 @@ export default function CurriculumDetailPage() {
   const [importOpen, setImportOpen] = useState(false);
 
   // The rules carry the milestone thresholds (how many credits an internship needs).
-  const rules = useAcademicRulesQuery({ curriculumVersionId: id, size: 100 });
+  // Rules are system-wide, so they are not filtered by curriculum.
+  const rules = useAcademicRulesQuery({ size: 100 });
 
   const list = courses.data ?? [];
   const placed = useMemo(() => new Map(list.map((c) => [c.courseId, c.semesterNumber])), [list]);
