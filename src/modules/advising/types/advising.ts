@@ -11,12 +11,19 @@ export type AdvisingRequestType =
   | 'GRADUATION_CHECK'
   | 'OTHER';
 
-/** advising_requests.status — DB không có ACCEPTED/REJECTED. */
+/**
+ * advising_requests.status — hệ thống TICKET (helpdesk), KHÔNG phải chat 1-1 được assign.
+ *
+ *   PENDING     : SV đã ném đơn vào hàng đợi, chưa có cố vấn nào nhận.
+ *   IN_PROGRESS : đã có cố vấn nhận xử lý (advisor_id được set).
+ *   RESOLVED    : cố vấn đã xử lý xong và đóng đơn.
+ *   CANCELLED   : SV hủy đơn.
+ */
 export type AdvisingRequestStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED';
 
 /**
- * Các trạng thái advisor được chuyển request sang.
- * RESOLVED = Chấp nhận, IN_PROGRESS = Từ chối (kèm lý do) hoặc Tiếp nhận xử lý.
+ * Trạng thái advisor được chuyển ticket sang.
+ * IN_PROGRESS = "Nhận xử lý" (claim), RESOLVED = "Đóng yêu cầu", CANCELLED = từ chối.
  */
 export type AdvisingRequestDecision = 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED';
 
@@ -142,15 +149,19 @@ export interface AdviseeStudent {
   isPrimary: boolean;
 }
 
-/** Một yêu cầu tư vấn (advising_requests + tên student/advisor). */
+/** Một ticket yêu cầu tư vấn (advising_requests + tên student/advisor). */
 export interface AdvisingRequest {
   id: string;
   /** students.user_id */
   studentId: string;
   studentName: string | null;
   studentCode: string | null;
-  /** advisors.user_id — NULL tới khi có advisor nhận request */
+  /**
+   * advisors.user_id — NULL cho tới khi một cố vấn bấm "Nhận xử lý".
+   * Đây là cố vấn ĐANG GIỮ ticket, KHÔNG phải cố vấn được phân công của SV.
+   */
   advisorId: string | null;
+  /** Tên cố vấn đang giữ ticket (null khi ticket còn PENDING). */
   advisorName: string | null;
   /** study_plans.id — plan mà request nói về (nullable) */
   studyPlanId: string | null;
@@ -163,6 +174,23 @@ export interface AdvisingRequest {
   /** ISO-8601 */
   createdAt: string;
   updatedAt: string;
+}
+
+/** Một tin nhắn trong 1 ticket (`advising_messages`). */
+export interface AdvisingMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  /** Ghi chú nội bộ của cố vấn — sinh viên không nhìn thấy. */
+  internal: boolean;
+  createdAt: string;
+}
+
+/** Chi tiết 1 ticket: request + toàn bộ tin nhắn. */
+export interface AdvisingRequestDetail {
+  request: AdvisingRequest;
+  messages: AdvisingMessage[];
 }
 
 /** Một notification của user hiện tại (notifications). */
@@ -194,10 +222,15 @@ export interface CreateAdvisingRequestDto {
   studyPlanId?: string;
 }
 
-/** Body của PUT /advisor/advising-requests/{id}/status */
+/** Body of PATCH /advisor/advising-requests/{id}/status */
 export interface UpdateAdvisingRequestStatusDto {
-  /** RESOLVED = Chấp nhận, IN_PROGRESS = Từ chối / Tiếp nhận xử lý. */
+  /** IN_PROGRESS = "Claim request", RESOLVED = "Resolve request". */
   status: AdvisingRequestDecision;
-  /** advising_requests.resolution_summary — text. Bắt buộc (non-blank) cho cả Accept lẫn Reject. */
+  /**
+   * advising_requests.resolution_summary — text.
+   *
+   * ONLY sent when the request is being CLOSED (status = RESOLVED). A claim
+   * (IN_PROGRESS) must send `{ status: 'IN_PROGRESS' }` and nothing else.
+   */
   resolutionSummary?: string;
 }

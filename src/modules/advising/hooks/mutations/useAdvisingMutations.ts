@@ -25,8 +25,12 @@ export const useCreateAdvisingRequest = () => {
 };
 
 /**
- * Advisor chuyển trạng thái yêu cầu.
- * RESOLVED = Chấp nhận, IN_PROGRESS + resolutionSummary = Từ chối, IN_PROGRESS = Tiếp nhận xử lý.
+ * Change a ticket's status (Advisor side).
+ *
+ * Ticket system (helpdesk) — there is no 1-1 "Accept/Reject":
+ *   IN_PROGRESS = "Claim request" — pulls the ticket out of the shared queue.
+ *   RESOLVED    = "Resolve request" — the advisor finished handling it.
+ *   CANCELLED   = rejected.
  */
 export const useUpdateAdvisingRequestStatus = () => {
   const queryClient = useQueryClient();
@@ -35,19 +39,15 @@ export const useUpdateAdvisingRequestStatus = () => {
     mutationFn: ({ id, body }: { id: string; body: UpdateAdvisingRequestStatusDto }) =>
       advisorService.updateRequestStatus(id, body),
     onSuccess: (_data, variables) => {
-      const { status, resolutionSummary } = variables.body;
-      if (status === 'RESOLVED') toast.success('Request accepted');
+      const { status } = variables.body;
+      if (status === 'RESOLVED') toast.success('Request closed');
       else if (status === 'CANCELLED') toast.success('Request rejected');
-      // Từ chối cũng dùng IN_PROGRESS nhưng kèm resolutionSummary (lý do từ chối).
-      else if (status === 'IN_PROGRESS' && resolutionSummary?.trim())
-        toast.success('Request rejected', { description: 'The student has been notified.' });
-      else toast.success('Request is now in progress');
+      else toast.success('Request claimed');
       queryClient.invalidateQueries({ queryKey: ADVISOR_QUERY_KEYS.all });
     },
     onError: (error) => {
-      toast.error(apiErrorMessage(error, 'Unable to update the request.'));
-    },
-  });
+      toast.error(apiErrorMessage(error, 'Could not update the request.'));
+    },  });
 };
 
 /** Đánh dấu 1 thông báo của sinh viên đã đọc. */

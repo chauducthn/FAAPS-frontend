@@ -29,6 +29,7 @@ import {
   useMarkAdvisorNotificationRead,
   useMarkAllAdvisorNotificationsRead,
 } from '../hooks/mutations/useAdvisingMutations';
+import { advisorRequestLink, ticketIdFromActionUrl } from '../utils/ticketLink';
 import type { NotificationType, StudentNotification } from '../types/advising';
 import { cn } from '@/shared/lib/utils';
 
@@ -80,11 +81,20 @@ export function AdvisorNotificationBell() {
 
   const items: StudentNotification[] = data?.items ?? [];
 
-  /** Click 1 thông báo → đánh dấu đã đọc + điều hướng theo actionUrl. */
+  /**
+   * Click a notification → mark it as read, then navigate.
+   *
+   * When the notification points at an advising ticket, the URL is rewritten to
+   * `/advisor/advising-requests?id=<ticketId>` so the ticket list opens that
+   * ticket's modal straight away.
+   */
   const select = (item: StudentNotification) => {
     if (!item.isRead) markRead.mutate(item.id);
     setOpen(false);
-    if (item.actionUrl?.startsWith('/advisor')) navigate(item.actionUrl);
+    if (!item.actionUrl?.startsWith('/advisor')) return;
+
+    const ticketId = ticketIdFromActionUrl(item.actionUrl);
+    navigate(ticketId ? advisorRequestLink(ticketId) : item.actionUrl);
   };
 
   return (
@@ -96,7 +106,7 @@ export function AdvisorNotificationBell() {
         aria-expanded={open}
         aria-haspopup="dialog"
         title="Notifications"
-        className="relative rounded-xl p-2 text-[#6B7280] transition-colors hover:bg-[#f7f8fa] hover:text-[#1A1A1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021]/40"
+        className="relative cursor-pointer rounded-xl p-2 text-[#6B7280] transition-colors hover:bg-[#f7f8fa] hover:text-[#1A1A1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021]/40"
       >
         <Bell className="size-5" aria-hidden />
         {unread > 0 && (
@@ -128,7 +138,7 @@ export function AdvisorNotificationBell() {
               type="button"
               onClick={() => markAll.mutate()}
               disabled={markAll.isPending || unread === 0}
-              className="rounded-lg px-2 py-1 text-xs font-semibold text-[#f37021] transition-colors hover:bg-[#fff7ed] disabled:opacity-50"
+              className="cursor-pointer rounded-lg px-2 py-1 text-xs font-semibold text-[#f37021] transition-colors hover:bg-[#fff7ed] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Mark all as read
             </button>
@@ -155,7 +165,7 @@ export function AdvisorNotificationBell() {
                       type="button"
                       onClick={() => select(item)}
                       className={cn(
-                        'flex w-full items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#FAFAFA]',
+                        'flex w-full cursor-pointer items-start gap-3 px-4 py-3.5 text-left transition-colors hover:bg-[#FAFAFA]',
                         !item.isRead && 'bg-[#fff7ed]',
                       )}
                     >
@@ -199,7 +209,7 @@ export function AdvisorNotificationBell() {
                 setOpen(false);
                 navigate('/advisor/notifications');
               }}
-              className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[13px] font-semibold text-[#f37021] transition-colors hover:bg-[#fff7ed]"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-[13px] font-semibold text-[#f37021] transition-colors hover:bg-[#fff7ed]"
             >
               View all
               <CheckCheck className="size-3.5" aria-hidden />

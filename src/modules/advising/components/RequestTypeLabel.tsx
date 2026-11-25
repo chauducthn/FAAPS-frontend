@@ -1,5 +1,4 @@
-// src/components/advising/RequestTypeLabel.tsx
-// Nhãn tiếng Việt cho loại yêu cầu tư vấn — dùng chung cho Student Portal và Advisor Portal.
+// English labels for the advising request types — shared by the Student and Advisor portals.
 
 import type { AdvisingRequestType } from '@/modules/advising/types/advising';
 
@@ -18,7 +17,5 @@ export function RequestTypeLabel({
   requestType: AdvisingRequestType;
   className?: string;
 }) {
-  return (
-    <span className={className}>{REQUEST_TYPE_LABELS[requestType] ?? REQUEST_TYPE_LABELS.OTHER}</span>
-  );
+  return <span className={className}>{REQUEST_TYPE_LABELS[requestType] ?? REQUEST_TYPE_LABELS.OTHER}</span>;
 }

@@ -40,7 +40,7 @@ interface AppointmentActionModalProps {
 type Mode = 'idle' | 'reject' | 'cancel' | 'complete' | 'noShow' | 'editSummary';
 
 /** Nhãn tooltip chung cho 2 nút đang tạm ẩn vì BE chưa hỗ trợ. */
-const FEATURE_PENDING_TOOLTIP = 'Tính năng đang cập nhật';
+const FEATURE_PENDING_TOOLTIP = 'This feature is being updated';
 
 function initialsOf(name: string | null | undefined) {
   return (name ?? '')
@@ -149,7 +149,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
   };
 
   const reasonLabel =
-    mode === 'cancel' ? 'Lý do hủy lịch' : mode === 'noShow' ? 'Lý do vắng mặt' : 'Lý do từ chối';
+    mode === 'cancel' ? 'Reason for cancelling' : mode === 'noShow' ? 'Reason for no-show' : 'Reason for declining';
 
   return (
     <Modal open={!!appointment} onClose={onClose} title="Appointment details" className="max-w-2xl">
@@ -242,13 +242,13 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
                       onChange={(e) => setSummary(e.target.value)}
                       onBlur={() => setTouched(true)}
                       maxLength={1000}
-                      placeholder="Ghi lại nội dung đã tư vấn, quyết định đã chốt và bước tiếp theo cho sinh viên..."
+                      placeholder="Record the advice given, the decisions made, and the next steps for the student..."
                       className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm text-[#151c27] outline-none placeholder:text-slate-400 focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40"
                     />
                     <p className={cn('text-[11px]', summaryMissing ? 'font-semibold text-red-500' : 'text-slate-400')}>
                       {summaryMissing
-                        ? 'Vui lòng nhập tóm tắt trước khi hoàn thành.'
-                        : 'Sinh viên sẽ thấy tóm tắt này trong lịch sử của mình.'}
+                        ? 'Please enter a summary before completing.'
+                        : 'The student will see this summary in their history.'}
                     </p>
                   </div>
                 ) : (
@@ -282,15 +282,15 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
                   maxLength={300}
                   placeholder={
                     mode === 'cancel'
-                      ? 'Nhập lý do hủy để sinh viên chủ động đặt lại lịch...'
+                      ? 'Enter a reason so the student can reschedule proactively...'
                       : mode === 'noShow'
-                        ? 'Nhập lý do sinh viên không tham dự buổi tư vấn...'
-                        : 'Cho sinh viên biết vì sao yêu cầu này không được chấp nhận...'
+                        ? 'Enter the reason the student did not attend the advising session...'
+                        : 'Let the student know why this request was not accepted...'
                   }
-                  className="mt-2 w-full resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm text-[#151c27] outline-none placeholder:text-slate-400 focus:border-red-400 focus:ring-1 focus:ring-red-400"
+                  className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-[#151c27] outline-none placeholder:text-slate-400 focus:border-red-400 focus:ring-1 focus:ring-red-400"
                 />
                 <p className={cn('mt-1 text-[11px]', reasonMissing ? 'font-semibold text-red-500' : 'text-slate-400')}>
-                  {reasonMissing ? 'Bắt buộc nhập lý do.' : 'Sinh viên sẽ thấy ghi chú này.'}
+                  {reasonMissing ? 'A reason is required.' : 'The student will see this note.'}
                 </p>
               </div>
             )}
@@ -419,7 +419,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
               disabled={cancelMutation.isPending}
               className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
             >
-              {cancelMutation.isPending ? 'Cancelling...' : 'Xác nhận hủy'}
+              {cancelMutation.isPending ? 'Cancelling...' : 'Confirm cancellation'}
             </button>
           )}
 
@@ -430,7 +430,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
               disabled={mutation.isPending}
               className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
             >
-              {mutation.isPending ? 'Saving...' : 'Xác nhận vắng mặt'}
+              {mutation.isPending ? 'Saving...' : 'Confirm no-show'}
             </button>
           )}
 
@@ -442,7 +442,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
             >
               <CheckCircle2 className="size-4" aria-hidden />
-              {mutation.isPending ? 'Saving...' : 'Xác nhận hoàn thành'}
+              {mutation.isPending ? 'Saving...' : 'Confirm completion'}
             </button>
           )}
 
@@ -469,7 +469,7 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
               disabled={mutation.isPending}
               className="rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
             >
-              {mutation.isPending ? 'Saving...' : 'Lưu tóm tắt'}
+              {mutation.isPending ? 'Saving...' : 'Save summary'}
             </button>
           )}
         </div>

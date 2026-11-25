@@ -1,32 +1,52 @@
-// src/components/advising/RequestListTable.tsx
-// Bảng yêu cầu tư vấn — SIMPLIFIED (audit 37/100):
-// 1 nút chính Accept + menu More (In Progress / Reject), 3 kiểu nút duy nhất,
-// chữ body tối thiểu 14px, hàng thoáng px-6 py-5.
+// src/modules/advising/components/RequestListTable.tsx
+// The list of advising TICKETS on the Advisor side — a helpdesk queue, NOT a 1-1
+// chat with an assigned advisor.
+//
+//   • Every advisor sees the whole queue.
+//   • PENDING     → "Claim request" ⇒ PATCH status = IN_PROGRESS.
+//   • IN_PROGRESS → split into "mine" (can reply + resolve) and "someone else's"
+//                  (read-only).
+//   • RESOLVED    → closed, read-only.
+//
+// Three tabs: "Pending" (PENDING) · "In Progress" (IN_PROGRESS) · "Resolved" (RESOLVED).
+//
+// The modal can also be opened from the `?id=<ticketId>` query param — used when the
+// advisor clicks a notification whose actionUrl points at a ticket (deep-link).
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { CheckCircle2, Hourglass, Inbox, Loader2, MoreHorizontal, SearchX, XCircle } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
+import { CircleCheckBig, Eye, Hand, Inbox, Loader2, SearchX } from 'lucide-react';
+import { toast } from 'sonner';
 import { cn } from '@/shared/lib/utils';
 import { Pagination } from '../../management/components/Pagination';
 import { RequestStatusBadge } from './RequestStatusBadge';
 import { RequestTypeLabel } from './RequestTypeLabel';
-import { RequestActionModal } from './RequestActionModal';
+import { AdvisorRequestDetailModal } from './AdvisorRequestDetailModal';
 import { useAdvisorAdvisingRequests } from '../hooks/queries/useAdvisorQueries';
-import { useUpdateAdvisingRequestStatus } from '../hooks/mutations/useAdvisingMutations';
-import type { AdvisingRequest, AdvisingRequestStatus } from '../types/advising';
+import { advisorService } from '../services/advisorService';
+import { useAuth } from '../../auth/stores/useAuth';
+import { apiMessage } from '../../../shared/lib/apiMessage';
+import type { AdvisingRequest } from '../types/advising';
 
 const PAGE_SIZE = 10;
 
-type TabKey = AdvisingRequestStatus | 'ALL';
+type TabKey = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'PENDING', label: 'Pending' },
-  { key: 'IN_PROGRESS', label: 'In progress' },
+  { key: 'IN_PROGRESS', label: 'In Progress' },
   { key: 'RESOLVED', label: 'Resolved' },
-  { key: 'ALL', label: 'All' },
 ];
 
 const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  new Date(iso).toLocaleString('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
 
 function initialsOf(name: string | null | undefined) {
   return (name ?? '')
@@ -75,9 +95,9 @@ function TableState({
           </span>
           {error ? (
             <>
-              <p className="text-base font-bold text-slate-900">Unable to load requests.</p>
-              <button type="button" onClick={onRetry} className="inline-flex h-11 items-center px-4 text-sm font-bold text-orange-700 hover:underline">
-                Try again
+              <p className="text-base font-bold text-slate-900">Could not load the request list.</p>
+              <button type="button" onClick={onRetry} className="inline-flex h-11 cursor-pointer items-center px-4 text-sm font-bold text-orange-700 hover:underline">
+                Retry
               </button>
             </>
           ) : (
@@ -97,44 +117,64 @@ function TableState({
 export function RequestListTable({ search = '' }: { search?: string }) {
   const [tab, setTab] = useState<TabKey>('PENDING');
   const [page, setPage] = useState(0);
-  const [active, setActive] = useState<{ request: AdvisingRequest; decision: 'accept' | 'reject' } | null>(
-    null,
-  );
-  const [processingId, setProcessingId] = useState<string | null>(null);
-  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const updateStatus = useUpdateAdvisingRequestStatus();
+  const [active, setActive] = useState<AdvisingRequest | null>(null);
+  const [claimingId, setClaimingId] = useState<string | null>(null);
+  const currentUserId = useAuth((state) => state.user?.id);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const deepLinkId = searchParams.get('id');
 
-  const { data, isLoading, isError, refetch } = useAdvisorAdvisingRequests({
-    status: tab === 'ALL' ? undefined : tab,
-    search: search || undefined,
-  });
-
-  // Đóng menu More khi click ra ngoài / nhấn Escape.
+  // Deep-link from a notification: `?id=<ticketId>` ⇒ open that ticket's modal.
+  // The ticket may sit on any tab ⇒ build a minimal stub, the modal loads the real
+  // data via `GET /advisor/advising-requests/{id}`.
   useEffect(() => {
-    if (!menuOpenId) return;
-    const onDown = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpenId(null);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpenId(null);
-    };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [menuOpenId]);
+    if (!deepLinkId) return;
+    setActive((current) =>
+      current?.id === deepLinkId
+        ? current
+        : ({
+            id: deepLinkId,
+            studentId: '',
+            studentName: null,
+            studentCode: null,
+            advisorId: null,
+            advisorName: null,
+            studyPlanId: null,
+            requestType: 'OTHER',
+            title: '',
+            description: null,
+            status: 'PENDING',
+            resolvedAt: null,
+            resolutionSummary: null,
+            createdAt: '',
+            updatedAt: '',
+          } as AdvisingRequest),
+    );
+    // Clear the query param so a refresh does not reopen the same modal.
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('id');
+        return next;
+      },
+      { replace: true },
+    );
+  }, [deepLinkId, setSearchParams]);
+
+  // Tab PENDING: NO `advisorId` ⇒ every advisor sees the whole shared queue.
+  // Tab IN_PROGRESS: pass `advisorId` to get the tickets this advisor is handling.
+  const { data, isLoading, isError, refetch } = useAdvisorAdvisingRequests({
+    status: tab,
+    search: search || undefined,
+    advisorId: tab === 'IN_PROGRESS' ? (currentUserId ?? undefined) : undefined,
+  });
 
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     return (data ?? []).filter((request) => {
-      // Tab "Resolved" gộp cả request đã chấp nhận (RESOLVED) và đã từ chối
-      // (CANCELLED) — cả hai đều đã đóng và không cần advisor xử lý tiếp.
+      // The "Resolved" tab also covers CANCELLED (cancelled by the student).
       if (tab === 'RESOLVED') {
         if (request.status !== 'RESOLVED' && request.status !== 'CANCELLED') return false;
-      } else if (tab !== 'ALL' && request.status !== tab) {
+      } else if (request.status !== tab) {
         return false;
       }
       if (!keyword) return true;
@@ -154,23 +194,32 @@ export function RequestListTable({ search = '' }: { search?: string }) {
     setPage(0);
   };
 
-  const handleInProgress = async (request: AdvisingRequest) => {
-    if (processingId) return;
-    setMenuOpenId(null);
-    setProcessingId(request.id);
+  /**
+   * Claim a PENDING ticket.
+   * On success → open the chat modal right away so the advisor can continue.
+   */
+  const claim = async (request: AdvisingRequest) => {
+    if (claimingId) return;
+    setClaimingId(request.id);
     try {
-      await updateStatus.mutateAsync({ id: request.id, body: { status: 'IN_PROGRESS' } });
-    } catch {
-      // Toast lỗi đã bắn từ mutation; giữ nguyên hàng để thử lại.
+      await advisorService.claimRequest(request.id);
+      toast.success('Request claimed', {
+        description: 'You can now chat with the student.',
+      });
+      await refetch();
+      // Open the modal straight away — the ticket now belongs to this advisor.
+      setActive({ ...request, status: 'IN_PROGRESS' });
+    } catch (error) {
+      toast.error(apiMessage(error));
     } finally {
-      setProcessingId(null);
+      setClaimingId(null);
     }
   };
 
   return (
     <>
       <div>
-        {/* Tabs — Primary khi active, Secondary khi inactive (trong 3 kiểu nút chuẩn) */}
+        {/* Tabs — Primary khi active, Secondary khi inactive */}
         <div role="tablist" aria-label="Request status" className="flex flex-wrap items-center gap-3">
           {TABS.map((t) => {
             const activeTab = tab === t.key;
@@ -182,7 +231,7 @@ export function RequestListTable({ search = '' }: { search?: string }) {
                 aria-selected={activeTab}
                 onClick={() => switchTab(t.key)}
                 className={cn(
-                  'inline-flex h-11 items-center gap-1.5 rounded-full px-5 text-sm font-bold ring-1 ring-inset transition-all',
+                  'inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-full px-5 text-sm font-bold ring-1 ring-inset transition-all',
                   activeTab
                     ? 'bg-[#F26F21] text-white ring-[#F26F21] shadow-sm'
                     : 'bg-white text-slate-700 ring-slate-200 hover:border-[#F26F21]/40 hover:bg-[#fff7f0] hover:text-slate-900',
@@ -203,13 +252,14 @@ export function RequestListTable({ search = '' }: { search?: string }) {
                 <th scope="col" className="px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Title</th>
                 <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Submitted</th>
                 <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Status</th>
+                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Handled by</th>
                 <th scope="col" className="whitespace-nowrap px-6 py-4 text-right text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading || (isError && !data) || rows.length === 0 ? (
                 <TableState
-                  cols={6}
+                  cols={7}
                   loading={isLoading}
                   error={isError && !data}
                   empty={search ? 'No requests match your search.' : 'No requests found.'}
@@ -218,8 +268,9 @@ export function RequestListTable({ search = '' }: { search?: string }) {
                 />
               ) : (
                 rows.map((r) => {
-                  const busy = processingId === r.id;
-                  const menuOpen = menuOpenId === r.id;
+                  const busy = claimingId === r.id;
+                  // Is this ticket owned by the advisor who is signed in?
+                  const isMine = !!r.advisorId && !!currentUserId && r.advisorId === currentUserId;
                   return (
                     <tr key={r.id} className="bg-white transition-colors hover:bg-slate-50/70">
                       <td className="px-6 py-5">
@@ -259,75 +310,84 @@ export function RequestListTable({ search = '' }: { search?: string }) {
                       <td className="whitespace-nowrap px-6 py-5">
                         <RequestStatusBadge status={r.status} className="px-3 py-1 text-xs font-bold" />
                       </td>
+                      <td className="whitespace-nowrap px-6 py-5">
+                        {r.status === 'PENDING' ? (
+                          <span className="text-sm font-medium text-slate-500">— unclaimed —</span>
+                        ) : (
+                          <div className="flex flex-col gap-1">
+                            <span className={cn('text-sm font-bold', isMine ? 'text-[#c2410c]' : 'text-slate-900')}>
+                              {r.advisorName ?? 'Unknown'}
+                            </span>
+                            {isMine ? (
+                              <span className="text-[11px] font-bold uppercase tracking-wide text-[#c2410c]">Yours</span>
+                            ) : (
+                              <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Another advisor</span>
+                            )}
+                          </div>
+                        )}
+                      </td>
                       <td className="px-6 py-5">
                         <div className="flex items-center justify-end gap-2">
-                          {r.status === 'PENDING' || r.status === 'IN_PROGRESS' ? (
+                          {r.status === 'PENDING' && (
                             <>
-                              {/* 1 hành động chính duy nhất — Primary */}
                               <button
                                 type="button"
-                                onClick={() => setActive({ request: r, decision: 'accept' })}
-                                className="inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#F26F21] px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14]"
+                                onClick={() => claim(r)}
+                                disabled={busy}
+                                className="inline-flex h-11 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#F26F21] px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:cursor-not-allowed disabled:opacity-50"
                               >
-                                <CheckCircle2 className="size-4" aria-hidden />
-                                {r.status === 'PENDING' ? 'Accept' : 'Resolve'}
-                              </button>
-                              {/* Hành động phụ gom vào menu More — Secondary/Ghost */}
-                              <div
-                                className="relative"
-                                ref={menuOpen ? menuRef : undefined}
-                              >
-                                <button
-                                  type="button"
-                                  aria-haspopup="menu"
-                                  aria-expanded={menuOpen}
-                                  aria-label={`More actions for ${r.studentName ?? '—'}`}
-                                  onClick={() => setMenuOpenId(menuOpen ? null : r.id)}
-                                  className={cn(
-                                    'inline-flex h-11 w-11 items-center justify-center rounded-xl border bg-white text-slate-700 shadow-sm transition-colors',
-                                    menuOpen
-                                      ? 'border-[#F26F21]/50 bg-[#fff7f0] text-[#F26F21]'
-                                      : 'border-slate-200 hover:border-[#F26F21]/40 hover:bg-[#fff7f0] hover:text-slate-900',
-                                  )}
-                                >
-                                  <MoreHorizontal className="size-5" aria-hidden />
-                                </button>
-                                {menuOpen && (
-                                  <div
-                                    role="menu"
-                                    aria-label="More actions"
-                                    className="absolute right-0 top-full z-20 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 shadow-xl"
-                                  >
-                                    {r.status === 'PENDING' && (
-                                      <button
-                                        type="button"
-                                        role="menuitem"
-                                        disabled={busy}
-                                        onClick={() => handleInProgress(r)}
-                                        className="flex h-11 w-full items-center gap-2.5 px-4 text-left text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50"
-                                      >
-                                        {busy ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Hourglass className="size-4 text-slate-500" aria-hidden />}
-                                        {busy ? 'Saving…' : 'Mark in progress'}
-                                      </button>
-                                    )}
-                                    <button
-                                      type="button"
-                                      role="menuitem"
-                                      onClick={() => {
-                                        setMenuOpenId(null);
-                                        setActive({ request: r, decision: 'reject' });
-                                      }}
-                                      className="flex h-11 w-full items-center gap-2.5 px-4 text-left text-sm font-semibold text-red-700 transition-colors hover:bg-red-50"
-                                    >
-                                      <XCircle className="size-4" aria-hidden />
-                                      Reject request
-                                    </button>
-                                  </div>
+                                {busy ? (
+                                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                                ) : (
+                                  <Hand className="size-4" aria-hidden />
                                 )}
-                              </div>
+                                {busy ? 'Claiming…' : 'Claim request'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setActive(r)}
+                                className="inline-flex h-11 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                              >
+                                <Eye className="size-4" aria-hidden />
+                                View
+                              </button>
                             </>
-                          ) : (
-                            <span className="inline-flex h-11 items-center text-sm font-medium text-slate-600">—</span>
+                          )}
+
+                          {r.status === 'IN_PROGRESS' && (
+                            <button
+                              type="button"
+                              onClick={() => setActive(r)}
+                              className={cn(
+                                'inline-flex h-11 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl px-5 text-sm font-bold shadow-sm transition-colors',
+                                isMine
+                                  ? 'bg-[#F26F21] text-white hover:bg-[#d95f14]'
+                                  : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50',
+                              )}
+                            >
+                                {isMine ? (
+                                  <>
+                                    <CircleCheckBig className="size-4" aria-hidden />
+                                    Open &amp; reply
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye className="size-4" aria-hidden />
+                                    View only
+                                  </>
+                                )}
+                            </button>
+                          )}
+
+                          {(r.status === 'RESOLVED' || r.status === 'CANCELLED') && (
+                            <button
+                              type="button"
+                              onClick={() => setActive(r)}
+                              className="inline-flex h-11 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                            >
+                              <Eye className="size-4" aria-hidden />
+                              View
+                            </button>
                           )}
                         </div>
                       </td>
@@ -344,11 +404,7 @@ export function RequestListTable({ search = '' }: { search?: string }) {
         </div>
       </div>
 
-      <RequestActionModal
-        request={active?.request ?? null}
-        decision={active?.decision ?? 'accept'}
-        onClose={() => setActive(null)}
-      />
+      <AdvisorRequestDetailModal request={active} onClose={() => setActive(null)} />
     </>
   );
 }

@@ -122,7 +122,7 @@ export default function AdvisorReports() {
 
   const handleExport = () => {
     if (!overview) {
-      toast.error('Chưa có dữ liệu tổng quan để xuất.');
+      toast.error('There is no overview data to export yet.');
       return;
     }
     const csv = buildCsv([
@@ -174,7 +174,7 @@ export default function AdvisorReports() {
         : []),
     ]);
     downloadCsv(csv, csvFilename('advisor-reports'));
-    toast.success('Đã xuất báo cáo CSV.');
+    toast.success('CSV report exported.');
   };
 
   const overviewFailed = overviewQuery.isError && !overview;
@@ -228,9 +228,9 @@ export default function AdvisorReports() {
           <button
             type="button"
             onClick={() => void overviewQuery.refetch()}
-            className="font-bold underline"
+            className="cursor-pointer font-bold underline"
           >
-            Thử lại
+            Retry
           </button>
         </div>
       ) : (
@@ -267,7 +267,7 @@ export default function AdvisorReports() {
                 onRetry={() => void trendQuery.refetch()}
               />
             ) : (trendQuery.data?.semesters.length ?? 0) === 0 ? (
-              <ChartEmpty message="Chưa có dữ liệu điểm học kỳ cho các sinh viên bạn phụ trách." />
+              <ChartEmpty message="There is no GPA data for your assigned students yet." />
             ) : (
               <GpaTrendChart semesters={trendQuery.data!.semesters} />
             )}
@@ -298,7 +298,7 @@ export default function AdvisorReports() {
                 onRetry={() => void distributionQuery.refetch()}
               />
             ) : slices.length === 0 ? (
-              <ChartEmpty message="Chưa có sinh viên nào được phân công để thống kê trạng thái học vụ." />
+              <ChartEmpty message="No student has been assigned yet, so there is no academic status data to summarise." />
             ) : (
               <StatusPieChart slices={slices} />
             )}

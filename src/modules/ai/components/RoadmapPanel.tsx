@@ -27,10 +27,10 @@ const field =
   'w-full rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#151c27] outline-none placeholder:text-[#98a2b3] focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]';
 
 const ORIENTATIONS: { value: RoadmapOrientation; label: string; hint: string }[] = [
-  { value: 'ACADEMIC', label: 'Academic', hint: 'Ưu tiên học thuật, GPA cao, chuyên sâu' },
-  { value: 'JOB', label: 'Job', hint: 'Ưu tiên môn thực hành, kỹ năng nghề nghiệp' },
-  { value: 'RESEARCH', label: 'Research', hint: 'Ưu tiên môn nghiên cứu, đồ án, thực tập nghiên cứu' },
-  { value: 'ENTREPRENEURIAL', label: 'Entrepreneurial', hint: 'Ưu tiên môn khởi nghiệp, quản trị, dự án' },
+  { value: 'ACADEMIC', label: 'Academic', hint: 'Prioritise theory, a high GPA and deep specialisation' },
+  { value: 'JOB', label: 'Job', hint: 'Prioritise practical courses and professional skills' },
+  { value: 'RESEARCH', label: 'Research', hint: 'Prioritise research courses, capstone projects and research internships' },
+  { value: 'ENTREPRENEURIAL', label: 'Entrepreneurial', hint: 'Prioritise entrepreneurship, management and project courses' },
 ];
 
 export function RoadmapPanel() {

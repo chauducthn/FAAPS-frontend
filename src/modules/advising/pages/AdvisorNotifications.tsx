@@ -29,6 +29,7 @@ import {
   useMarkAdvisorNotificationRead,
   useMarkAllAdvisorNotificationsRead,
 } from '../hooks/mutations/useAdvisingMutations';
+import { advisorRequestLink, ticketIdFromActionUrl } from '../utils/ticketLink';
 import type { NotificationType, StudentNotification } from '../types/advising';
 
 const PAGE_SIZE = 10;
@@ -73,10 +74,18 @@ export default function AdvisorNotifications() {
     setPage(0);
   };
 
-  /** Click item → đánh dấu đã đọc (nếu chưa) rồi điều hướng theo actionUrl. */
+  /**
+   * Click an item → mark it as read, then navigate.
+   *
+   * Notifications pointing at an advising ticket are rewritten to
+   * `/advisor/advising-requests?id=<ticketId>` so the matching ticket's modal opens.
+   */
   const handleOpen = (item: StudentNotification) => {
     if (!item.isRead) markRead.mutate(item.id);
-    if (item.actionUrl?.startsWith('/advisor')) navigate(item.actionUrl);
+    if (!item.actionUrl?.startsWith('/advisor')) return;
+
+    const ticketId = ticketIdFromActionUrl(item.actionUrl);
+    navigate(ticketId ? advisorRequestLink(ticketId) : item.actionUrl);
   };
 
   return (
@@ -86,7 +95,7 @@ export default function AdvisorNotifications() {
         <div className="flex items-center gap-3">
           <Link
             to="/advisor"
-            className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
+            className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
             aria-label="Back to overview"
           >
             <ArrowLeft className="size-4" aria-hidden />
@@ -110,7 +119,7 @@ export default function AdvisorNotifications() {
               onClick={() => setFilter(false)}
               aria-pressed={!unreadOnly}
               className={cn(
-                'rounded-[10px] px-3 py-1.5 text-[13px] font-semibold transition-colors',
+                'cursor-pointer rounded-[10px] px-3 py-1.5 text-[13px] font-semibold transition-colors',
                 !unreadOnly
                   ? 'bg-[#f37021] text-white'
                   : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]',
@@ -123,7 +132,7 @@ export default function AdvisorNotifications() {
               onClick={() => setFilter(true)}
               aria-pressed={unreadOnly}
               className={cn(
-                'rounded-[10px] px-3 py-1.5 text-[13px] font-semibold transition-colors',
+                'cursor-pointer rounded-[10px] px-3 py-1.5 text-[13px] font-semibold transition-colors',
                 unreadOnly
                   ? 'bg-[#f37021] text-white'
                   : 'text-[#6B7280] hover:bg-[#FAFAFA] hover:text-[#1A1A1A]',
@@ -137,7 +146,7 @@ export default function AdvisorNotifications() {
             type="button"
             onClick={() => markAll.mutate()}
             disabled={markAll.isPending || total === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-[13px] font-semibold text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-[13px] font-semibold text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <CheckCheck className="size-4" aria-hidden />
             Mark all as read
@@ -169,7 +178,7 @@ export default function AdvisorNotifications() {
             <button
               type="button"
               onClick={() => query.refetch()}
-              className="mt-1 rounded-xl border border-[#E5E7EB] px-3 py-1.5 text-[13px] font-semibold text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
+              className="mt-1 cursor-pointer rounded-xl border border-[#E5E7EB] px-3 py-1.5 text-[13px] font-semibold text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
             >
               Try again
             </button>
@@ -199,7 +208,7 @@ export default function AdvisorNotifications() {
                     type="button"
                     onClick={() => handleOpen(item)}
                     className={cn(
-                      'flex w-full items-start gap-3 px-5 py-4 text-left transition-colors hover:bg-[#FAFAFA]',
+                      'flex w-full cursor-pointer items-start gap-3 px-5 py-4 text-left transition-colors hover:bg-[#FAFAFA]',
                       !item.isRead && 'bg-[#fff7ed]',
                     )}
                   >

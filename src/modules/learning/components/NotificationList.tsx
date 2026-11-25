@@ -68,7 +68,7 @@ export function NotificationList() {
               setPage(0);
             }}
             className={cn(
-              'rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset transition-colors',
+              'cursor-pointer rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset transition-colors',
               unreadOnly
                 ? 'bg-orange-100 text-orange-800 ring-orange-200'
                 : 'bg-gray-100 text-[#555f6f] ring-gray-200 hover:bg-gray-200',
@@ -82,7 +82,7 @@ export function NotificationList() {
             type="button"
             onClick={() => markAll.mutate()}
             disabled={markAll.isPending}
-            className="text-[13px] font-semibold text-orange-600 hover:underline disabled:opacity-60"
+            className="cursor-pointer text-[13px] font-semibold text-orange-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
           >
             Mark all as read
           </button>
@@ -108,7 +108,7 @@ export function NotificationList() {
           <button
             type="button"
             onClick={() => refetch()}
-            className="mt-1 rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#555f6f] hover:bg-gray-50"
+            className="mt-1 cursor-pointer rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#555f6f] hover:bg-gray-50"
           >
             Try again
           </button>
@@ -136,7 +136,7 @@ export function NotificationList() {
                   type="button"
                   onClick={() => handleOpen(n.id, n.isRead, n.actionUrl)}
                   className={cn(
-                    'flex w-full items-start gap-3 px-5 py-4 text-left transition-colors hover:bg-gray-50',
+                    'flex w-full cursor-pointer items-start gap-3 px-5 py-4 text-left transition-colors hover:bg-gray-50',
                     !n.isRead && 'bg-[#fff7ed]',
                   )}
                 >

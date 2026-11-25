@@ -13,7 +13,7 @@ export const ADVISOR_QUERY_KEYS = {
     ['advisor', 'notifications', 'list', params] as const,
   students: (params: { search?: string; status?: AcademicStatus | 'ALL'; page: number; size: number }) =>
     ['advisor', 'students', params] as const,
-  advisingRequests: (params: { status?: AdvisingRequestStatus; search?: string }) =>
+  advisingRequests: (params: { status?: AdvisingRequestStatus; search?: string; advisorId?: string | null }) =>
     ['advisor', 'advising-requests', params] as const,
 };
 
@@ -62,12 +62,18 @@ export const useAdviseeStudents = (params: {
   });
 
 /**
- * Yêu cầu tư vấn mà advisor nhận xử lý.
- * API trả về mảng thô — lọc theo status/search ở server khi có, phân trang do client đảm nhiệm.
+ * Danh sách ticket yêu cầu tư vấn.
+ *
+ * Hệ thống TICKET (helpdesk): API trả về mảng thô — lọc theo status/search ở
+ * client, phân trang do client đảm nhiệm.
+ *
+ * `advisorId` CHỈ được truyền cho tab IN_PROGRESS (lọc ticket của chính mình).
+ * Tab PENDING không truyền filter nào ⇒ mọi cố vấn đều thấy hàng đợi chung.
  */
 export const useAdvisorAdvisingRequests = (params: {
   status?: AdvisingRequestStatus;
   search?: string;
+  advisorId?: string | null;
 }) =>
   useQuery({
     queryKey: ADVISOR_QUERY_KEYS.advisingRequests(params),

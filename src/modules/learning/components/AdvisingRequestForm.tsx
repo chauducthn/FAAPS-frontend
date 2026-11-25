@@ -1,12 +1,14 @@
-// Form to send an advising request to the assigned advisor.
-// The backend only stores a title and a description, so the form has exactly those two fields.
+// Form to send an advising request.
+//
+// Ticket system (helpdesk): the student does NOT need an assigned advisor — the
+// request goes into the shared queue and any available advisor can claim it.
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
 import { Send } from 'lucide-react';
 import { toast } from 'sonner';
-import { studentAcademicService } from '../../academic/services/studentAcademicService';
+import { studentService } from '../services/studentService';
 import { apiMessage } from '../../../shared/lib/apiMessage';
 import { advisingRequestSchema, type AdvisingRequestFormValues } from '../validations/advisingRequest.schema';
 
@@ -17,7 +19,16 @@ const labelClass = 'mb-1 block text-[11px] font-bold uppercase tracking-wide tex
 const MAX_TITLE = 255;
 const MAX_DESCRIPTION = 10000;
 
-export function AdvisingRequestForm({ disabled, disabledReason }: { disabled: boolean; disabledReason?: string }) {
+export function AdvisingRequestForm({
+  disabled,
+  disabledReason,
+  onSubmitted,
+}: {
+  disabled?: boolean;
+  disabledReason?: string;
+  /** Called after a successful submit — the parent page uses it to show the "queued" notice. */
+  onSubmitted?: () => void | Promise<void>;
+}) {
   const queryClient = useQueryClient();
   const {
     register,
@@ -32,27 +43,35 @@ export function AdvisingRequestForm({ disabled, disabledReason }: { disabled: bo
 
   const title = watch('title') ?? '';
   const description = watch('description') ?? '';
+  const isLocked = disabled ?? false;
 
   const onSubmit = handleSubmit(async (values) => {
     try {
-      await studentAcademicService.createAdvising({ title: values.title, description: values.description });
+      await studentService.createAdvisingRequest({
+        requestType: 'OTHER',
+        title: values.title,
+        description: values.description,
+      });
       toast.success('Advising request submitted');
       reset({ title: '', description: '' });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['student', 'advising-requests'] }),
         queryClient.invalidateQueries({ queryKey: ['student', 'assignment'] }),
       ]);
+      await onSubmitted?.();
     } catch (error) {
       toast.error(apiMessage(error));
     }
   });
 
   return (
-    <section className="rounded-xl bg-white p-5 shadow-sm">
+    <section className="rounded-xl">
       <h2 className="text-sm font-semibold text-[#151c27]">Send Advising Request</h2>
-      <p className="mt-0.5 text-[13px] text-[#555f6f]">Describe the issue clearly so your advisor can respond more effectively.</p>
+      <p className="mt-0.5 text-[13px] text-[#555f6f]">
+        Describe the issue clearly so an advisor can respond faster and more accurately.
+      </p>
 
-      {disabled && disabledReason && (
+      {isLocked && disabledReason && (
         <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-900" role="status">
           {disabledReason}
         </p>
@@ -66,7 +85,7 @@ export function AdvisingRequestForm({ disabled, disabledReason }: { disabled: bo
           <input
             id="advising-title"
             {...register('title')}
-            disabled={disabled}
+            disabled={isLocked}
             aria-invalid={!!errors.title}
             placeholder="Example: Review my Semester 7 study plan"
             maxLength={MAX_TITLE}
@@ -87,7 +106,7 @@ export function AdvisingRequestForm({ disabled, disabledReason }: { disabled: bo
           <textarea
             id="advising-description"
             {...register('description')}
-            disabled={disabled}
+            disabled={isLocked}
             aria-invalid={!!errors.description}
             rows={6}
             placeholder="Describe what you need advice about..."
@@ -104,8 +123,8 @@ export function AdvisingRequestForm({ disabled, disabledReason }: { disabled: bo
 
         <button
           type="submit"
-          disabled={disabled || isSubmitting}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#F26F21] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={isLocked || isSubmitting}
+          className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#F26F21] px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Send className="size-4" />
           {isSubmitting ? 'Submitting...' : 'Submit Request'}

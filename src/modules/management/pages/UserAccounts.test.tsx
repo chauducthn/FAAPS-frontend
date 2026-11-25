@@ -385,7 +385,7 @@ describe('UserAccounts', () => {
       const confirm = within(dialog).getByRole('button', { name: /^reset password$/i });
       expect(confirm).toBeDisabled();
 
-      await user.click(within(dialog).getByRole('checkbox', { name: /Tôi hiểu password chỉ hiện 1 lần/i }));
+      await user.click(within(dialog).getByRole('checkbox', { name: /I understand the password is shown only once/i }));
       expect(confirm).toBeEnabled();
     });
 
@@ -411,12 +411,12 @@ describe('UserAccounts', () => {
         'button',
         { name: /^reset password$/i },
       );
-      await user.click(within(screen.getByRole('dialog')).getByRole('checkbox', { name: /Tôi hiểu/i }));
+      await user.click(within(screen.getByRole('dialog')).getByRole('checkbox', { name: /I understand/i }));
       await user.click(confirm);
 
       // The result dialog opens with the warning and the new password.
       const result = await screen.findByRole('dialog', { name: /password reset results/i });
-      expect(within(result).getByText('Lưu ngay kẻo mất')).toBeInTheDocument();
+      expect(within(result).getByText('Save these now — they are shown only once')).toBeInTheDocument();
       expect(resetUserPassword).toHaveBeenCalledWith('u1');
 
       await user.click(within(result).getByRole('button', { name: /show/i }));
@@ -440,18 +440,18 @@ describe('UserAccounts', () => {
         'button',
         { name: /^reset password$/i },
       );
-      await user.click(within(screen.getByRole('dialog')).getByRole('checkbox', { name: /Tôi hiểu/i }));
+      await user.click(within(screen.getByRole('dialog')).getByRole('checkbox', { name: /I understand/i }));
       await user.click(confirm);
 
       const result = await screen.findByRole('dialog', { name: /password reset results/i });
-      expect(within(result).getByText('Lưu ngay kẻo mất')).toBeInTheDocument();
+      expect(within(result).getByText('Save these now — they are shown only once')).toBeInTheDocument();
 
       // The backdrop is the dim layer behind the dialog.
       const backdrop = document.querySelector('div.fixed.inset-0 > div.absolute');
       expect(backdrop).not.toBeNull();
       await user.click(backdrop!);
 
-      expect(within(screen.getByRole('dialog', { name: /password reset results/i })).getByText('Lưu ngay kẻo mất')).toBeInTheDocument();
+      expect(within(screen.getByRole('dialog', { name: /password reset results/i })).getByText('Save these now — they are shown only once')).toBeInTheDocument();
     });
   });
 

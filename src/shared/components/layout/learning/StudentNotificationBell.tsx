@@ -62,7 +62,7 @@ export function StudentNotificationBell() {
         onClick={() => setOpen((v) => !v)}
         aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
         aria-expanded={open}
-        className="relative rounded-lg p-2 text-[#555f6f] hover:bg-gray-100"
+        className="relative cursor-pointer rounded-lg p-2 text-[#555f6f] hover:bg-gray-100"
       >
         <Bell className="size-5" />
         {unread > 0 && (
@@ -84,7 +84,7 @@ export function StudentNotificationBell() {
                 type="button"
                 onClick={() => markAll.mutate()}
                 disabled={markAll.isPending}
-                className="text-xs font-semibold text-orange-600 hover:underline disabled:opacity-60"
+                className="cursor-pointer text-xs font-semibold text-orange-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Mark all as read
               </button>
@@ -101,7 +101,7 @@ export function StudentNotificationBell() {
                     type="button"
                     onClick={() => openItem(n.id, n.isRead, n.actionUrl)}
                     className={cn(
-                      'flex w-full flex-col gap-0.5 border-b border-[#f1f5f9] px-4 py-3 text-left hover:bg-gray-50',
+                      'flex w-full cursor-pointer flex-col gap-0.5 border-b border-[#f1f5f9] px-4 py-3 text-left hover:bg-gray-50',
                       !n.isRead && 'bg-[#fff7ed]/60',
                     )}
                   >

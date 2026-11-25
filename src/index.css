@@ -135,6 +135,38 @@ body {
   html {
     @apply font-sans;
   }
+
+  /*
+   * Con trỏ chuột cho mọi phần tử tương tác.
+   * Nút bấm, hàng trong bảng, item trong dropdown, thẻ card bấm được đều phải
+   * "báo" cho người dùng rằng chúng có thể bấm — mặc định của trình duyệt là
+   * mũi tên mà không ai bấm nhầm được.
+   */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  a[href],
+  summary,
+  label[for],
+  select:not(:disabled),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  [data-slot='checkbox'],
+  [data-slot='radio-group'],
+  [data-slot='dropdown-menu-item'],
+  [data-slot='select-trigger'],
+  [role='option'],
+  [role='menuitem'],
+  [role='tab'],
+  [role='switch'] {
+    cursor: pointer;
+  }
+
+  /* Element bị vô hiệu hoá ⇒ con trỏ mặc định (không phải pointer). */
+  button:disabled,
+  [aria-disabled='true'],
+  :disabled {
+    cursor: not-allowed;
+  }
 }
 
 /*
