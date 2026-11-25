@@ -3,13 +3,17 @@ import { LoadBadge } from '../../components/LoadBadge';
 import { UserInitials } from '../../components/UserInitials';
 import { backState } from '../../../../shared/lib/backLink';
 import { Pagination } from '../../components/Pagination';
-import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
+import {
+  StaticTable,
+  type StaticColumn,
+} from '../../../../shared/components/common/table/StaticTable';
 import type { UnassignedStudent } from '../../types/admin';
 import type { DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import { cn } from '@/shared/lib/utils';
 
 const actionBtn =
-  'inline-flex h-8 items-center rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900';
+  'inline-flex h-8 items-center rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold'
+  + ' text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900';
 
 export interface AdvisorRowItem {
   id: string;

@@ -1,6 +1,7 @@
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { emailMatchesRole, STUDENT_ID_PATTERN } from '../utils/accountRules';
 import { TableBody, TableCell, TableHead, TableRow, TableShell } from '../../../shared/components/common/table/TablePrimitives';
+import { cn } from '@/shared/lib/utils';
 import type { AdminUserRole } from '../types/admin';
 
 export interface BulkRoleDraft {
@@ -78,7 +79,10 @@ export function BulkSetRoleTable({
                     value={row.email}
                     onChange={(e) => onUpdateRow(row.userId, { email: e.target.value })}
                     aria-label={`Email for ${row.fullName}`}
-                    className="h-8 w-52 rounded-lg border border-gray-200 px-2.5 text-xs text-gray-900 focus:border-[var(--brand)] focus:outline-none focus:ring-1 focus:ring-[var(--brand)]/30"
+                    className={cn(
+                      'h-8 w-52 rounded-lg border border-gray-200 px-2.5 text-xs text-gray-900',
+                      'focus:border-[var(--brand)] focus:outline-none focus:ring-1 focus:ring-[var(--brand)]/30',
+                    )}
                   />
                 </TableCell>
                 {isStudent && (
@@ -87,9 +91,14 @@ export function BulkSetRoleTable({
                       value={row.studentCode}
                       maxLength={8}
                       placeholder="SE173012"
-                      onChange={(e) => onUpdateRow(row.userId, { studentCode: e.target.value.toUpperCase() })}
+                      onChange={(e) =>
+                        onUpdateRow(row.userId, { studentCode: e.target.value.toUpperCase() })
+                      }
                       aria-label={`Student ID for ${row.fullName}`}
-                      className="h-8 w-28 rounded-lg border border-gray-200 px-2.5 font-mono text-xs uppercase text-gray-900 focus:border-[var(--brand)] focus:outline-none"
+                      className={cn(
+                        'h-8 w-28 rounded-lg border border-gray-200 px-2.5 font-mono text-xs uppercase',
+                        'text-gray-900 focus:border-[var(--brand)] focus:outline-none',
+                      )}
                     />
                   </TableCell>
                 )}
@@ -99,7 +108,10 @@ export function BulkSetRoleTable({
                       value={row.curriculumId}
                       onChange={(e) => onUpdateRow(row.userId, { curriculumId: e.target.value })}
                       aria-label={`Curriculum for ${row.fullName}`}
-                      className="h-8 w-44 rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-800 focus:border-[var(--brand)] focus:outline-none"
+                      className={cn(
+                        'h-8 w-44 rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-800',
+                        'focus:border-[var(--brand)] focus:outline-none',
+                      )}
                     >
                       <option value="">Select…</option>
                       {curriculumList.map((c) => (
