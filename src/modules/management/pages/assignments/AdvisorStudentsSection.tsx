@@ -1,7 +1,6 @@
-import { Search } from 'lucide-react';
+import { RotateCcw, Search, X } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
 import { StaticTable } from '../../../../shared/components/common/table/StaticTable';
-import { cn } from '@/shared/lib/utils';
 import { buildAdvisorStudentColumns } from './advisorStudentColumns';
 
 export interface AdvisorStudentRow {
@@ -32,6 +31,7 @@ export function AdvisorStudentsSection({
   onUnassignSelected,
   onReassignOne,
   onUnassignOne,
+  onHistoryOne,
   onPageChange,
 }: {
   advisorId?: string;
@@ -52,85 +52,102 @@ export function AdvisorStudentsSection({
   onUnassignSelected: () => void;
   onReassignOne: (student: { id: string; name: string }) => void;
   onUnassignOne: (student: { id: string; name: string }) => void;
+  onHistoryOne?: (student: { id: string; code: string; name: string }) => void;
   onPageChange: (page: number) => void;
 }) {
-
-
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-[#151c27]">Assigned students</h2>
-        <p className="text-[13px] text-[#555f6f]">Each student has only one active advisor.</p>
-      </div>
-      <section className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:p-5">
-        <label className={cn(
-            'flex h-[38px] flex-1 items-center gap-2 rounded-lg',
-            'border border-[#e5e7eb] px-3',
-            'focus-within:border-orange-500 focus-within:ring-1',
-            'focus-within:ring-orange-500'
-          )}>
-          <Search className="size-4 text-[#98a2b3]" />
-          <input
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by student ID or name..."
-            aria-label="Search students"
-            className="flex-1 bg-transparent text-sm font-medium text-[#151c27] outline-none placeholder:text-[#98a2b3]"
-          />
-        </label>
-        <button
-          type="button"
-          disabled={!search}
-          onClick={onClearSearch}
-          className="h-[38px] rounded-lg px-3 text-sm font-medium text-[#555f6f] hover:bg-gray-50 disabled:opacity-40"
-        >
-          Clear filters
-        </button>
-      </section>
-      <section className="rounded-xl bg-white shadow-sm">
-        {selected.size > 0 && (
-          <div className="flex flex-col items-start justify-between gap-3 border-b border-[#e7eefe] p-4 sm:flex-row sm:items-center">
-            <p className="text-sm font-semibold text-[#151c27]">
-              {selected.size} student{selected.size === 1 ? '' : 's'} selected
-            </p>
-            <div className="flex gap-2">
-              <button type="button" onClick={onClearSelection} className="px-2 text-sm font-semibold text-[#f37021] hover:underline">
-                Clear selection
-              </button>
+    <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500">Assigned students</h2>
+          <span className="rounded-md bg-gray-200/70 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-gray-700">
+            {totalFiltered}
+          </span>
+        </div>
+
+        <div className="flex flex-1 items-center justify-end gap-2 sm:max-w-sm">
+          <div className="relative flex-1">
+            <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Search by student ID or name..."
+              aria-label="Search students"
+              className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-xs text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+            />
+            {search && (
               <button
                 type="button"
-                onClick={onReassignSelected}
-                className="rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15]"
+                onClick={onClearSearch}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
               >
-                Reassign
+                <X className="size-3.5" />
               </button>
-              <button
-                type="button"
-                onClick={onUnassignSelected}
-                className="rounded-lg border border-red-300 px-4 py-2 text-sm font-semibold text-red-700"
-              >
-                Unassign
-              </button>
-            </div>
+            )}
           </div>
-        )}
-        <StaticTable
-          columns={buildAdvisorStudentColumns({ advisorId, advisorName, onReassignOne, onUnassignOne })}
-          rows={pageRows}
-          rowKey={(row) => row.id}
-          emptyTitle={search ? 'No students match your search.' : 'No assigned students.'}
-          minWidth="620px"
-          selection={{
-            selectedIds: selected,
-            allSelected: allPageSelected,
-            someSelected: pageRows.some((row) => selected.has(row.id)),
-            onToggleAll: () => onToggleAll(),
-            onToggleOne: (id) => onToggleOne(id),
-            label: (row) => row.fullName,
-          }}
-        />
-        <Pagination page={page} pageSize={pageSize} total={totalFiltered} noun="students" onChange={onPageChange} />
-      </section>
-    </div>
+          {search && (
+            <button
+              type="button"
+              onClick={onClearSearch}
+              className="inline-flex h-9 items-center gap-1 rounded-lg border border-dashed border-gray-300 bg-white px-2.5 text-xs font-semibold text-gray-600 hover:border-[#F26F21] hover:text-[#C2410C]"
+            >
+              <RotateCcw className="size-3" /> Reset
+            </button>
+          )}
+        </div>
+      </div>
+
+      {selected.size > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
+              {selected.size} student{selected.size === 1 ? '' : 's'} selected
+            </span>
+            <button
+              type="button"
+              onClick={onClearSelection}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-600 hover:bg-orange-100/80 hover:text-gray-900"
+            >
+              <X className="size-3.5" aria-hidden /> Clear
+            </button>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onReassignSelected}
+              className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#e05f14]"
+            >
+              Reassign
+            </button>
+            <button
+              type="button"
+              onClick={onUnassignSelected}
+              className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100"
+            >
+              Unassign
+            </button>
+          </div>
+        </div>
+      )}
+
+      <StaticTable
+        columns={buildAdvisorStudentColumns({ advisorId, advisorName, onReassignOne, onUnassignOne, onHistoryOne })}
+        rows={pageRows}
+        rowKey={(row) => row.id}
+        emptyTitle={search ? 'No students match your search.' : 'No assigned students.'}
+        minWidth="620px"
+        selection={{
+          selectedIds: selected,
+          allSelected: allPageSelected,
+          someSelected: pageRows.some((row) => selected.has(row.id)),
+          onToggleAll: () => onToggleAll(),
+          onToggleOne: (id) => onToggleOne(id),
+          label: (row) => row.fullName,
+        }}
+      />
+      <Pagination page={page} pageSize={pageSize} total={totalFiltered} noun="students" onChange={onPageChange} />
+    </section>
   );
 }

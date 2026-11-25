@@ -2,6 +2,7 @@ import { UserDetailModal } from '../../components/UserDetailModal';
 import { CreateUserModal } from '../../components/CreateUserModal';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
 import { SetRoleModal } from '../../components/SetRoleModal';
+import { BulkSetRoleModal } from '../../components/BulkSetRoleModal';
 import { ResetPasswordConfirmDialog, type ResetPasswordTarget } from '../../components/ResetPasswordConfirmDialog';
 import { ResetPasswordResultModal } from '../../components/ResetPasswordResultModal';
 import type { AdminUserRole, AdminUserSummary, PasswordResetEntry } from '../../types/admin';
@@ -15,6 +16,8 @@ export function UserAccountsModals({
   onCreated,
   roleChange,
   onCloseRoleChange,
+  bulkRoleTargets,
+  onCloseBulkRole,
   onRoleDone,
   resetTargets,
   resetPending,
@@ -36,6 +39,8 @@ export function UserAccountsModals({
   onCreated: (name: string) => Promise<void>;
   roleChange: AdminUserSummary | null;
   onCloseRoleChange: () => void;
+  bulkRoleTargets: AdminUserSummary[] | null;
+  onCloseBulkRole: () => void;
   onRoleDone: () => void;
   resetTargets: ResetPasswordTarget[] | null;
   resetPending: boolean;
@@ -64,6 +69,12 @@ export function UserAccountsModals({
         open={!!roleChange}
         user={roleChange}
         onClose={onCloseRoleChange}
+        onDone={onRoleDone}
+      />
+
+      <BulkSetRoleModal
+        targets={bulkRoleTargets}
+        onClose={onCloseBulkRole}
         onDone={onRoleDone}
       />
 

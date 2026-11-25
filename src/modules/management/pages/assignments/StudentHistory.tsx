@@ -89,30 +89,28 @@ export default function StudentHistory() {
   );
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full flex-col gap-4">
       <div>
-        <Link to={backTarget.to} className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
-          <ChevronLeft className="size-4" />
+        <Link to={backTarget.to} className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#F26F21]">
+          <ChevronLeft className="size-3.5" />
           Back to {backTarget.label}
         </Link>
-        <h1 className="mt-3 text-2xl font-semibold text-[#151c27]">Student Assignment History</h1>
-        <p className="mt-1 text-sm text-[#555f6f]">
-          Read-only assignment records{student ? ` for ${student.fullName} · ${student.userId}` : ''}
-        </p>
       </div>
 
       {student && (
-        <section className="rounded-xl bg-white p-5 shadow-sm sm:p-6">
-          <div className="flex items-start justify-between gap-4">
+        <section className="rounded-xl border border-gray-200/80 bg-white p-5 shadow-2xs">
+          <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-4">
             <div>
-              <h2 className="text-xl font-semibold text-[#151c27]">{student.fullName}</h2>
-              <p className="text-sm text-[#555f6f]">
-                {student.userId} · {student.email}
+              <h2 className="text-lg font-bold tracking-tight text-gray-900">{student.fullName}</h2>
+              <p className="mt-0.5 text-xs text-gray-500">
+                <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono font-medium text-gray-700">{student.userId}</span>
+                {' · '}
+                {student.email}
               </p>
             </div>
             <StatusBadge status={student.status} />
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
             <Tile label="Cohort code">{student.curriculumCode ?? '—'}</Tile>
             <Tile label="Major">{student.majorName ?? '—'}</Tile>
             <Tile label="Current advisor">{current ? current.advisorName : 'No advisor assigned'}</Tile>
@@ -120,10 +118,10 @@ export default function StudentHistory() {
         </section>
       )}
 
-      <section className="rounded-xl bg-white shadow-sm">
-        <div className="flex items-center justify-between p-5 sm:px-6">
-          <h2 className="text-base font-semibold text-[#151c27]">All assignment records</h2>
-          <p className="text-[13px] text-[#555f6f]">{history?.length ?? 0} records · Newest first</p>
+      <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-4 py-3">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500">All assignment records</h2>
+          <p className="text-xs text-gray-500 tabular-nums">{history?.length ?? 0} records · Newest first</p>
         </div>
         <StaticTable
           columns={historyColumns}

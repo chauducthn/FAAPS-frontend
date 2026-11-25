@@ -5,8 +5,8 @@ import { USER_ROLE_LABEL } from './userAccountColumns';
 
 type ExportUserFilters = Omit<NonNullable<Parameters<typeof adminService.getUsers>[0]>, 'page' | 'size'>;
 
-const EXPORT_PAGE_SIZE = 200;
-const MAX_EXPORT_PAGES = 50;
+const EXPORT_PAGE_SIZE = 100;
+const MAX_EXPORT_PAGES = 100;
 
 const CSV_HEADER: CsvValue[] = [
   'Identifier',

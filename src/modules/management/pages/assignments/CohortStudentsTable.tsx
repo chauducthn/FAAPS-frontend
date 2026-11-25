@@ -1,10 +1,12 @@
 import { Link } from 'react-router';
+import { X } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
+import { UserInitials } from '../../components/UserInitials';
 import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
-import { cn } from '@/shared/lib/utils';
 import { backState } from '../../../../shared/lib/backLink';
 
-const btn = 'rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50';
+const actionBtn =
+  'inline-flex h-8 items-center rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900';
 
 const formatDate = (value: string) =>
   new Date(`${value}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
@@ -65,23 +67,36 @@ export function CohortStudentsTable({
     {
       key: 'studentCode',
       header: 'Student ID',
-      render: (row) => <span className="text-[13px] font-semibold">{row.studentCode}</span>,
+      render: (row) => (
+        <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 font-mono text-xs font-medium text-gray-700">
+          {row.studentCode}
+        </span>
+      ),
     },
     {
       key: 'fullName',
       header: 'Full name',
-      render: (row) => <span className="text-sm font-semibold">{row.fullName}</span>,
+      render: (row) => (
+        <div className="flex min-w-0 items-center gap-2.5">
+          <UserInitials name={row.fullName} />
+          <span className="truncate text-sm font-semibold text-gray-900">{row.fullName}</span>
+        </div>
+      ),
     },
     {
       key: 'advisorName',
       header: 'Current advisor',
-      render: (row) => <span className="text-sm">{row.advisorName ?? 'No advisor assigned'}</span>,
+      render: (row) => (
+        <span className={row.advisorName ? 'text-sm text-gray-800' : 'text-xs text-gray-400'}>
+          {row.advisorName ?? 'No advisor assigned'}
+        </span>
+      ),
     },
     {
       key: 'assignedDate',
       header: 'Assigned',
       render: (row) => (
-        <span className="text-[13px]">{row.assignedDate ? formatDate(row.assignedDate) : '—'}</span>
+        <span className="text-xs text-gray-500">{row.assignedDate ? formatDate(row.assignedDate) : '—'}</span>
       ),
     },
     {
@@ -89,11 +104,11 @@ export function CohortStudentsTable({
       header: 'Request',
       render: (row) =>
         row.hasPendingRequest ? (
-          <span className="rounded-full bg-[#fffbeb] px-2 py-0.5 text-[11px] font-bold uppercase text-[#b45309]">
+          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold uppercase text-amber-800 ring-1 ring-inset ring-amber-200">
             Requested
           </span>
         ) : (
-          <span className="text-[13px] text-[var(--ink-subtle)]">—</span>
+          <span className="text-xs text-gray-400">—</span>
         ),
     },
     {
@@ -101,19 +116,19 @@ export function CohortStudentsTable({
       header: 'Actions',
       align: 'right',
       render: (row) => (
-        <div className="flex justify-end gap-2">
-          <button type="button" className={btn} onClick={() => onAssignOne({ id: row.id, name: row.fullName })}>
+        <div className="flex justify-end gap-1.5">
+          <button type="button" className={actionBtn} onClick={() => onAssignOne({ id: row.id, name: row.fullName })}>
             {row.advisorName ? 'Reassign' : 'Assign'}
           </button>
           {row.advisorName && (
-            <button type="button" className={btn} onClick={() => onUnassignOne({ id: row.id, name: row.fullName })}>
+            <button type="button" className={actionBtn} onClick={() => onUnassignOne({ id: row.id, name: row.fullName })}>
               Unassign
             </button>
           )}
           <Link
             to={`/admin/assignments/students/${row.id}/history`}
             state={backState(`/admin/assignments/cohorts/${cohortId}`, `Cohort ${title}`)}
-            className={btn}
+            className={actionBtn}
           >
             History
           </Link>
@@ -123,27 +138,35 @@ export function CohortStudentsTable({
   ];
 
   return (
-    <section className="rounded-xl bg-white shadow-sm">
+    <div>
       {selected.size > 0 && (
-        <div className="flex flex-col items-start justify-between gap-3 border-b border-[#e7eefe] p-4 sm:flex-row sm:items-center">
-          <p className="text-sm font-semibold text-[#151c27]">
-            {selected.size} student{selected.size === 1 ? '' : 's'} selected
-          </p>
-          <div className="flex gap-2">
-            <button type="button" onClick={onClearSelection} className="px-2 text-sm font-semibold text-[#f37021] hover:underline">
-              Clear selection
+        <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5">
+          <div className="flex items-center gap-2">
+            <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
+              {selected.size} student{selected.size === 1 ? '' : 's'} selected
+            </span>
+            <button
+              type="button"
+              onClick={onClearSelection}
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-600 hover:bg-orange-100/80 hover:text-gray-900"
+            >
+              <X className="size-3.5" aria-hidden /> Clear
             </button>
-            <button type="button" onClick={onAssignSelected} className={cn(
-                'rounded-lg bg-[#f37021] px-4 py-2 text-sm',
-                'font-semibold text-white hover:bg-[#d95f15]'
-              )}>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={onAssignSelected}
+              className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#e05f14]"
+            >
               Assign / reassign
             </button>
             {rows.some((student) => selected.has(student.id) && student.advisorName) && (
-              <button type="button" onClick={onUnassignSelected} className={cn(
-                  'rounded-lg border border-red-300 px-4 py-2 text-sm',
-                  'font-semibold text-red-700'
-                )}>
+              <button
+                type="button"
+                onClick={onUnassignSelected}
+                className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100"
+              >
                 Unassign selected
               </button>
             )}
@@ -169,6 +192,6 @@ export function CohortStudentsTable({
         }}
       />
       <Pagination page={page} pageSize={pageSize} total={total} noun="students" onChange={onPageChange} />
-    </section>
+    </div>
   );
 }

@@ -19,13 +19,20 @@ export function UserDetailBody({
         </div>
       </UserDetailSection>
 
-      {isStudent && (
+      {isStudent ? (
         <UserDetailSection title="Academic record" bordered>
           <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
             <UserDetailField label="Major" value={user.majorName} />
             <UserDetailField label="Curriculum" value={user.curriculumCode} mono />
             <UserDetailField label="Current semester" value={user.currentSemester} />
             <UserDetailField label="Academic status" value={user.academicStatus} />
+          </div>
+        </UserDetailSection>
+      ) : (
+        <UserDetailSection title="Role details" bordered>
+          <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+            <UserDetailField label="Role" value="Academic Advisor" />
+            <UserDetailField label="Academic record" value="Not applicable" />
           </div>
         </UserDetailSection>
       )}

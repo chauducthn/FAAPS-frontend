@@ -1,23 +1,31 @@
 import { useEffect, useState } from 'react';
+import { WandSparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { useConfirmAutoAssign, usePreviewAutoAssign } from '../hooks/queries/useAdminAssignments';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
 import type { CohortAutoAssignResponse, CohortPoolAdvisor, SummaryCohort } from '../types/admin';
 import { AutoAssignAllocationResult } from './AutoAssignAllocationResult';
+import {
+  AssignmentModalFooter,
+  AssignmentModalHeader,
+  assignmentCancelBtn,
+  assignmentPrimaryBtn,
+  assignmentTextareaClass,
+} from './AssignmentModalChrome';
 
 interface AutoAssignModalProps {
   open: boolean;
   cohort: SummaryCohort | null;
-  /** Advisors configured for this cohort. Auto assign only distributes among them. */
   pool: CohortPoolAdvisor[];
   onClose: () => void;
+  onBack?: () => void;
   onConfigurePool?: () => void;
 }
 
 type Phase = 'select' | 'preview' | 'done';
 
-export function AutoAssignModal({ open, cohort, pool, onClose, onConfigurePool }: AutoAssignModalProps) {
+export function AutoAssignModal({ open, cohort, pool, onClose, onBack, onConfigurePool }: AutoAssignModalProps) {
   const [phase, setPhase] = useState<Phase>('select');
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [response, setResponse] = useState<CohortAutoAssignResponse | null>(null);
@@ -76,49 +84,45 @@ export function AutoAssignModal({ open, cohort, pool, onClose, onConfigurePool }
     }
   };
 
-  const title =
-    phase === 'done' ? 'Auto Assign — Complete' : phase === 'preview' ? 'Auto Assign — Preview & Confirmation' : `Auto Assign — ${name}`;
+  const title = phase === 'done' ? 'Auto Assign — Complete' : phase === 'preview' ? 'Auto Assign — Preview' : `Auto Assign — ${name}`;
+  const subtitle =
+    phase === 'select'
+      ? `Distribute ${cohort.unassigned} unassigned student${cohort.unassigned === 1 ? '' : 's'} of ${name}.`
+      : phase === 'preview'
+        ? `Review the distribution for ${name}. Nothing has changed yet.`
+        : 'The distribution below has been saved.';
 
   return (
-    <Modal open={open} onClose={onClose} title="Auto Assign">
-      <div className="flex flex-col gap-5 overflow-y-auto p-6">
-        <div>
-          <h2 className="text-xl font-semibold text-[#151c27]">{title}</h2>
-          <p className="mt-1 text-[13px] text-[#555f6f]">
-            {phase === 'select' && `Distribute the ${cohort.unassigned} unassigned student${cohort.unassigned === 1 ? '' : 's'} of ${name} across the advisors of this cohort.`}
-            {phase === 'preview' && `Review the distribution for ${name}. Nothing has changed yet.`}
-            {phase === 'done' && 'The distribution below has been saved.'}
-          </p>
-        </div>
-
+    <Modal open={open} onClose={onClose} title="Auto Assign" className="max-w-xl">
+      <AssignmentModalHeader icon={WandSparkles} title={title} subtitle={subtitle} onClose={onClose} />
+      <div className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
         {phase === 'select' && (
           <>
-            <div className="rounded-lg bg-[#fff7ed] px-4 py-3 text-[13px] text-[#555f6f]">
-              <p className="font-semibold text-[#f37021]">Only students without an advisor are distributed</p>
-              The split balances the advisors&apos; <strong>total</strong> student counts, taking their existing students into account. Students who already have an
-              advisor are never moved. Students who join later stay unassigned until you run Auto Assign again.
+            <div className="rounded-lg border border-orange-200/70 bg-orange-50/70 px-3.5 py-2.5 text-xs text-gray-600">
+              <p className="font-semibold text-[#C2410C]">Only unassigned students are distributed</p>
+              <p className="mt-0.5">Balances total advisee counts across selected advisors without moving already assigned students.</p>
             </div>
             {pool.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-[#e5e7eb] p-4 text-sm text-[#555f6f]">
+              <div className="rounded-lg border border-dashed border-gray-200 p-4 text-xs text-gray-500">
                 No advisors are configured for {name} yet.{' '}
                 {onConfigurePool && (
-                  <button type="button" onClick={onConfigurePool} className="font-semibold text-orange-600 hover:underline">
+                  <button type="button" onClick={onConfigurePool} className="font-semibold text-[#F26F21] hover:underline">
                     Configure advisors
                   </button>
                 )}
               </div>
             ) : (
               <fieldset>
-                <legend className="mb-2 text-sm font-semibold text-[#151c27]">Advisors of this cohort</legend>
-                <ul className="flex max-h-64 flex-col gap-1 overflow-y-auto">
+                <legend className="mb-2 text-[13px] font-medium text-gray-700">Advisors of this cohort</legend>
+                <ul className="flex max-h-60 flex-col gap-1 overflow-y-auto rounded-lg border border-gray-100 p-1.5">
                   {pool.map((a) => (
                     <li key={a.advisorId}>
-                      <label className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50">
-                        <input type="checkbox" checked={selected.has(a.advisorId)} onChange={() => toggle(a.advisorId)} className="size-4 accent-[#f37021]" />
-                        <span className="flex-1 text-sm font-semibold text-[#151c27]">
-                          {a.fullName} <span className="font-normal text-[#555f6f]">· {a.email}</span>
+                      <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 hover:bg-gray-50">
+                        <input type="checkbox" checked={selected.has(a.advisorId)} onChange={() => toggle(a.advisorId)} className="size-4 accent-[#F26F21]" />
+                        <span className="min-w-0 flex-1 truncate text-xs font-semibold text-gray-900">
+                          {a.fullName} <span className="font-normal text-gray-500">· {a.email}</span>
                         </span>
-                        <span className="text-xs text-[#555f6f]">{a.cohortStudents} in this cohort</span>
+                        <span className="shrink-0 text-xs text-gray-500 tabular-nums">{a.cohortStudents} here</span>
                       </label>
                     </li>
                   ))}
@@ -129,66 +133,48 @@ export function AutoAssignModal({ open, cohort, pool, onClose, onConfigurePool }
         )}
 
         {phase === 'preview' && (
-          <label className="flex flex-col gap-1 text-sm font-semibold text-[#151c27]">
-            Note <span className="font-normal text-[#555f6f]">(optional, saved in the assignment history)</span>
+          <div>
+            <label className="mb-1.5 block text-[13px] font-medium text-gray-700">
+              Note <span className="font-normal text-gray-400">(optional)</span>
+            </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               maxLength={500}
               rows={2}
               placeholder="Why is this assignment being made?"
-              className="rounded-lg border border-[#e5e7eb] p-2 text-sm font-normal text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+              className={assignmentTextareaClass}
             />
-          </label>
+          </div>
         )}
 
         {phase !== 'select' && response && (
           <AutoAssignAllocationResult phase={phase} response={response} poolById={poolById} />
         )}
-
-        {error && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-            {error}
-          </p>
-        )}
+        {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>}
       </div>
-
-      <div className="flex flex-col-reverse justify-end gap-2 border-t border-[#e5e7eb] p-4 sm:flex-row sm:px-6">
+      <AssignmentModalFooter>
         {phase === 'done' ? (
-          <button type="button" onClick={onClose} className="rounded-lg bg-[#f37021] px-5 py-2 text-sm font-semibold text-white hover:bg-[#d95f15]">
-            Done
+          <button type="button" onClick={onBack ?? onClose} className={assignmentPrimaryBtn}>
+            {onBack ? 'Back to cohorts' : 'Done'}
           </button>
         ) : (
           <>
-            <button
-              type="button"
-              onClick={phase === 'preview' ? () => setPhase('select') : onClose}
-              className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-200"
-            >
-              {phase === 'preview' ? 'Back' : 'Cancel'}
+            <button type="button" onClick={phase === 'preview' ? () => setPhase('select') : (onBack ?? onClose)} className={assignmentCancelBtn}>
+              {phase === 'preview' || onBack ? 'Back' : 'Cancel'}
             </button>
             {phase === 'select' ? (
-              <button
-                type="button"
-                disabled={ids.length === 0 || cohort.unassigned === 0 || previewMutation.isPending}
-                onClick={runPreview}
-                className="rounded-lg bg-[#f37021] px-5 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-50"
-              >
+              <button type="button" disabled={ids.length === 0 || cohort.unassigned === 0 || previewMutation.isPending} onClick={runPreview} className={assignmentPrimaryBtn}>
                 {previewMutation.isPending ? 'Calculating...' : 'Preview distribution'}
               </button>
             ) : (
-              <button
-                type="button"
-                disabled={confirmMutation.isPending || (response?.assigned ?? 0) === 0}
-                onClick={runConfirm}
-                className="rounded-lg bg-[#f37021] px-5 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-50"
-              >
+              <button type="button" disabled={confirmMutation.isPending || (response?.assigned ?? 0) === 0} onClick={runConfirm} className={assignmentPrimaryBtn}>
                 {confirmMutation.isPending ? 'Assigning...' : 'Confirm Auto Assign'}
               </button>
             )}
           </>
         )}
-      </div>
+      </AssignmentModalFooter>
     </Modal>
   );
 }

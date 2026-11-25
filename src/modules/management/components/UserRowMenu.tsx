@@ -118,7 +118,7 @@ export function UserRowMenu({
             )}
             <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onRole)}>
               <ArrowLeftRight className="size-4 text-gray-400" aria-hidden />
-              Set role: {user.role === 'STUDENT' ? 'Advisor' : 'Student'}
+              Set role
             </button>
             {canReset ? (
               <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onResetPassword)}>

@@ -52,6 +52,14 @@ export const hasAllowedEmailDomain = (email: string): boolean => {
 export const emailMatchesRole = (email: string, role: AccountRole): boolean =>
   email.trim().toLowerCase().endsWith(`@${roleEmailDomain(role)}`);
 
+/** Suggests a valid email for the target role by swapping the domain when needed. */
+export const suggestRoleEmail = (email: string, role: AccountRole): string => {
+  const trimmed = email.trim().toLowerCase();
+  const [localPart] = trimmed.split('@');
+  if (!localPart) return '';
+  return `${localPart}@${roleEmailDomain(role)}`;
+};
+
 /** The message shown when the address does not fit the chosen role. */
 export const emailRoleErrorMessage = (role: AccountRole): string =>
   role === 'STUDENT'

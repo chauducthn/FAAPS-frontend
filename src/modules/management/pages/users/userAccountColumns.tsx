@@ -27,7 +27,7 @@ export function createUserAccountColumns(handlers: {
   onView: (id: string) => void;
   onRole: (user: AdminUserSummary) => void;
   onResetPassword: (user: AdminUserSummary) => void;
-  onAssignments: (id: string, state: ReturnType<typeof backState>) => void;
+  onAssignments: (path: string, state: ReturnType<typeof backState>) => void;
   onToggle: (user: AdminUserSummary) => void;
 }): DataTableColumnDef<AdminUserSummary>[] {
   return [
@@ -118,14 +118,16 @@ export function createUserAccountColumns(handlers: {
               onView={() => handlers.onView(user.id)}
               onRole={() => handlers.onRole(user)}
               onResetPassword={() => handlers.onResetPassword(user)}
-              onAssignments={
-                user.role === 'ADVISOR'
-                  ? () =>
-                      handlers.onAssignments(
-                        user.id,
-                        backState('/admin/users?role=ADVISOR', 'User Accounts · Advisor filter'),
-                      )
-                  : undefined
+              onAssignments={() =>
+                handlers.onAssignments(
+                  user.role === 'ADVISOR'
+                    ? `/admin/assignments/advisors/${user.id}`
+                    : `/admin/assignments/students/${user.id}/history`,
+                  backState(
+                    `/admin/users?role=${user.role}`,
+                    `User Accounts · ${USER_ROLE_LABEL[user.role]} filter`,
+                  ),
+                )
               }
               onToggle={() => handlers.onToggle(user)}
             />

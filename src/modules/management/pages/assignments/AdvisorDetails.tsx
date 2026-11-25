@@ -16,8 +16,8 @@ export default function AdvisorDetails() {
   const { data, isLoading, isError, refetch } = s.assignmentQuery;
 
   const back = (
-    <Link to={backTarget.to} className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
-      <ChevronLeft className="size-4" />
+    <Link to={backTarget.to} className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#F26F21]">
+      <ChevronLeft className="size-3.5" />
       Back to {backTarget.label}
     </Link>
   );
@@ -51,14 +51,8 @@ export default function AdvisorDetails() {
     s.students.filter((st) => s.selected.has(st.id)).map((st) => ({ id: st.id, name: st.fullName }));
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <div>
-        {back}
-        <h1 className="mt-3 text-2xl font-semibold text-[#151c27]">Advisor Assignment Details</h1>
-        <p className="mt-1 text-sm text-[#555f6f]">
-          Current student assignments for {advisor.fullName} · {advisor.email}
-        </p>
-      </div>
+    <div className="flex w-full flex-col gap-4">
+      <div>{back}</div>
 
       <AdvisorProfileCard
         advisor={advisor}

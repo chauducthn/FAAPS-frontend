@@ -14,8 +14,9 @@ export function buildAdvisorStudentColumns(actions: {
   advisorName: string;
   onReassignOne: (student: { id: string; name: string }) => void;
   onUnassignOne: (student: { id: string; name: string }) => void;
+  onHistoryOne?: (student: { id: string; code: string; name: string }) => void;
 }): StaticColumn<AdvisorStudentRow>[] {
-  const { advisorId, advisorName, onReassignOne, onUnassignOne } = actions;
+  const { advisorId, advisorName, onReassignOne, onUnassignOne, onHistoryOne } = actions;
   return [
 
     {
@@ -69,13 +70,23 @@ export function buildAdvisorStudentColumns(actions: {
             )}>
             Unassign
           </button>
-          <Link
-            to={`/admin/assignments/students/${row.id}/history`}
-            state={backState(`/admin/assignments/advisors/${advisorId}`, `Advisor ${advisorName}`)}
-            className={advisorStudentBtn}
-          >
-            History
-          </Link>
+          {onHistoryOne ? (
+            <button
+              type="button"
+              onClick={() => onHistoryOne({ id: row.id, code: row.studentCode, name: row.fullName })}
+              className={advisorStudentBtn}
+            >
+              History
+            </button>
+          ) : (
+            <Link
+              to={`/admin/assignments/students/${row.id}/history`}
+              state={backState(`/admin/assignments/advisors/${advisorId}`, `Advisor ${advisorName}`)}
+              className={advisorStudentBtn}
+            >
+              History
+            </Link>
+          )}
         </div>
       ),
     },

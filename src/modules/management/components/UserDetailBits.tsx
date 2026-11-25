@@ -53,7 +53,7 @@ export function UserDetailField({
 
 export function UserDetailSkeleton({ onClose }: { onClose: () => void }) {
   return (
-    <div aria-label="Loading user detail">
+    <div aria-label="Loading user detail" className="flex h-[520px] max-h-[85vh] flex-col">
       <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
         <div className="flex items-start gap-3.5">
           <div className="size-11 animate-pulse rounded-xl bg-gray-100" />

@@ -1,131 +1,147 @@
 import type { ReactNode } from 'react';
-import { BookOpenCheck, FileSpreadsheet, GraduationCap, Layers, Plus } from 'lucide-react';
+import { BookOpenCheck, CircleOff, FileSpreadsheet, GraduationCap, Layers, Plus } from 'lucide-react';
 import type { CurriculumKind } from '../../../academic/hooks/queries/useCurriculumsQuery';
+import { cn } from '@/shared/lib/utils';
 
-export function CurriculumManagerHeader({
+function StatItem({
+  icon,
+  label,
+  value,
+  sub,
+  tone = 'slate',
+  active,
+  onClick,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: 'slate' | 'emerald' | 'amber' | 'orange';
+  active?: boolean;
+  onClick?: () => void;
+}) {
+  const iconTone = {
+    slate: 'bg-gray-100 text-gray-700',
+    emerald: 'bg-emerald-50 text-emerald-700',
+    amber: 'bg-amber-50 text-amber-700',
+    orange: 'bg-orange-50 text-[#C2410C]',
+  } as const;
+  const activeTone = {
+    slate: 'border-gray-400 bg-gray-50/70',
+    emerald: 'border-emerald-400/70 bg-emerald-50/40',
+    amber: 'border-amber-400/70 bg-amber-50/40',
+    orange: 'border-[#F26F21]/60 bg-orange-50/40',
+  } as const;
+
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-3 rounded-xl border bg-white px-3.5 py-2.5 text-left transition-colors',
+        onClick && 'cursor-pointer',
+        active ? activeTone[tone] : 'border-gray-200/80 hover:border-gray-300',
+      )}
+    >
+      <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg', iconTone[tone])}>
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
+        <div className="mt-0.5 flex items-baseline gap-1.5">
+          <span className="text-lg font-bold leading-none tabular-nums text-gray-900">{value}</span>
+          {sub && <span className="truncate text-xs text-gray-400">{sub}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function CurriculumManagerTopBar({
   kind,
-  title,
-  subtitle,
+  plural,
   createLabel,
+  totalElements,
+  shownCount,
+  activeOnPage,
+  inactiveOnPage,
+  creditsOnPage,
+  activeStatus,
   disableImport,
+  onSelectStatus,
+  onClearAll,
   onOpenImport,
   onOpenCreate,
 }: {
   kind: CurriculumKind;
-  title: string;
-  subtitle: string;
+  plural: string;
   createLabel: string;
+  totalElements: number | undefined;
+  shownCount: number;
+  activeOnPage: number;
+  inactiveOnPage: number;
+  creditsOnPage: number;
+  activeStatus: string;
   disableImport: boolean;
+  onSelectStatus: (status: string) => void;
+  onClearAll: () => void;
   onOpenImport: () => void;
   onOpenCreate: () => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-[var(--brand)] text-white shadow-[0_4px_12px_rgba(242,111,33,0.35)]">
-          <GraduationCap className="size-5.5" />
-        </span>
-        <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-gray-900">{title}</h1>
-          <p className="mt-0.5 max-w-[560px] text-xs leading-relaxed text-gray-500">{subtitle}</p>
-        </div>
+    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div className="grid flex-1 grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <StatItem
+          icon={<Layers className="size-4" />}
+          label={`Total ${plural}`}
+          value={totalElements !== undefined ? String(totalElements) : '—'}
+          tone="slate"
+          active={!activeStatus}
+          onClick={onClearAll}
+        />
+        <StatItem
+          icon={<BookOpenCheck className="size-4" />}
+          label="Active"
+          value={String(activeOnPage)}
+          sub={`of ${shownCount}`}
+          tone="emerald"
+          active={activeStatus === 'ACTIVE'}
+          onClick={() => onSelectStatus(activeStatus === 'ACTIVE' ? '' : 'ACTIVE')}
+        />
+        <StatItem
+          icon={<CircleOff className="size-4" />}
+          label="Inactive"
+          value={String(inactiveOnPage)}
+          tone="amber"
+          active={activeStatus === 'INACTIVE'}
+          onClick={() => onSelectStatus(activeStatus === 'INACTIVE' ? '' : 'INACTIVE')}
+        />
+        <StatItem
+          icon={<GraduationCap className="size-4" />}
+          label="Credits"
+          value={String(creditsOnPage)}
+          sub="shown"
+          tone="orange"
+        />
       </div>
-      <div className="flex flex-wrap items-center gap-2">
+
+      <div className="flex shrink-0 items-center justify-end gap-2">
         {kind === 'curriculum' && (
           <button
             type="button"
             disabled={disableImport}
             onClick={onOpenImport}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-white px-4 py-2.5 text-xs font-bold text-[#a43e08] shadow-sm hover:bg-orange-50 disabled:opacity-50"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <FileSpreadsheet className="size-4" /> Import Excel
+            <FileSpreadsheet className="size-4 text-gray-500" aria-hidden /> Import Excel
           </button>
         )}
         <button
           type="button"
           onClick={onOpenCreate}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:-translate-y-px hover:bg-[#e05f14] hover:shadow-[0_4px_14px_rgba(242,111,33,0.45)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50 active:translate-y-0"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
         >
-          <Plus className="size-4" strokeWidth={2.5} /> {createLabel}
+          <Plus className="size-4" strokeWidth={2.25} aria-hidden /> {createLabel}
         </button>
-      </div>
-    </div>
-  );
-}
-
-interface Props {
-  plural: string;
-  totalElements: number | undefined;
-  totalPages: number | undefined;
-  page: number;
-  isFetching: boolean;
-  shownCount: number;
-  activeOnPage: number;
-  creditsOnPage: number;
-}
-
-export function CurriculumManagerKpis({
-  plural,
-  totalElements,
-  totalPages,
-  page,
-  isFetching,
-  shownCount,
-  activeOnPage,
-  creditsOnPage,
-}: Props) {
-  return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <Kpi
-        icon={<Layers className="size-4" />}
-        label={`Total ${plural}`}
-        value={String(totalElements ?? '—')}
-        hint={isFetching ? 'Refreshing…' : `Page ${page + 1} of ${Math.max(1, totalPages ?? 1)}`}
-      />
-      <Kpi
-        icon={<BookOpenCheck className="size-4" />}
-        label="Active on this page"
-        value={String(activeOnPage)}
-        hint={`${shownCount} shown`}
-        tone="green"
-      />
-      <Kpi
-        icon={<GraduationCap className="size-4" />}
-        label="Credits on this page"
-        value={String(creditsOnPage)}
-        hint="Sum of totalCredits"
-        tone="orange"
-      />
-    </div>
-  );
-}
-
-function Kpi({
-  icon,
-  label,
-  value,
-  hint,
-  tone = 'gray',
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  hint: string;
-  tone?: 'gray' | 'green' | 'orange';
-}) {
-  const tones = {
-    gray: 'bg-gray-100 text-gray-600',
-    green: 'bg-emerald-100 text-emerald-700',
-    orange: 'bg-orange-100 text-[#C2410C]',
-  } as const;
-  return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-200/80 bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-      <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${tones[tone]}`}>{icon}</span>
-      <div className="min-w-0">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
-        <p className="text-lg font-extrabold tabular-nums leading-tight text-gray-900">
-          {value} <span className="text-[11px] font-medium text-gray-400">{hint}</span>
-        </p>
       </div>
     </div>
   );

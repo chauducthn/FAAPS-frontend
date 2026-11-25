@@ -1,6 +1,6 @@
-// Change the role of one account.
+// Change the role (and matching email when needed) of one account.
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, GraduationCap, Loader2, UserRound } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, ChevronDown, GraduationCap, Loader2, UserRound, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
@@ -11,11 +11,13 @@ import {
   STUDENT_ID_PATTERN,
   emailMatchesRole,
   emailRoleErrorMessage,
-  hasAllowedEmailDomain,
   parseStudentId,
+  suggestRoleEmail,
 } from '../utils/accountRules';
 import type { AdminUserRole, AdminUserSummary } from '../types/admin';
+import { userFieldClass, userLabelClass } from './createUserSchema';
 import { SetRoleStudentFields } from './SetRoleStudentFields';
+import { useSingleEmailAvailability } from './useRoleEmailCheck';
 
 interface Props {
   open: boolean;
@@ -24,71 +26,72 @@ interface Props {
   onDone?: () => void;
 }
 
-const field =
-  'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3.5 py-2.5 text-[13px] font-medium text-gray-900 placeholder:font-normal placeholder:text-gray-400 transition-all focus:border-[#F26F21] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20';
-
 export function SetRoleModal({ open, user, onClose, onDone }: Props) {
   const changeRole = useChangeUserRole();
   const curriculums = useCurriculumsQuery('curriculum', { status: 'ACTIVE', page: 0, size: 100 });
-
   const [target, setTarget] = useState<AdminUserRole>('ADVISOR');
+  const [email, setEmail] = useState('');
   const [studentCode, setStudentCode] = useState('');
   const [curriculumId, setCurriculumId] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open || !user) return;
-    setTarget(user.role === 'STUDENT' ? 'ADVISOR' : 'STUDENT');
+    const nextRole: AdminUserRole = user.role === 'STUDENT' ? 'ADVISOR' : 'STUDENT';
+    setTarget(nextRole);
+    setEmail(emailMatchesRole(user.email, nextRole) ? user.email : suggestRoleEmail(user.email, nextRole));
     setStudentCode(user.role === 'STUDENT' ? user.userId : '');
     setCurriculumId('');
     setError(null);
   }, [open, user]);
+
+  const trimmedEmail = email.trim().toLowerCase();
+  const emailValidDomain = trimmedEmail.length > 0 && emailMatchesRole(trimmedEmail, target);
+  const emailChanged = user ? trimmedEmail !== user.email.trim().toLowerCase() : false;
+  const { available: emailAvailable, checking: checkingEmail } = useSingleEmailAvailability(
+    open,
+    user?.id,
+    trimmedEmail,
+    emailChanged && emailValidDomain,
+  );
 
   const curriculumList = useMemo(() => curriculums.data?.items ?? [], [curriculums.data]);
   const identity = useMemo(() => parseStudentId(studentCode), [studentCode]);
 
   if (!user) return null;
 
-  const emailConflict =
-    hasAllowedEmailDomain(user.email) && !emailMatchesRole(user.email, target);
+  const sameRole = target === user.role;
+  const emailTaken = emailChanged && emailAvailable === false;
   const studentCodeInvalid = target === 'STUDENT' && !STUDENT_ID_PATTERN.test(studentCode.trim().toUpperCase());
+  const blocked = sameRole || !emailValidDomain || emailTaken || checkingEmail || studentCodeInvalid;
+
+  const handleTargetChange = (nextRole: AdminUserRole) => {
+    setTarget(nextRole);
+    setEmail(emailMatchesRole(user.email, nextRole) ? user.email : suggestRoleEmail(user.email, nextRole));
+    setError(null);
+  };
 
   const submit = async () => {
-    if (emailConflict) {
-      setError(emailRoleErrorMessage(target));
-      return;
-    }
-    if (target === 'STUDENT') {
-      if (studentCodeInvalid) {
-        setError(STUDENT_ID_ERROR_MESSAGE);
-        return;
-      }
-      const curriculum = curriculumList.find((item) => item.id === curriculumId);
-      if (!curriculum) {
-        setError('Select the curriculum the student follows.');
-        return;
-      }
-      setError(null);
-      try {
-        await changeRole.mutateAsync({
-          id: user.id,
-          role: target,
-          studentCode: studentCode.trim().toUpperCase(),
-          curriculumVersionId: curriculum.id,
-          enrollmentSemesterId: curriculum.effectiveFromSemesterId,
-        });
-        toast.success(`${user.fullName} is now a Student.`);
-        onDone?.();
-        onClose();
-      } catch (cause) {
-        setError(apiErrorMessage(cause));
-      }
-      return;
-    }
+    if (!emailValidDomain) return setError(emailRoleErrorMessage(target));
+    if (emailTaken) return setError('This email is already in use by another account.');
+    const curriculum = target === 'STUDENT' ? curriculumList.find((item) => item.id === curriculumId) : undefined;
+    if (target === 'STUDENT' && studentCodeInvalid) return setError(STUDENT_ID_ERROR_MESSAGE);
+    if (target === 'STUDENT' && !curriculum) return setError('Select the curriculum the student follows.');
     setError(null);
     try {
-      await changeRole.mutateAsync({ id: user.id, role: target });
-      toast.success(`${user.fullName} is now an Advisor.`);
+      await changeRole.mutateAsync({
+        id: user.id,
+        role: target,
+        email: emailChanged ? trimmedEmail : undefined,
+        ...(target === 'STUDENT' && curriculum
+          ? {
+              studentCode: studentCode.trim().toUpperCase(),
+              curriculumVersionId: curriculum.id,
+              enrollmentSemesterId: curriculum.effectiveFromSemesterId,
+            }
+          : {}),
+      });
+      toast.success(`${user.fullName} is now ${target === 'STUDENT' ? 'a Student' : 'an Advisor'}.`);
       onDone?.();
       onClose();
     } catch (cause) {
@@ -96,48 +99,70 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
     }
   };
 
-  const blocked = emailConflict || studentCodeInvalid;
-
   return (
-    <Modal open={open} onClose={() => !changeRole.isPending && onClose()} title="Change user role" className="max-w-lg">
-      <div className="flex flex-col gap-4 overflow-y-auto p-6">
-        <div className="flex items-start gap-3.5">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
-            {target === 'STUDENT' ? <GraduationCap className="size-5" /> : <UserRound className="size-5" />}
+    <Modal open={open} onClose={() => !changeRole.isPending && onClose()} title="Set role" className="max-w-lg">
+      <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
+        <div className="flex items-center gap-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
+            {target === 'STUDENT' ? <GraduationCap className="size-4.5" /> : <UserRound className="size-4.5" />}
           </span>
-          <div className="min-w-0">
-            <h2 className="text-[15px] font-bold leading-snug text-[#111827]">
-              Set role: {target === 'STUDENT' ? 'Student' : 'Advisor'}?
-            </h2>
-            <p className="mt-1 text-[13px] leading-relaxed text-gray-600">
-              {user.fullName} is currently a {user.role === 'STUDENT' ? 'Student' : 'Advisor'} and signs in as{' '}
-              <span className="font-semibold text-gray-800">{user.email}</span>.
+          <div>
+            <h2 className="text-base font-bold text-gray-900">Set role</h2>
+            <p className="text-xs text-gray-500">
+              {user.fullName} · currently {user.role === 'STUDENT' ? 'Student' : 'Advisor'}
             </p>
           </div>
         </div>
+        <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
+          <X className="size-4" />
+        </button>
+      </div>
 
-        <div className="grid grid-cols-2 gap-2 rounded-xl bg-gray-100 p-1" role="radiogroup" aria-label="New role">
-          {(['STUDENT', 'ADVISOR'] as const).map((r) => (
-            <label
-              key={r}
-              className={[
-                'cursor-pointer rounded-lg px-3 py-2 text-center text-xs font-bold transition-all',
-                target === r ? 'bg-white text-[#C2410C] shadow-xs ring-1 ring-orange-200' : 'text-gray-400 hover:text-gray-600',
-              ].join(' ')}
-            >
-              <input
-                type="radio"
-                value={r}
-                checked={target === r}
-                onChange={() => {
-                  setTarget(r);
-                  setError(null);
-                }}
-                className="sr-only"
-              />
-              {r === 'STUDENT' ? 'Student' : 'Advisor'}
-            </label>
-          ))}
+      <div className="space-y-4 overflow-y-auto px-6 py-5">
+        <div>
+          <label className={userLabelClass}>New role</label>
+          <div className="relative">
+            <select value={target} onChange={(e) => handleTargetChange(e.target.value as AdminUserRole)} aria-label="New role" className={`${userFieldClass(false)} appearance-none pr-9 font-medium`}>
+              <option value="STUDENT">Student</option>
+              <option value="ADVISOR">Advisor</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          </div>
+        </div>
+
+        <div>
+          <label className={userLabelClass}>Account email <span className="text-[#F26F21]">*</span></label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError(null);
+            }}
+            aria-label="Account email"
+            placeholder={target === 'STUDENT' ? 'name@fpt.edu.vn' : 'name@fe.edu.vn'}
+            className={userFieldClass(!emailValidDomain || emailTaken)}
+          />
+          {!emailValidDomain && (
+            <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-red-600">
+              <AlertTriangle className="size-3.5 shrink-0" /> {emailRoleErrorMessage(target)}
+            </p>
+          )}
+          {emailValidDomain && checkingEmail && (
+            <p className="mt-1.5 flex items-center gap-1 text-xs text-gray-500">
+              <Loader2 className="size-3 animate-spin" /> Checking availability…
+            </p>
+          )}
+          {emailValidDomain && !checkingEmail && emailChanged && emailAvailable === true && (
+            <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-emerald-700">
+              <CheckCircle2 className="size-3.5 shrink-0" /> Email is available
+            </p>
+          )}
+          {emailTaken && (
+            <p role="alert" className="mt-1.5 flex items-center gap-1 text-xs font-medium text-red-600">
+              <AlertTriangle className="size-3.5 shrink-0" /> This email is already in use by another account.
+            </p>
+          )}
         </div>
 
         {target === 'STUDENT' && (
@@ -146,45 +171,24 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
             curriculumId={curriculumId}
             curriculumList={curriculumList}
             identity={identity}
-            fieldClass={field}
+            fieldClass={userFieldClass(false)}
             onStudentCodeChange={setStudentCode}
             onCurriculumChange={setCurriculumId}
           />
         )}
 
-        {emailConflict && (
-          <p role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-3 text-[13px] font-semibold leading-relaxed text-red-700">
-            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-            {emailRoleErrorMessage(target)} This account signs in as {user.email}, so the role cannot be changed until the
-            address is updated.
-          </p>
-        )}
-
         {error && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-            {error}
-          </p>
+          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>
         )}
       </div>
 
-      <div className="flex flex-col-reverse justify-end gap-2 border-t border-[#e5e7eb] p-4 sm:flex-row sm:px-6">
-        <button
-          type="button"
-          disabled={changeRole.isPending}
-          onClick={onClose}
-          className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-200 disabled:opacity-50"
-        >
+      <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/70 px-6 py-3.5">
+        <button type="button" disabled={changeRole.isPending} onClick={onClose} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
           Cancel
         </button>
-        <button
-          type="button"
-          disabled={changeRole.isPending || blocked}
-          title={blocked ? 'Fix the highlighted fields to continue' : undefined}
-          onClick={submit}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#f37021] px-5 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <button type="button" disabled={changeRole.isPending || blocked} onClick={submit} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#F26F21] px-4 text-sm font-semibold text-white hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55">
           {changeRole.isPending && <Loader2 className="size-4 animate-spin" />}
-          {changeRole.isPending ? 'Changing…' : 'Confirm role change'}
+          {changeRole.isPending ? 'Saving…' : 'Confirm role change'}
         </button>
       </div>
     </Modal>

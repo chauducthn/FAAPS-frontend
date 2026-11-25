@@ -16,7 +16,7 @@ export function UserDetailModal({ userId, onClose }: { userId: string | null; on
       {isLoading ? (
         <UserDetailSkeleton onClose={onClose} />
       ) : isError || !user ? (
-        <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
+        <div className="flex h-[520px] max-h-[85vh] flex-col items-center justify-center gap-3 px-6 text-center">
           <span className="flex size-11 items-center justify-center rounded-xl bg-red-50 text-red-500">
             <CircleAlert className="size-5" />
           </span>
@@ -42,7 +42,7 @@ export function UserDetailModal({ userId, onClose }: { userId: string | null; on
           </div>
         </div>
       ) : (
-        <div className="flex max-h-[85vh] flex-col">
+        <div className="flex h-[520px] max-h-[85vh] flex-col">
           <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-white px-6 py-5">
             <div className="flex min-w-0 items-start gap-3.5">
               <span

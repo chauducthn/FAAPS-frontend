@@ -11,6 +11,7 @@ import {
   useUnassignedStudents,
 } from '../../hooks/queries/useAdminAssignments';
 import type { SummaryCohort, UnassignedStudent } from '../../types/admin';
+import type { AdvisoryLimitTarget } from '../../components/AdvisoryLimitModal';
 import { ASSIGNMENT_TABS, type AssignmentTab } from './AssignmentsToolbar';
 import type { AdvisorRowItem } from './AssignmentsTables';
 
@@ -27,11 +28,19 @@ export function useAssignmentsOverviewState() {
   const [majorFilter, setMajorFilter] = useState('');
   const [page, setPage] = useState(0);
 
-  const [assignCohortFor, setAssignCohortFor] = useState<{ cohortId?: string; advisorId?: string } | null>(null);
+  const [assignCohortFor, setAssignCohortFor] = useState<{
+    cohortId?: string;
+    advisorId?: string;
+    initialCohortIds?: string[];
+    bulkAdvisors?: { id: string; name: string }[];
+  } | null>(null);
+  const [selectedAdvisorIds, setSelectedAdvisorIds] = useState<Set<string>>(new Set());
+  const [limitTarget, setLimitTarget] = useState<AdvisoryLimitTarget | null>(null);
+  const [detailAdvisorId, setDetailAdvisorId] = useState<string | null>(null);
   const [autoFor, setAutoFor] = useState<SummaryCohort | null>(null);
   const [poolFor, setPoolFor] = useState<SummaryCohort | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
-  const [bulkAssignStudents, setBulkAssignStudents] = useState<{ id: string; name: string }[] | null>(null);
+  const [bulkAssignStudents, setBulkAssignStudents] = useState<{ id: string; name: string; cohortId?: string }[] | null>(null);
 
   const summary = useAssignmentSummary();
   const advisors = useAssignmentAdvisors();
@@ -67,7 +76,7 @@ export function useAssignmentsOverviewState() {
     (advisorRows.data ?? []).forEach((r) => {
       const item = map.get(r.advisorId) ?? { id: r.advisorId, email: r.email, name: r.fullName, limit: r.maxAdvisees, chips: [] };
       if (r.cohortId) {
-        item.chips.push({ key: r.cohortId, majorCode: r.majorCode ?? '', text: `${r.majorCode} ${r.cohort}`, inPool: r.inPool, students: r.studentCount });
+        item.chips.push({ key: r.cohortId, majorCode: r.majorCode ?? '', cohort: r.cohort ?? '', inPool: r.inPool, students: r.studentCount });
       }
       map.set(r.advisorId, item);
     });
@@ -79,8 +88,29 @@ export function useAssignmentsOverviewState() {
     );
   }, [advisorRows.data, term, majorFilter, cohortFilter]);
 
+  const poolAdvisorsByCohort = useMemo(() => {
+    const map = new Map<string, Set<string>>();
+    (advisorRows.data ?? []).forEach((r) => {
+      if (r.cohortId && r.inPool) {
+        const set = map.get(r.cohortId) ?? new Set<string>();
+        set.add(r.advisorId);
+        map.set(r.cohortId, set);
+      }
+    });
+    return map;
+  }, [advisorRows.data]);
+
+  const poolCountByCohort = useMemo(() => {
+    const counts = new Map<string, number>();
+    poolAdvisorsByCohort.forEach((set, cohortId) => counts.set(cohortId, set.size));
+    return counts;
+  }, [poolAdvisorsByCohort]);
+
   const loadOf = (id: string) => advisors.data?.find((a) => a.id === id)?.activeStudents ?? 0;
-  const unassignedRows = useMemo(() => unassigned.data?.items ?? [], [unassigned.data]);
+  const unassignedRows = useMemo(() => {
+    const items = unassigned.data?.items ?? [];
+    return majorFilter && !cohortFilter ? items.filter((s) => s.majorCode === majorFilter) : items;
+  }, [unassigned.data, majorFilter, cohortFilter]);
   const hasFilter = !!search || !!cohortFilter || !!majorFilter || pendingOnly;
 
   const runAutoAssign = async (students: Pick<UnassignedStudent, 'id' | 'cohortId'>[]) => {
@@ -96,10 +126,12 @@ export function useAssignmentsOverviewState() {
   return {
     tab, pendingOnly, setParams, search, setSearch, cohortFilter, setCohortFilter,
     majorFilter, setMajorFilter, page, setPage,
-    assignCohortFor, setAssignCohortFor, autoFor, setAutoFor, poolFor, setPoolFor,
+    assignCohortFor, setAssignCohortFor, selectedAdvisorIds, setSelectedAdvisorIds,
+    limitTarget, setLimitTarget, detailAdvisorId, setDetailAdvisorId,
+    autoFor, setAutoFor, poolFor, setPoolFor,
     pickerOpen, setPickerOpen, bulkAssignStudents, setBulkAssignStudents,
     summary, advisors, advisorRows, autoAssign, unassigned, autoPool,
-    cohorts, waitingCohorts, majors, advisorCohortOptions, advisorList,
+    cohorts, waitingCohorts, majors, advisorCohortOptions, advisorList, poolCountByCohort, poolAdvisorsByCohort,
     loadOf, unassignedRows, hasFilter, setTab, runAutoAssign,
   };
 }

@@ -48,10 +48,10 @@ function StatItem({
         {icon}
       </span>
       <div className="min-w-0">
-        <p className="truncate text-[11px] font-medium text-gray-500">{label}</p>
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-base font-bold leading-tight tabular-nums text-gray-900">{value}</span>
-          {sub && <span className="truncate text-[11px] text-gray-400">{sub}</span>}
+        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
+        <div className="mt-0.5 flex items-baseline gap-1.5">
+          <span className="text-lg font-bold leading-none tabular-nums text-gray-900">{value}</span>
+          {sub && <span className="truncate text-xs text-gray-400">{sub}</span>}
         </div>
       </div>
     </div>
@@ -150,17 +150,17 @@ export function UserAccountsHeader({
           type="button"
           onClick={onExport}
           disabled={!canExport || isExporting}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isExporting ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+          {isExporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
           {isExporting ? 'Exporting…' : 'Export CSV'}
         </button>
         <button
           type="button"
           onClick={onCreate}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
         >
-          <Plus className="size-3.5" strokeWidth={2.5} /> Create user
+          <Plus className="size-4" strokeWidth={2.25} /> Create user
         </button>
       </div>
     </div>

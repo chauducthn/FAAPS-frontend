@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, UserCheck } from 'lucide-react';
+import { AlertTriangle, ChevronDown, UserCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { LoadBadge } from './LoadBadge';
 import { useAssignStudents, usePreviewAssign } from '../hooks/queries/useAdminAssignments';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
 import type { AssignPreview, AssignmentAdvisor } from '../types/admin';
+import {
+  AssignmentModalFooter,
+  AssignmentModalHeader,
+  assignmentCancelBtn,
+  assignmentPrimaryBtn,
+  assignmentSelectClass,
+  assignmentTextareaClass,
+} from './AssignmentModalChrome';
 
 interface AssignToAdvisorModalProps {
   open: boolean;
   onClose: () => void;
-  /** Students to give to the chosen advisor. */
   students: { id: string; name: string }[];
   advisors: AssignmentAdvisor[];
   onDone?: () => void;
@@ -30,7 +37,6 @@ export function AssignToAdvisorModal({ open, onClose, students, advisors, onDone
     setPreview(null);
     setError(null);
     setNotes('');
-    // Reset only when the dialog is (re)opened.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -56,10 +62,7 @@ export function AssignToAdvisorModal({ open, onClose, students, advisors, onDone
     setError(null);
     try {
       const res = await assignMutation.mutateAsync({
-        studentIds: ids,
-        advisorId,
-        acknowledge: (preview?.appointmentCount ?? 0) > 0,
-        notes: notes.trim() || undefined,
+        studentIds: ids, advisorId, acknowledge: (preview?.appointmentCount ?? 0) > 0, notes: notes.trim() || undefined,
       });
       toast.success(`${res.assigned} student${res.assigned === 1 ? '' : 's'} assigned to ${advisor?.fullName}.`);
       if (res.warning) toast.warning(`${advisor?.fullName} is now ${res.overLimitBy} over the advisory limit.`);
@@ -71,104 +74,99 @@ export function AssignToAdvisorModal({ open, onClose, students, advisors, onDone
   };
 
   const cancelling = preview?.appointmentCount ?? 0;
+  const subtitle = `${students.length} student${students.length === 1 ? '' : 's'} selected${students.length <= 3 ? `: ${students.map((s) => s.name).join(', ')}` : ''}`;
 
   return (
     <Modal open={open} onClose={onClose} title="Assign to Advisor" className="max-w-xl">
-      <div className="flex flex-col gap-4 overflow-y-auto p-6">
+      <AssignmentModalHeader icon={UserCheck} title="Assign to Advisor" subtitle={subtitle} onClose={onClose} />
+      <div className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
         <div>
-          <h2 className="text-xl font-semibold text-[#151c27]">Assign to Advisor</h2>
-          <p className="mt-1 text-[13px] text-[#555f6f]">
-            {students.length} student{students.length === 1 ? '' : 's'} selected
-            {students.length <= 3 ? `: ${students.map((s) => s.name).join(', ')}` : ''}
-          </p>
+          <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Advisor</label>
+          {advisors.length === 0 ? (
+            <p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              No advisor is assigned to this cohort yet (or selected students belong to different cohorts). Assign an advisor to the cohort first.
+            </p>
+          ) : (
+            <div className="relative">
+              <select
+                value={advisorId}
+                onChange={(e) => choose(e.target.value)}
+                aria-label="Choose an advisor"
+                className={assignmentSelectClass}
+              >
+                <option value="">Choose an advisor...</option>
+                {advisors.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.fullName} ({a.activeStudents}/{a.maxAdvisees ?? 'no limit'})
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+            </div>
+          )}
         </div>
 
-        <label className="flex flex-col gap-1 text-sm font-semibold text-[#151c27]">
-          Advisor
-          <select
-            value={advisorId}
-            onChange={(e) => choose(e.target.value)}
-            aria-label="Choose an advisor"
-            className="h-[38px] rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-          >
-            <option value="">Choose an advisor...</option>
-            {advisors.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.fullName} ({a.activeStudents}/{a.maxAdvisees ?? 'no limit'})
-              </option>
-            ))}
-          </select>
-        </label>
-
         {advisor && (
-          <div className="flex items-center justify-between rounded-lg bg-[#f7f8fa] px-4 py-3 text-sm">
-            <span className="text-[#555f6f]">After this change {advisor.fullName} will have</span>
+          <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/70 px-3.5 py-2.5 text-xs">
+            <span className="text-gray-600">After this change <strong className="text-gray-900">{advisor.fullName}</strong> will have</span>
             <LoadBadge count={loadAfter} limit={advisor.maxAdvisees} />
           </div>
         )}
         {overBy > 0 && (
-          <p className="flex items-start gap-2 rounded-lg bg-[#fffbeb] px-3 py-2 text-[13px] text-[#b45309]">
+          <p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-            This is {overBy} over the advisory limit of {advisor?.maxAdvisees}. You can still continue; the limit is a warning, not a block.
+            This is {overBy} over the advisory limit of {advisor?.maxAdvisees}. The limit is a warning, not a block.
           </p>
         )}
 
-        <label className="flex flex-col gap-1 text-sm font-semibold text-[#151c27]">
-          Note <span className="font-normal text-[#555f6f]">(optional, saved in the assignment history)</span>
+        <div>
+          <label className="mb-1.5 block text-[13px] font-medium text-gray-700">
+            Note <span className="font-normal text-gray-400">(optional)</span>
+          </label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             maxLength={500}
             rows={2}
             placeholder="Why is this assignment being made?"
-            className="rounded-lg border border-[#e5e7eb] p-2 text-sm font-normal text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
+            className={assignmentTextareaClass}
           />
-        </label>
+        </div>
 
-        {previewMutation.isPending && <p className="text-sm text-[#555f6f]">Checking appointments...</p>}
+        {previewMutation.isPending && <p className="text-xs text-gray-500">Checking appointments...</p>}
         {cancelling > 0 && preview && (
-          <div className="rounded-lg border border-[#fecaca] bg-[#fef2f2] p-3 text-[13px] text-[#7f1d1d]">
-            <p className="flex items-center gap-2 font-semibold">
-              <AlertTriangle className="size-4" />
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-900">
+            <p className="flex items-center gap-1.5 font-semibold">
+              <AlertTriangle className="size-3.5" />
               {cancelling} future appointment{cancelling === 1 ? '' : 's'} will be cancelled
             </p>
-            <ul className="mt-2 flex max-h-40 flex-col gap-1 overflow-y-auto">
+            <ul className="mt-1.5 flex max-h-36 flex-col gap-1 overflow-y-auto">
               {preview.scheduledAppointments.map((a) => (
                 <li key={a.appointmentId}>
                   {nameById.get(a.studentId) ?? 'Student'} · {new Date(a.scheduledAt).toLocaleString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false,
+                    year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false,
                   })}
                 </li>
               ))}
             </ul>
-            <p className="mt-2">The students are notified and need to book again with the new advisor.</p>
+            <p className="mt-1.5 text-red-700">The students are notified and need to book again with the new advisor.</p>
           </div>
         )}
-        {error && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-            {error}
-          </p>
-        )}
+        {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>}
       </div>
-      <div className="flex flex-col-reverse justify-end gap-2 border-t border-[#e5e7eb] p-4 sm:flex-row sm:px-6">
-        <button type="button" onClick={onClose} className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-200">
-          Cancel
-        </button>
+      <AssignmentModalFooter>
+        <button type="button" onClick={onClose} className={assignmentCancelBtn}>Cancel</button>
         <button
           type="button"
           disabled={!advisorId || !preview || assignMutation.isPending || students.length === 0}
           onClick={confirm}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#f37021] px-5 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-50"
+          className={assignmentPrimaryBtn}
         >
           <UserCheck className="size-4" aria-hidden />
           {assignMutation.isPending ? 'Assigning...' : cancelling > 0 ? `Assign and cancel ${cancelling}` : 'Assign'}
         </button>
-      </div>
+      </AssignmentModalFooter>
     </Modal>
   );
 }

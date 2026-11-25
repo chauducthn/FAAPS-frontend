@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
-import { CheckCircle2, KeyRound, ShieldOff } from 'lucide-react';
+import { ArrowLeftRight, CheckCircle2, KeyRound, ShieldOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { NO_PASSWORD_REASON } from '../components/UserRowMenu';
 import { canResetPassword } from '../utils/passwordReset';
@@ -23,7 +23,7 @@ export default function UserAccounts() {
         onView: s.setDetailId,
         onRole: s.setRoleChange,
         onResetPassword: (user) => s.askReset([user]),
-        onAssignments: (id, state) => navigate(`/admin/assignments/advisors/${id}`, { state }),
+        onAssignments: (path, state) => navigate(path, { state }),
         onToggle: (user) =>
           s.setConfirm({
             ids: [user.id],
@@ -114,22 +114,29 @@ export default function UserAccounts() {
                 <>
                   <button
                     type="button"
+                    onClick={() => s.setBulkRoleTargets(selectedRows)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-800 ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
+                  >
+                    <ArrowLeftRight className="size-3.5" aria-hidden /> Set role
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => s.askReset(selectedRows)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-800 ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
                   >
                     <KeyRound className="size-3.5" aria-hidden /> Reset password
                   </button>
                   <button
                     type="button"
                     onClick={() => s.askBulk(selectedRows, 'ACTIVE')}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
                   >
                     <CheckCircle2 className="size-3.5" aria-hidden /> Activate
                   </button>
                   <button
                     type="button"
                     onClick={() => s.askBulk(selectedRows, 'SUSPENDED')}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"
                   >
                     <ShieldOff className="size-3.5" aria-hidden /> Suspend
                   </button>
@@ -149,6 +156,8 @@ export default function UserAccounts() {
         onCreated={handleCreated}
         roleChange={s.roleChange}
         onCloseRoleChange={() => s.setRoleChange(null)}
+        bulkRoleTargets={s.bulkRoleTargets}
+        onCloseBulkRole={() => s.setBulkRoleTargets(null)}
         onRoleDone={() => void usersQuery.refetch()}
         resetTargets={s.resetTargets}
         resetPending={s.resetPasswords.isPending}

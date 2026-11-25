@@ -74,6 +74,12 @@ export const assignmentService = {
   replaceCohortPool: async (cohortId: string, advisorIds: string[]): Promise<CohortPoolAdvisor[]> =>
     (await apiClient.put<CohortPoolAdvisor[]>(`${BASE}/cohorts/${cohortId}/advisors`, { advisorIds }, { headers: await getCsrfHeaders() })).data,
 
+  replaceAdvisorCohorts: async (advisorId: string, cohortIds: string[]): Promise<{ advisorId: string; cohorts: number }> =>
+    (await apiClient.put<{ advisorId: string; cohorts: number }>(`${BASE}/advisors/${advisorId}/cohorts`, { cohortIds }, { headers: await getCsrfHeaders() })).data,
+
+  bulkAssignAdvisorCohorts: (advisorIds: string[], cohortIds: string[]) =>
+    post<{ advisors: number; cohorts: number }>(`${BASE}/advisors/cohorts`, { advisorIds, cohortIds }),
+
   updateLimit: async (advisorId: string, maxAdvisees: number): Promise<AdvisorLimitResult> =>
     (await apiClient.patch<AdvisorLimitResult>(`${BASE}/advisors/${advisorId}/limit`, { maxAdvisees }, { headers: await getCsrfHeaders() })).data,
 

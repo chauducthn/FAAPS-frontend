@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react';
+import { Settings2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { useReplaceCohortPool } from '../hooks/queries/useAdminAssignments';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
 import type { AssignmentAdvisor, SummaryCohort } from '../types/admin';
+import {
+  AssignmentModalFooter,
+  AssignmentModalHeader,
+  assignmentCancelBtn,
+  assignmentPrimaryBtn,
+} from './AssignmentModalChrome';
 
 interface CohortPoolModalProps {
   open: boolean;
@@ -11,10 +18,10 @@ interface CohortPoolModalProps {
   advisors: AssignmentAdvisor[];
   currentIds: string[];
   onClose: () => void;
+  onBack?: () => void;
 }
 
-/** Choose which advisors look after a cohort. Works before any student has joined the cohort. */
-export function CohortPoolModal({ open, cohort, advisors, currentIds, onClose }: CohortPoolModalProps) {
+export function CohortPoolModal({ open, cohort, advisors, currentIds, onClose, onBack }: CohortPoolModalProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
   const replace = useReplaceCohortPool();
@@ -22,11 +29,9 @@ export function CohortPoolModal({ open, cohort, advisors, currentIds, onClose }:
   useEffect(() => {
     if (!open) return;
     setError(null);
-    // Reset only when the dialog is (re)opened.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  // The current list arrives after the dialog opens.
   const currentKey = currentIds.join(',');
   useEffect(() => {
     if (open) setSelected(new Set(currentKey ? currentKey.split(',') : []));
@@ -38,7 +43,8 @@ export function CohortPoolModal({ open, cohort, advisors, currentIds, onClose }:
   const toggle = (id: string) =>
     setSelected((s) => {
       const next = new Set(s);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
 
@@ -47,7 +53,8 @@ export function CohortPoolModal({ open, cohort, advisors, currentIds, onClose }:
     try {
       await replace.mutateAsync({ cohortId: cohort.cohortId, advisorIds: [...selected] });
       toast.success(`Advisors for ${name} saved.`);
-      onClose();
+      if (onBack) onBack();
+      else onClose();
     } catch (err) {
       setError(apiErrorMessage(err));
     }
@@ -55,44 +62,41 @@ export function CohortPoolModal({ open, cohort, advisors, currentIds, onClose }:
 
   return (
     <Modal open={open} onClose={onClose} title="Configure advisors" className="max-w-xl">
-      <div className="flex flex-col gap-4 overflow-y-auto p-6">
-        <div>
-          <h2 className="text-xl font-semibold text-[#151c27]">Advisors for {name}</h2>
-          <p className="mt-1 text-[13px] text-[#555f6f]">
-            Auto Assign only distributes this cohort&apos;s unassigned students among the advisors selected here. You can choose them before any student joins the cohort. Students
-            who already have an advisor are not affected.
-          </p>
-        </div>
-        <ul className="flex max-h-72 flex-col gap-1 overflow-y-auto">
+      <AssignmentModalHeader
+        icon={Settings2}
+        title={`Advisors for ${name}`}
+        subtitle="Auto Assign distributes unassigned students only among the advisors selected here."
+        onClose={onClose}
+      />
+      <div className="flex flex-col gap-3 overflow-y-auto px-6 py-5">
+        <ul className="flex max-h-72 flex-col gap-1 overflow-y-auto rounded-lg border border-gray-100 p-1.5">
           {advisors.map((a) => (
             <li key={a.id}>
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 hover:bg-gray-50">
-                <input type="checkbox" checked={selected.has(a.id)} onChange={() => toggle(a.id)} className="size-4 accent-[#f37021]" />
-                <span className="flex-1 text-sm font-semibold text-[#151c27]">
-                  {a.fullName} <span className="font-normal text-[#555f6f]">· {a.email}</span>
+              <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 hover:bg-gray-50">
+                <input type="checkbox" checked={selected.has(a.id)} onChange={() => toggle(a.id)} className="size-4 accent-[#F26F21]" />
+                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-gray-900">
+                  {a.fullName} <span className="font-normal text-gray-500">· {a.email}</span>
                 </span>
-                <span className="text-xs text-[#555f6f]">
-                  {a.activeStudents} / {a.maxAdvisees ?? 'no limit'} students
+                <span className="shrink-0 text-xs text-gray-500 tabular-nums">
+                  {a.activeStudents} / {a.maxAdvisees ?? 'no limit'}
                 </span>
               </label>
             </li>
           ))}
         </ul>
-        {selected.size === 0 && <p className="text-[13px] text-[#b45309]">No advisor selected: Auto Assign will be unavailable for this cohort.</p>}
-        {error && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-            {error}
-          </p>
+        {selected.size === 0 && (
+          <p className="text-xs text-amber-700">No advisor selected: Auto Assign will be unavailable for this cohort.</p>
         )}
+        {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>}
       </div>
-      <div className="flex flex-col-reverse justify-end gap-2 border-t border-[#e5e7eb] p-4 sm:flex-row sm:px-6">
-        <button type="button" onClick={onClose} className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-200">
-          Cancel
+      <AssignmentModalFooter>
+        <button type="button" onClick={onBack ?? onClose} className={assignmentCancelBtn}>
+          {onBack ? 'Back' : 'Cancel'}
         </button>
-        <button type="button" disabled={replace.isPending} onClick={save} className="rounded-lg bg-[#f37021] px-5 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-60">
+        <button type="button" disabled={replace.isPending} onClick={save} className={assignmentPrimaryBtn}>
           {replace.isPending ? 'Saving...' : 'Save advisors'}
         </button>
-      </div>
+      </AssignmentModalFooter>
     </Modal>
   );
 }

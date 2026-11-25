@@ -1,5 +1,4 @@
-import type { ReactNode } from 'react';
-import { Search } from 'lucide-react';
+import { ChevronDown, RotateCcw, Search, X } from 'lucide-react';
 import type { SummaryCohort } from '../../types/admin';
 import { cn } from '@/shared/lib/utils';
 
@@ -11,38 +10,65 @@ export const ASSIGNMENT_TABS: { key: AssignmentTab; label: string }[] = [
 ];
 
 const selectClass =
-  'h-[38px] rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500';
+  'h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-[13px] font-medium text-gray-700 transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15';
 
-export function StatCard({
-  label,
-  value,
-  sub,
-  tone,
-  action,
+export function AssignmentsTabBar({
+  tab,
+  unassignedCount,
+  onTabChange,
 }: {
-  label: string;
-  value?: number;
-  sub?: string;
-  tone?: 'warn';
-  action?: ReactNode;
+  tab: AssignmentTab;
+  unassignedCount?: number;
+  onTabChange: (tab: AssignmentTab) => void;
 }) {
   return (
-    <div className="flex items-end justify-between gap-3 rounded-xl bg-white p-4 shadow-sm">
-      <div className="min-w-0">
-        <p className="text-xs font-medium text-[#555f6f]">{label}</p>
-        <p className={cn('mt-1 text-3xl font-bold', tone === 'warn' && (value ?? 0) > 0 ? 'text-[#b45309]' : 'text-[#151c27]')}>
-          {value ?? '–'}
-          {sub && <span className="ml-2 text-xs font-medium text-[#555f6f]">{sub}</span>}
-        </p>
+    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 bg-white px-4 py-2.5">
+      <div role="tablist" aria-label="Assignment view" className="inline-flex items-center gap-1 rounded-lg bg-gray-100/80 p-1">
+        {ASSIGNMENT_TABS.map((t) => {
+          const active = tab === t.key;
+          return (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => onTabChange(t.key)}
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] font-medium transition-all',
+                active
+                  ? 'bg-white font-semibold text-gray-900 shadow-2xs ring-1 ring-black/5'
+                  : 'text-gray-600 hover:text-gray-900',
+              )}
+            >
+              {t.label}
+              {t.key === 'unassigned' && unassignedCount !== undefined ? (
+                <span
+                  className={cn(
+                    'rounded-full px-1.5 py-0.25 text-[11px] font-semibold tabular-nums',
+                    active && unassignedCount > 0
+                      ? 'bg-orange-100 text-[#C2410C]'
+                      : 'bg-gray-200/80 text-gray-600',
+                  )}
+                >
+                  {unassignedCount}
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
       </div>
-      {action}
+
+      <p className="hidden text-xs text-gray-500 md:block">
+        {tab === 'advisors'
+          ? 'Monitor advisor workload, click any cohort chip to configure its pool, or open details.'
+          : 'Assign a student directly from their row, or select multiple rows for bulk assignment.'}
+      </p>
     </div>
   );
 }
 
 export function AssignmentsFilterBar({
   tab,
-  unassignedCount,
   search,
   majorFilter,
   cohortFilter,
@@ -51,7 +77,6 @@ export function AssignmentsFilterBar({
   cohorts,
   advisorCohortOptions,
   hasFilter,
-  onTabChange,
   onSearchChange,
   onMajorChange,
   onCohortChange,
@@ -59,7 +84,6 @@ export function AssignmentsFilterBar({
   onClear,
 }: {
   tab: AssignmentTab;
-  unassignedCount?: number;
   search: string;
   majorFilter: string;
   cohortFilter: string;
@@ -68,7 +92,6 @@ export function AssignmentsFilterBar({
   cohorts: SummaryCohort[];
   advisorCohortOptions: SummaryCohort[];
   hasFilter: boolean;
-  onTabChange: (tab: AssignmentTab) => void;
   onSearchChange: (val: string) => void;
   onMajorChange: (val: string) => void;
   onCohortChange: (val: string) => void;
@@ -76,82 +99,80 @@ export function AssignmentsFilterBar({
   onClear: () => void;
 }) {
   return (
-    <section className="flex flex-col gap-4 rounded-xl bg-white p-4 shadow-sm sm:p-5">
-      <div role="tablist" aria-label="Assignment view" className="flex flex-wrap gap-1">
-        {ASSIGNMENT_TABS.map((t) => (
+    <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3 lg:flex-nowrap">
+      <div className="relative min-w-0 flex-1 basis-full lg:basis-auto">
+        <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder={tab === 'advisors' ? 'Search by advisor name or email...' : 'Search by student ID or name...'}
+          aria-label="Search"
+          className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+        />
+        {search && (
           <button
-            key={t.key}
             type="button"
-            role="tab"
-            aria-selected={tab === t.key}
-            onClick={() => onTabChange(t.key)}
-            className={cn(
-              'rounded-md border-b-2 px-3 py-2 text-sm font-semibold',
-              tab === t.key ? 'border-[#f37021] bg-[#fff7ed] text-[#f37021]' : 'border-transparent text-[#555f6f] hover:bg-gray-50',
-            )}
+            onClick={() => onSearchChange('')}
+            aria-label="Clear search"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
           >
-            {t.label}
-            {t.key === 'unassigned' && unassignedCount !== undefined ? (
-              <span className="ml-1.5 text-xs font-bold">{unassignedCount}</span>
-            ) : null}
+            <X className="size-3.5" />
           </button>
-        ))}
+        )}
       </div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="flex h-[38px] flex-1 items-center gap-2 rounded-lg border border-[#e5e7eb] px-3 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500">
-          <Search className="size-4 text-[#98a2b3]" />
-          <input
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={tab === 'advisors' ? 'Search by advisor name or email...' : 'Search by student ID or name...'}
-            aria-label="Search"
-            className="flex-1 bg-transparent text-sm font-medium text-[#151c27] outline-none placeholder:text-[#98a2b3]"
-          />
-        </label>
-        {tab === 'advisors' && (
-          <>
-            <select value={majorFilter} onChange={(e) => onMajorChange(e.target.value)} aria-label="Filter by major" className={selectClass}>
-              <option value="">Major: All</option>
-              {majors.map((m) => (
-                <option key={m} value={m}>{m}</option>
-              ))}
-            </select>
-            <select value={cohortFilter} onChange={(e) => onCohortChange(e.target.value)} aria-label="Filter by cohort" className={selectClass}>
-              <option value="">Cohort: All</option>
-              {advisorCohortOptions.map((c) => (
-                <option key={c.cohortId} value={c.cohortId}>{c.majorCode} {c.cohort}</option>
-              ))}
-            </select>
-          </>
-        )}
-        {tab === 'unassigned' && (
-          <>
-            <select value={cohortFilter} onChange={(e) => onCohortChange(e.target.value)} aria-label="Filter by cohort" className={selectClass}>
-              <option value="">Cohort: All</option>
-              {cohorts.map((c) => (
-                <option key={c.cohortId} value={c.cohortId}>{c.majorCode} {c.cohort}</option>
-              ))}
-            </select>
-            <label className="flex h-[38px] cursor-pointer items-center gap-2 text-sm font-medium text-[#151c27]">
-              <input
-                type="checkbox"
-                checked={pendingOnly}
-                onChange={(e) => onPendingChange(e.target.checked)}
-                className="size-4 accent-[#f37021]"
-              />
-              Requested an advisor
-            </label>
-          </>
-        )}
-        <button
-          type="button"
-          disabled={!hasFilter}
-          onClick={onClear}
-          className="h-[38px] rounded-lg px-3 text-sm font-medium text-[#555f6f] hover:bg-gray-50 disabled:opacity-40"
+
+      <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[144px]">
+        <select value={majorFilter} onChange={(e) => onMajorChange(e.target.value)} aria-label="Filter by major" className={selectClass}>
+          <option value="">All majors</option>
+          {majors.map((m) => (
+            <option key={m} value={m}>{m}</option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+      </div>
+
+      <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[164px]">
+        <select value={cohortFilter} onChange={(e) => onCohortChange(e.target.value)} aria-label="Filter by cohort" className={selectClass}>
+          <option value="">All cohorts</option>
+          {(majorFilter ? advisorCohortOptions : cohorts).map((c) => (
+            <option key={c.cohortId} value={c.cohortId}>
+              {majorFilter
+                ? tab === 'unassigned' ? `${c.cohort} (${c.unassigned})` : c.cohort
+                : tab === 'unassigned' ? `${c.cohort} · ${c.majorCode} (${c.unassigned})` : `${c.cohort} · ${c.majorCode}`}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+      </div>
+
+      {tab === 'unassigned' && (
+        <label
+          className={cn(
+            'inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-lg border px-3 text-[13px] font-medium transition-colors',
+            pendingOnly
+              ? 'border-[#F26F21]/50 bg-orange-50/70 text-[#C2410C]'
+              : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300',
+          )}
         >
-          Clear filters
-        </button>
-      </div>
-    </section>
+          <input
+            type="checkbox"
+            checked={pendingOnly}
+            onChange={(e) => onPendingChange(e.target.checked)}
+            className="size-3.5 accent-[#F26F21]"
+          />
+          Requested an advisor
+        </label>
+      )}
+
+      <button
+        type="button"
+        onClick={onClear}
+        disabled={!hasFilter}
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-default disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-600"
+      >
+        <RotateCcw className="size-3.5" /> Reset
+      </button>
+    </div>
   );
 }

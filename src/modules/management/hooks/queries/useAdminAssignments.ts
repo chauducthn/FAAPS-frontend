@@ -122,9 +122,26 @@ export const useAutoAssignStudents = () => {
   });
 };
 
-export const useReplaceCohortPool = () => {  const invalidate = useInvalidate();
+export const useReplaceCohortPool = () => {
+  const invalidate = useInvalidate();
   return useMutation({
     mutationFn: (input: { cohortId: string; advisorIds: string[] }) => assignmentService.replaceCohortPool(input.cohortId, input.advisorIds),
+    onSuccess: invalidate,
+  });
+};
+
+export const useReplaceAdvisorCohorts = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (input: { advisorId: string; cohortIds: string[] }) => assignmentService.replaceAdvisorCohorts(input.advisorId, input.cohortIds),
+    onSuccess: invalidate,
+  });
+};
+
+export const useBulkAssignAdvisorCohorts = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (input: { advisorIds: string[]; cohortIds: string[] }) => assignmentService.bulkAssignAdvisorCohorts(input.advisorIds, input.cohortIds),
     onSuccess: invalidate,
   });
 };

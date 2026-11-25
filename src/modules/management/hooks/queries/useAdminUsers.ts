@@ -73,6 +73,7 @@ export const useChangeUserRole = () => {
     mutationFn: (input: {
       id: string;
       role: AdminUserRole;
+      email?: string;
       studentCode?: string;
       curriculumVersionId?: string;
       enrollmentSemesterId?: string;

@@ -3,7 +3,7 @@ import type { AdminUserRole, AdminUserStatus } from '../../types/admin';
 import { USER_ROLE_LABEL, USER_STATUSES } from './userAccountColumns';
 
 const selectClass =
-  'h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-xs font-medium text-gray-700 transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15';
+  'h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-[13px] font-medium text-gray-700 transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15';
 
 export interface UserAccountsFilterBarProps {
   search: string;
@@ -41,14 +41,14 @@ export function UserAccountsFilterBar({
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3 lg:flex-nowrap">
       <div className="relative min-w-0 flex-1 basis-full lg:basis-auto">
-        <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
         <input
           type="search"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search by ID, name, or email..."
           aria-label="Search accounts"
-          className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-xs text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+          className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
         />
         {search && (
           <button
@@ -62,34 +62,34 @@ export function UserAccountsFilterBar({
         )}
       </div>
 
-      <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[132px]">
+      <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[124px]">
         <select
           value={role}
           onChange={(e) => onRoleChange(e.target.value as AdminUserRole | '')}
           aria-label="Filter by role"
           className={selectClass}
         >
-          <option value="">Role: All</option>
+          <option value="">All roles</option>
           {(Object.keys(USER_ROLE_LABEL) as AdminUserRole[]).map((r) => (
             <option key={r} value={r}>
-              Role: {USER_ROLE_LABEL[r]}
+              {USER_ROLE_LABEL[r]}
             </option>
           ))}
         </select>
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
       </div>
 
-      <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[138px]">
+      <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[132px]">
         <select
           value={status}
           onChange={(e) => onStatusChange(e.target.value as AdminUserStatus | '')}
           aria-label="Filter by status"
           className={selectClass}
         >
-          <option value="">Status: All</option>
+          <option value="">All statuses</option>
           {USER_STATUSES.map((s) => (
             <option key={s} value={s}>
-              Status: {s.charAt(0) + s.slice(1).toLowerCase()}
+              {s.charAt(0) + s.slice(1).toLowerCase()}
             </option>
           ))}
         </select>
@@ -103,7 +103,7 @@ export function UserAccountsFilterBar({
           aria-label="Filter by major"
           className={selectClass}
         >
-          <option value="">Major: All</option>
+          <option value="">All majors</option>
           {majors.map((m) => (
             <option key={m.id} value={m.id}>
               {m.code} — {m.name}
@@ -120,12 +120,17 @@ export function UserAccountsFilterBar({
           aria-label="Filter by cohort"
           className={selectClass}
         >
-          <option value="">Cohort: All</option>
-          {cohortOptions.map((c) => (
-            <option key={c.cohortId} value={c.cohortId}>
-              {c.majorCode} {c.cohort} ({c.students})
-            </option>
-          ))}
+          <option value="">All cohorts</option>
+          {cohortOptions
+            .filter((c) => {
+              const selectedMajor = majorId ? majors.find((m) => m.id === majorId) : undefined;
+              return !selectedMajor || c.majorCode === selectedMajor.code;
+            })
+            .map((c) => (
+              <option key={c.cohortId} value={c.cohortId}>
+                {majorId ? `${c.cohort} (${c.students})` : `${c.cohort} · ${c.majorCode} (${c.students})`}
+              </option>
+            ))}
         </select>
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
       </div>
@@ -134,9 +139,9 @@ export function UserAccountsFilterBar({
         type="button"
         onClick={onClear}
         disabled={!hasFilters}
-        className="inline-flex h-9 shrink-0 items-center gap-1 rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-default disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-600"
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-default disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-600"
       >
-        <RotateCcw className="size-3" /> Reset
+        <RotateCcw className="size-3.5" /> Reset
       </button>
     </div>
   );

@@ -1,184 +1,181 @@
-import { useEffect, useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+// Assign 1 major + 1 cohort to one or multiple advisors (without auto-assigning students).
+import { useEffect, useMemo, useState } from 'react';
+import { ChevronDown, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
-import { LoadBadge } from './LoadBadge';
-import { useAssignCohort, usePreviewCohortAssign } from '../hooks/queries/useAdminAssignments';
+import { useBulkAssignAdvisorCohorts, useReplaceAdvisorCohorts } from '../hooks/queries/useAdminAssignments';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
-import type { AssignmentAdvisor, CohortAssignPreview, SummaryCohort } from '../types/admin';
+import type { AssignmentAdvisor, SummaryCohort } from '../types/admin';
+import {
+  AssignmentModalFooter,
+  AssignmentModalHeader,
+  assignmentCancelBtn,
+  assignmentPrimaryBtn,
+  assignmentSelectClass,
+} from './AssignmentModalChrome';
 
 interface CohortAssignModalProps {
   open: boolean;
   onClose: () => void;
   cohorts: SummaryCohort[];
   advisors: AssignmentAdvisor[];
-  /** Fix one side of the choice (opened from a cohort row, or from an advisor row). */
   fixedCohortId?: string;
   fixedAdvisorId?: string;
+  initialCohortIds?: string[];
+  bulkAdvisors?: { id: string; name: string }[];
+  onDone?: () => void;
 }
 
-const label = (c: SummaryCohort) => `${c.majorCode} ${c.cohort}`;
-
-export function CohortAssignModal({ open, onClose, cohorts, advisors, fixedCohortId, fixedAdvisorId }: CohortAssignModalProps) {
+export function CohortAssignModal({
+  open,
+  onClose,
+  cohorts,
+  advisors,
+  fixedCohortId,
+  fixedAdvisorId,
+  initialCohortIds,
+  bulkAdvisors,
+  onDone,
+}: CohortAssignModalProps) {
+  const isBulk = !!bulkAdvisors && bulkAdvisors.length > 0;
+  const [majorCode, setMajorCode] = useState('');
   const [cohortId, setCohortId] = useState('');
-  const [advisorId, setAdvisorId] = useState('');
-  const [preview, setPreview] = useState<CohortAssignPreview | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notes, setNotes] = useState('');
-  const previewMutation = usePreviewCohortAssign();
-  const assignMutation = useAssignCohort();
+  const replaceOne = useReplaceAdvisorCohorts();
+  const bulkAssign = useBulkAssignAdvisorCohorts();
 
-  const run = async (nextCohort: string, nextAdvisor: string) => {
-    setPreview(null);
-    setError(null);
-    if (!nextCohort || !nextAdvisor) return;
-    try {
-      setPreview(await previewMutation.mutateAsync({ cohortId: nextCohort, advisorId: nextAdvisor }));
-    } catch (err) {
-      setError(apiErrorMessage(err));
-    }
-  };
+  const initialId = fixedCohortId ?? initialCohortIds?.[0] ?? '';
 
   useEffect(() => {
     if (!open) return;
-    const c = fixedCohortId ?? '';
-    const a = fixedAdvisorId ?? '';
-    setCohortId(c);
-    setAdvisorId(a);
-    setPreview(null);
+    const current = !isBulk && initialId ? cohorts.find((c) => c.cohortId === initialId) : undefined;
+    setMajorCode(current?.majorCode ?? '');
+    setCohortId(current?.cohortId ?? '');
     setError(null);
-    setNotes('');
-    if (c && a) run(c, a);
-    // Reset only when the dialog is (re)opened.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, initialId, isBulk, cohorts]);
 
-  const cohort = cohorts.find((c) => c.cohortId === cohortId);
-  const advisor = advisors.find((a) => a.id === advisorId);
-  const options = fixedCohortId ? cohorts : cohorts.filter((c) => c.unassigned > 0 || c.cohortId === cohortId);
+  const majors = useMemo(() => [...new Set(cohorts.map((c) => c.majorCode))].sort(), [cohorts]);
+  const cohortOptions = useMemo(
+    () => (majorCode ? cohorts.filter((c) => c.majorCode === majorCode) : []),
+    [cohorts, majorCode],
+  );
+  const advisor = fixedAdvisorId ? advisors.find((a) => a.id === fixedAdvisorId) : undefined;
+  const selectedCohort = cohorts.find((c) => c.cohortId === cohortId);
+  const pending = replaceOne.isPending || bulkAssign.isPending;
 
-  const confirm = async () => {
+  const handleMajorChange = (nextMajor: string) => {
+    setMajorCode(nextMajor);
+    setCohortId('');
     setError(null);
+  };
+
+  const save = async () => {
+    setError(null);
+    if (!cohortId && isBulk) return setError('Select a major and cohort.');
     try {
-      const res = await assignMutation.mutateAsync({ cohortId, advisorId, notes: notes.trim() || undefined });
-      toast.success(`${res.assigned} student${res.assigned === 1 ? '' : 's'} of ${cohort ? label(cohort) : 'the cohort'} assigned to ${advisor?.fullName}.`);
-      if (res.warning) toast.warning(`${advisor?.fullName} is now ${res.overLimitBy} over the advisory limit.`);
+      const cohortIds = cohortId ? [cohortId] : [];
+      const label = selectedCohort ? `${selectedCohort.majorCode} — ${selectedCohort.cohort}` : 'none';
+      if (isBulk && bulkAdvisors) {
+        await bulkAssign.mutateAsync({ advisorIds: bulkAdvisors.map((a) => a.id), cohortIds });
+        toast.success(`Assigned ${label} to ${bulkAdvisors.length} advisor${bulkAdvisors.length === 1 ? '' : 's'}.`);
+      } else if (fixedAdvisorId) {
+        await replaceOne.mutateAsync({ advisorId: fixedAdvisorId, cohortIds });
+        toast.success(
+          cohortId
+            ? `${advisor?.fullName ?? 'Advisor'} is now assigned to ${label}.`
+            : `Removed cohort assignment for ${advisor?.fullName ?? 'advisor'}.`,
+        );
+      }
+      onDone?.();
       onClose();
     } catch (err) {
       setError(apiErrorMessage(err));
     }
   };
 
-  const select =
-    'h-[38px] rounded-lg border border-[#e5e7eb] bg-white px-3 text-sm font-medium focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:bg-[#f7f8fa]';
+  const title = isBulk
+    ? `Assign cohort to ${bulkAdvisors.length} advisor${bulkAdvisors.length === 1 ? '' : 's'}`
+    : `Assign cohort${advisor ? ` — ${advisor.fullName}` : ''}`;
 
   return (
-    <Modal open={open} onClose={onClose} title="Assign a cohort to an advisor" className="max-w-xl">
-      <div className="flex flex-col gap-4 overflow-y-auto p-6">
-        <div>
-          <h2 className="text-xl font-semibold text-[#151c27]">Assign a cohort to an advisor</h2>
-          <p className="mt-1 text-[13px] text-[#555f6f]">
-            The advisor takes only the students of the cohort who do not have an advisor yet. Students who already have one are not moved.
-          </p>
+    <Modal open={open} onClose={() => !pending && onClose()} title="Assign cohort to advisor" className="max-w-lg">
+      <AssignmentModalHeader
+        icon={FolderOpen}
+        title={title}
+        subtitle="Each advisor manages 1 major and 1 cohort. Students are not automatically assigned."
+        onClose={onClose}
+      />
+      <div className="flex flex-col gap-4 px-6 py-5">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Major</label>
+            <div className="relative">
+              <select
+                value={majorCode}
+                disabled={!!fixedCohortId}
+                aria-label="Major"
+                onChange={(e) => handleMajorChange(e.target.value)}
+                className={assignmentSelectClass}
+              >
+                <option value="">Choose a major...</option>
+                {majors.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+            </div>
+          </div>
+
+          <div>
+            <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Cohort</label>
+            <div className="relative">
+              <select
+                value={cohortId}
+                disabled={!!fixedCohortId || !majorCode}
+                aria-label="Cohort"
+                onChange={(e) => {
+                  setCohortId(e.target.value);
+                  setError(null);
+                }}
+                className={assignmentSelectClass}
+              >
+                <option value="">{majorCode ? 'Choose a cohort...' : 'Select a major first...'}</option>
+                {cohortOptions.map((c) => (
+                  <option key={c.cohortId} value={c.cohortId}>
+                    {c.cohort} ({c.total} students)
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+            </div>
+          </div>
         </div>
 
-        <label className="flex flex-col gap-1 text-sm font-semibold text-[#151c27]">
-          Cohort
-          <select
-            value={cohortId}
-            disabled={!!fixedCohortId}
-            onChange={(e) => {
-              setCohortId(e.target.value);
-              run(e.target.value, advisorId);
-            }}
-            className={select}
-          >
-            <option value="">Choose a cohort...</option>
-            {options.map((c) => (
-              <option key={c.cohortId} value={c.cohortId}>
-                {label(c)} ({c.unassigned} unassigned)
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm font-semibold text-[#151c27]">
-          Advisor
-          <select
-            value={advisorId}
-            disabled={!!fixedAdvisorId}
-            onChange={(e) => {
-              setAdvisorId(e.target.value);
-              run(cohortId, e.target.value);
-            }}
-            className={select}
-          >
-            <option value="">Choose an advisor...</option>
-            {advisors.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.fullName} ({a.activeStudents}/{a.maxAdvisees ?? 'no limit'})
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm font-semibold text-[#151c27]">
-          Note <span className="font-normal text-[#555f6f]">(optional, saved in the assignment history)</span>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            maxLength={500}
-            rows={2}
-            placeholder="Why is this assignment being made?"
-            className="rounded-lg border border-[#e5e7eb] p-2 text-sm font-normal text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500"
-          />
-        </label>
-
-        {previewMutation.isPending && <p className="text-sm text-[#555f6f]">Calculating...</p>}
-        {preview && (
-          <div className="flex flex-col gap-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg bg-[#f7f8fa] px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Students to assign</p>
-                <p className="mt-1 text-2xl font-bold text-[#151c27]">{preview.unassignedStudents}</p>
-              </div>
-              <div className="rounded-lg bg-[#f7f8fa] px-4 py-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">Advisor total after</p>
-                <p className="mt-1">
-                  <LoadBadge count={preview.totalAfter} limit={advisor?.maxAdvisees ?? null} />
-                </p>
-              </div>
-            </div>
-            {preview.unassignedStudents === 0 && (
-              <p className="rounded-lg bg-[#f7f8fa] px-3 py-2 text-[13px] text-[#555f6f]">Every student of this cohort already has an advisor.</p>
-            )}
-            {preview.warning && (
-              <p className="flex items-start gap-2 rounded-lg bg-[#fffbeb] px-3 py-2 text-[13px] text-[#b45309]">
-                <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-                {advisor?.fullName} would be {preview.overLimitBy} over the advisory limit. You can still continue; the limit is a warning, not a block.
-              </p>
-            )}
-          </div>
+        {isBulk && (
+          <p className="rounded-lg border border-gray-100 bg-gray-50/70 px-3 py-2 text-xs text-gray-600">
+            This will set the selected major and cohort for all {bulkAdvisors.length} selected advisor{bulkAdvisors.length === 1 ? '' : 's'}, replacing any previous cohort assignment.
+          </p>
         )}
+
         {error && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
             {error}
           </p>
         )}
       </div>
-      <div className="flex flex-col-reverse justify-end gap-2 border-t border-[#e5e7eb] p-4 sm:flex-row sm:px-6">
-        <button type="button" onClick={onClose} className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-200">
+      <AssignmentModalFooter>
+        <button type="button" disabled={pending} onClick={onClose} className={assignmentCancelBtn}>
           Cancel
         </button>
         <button
           type="button"
-          disabled={!preview || preview.unassignedStudents === 0 || assignMutation.isPending}
-          onClick={confirm}
-          className="rounded-lg bg-[#f37021] px-5 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-50"
+          disabled={pending || (isBulk && !cohortId) || (!!majorCode && !cohortId)}
+          onClick={() => void save()}
+          className={assignmentPrimaryBtn}
         >
-          {assignMutation.isPending ? 'Assigning...' : preview ? `Assign ${preview.unassignedStudents}` : 'Assign'}
+          {pending ? 'Saving...' : cohortId ? 'Save assignment' : 'Clear cohort'}
         </button>
-      </div>
+      </AssignmentModalFooter>
     </Modal>
   );
 }

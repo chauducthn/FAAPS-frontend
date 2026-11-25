@@ -14,7 +14,7 @@ import {
   useUnassignedStudents,
 } from '../../hooks/queries/useAdminAssignments';
 import { useDebounce } from '@/shared/hooks/useDebounce';
-import { CohortPoolSection, CohortStat, CohortStudentsFilterBar } from './CohortHeaderAndPool';
+import { CohortPoolSection, CohortStudentsFilterBar } from './CohortHeaderAndPool';
 import { CohortStudentsTable, type CohortStudentRow } from './CohortStudentsTable';
 
 const PAGE_SIZE = 10;
@@ -60,19 +60,12 @@ export default function CohortDetails() {
     () =>
       pendingOnly
         ? (requested.data?.items ?? []).map((s) => ({
-            id: s.id,
-            studentCode: s.studentCode,
-            fullName: s.fullName,
-            advisorName: null,
-            assignedDate: null,
-            hasPendingRequest: true,
+            id: s.id, studentCode: s.studentCode, fullName: s.fullName,
+            advisorName: null, assignedDate: null, hasPendingRequest: true,
           }))
         : (students.data?.items ?? []).map((s) => ({
-            id: s.id,
-            studentCode: s.studentCode,
-            fullName: s.fullName,
-            advisorName: s.advisorName,
-            assignedDate: s.assignedDate,
+            id: s.id, studentCode: s.studentCode, fullName: s.fullName,
+            advisorName: s.advisorName, assignedDate: s.assignedDate,
             hasPendingRequest: requestedIds.has(s.id),
           })),
     [pendingOnly, requested.data, students.data, requestedIds],
@@ -103,90 +96,92 @@ export default function CohortDetails() {
   const hasFilters = !!search || unassignedOnly || pendingOnly;
 
   return (
-    <div className="flex w-full flex-col gap-6">
-      <div>
-        <Link to="/admin/assignments" className="inline-flex items-center gap-1 text-sm text-[#555f6f] hover:text-orange-600">
-          <ChevronLeft className="size-4" />
-          Back to Advisor Assignments
-        </Link>
-        <div className="mt-3 flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
-          <h1 className="text-2xl font-semibold text-[#151c27]">Cohort Assignment Details — {title}</h1>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => setPoolOpen(true)} className="flex items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-50">
-              <Settings2 className="size-4" />
-              Configure advisors
-            </button>
-            {(cohort?.unassigned ?? 0) > 0 ? (
-              <>
-                <button type="button" onClick={() => setAssignOpen(true)} className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-50">
-                  Assign advisor
-                </button>
-                <button type="button" onClick={() => setAutoOpen(true)} className="flex items-center gap-1.5 rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15]">
-                  <Sparkles className="size-4" /> Auto Assign
-                </button>
-              </>
-            ) : (
-              <span className="text-sm text-[#555f6f]">All students are assigned. Use Reassign or Unassign in the student list below.</span>
-            )}
+    <div className="flex w-full flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="space-y-1">
+          <Link to="/admin/assignments" className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#F26F21]">
+            <ChevronLeft className="size-3.5" /> Back to Advisor Assignments
+          </Link>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-lg font-bold tracking-tight text-gray-900">Cohort {title}</h1>
+            <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 tabular-nums">
+              Total {cohort?.total ?? '–'}
+            </span>
+            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 tabular-nums">
+              Assigned {cohort?.assigned ?? '–'}
+            </span>
+            <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 tabular-nums">
+              Unassigned {cohort?.unassigned ?? '–'}
+            </span>
           </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPoolOpen(true)}
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+          >
+            <Settings2 className="size-3.5" /> Configure advisors
+          </button>
+          {(cohort?.unassigned ?? 0) > 0 && (
+            <>
+              <button
+                type="button"
+                onClick={() => setAssignOpen(true)}
+                className="inline-flex h-9 items-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+              >
+                Assign advisor
+              </button>
+              <button
+                type="button"
+                onClick={() => setAutoOpen(true)}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14]"
+              >
+                <Sparkles className="size-3.5" /> Auto Assign
+              </button>
+            </>
+          )}
         </div>
       </div>
 
       {summary.isSuccess && !cohort && (
-        <div className="rounded-xl bg-white p-8 text-center text-sm text-[#555f6f]">This cohort does not exist.</div>
+        <div className="rounded-xl border border-gray-200/80 bg-white p-8 text-center text-sm text-gray-500">
+          This cohort does not exist.
+        </div>
       )}
-
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <CohortStat label="Cohort" value={title} />
-        <CohortStat label="Total students" value={cohort?.total ?? '–'} />
-        <CohortStat label="With an advisor" value={cohort?.assigned ?? '–'} />
-        <CohortStat label="Without an advisor" value={cohort?.unassigned ?? '–'} />
-      </div>
 
       <CohortPoolSection cohortId={cohortId} title={title} isLoading={pool.isLoading} pool={pool.data ?? []} advisors={advisors.data ?? []} />
 
-      <CohortStudentsFilterBar
-        search={search}
-        unassignedOnly={unassignedOnly}
-        pendingOnly={pendingOnly}
-        hasFilters={hasFilters}
-        onSearchChange={(val) => { setSearch(val); setPage(0); }}
-        onUnassignedChange={(val) => { setUnassignedOnly(val); setPage(0); }}
-        onPendingChange={(val) => { setPendingOnly(val); setPage(0); }}
-        onClear={() => {
-          setSearch('');
-          setUnassignedOnly(false);
-          setPendingOnly(false);
-          setPage(0);
-        }}
-      />
-
-      <CohortStudentsTable
-        cohortId={cohortId}
-        title={title}
-        rows={rows}
-        total={total}
-        page={page}
-        pageSize={PAGE_SIZE}
-        isLoading={active.isLoading}
-        isError={active.isError && !active.data}
-        hasFilters={hasFilters}
-        selected={selected}
-        allPageSelected={allPageSelected}
-        onToggleAll={toggleAll}
-        onToggleOne={toggleOne}
-        onClearSelection={() => setSelected(new Set())}
-        onAssignSelected={() => setAssignStudents(selectedStudents)}
-        onUnassignSelected={() =>
-          setUnassignStudents(
-            rows.filter((student) => selected.has(student.id) && student.advisorName).map((student) => ({ id: student.id, name: student.fullName })),
-          )
-        }
-        onAssignOne={(student) => setAssignStudents([student])}
-        onUnassignOne={(student) => setUnassignStudents([student])}
-        onRetry={() => active.refetch()}
-        onPageChange={setPage}
-      />
+      <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+        <CohortStudentsFilterBar
+          search={search}
+          unassignedOnly={unassignedOnly}
+          pendingOnly={pendingOnly}
+          hasFilters={hasFilters}
+          onSearchChange={(val) => { setSearch(val); setPage(0); }}
+          onUnassignedChange={(val) => { setUnassignedOnly(val); setPage(0); }}
+          onPendingChange={(val) => { setPendingOnly(val); setPage(0); }}
+          onClear={() => {
+            setSearch('');
+            setUnassignedOnly(false);
+            setPendingOnly(false);
+            setPage(0);
+          }}
+        />
+        <CohortStudentsTable
+          cohortId={cohortId} title={title} rows={rows} total={total} page={page} pageSize={PAGE_SIZE}
+          isLoading={active.isLoading} isError={active.isError && !active.data} hasFilters={hasFilters}
+          selected={selected} allPageSelected={allPageSelected} onToggleAll={toggleAll} onToggleOne={toggleOne}
+          onClearSelection={() => setSelected(new Set())} onAssignSelected={() => setAssignStudents(selectedStudents)}
+          onUnassignSelected={() =>
+            setUnassignStudents(rows.filter((s) => selected.has(s.id) && s.advisorName).map((s) => ({ id: s.id, name: s.fullName })))
+          }
+          onAssignOne={(student) => setAssignStudents([student])}
+          onUnassignOne={(student) => setUnassignStudents([student])}
+          onRetry={() => active.refetch()} onPageChange={setPage}
+        />
+      </section>
 
       <CohortAssignModal open={assignOpen} onClose={() => setAssignOpen(false)} cohorts={summary.data?.cohorts ?? []} advisors={advisors.data ?? []} fixedCohortId={cohortId} />
       <AutoAssignModal open={autoOpen} cohort={cohort} pool={pool.data ?? []} onClose={() => setAutoOpen(false)} onConfigurePool={() => { setAutoOpen(false); setPoolOpen(true); }} />

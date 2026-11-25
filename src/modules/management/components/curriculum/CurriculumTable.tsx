@@ -1,6 +1,4 @@
-// src/components/management/curriculum/CurriculumTable.tsx
-// List table — FPT orange accent, sticky header, rich empty state handled by parent.
-import { cn } from '@/shared/lib/utils';
+// Clean list table for Curriculum and Cohorts views.
 import { StatusBadge } from '../StatusBadge';
 import {
   TableBody,
@@ -19,6 +17,7 @@ interface Props {
   data: CurriculumItem[];
   onOpen: (item: CurriculumItem) => void;
   onEdit: (item: CurriculumItem) => void;
+  onImportFor?: (item: CurriculumItem) => void;
   onToggleStatus: (item: CurriculumItem) => void;
   onDelete: (item: CurriculumItem) => void;
   selectedIds?: Set<string>;
@@ -31,6 +30,7 @@ export default function CurriculumTable({
   data,
   onOpen,
   onEdit,
+  onImportFor,
   onToggleStatus,
   onDelete,
   selectedIds,
@@ -42,11 +42,11 @@ export default function CurriculumTable({
   const selectedOnPage = data.filter((item) => selectedIds?.has(item.id)).length;
 
   return (
-    <TableShell minWidth="920px">
+    <TableShell minWidth="820px">
       <thead>
         <tr>
           {canSelect && (
-            <TableHead className="w-12">
+            <TableHead className="w-11">
               <input
                 type="checkbox"
                 aria-label="Select all curriculums on this page"
@@ -55,7 +55,7 @@ export default function CurriculumTable({
                   if (node) node.indeterminate = selectedOnPage > 0 && selectedOnPage < data.length;
                 }}
                 onChange={(event) => onSelectPage(event.target.checked)}
-                className="size-4 accent-[var(--brand)]"
+                className="size-4 accent-[#F26F21]"
               />
             </TableHead>
           )}
@@ -68,7 +68,6 @@ export default function CurriculumTable({
             </>
           ) : (
             <>
-              <TableHead>Code</TableHead>
               <TableHead>Curriculum</TableHead>
               <TableHead>Major</TableHead>
               <TableHead>Cohort</TableHead>
@@ -86,6 +85,7 @@ export default function CurriculumTable({
           const active = item.status === 'ACTIVE';
           const actions: RowAction[] = [
             { label: isCohort ? 'View curriculum' : 'Open roadmap', onSelect: () => onOpen(item) },
+            ...(onImportFor && !isCohort ? [{ label: 'Import Excel', onSelect: () => onImportFor(item) }] : []),
             { label: 'Edit details', onSelect: () => onEdit(item) },
             { label: active ? 'Archive (deactivate)' : 'Publish (activate)', onSelect: () => onToggleStatus(item) },
             { label: 'Delete', onSelect: () => onDelete(item), danger: true },
@@ -93,47 +93,34 @@ export default function CurriculumTable({
           return (
             <TableRow key={item.id} selected={selectedIds?.has(item.id)}>
               {canSelect && (
-                <TableCell className="w-12">
+                <TableCell className="w-11">
                   <input
                     type="checkbox"
                     aria-label={`Select ${item.majorCode} ${item.version}`}
                     checked={selectedIds.has(item.id)}
                     onChange={(event) => onSelect(item.id, event.target.checked)}
-                    className="size-4 accent-[var(--brand)]"
+                    className="size-4 accent-[#F26F21]"
                   />
                 </TableCell>
               )}
               {isCohort ? <CohortCells item={item} /> : <CurriculumCells item={item} onOpen={onOpen} />}
               <TableCell align="center">
-                <span
-                  className={cn(
-                    'inline-flex min-w-9 items-center justify-center',
-                    'rounded-full bg-[var(--surface-sunken)] px-2.5 py-1',
-                    'text-[12px] font-bold tabular-nums',
-                    'text-[var(--ink-primary)]',
-                  )}
-                >
+                <span className="inline-flex min-w-8 items-center justify-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-gray-800">
                   {item.courseCount}
                 </span>
               </TableCell>
               <TableCell align="center">
-                <span className="font-mono text-[13px] font-bold tabular-nums text-[var(--ink-primary)]">
+                <span className="font-mono text-[13px] font-semibold tabular-nums text-gray-900">
                   {item.totalCredits}
                 </span>
-                <span className="ml-1 text-[11px] text-[var(--ink-subtle)]">cr</span>
+                <span className="ml-1 text-xs text-gray-400">cr</span>
               </TableCell>
               <TableCell>
                 <StatusBadge status={item.status} />
               </TableCell>
               {!isCohort && (
                 <TableCell>
-                  <span
-                    className={cn(
-                      'rounded-md bg-[var(--surface-sunken)] px-2 py-1',
-                      'font-mono text-[11px] font-semibold',
-                      'text-[var(--ink-secondary)]',
-                    )}
-                  >
+                  <span className="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-xs font-medium text-gray-700">
                     {item.effectiveFromSemesterCode}
                   </span>
                 </TableCell>

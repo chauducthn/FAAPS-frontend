@@ -30,8 +30,8 @@ export function PortalSidebar({ navSections, onNavigate }: PortalSidebarProps) {
           {section.title && (
             <p
               className={cn(
-                'px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--ink-subtle)]',
-                idx === 0 ? 'pt-1' : 'pt-5',
+                'px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--ink-subtle)]',
+                idx === 0 ? 'pt-1' : 'pt-4',
               )}
             >
               {section.title}
@@ -48,7 +48,7 @@ export function PortalSidebar({ navSections, onNavigate }: PortalSidebarProps) {
                   className={({ isActive }) =>
                     cn(
                       'group relative flex items-center gap-2.5 rounded-r-lg border-l-[3px] border-transparent py-2 pl-3 pr-3',
-                      'text-sm font-medium text-[var(--ink-muted)] transition-colors',
+                      'text-[13px] font-medium text-[var(--ink-muted)] transition-colors',
                       'hover:bg-[var(--surface-hover)] hover:text-[var(--ink-primary)]',
                       isActive &&
                         'border-[var(--brand)] bg-[var(--brand-soft)] font-semibold text-[var(--brand)]',
@@ -56,7 +56,7 @@ export function PortalSidebar({ navSections, onNavigate }: PortalSidebarProps) {
                     )
                   }
                 >
-                  <Icon className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
+                  <Icon className="size-4 shrink-0" strokeWidth={2} aria-hidden />
                   <span className="min-w-0 flex-1 truncate">{label}</span>
                   {badge != null && badge > 0 && (
                     <span
@@ -72,9 +72,9 @@ export function PortalSidebar({ navSections, onNavigate }: PortalSidebarProps) {
                   key={label}
                   aria-disabled="true"
                   title="Coming soon"
-                  className="flex cursor-not-allowed items-center gap-2.5 rounded-r-lg border-l-[3px] border-transparent py-2 pl-3 pr-3 text-sm font-medium text-[var(--ink-muted)]/50"
+                  className="flex cursor-not-allowed items-center gap-2.5 rounded-r-lg border-l-[3px] border-transparent py-2 pl-3 pr-3 text-[13px] font-medium text-[var(--ink-muted)]/50"
                 >
-                  <Icon className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
+                  <Icon className="size-4 shrink-0" strokeWidth={2} aria-hidden />
                   <span className="min-w-0 flex-1 truncate">{label}</span>
                 </span>
               ),

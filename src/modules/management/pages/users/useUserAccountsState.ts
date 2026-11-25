@@ -35,6 +35,7 @@ export function useUserAccountsState() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ ids: string[]; status: 'ACTIVE' | 'SUSPENDED'; label: string } | null>(null);
   const [roleChange, setRoleChange] = useState<AdminUserSummary | null>(null);
+  const [bulkRoleTargets, setBulkRoleTargets] = useState<AdminUserSummary[] | null>(null);
   const [creating, setCreating] = useState(false);
   const [resetTargets, setResetTargets] = useState<ResetPasswordTarget[] | null>(null);
   const [resetResults, setResetResults] = useState<PasswordResetEntry[] | null>(null);
@@ -153,7 +154,7 @@ export function useUserAccountsState() {
   return {
     me, role, setRole, status, setStatus, majorId, setMajorId, cohortId, setCohortId,
     search, setSearch, pagination, setPagination, sorting, setSorting,
-    detailId, setDetailId, confirm, setConfirm, roleChange, setRoleChange,
+    detailId, setDetailId, confirm, setConfirm, roleChange, setRoleChange, bulkRoleTargets, setBulkRoleTargets,
     creating, setCreating, resetTargets, setResetTargets, resetResults, setResetResults,
     resetError, setResetError, isExporting, changeStatus, resetPasswords, majors, cohortOptions,
     studentCount, advisorCount, activeCount, suspendedCount, usersQuery, items, total, hasFilters,

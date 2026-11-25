@@ -283,6 +283,15 @@ describe('AssignmentsOverview — unassigned students', () => {
       expect(call).toMatchObject({ cohortId: 'c1' });
     });
   });
+
+  it('shows Requested badge and allows direct single-row assignment', async () => {
+    const user = await openUnassignedTab();
+
+    expect(screen.getByText('Requested')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Assign advisor to Nguyen Van A' }));
+
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+  });
 });
 
 describe('AssignmentsOverview — advisors and cohort cards', () => {
@@ -332,8 +341,9 @@ describe('AssignmentsOverview — advisors and cohort cards', () => {
 
     await user.click(screen.getByRole('button', { name: 'Auto assign' }));
     const dialog = within(await screen.findByRole('dialog'));
-    expect(dialog.getByText('IA K17')).toBeInTheDocument();
-    expect(dialog.queryByText('SE K17')).not.toBeInTheDocument();
+    expect(dialog.getByText('IA')).toBeInTheDocument();
+    expect(dialog.getByText('K17')).toBeInTheDocument();
+    expect(dialog.queryByText('SE')).not.toBeInTheDocument();
     expect(dialog.getByRole('button', { name: 'Auto assign IA K17' })).toBeInTheDocument();
   });
 
@@ -352,10 +362,17 @@ describe('AssignmentsOverview — advisors and cohort cards', () => {
     expect(screen.queryByText('Tran Thi C')).not.toBeInTheDocument();
   });
 
-  it('assigns a cohort and opens details from each advisor row', async () => {
+  it('exposes Assign cohort, Advisory limit, and Details & history in one row action menu', async () => {
+    const user = userEvent.setup();
     renderAt('/admin/assignments');
     const row = (await screen.findByText('Tran Thi C')).closest('tr')!;
-    expect(within(row).getByRole('button', { name: 'Assign cohort' })).toBeInTheDocument();
-    expect(within(row).getByRole('link', { name: /Details & history/ })).toHaveAttribute('href', '/admin/assignments/advisors/ad1');
+    await user.click(within(row).getByRole('button', { name: 'Actions for Tran Thi C' }));
+
+    expect(screen.getByRole('menuitem', { name: 'Assign cohort' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Advisory limit' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /Details & history/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('menuitem', { name: 'Advisory limit' }));
+    expect(await screen.findByRole('dialog', { name: 'Advisory limit' })).toBeInTheDocument();
   });
 });

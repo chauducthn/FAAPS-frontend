@@ -118,6 +118,7 @@ export const adminService = {
 
   changeUserRole: async (id: string, body: {
     role: AdminUserRole;
+    email?: string;
     studentCode?: string;
     curriculumVersionId?: string;
     enrollmentSemesterId?: string;
@@ -126,6 +127,39 @@ export const adminService = {
     const { data } = await apiClient.patch<AdminUserDetail>(`/admin/users/${id}/role`, body, {
       headers: await getCsrfHeaders(),
     });
+    return data;
+  },
+
+  checkEmailAvailability: async (
+    items: { userId: string; email: string }[],
+  ): Promise<Record<string, boolean>> => {
+    const { data } = await apiClient.post<Record<string, boolean>>(
+      '/admin/users/check-emails',
+      { items },
+      { headers: await getCsrfHeaders() },
+    );
+    return data;
+  },
+
+  bulkChangeUserRole: async (
+    role: AdminUserRole,
+    items: {
+      userId: string;
+      email?: string;
+      studentCode?: string;
+      curriculumVersionId?: string;
+      enrollmentSemesterId?: string;
+      maxAdvisees?: number;
+    }[],
+  ): Promise<{
+    updated: number;
+    results: { userId: string; email: string | null; fullName: string | null; status: string; reason: string | null }[];
+  }> => {
+    const { data } = await apiClient.post(
+      '/admin/users/role',
+      { role, items },
+      { headers: await getCsrfHeaders() },
+    );
     return data;
   },
 

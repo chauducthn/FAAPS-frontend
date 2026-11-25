@@ -37,7 +37,7 @@ export function PortalHeader({
               <ActiveIcon className="size-4.5" aria-hidden />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold leading-tight tracking-tight text-gray-900 sm:text-base">
+              <p className="truncate text-[15px] font-bold leading-snug tracking-tight text-gray-900">
                 {activeItem.label}
               </p>
               {activeItem.description && (
