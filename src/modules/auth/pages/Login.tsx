@@ -12,13 +12,26 @@ export default function Login() {
   const { login, loginGoogle, isLoginLoading, loginNotice, resetLoginError } = useAuthMutations();
   const [searchParams, setSearchParams] = useSearchParams();
   const paramNotice = loginNoticeFromParam(searchParams.get('error'));
+  const resetSuccess = searchParams.get('reset') === 'success';
   const [paramDismissed, setParamDismissed] = useState(false);
-  const notice = loginNotice ?? (paramDismissed ? null : paramNotice);
+  const notice =
+    loginNotice ??
+    (paramDismissed
+      ? null
+      : paramNotice ??
+        (resetSuccess
+          ? {
+              tone: 'info' as const,
+              title: 'Password reset successful',
+              message: 'You can now sign in with your new password.',
+            }
+          : null));
 
   const clearErrorParam = () => {
-    if (!searchParams.has('error')) return;
+    if (!searchParams.has('error') && !searchParams.has('reset')) return;
     const next = new URLSearchParams(searchParams);
     next.delete('error');
+    next.delete('reset');
     setSearchParams(next, { replace: true });
   };
 
@@ -113,7 +126,12 @@ export default function Login() {
           </div>
 
           <div>
-            <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <div className="mb-1 flex items-center justify-between">
+              <label htmlFor="login-password" className="block text-sm font-medium text-gray-700">Password</label>
+              <Link to="/forgot-password" className="text-xs font-semibold text-orange-600 hover:text-orange-700">
+                Forgot password?
+              </Link>
+            </div>
             <input
               id="login-password"
               type="password"

@@ -1,17 +1,14 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
-import { KeyRound } from 'lucide-react';
+import { CheckCircle2, KeyRound, ShieldOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { NO_PASSWORD_REASON } from '../components/UserRowMenu';
 import { canResetPassword } from '../utils/passwordReset';
 import { DataTable } from '../../../shared/components/common/DataTable';
 import { createUserAccountColumns } from './users/userAccountColumns';
-import {
-  UserAccountsErrorState,
-  UserAccountsFilterBar,
-  UserAccountsHeader,
-  UserAccountsKpiStrip,
-} from './users/UserAccountsHeaderAndFilters';
+import { UserAccountsHeader, UserAccountsKpiStrip } from './users/UserAccountsHeader';
+import { UserAccountsFilterBar } from './users/UserAccountsFilterBar';
+import { UserAccountsActiveChips, UserAccountsErrorState } from './users/UserAccountsActiveChips';
 import { UserAccountsModals } from './users/UserAccountsModals';
 import { useUserAccountsState } from './users/useUserAccountsState';
 
@@ -44,42 +41,63 @@ export default function UserAccounts() {
     await usersQuery.refetch();
   };
 
+  const majorsList = s.majors.data ?? [];
+
   return (
     <div className="w-full space-y-5">
       <UserAccountsHeader onCreate={() => s.setCreating(true)} />
+
       <UserAccountsKpiStrip
         studentCount={s.studentCount.data}
         advisorCount={s.advisorCount.data}
         total={s.total}
-      />
-      <UserAccountsFilterBar
-        search={s.search}
-        role={s.role}
-        status={s.status}
-        majorId={s.majorId}
-        cohortId={s.cohortId}
-        majors={s.majors.data ?? []}
-        cohortOptions={s.cohortOptions}
-        hasFilters={s.hasFilters}
-        onSearchChange={s.resetPage(s.setSearch)}
-        onRoleChange={s.resetPage(s.setRole)}
-        onStatusChange={s.resetPage(s.setStatus)}
-        onMajorChange={(val) => {
-          s.resetPage(s.setMajorId)(val);
-          s.setCohortId('');
-        }}
-        onCohortChange={(val) => {
-          s.resetPage(s.setCohortId)(val);
-          s.setMajorId('');
-        }}
-        onClear={s.clearFilters}
+        activeRole={s.role}
+        onSelectRole={s.resetPage(s.setRole)}
       />
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+        <UserAccountsFilterBar
+          search={s.search}
+          role={s.role}
+          status={s.status}
+          majorId={s.majorId}
+          cohortId={s.cohortId}
+          majors={majorsList}
+          cohortOptions={s.cohortOptions}
+          hasFilters={s.hasFilters}
+          total={s.total}
+          shownCount={s.items.length}
+          onSearchChange={s.resetPage(s.setSearch)}
+          onRoleChange={s.resetPage(s.setRole)}
+          onStatusChange={s.resetPage(s.setStatus)}
+          onMajorChange={(val) => {
+            s.resetPage(s.setMajorId)(val);
+            s.setCohortId('');
+          }}
+          onCohortChange={(val) => {
+            s.resetPage(s.setCohortId)(val);
+            s.setMajorId('');
+          }}
+          onClear={s.clearFilters}
+        />
+
+        <UserAccountsActiveChips
+          role={s.role}
+          status={s.status}
+          majorId={s.majorId}
+          cohortId={s.cohortId}
+          majors={majorsList}
+          cohortOptions={s.cohortOptions}
+          onClearRole={() => s.resetPage(s.setRole)('')}
+          onClearStatus={() => s.resetPage(s.setStatus)('')}
+          onClearMajor={() => s.resetPage(s.setMajorId)('')}
+          onClearCohort={() => s.resetPage(s.setCohortId)('')}
+        />
+
         {usersQuery.isError && !usersQuery.data ? (
           <UserAccountsErrorState onRetry={() => usersQuery.refetch()} />
         ) : (
-          <div className="relative">
+          <div className="relative p-4 sm:p-5">
             {usersQuery.isFetching && !usersQuery.isLoading && (
               <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
                 <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
@@ -108,30 +126,30 @@ export default function UserAccounts() {
                   <button
                     type="button"
                     onClick={() => s.askReset(selectedRows)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#151c27] ring-1 ring-[#e5e7eb] transition-colors hover:bg-gray-50"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-xs font-bold text-[#151c27] ring-1 ring-[#e5e7eb] transition-colors hover:bg-gray-50"
                   >
-                    <KeyRound className="size-4" aria-hidden /> Reset password
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => s.askBulk(selectedRows, 'SUSPENDED')}
-                    className="rounded-lg bg-[#fef2f2] px-4 py-2 text-sm font-semibold text-[#b91c1c] hover:bg-red-100"
-                  >
-                    Suspend
+                    <KeyRound className="size-3.5" aria-hidden /> Reset password
                   </button>
                   <button
                     type="button"
                     onClick={() => s.askBulk(selectedRows, 'ACTIVE')}
-                    className="rounded-lg bg-[#ecfdf5] px-4 py-2 text-sm font-semibold text-[#047857] hover:bg-emerald-100"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#ecfdf5] px-3.5 py-2 text-xs font-bold text-[#047857] transition-colors hover:bg-emerald-100"
                   >
-                    Activate
+                    <CheckCircle2 className="size-3.5" aria-hidden /> Activate
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => s.askBulk(selectedRows, 'SUSPENDED')}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#fef2f2] px-3.5 py-2 text-xs font-bold text-[#b91c1c] transition-colors hover:bg-red-100"
+                  >
+                    <ShieldOff className="size-3.5" aria-hidden /> Suspend
                   </button>
                 </>
               )}
             />
           </div>
         )}
-      </div>
+      </section>
 
       <UserAccountsModals
         detailId={s.detailId}

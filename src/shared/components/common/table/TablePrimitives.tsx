@@ -144,6 +144,34 @@ export function TableEmpty({
   );
 }
 
+/** Placeholder row shown when the table data could not be loaded. */
+export function TableError({
+  colSpan,
+  message,
+  onRetry,
+}: {
+  colSpan: number;
+  message: string;
+  onRetry?: () => void;
+}) {
+  return (
+    <tr>
+      <td colSpan={colSpan} className="px-4 py-12 text-center">
+        <p className="text-sm font-semibold text-red-600">{message}</p>
+        {onRetry ? (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-2 rounded-lg border border-[var(--line)] bg-white px-3 py-1.5 text-[13px] font-semibold text-[var(--ink-muted)] transition-colors hover:bg-[var(--surface-hover)]"
+          >
+            Retry
+          </button>
+        ) : null}
+      </td>
+    </tr>
+  );
+}
+
 /** Placeholder rows shown while the table data loads. */
 export function TableSkeletonRows({ colSpan, rows = 4 }: { colSpan: number; rows?: number }) {
   return (

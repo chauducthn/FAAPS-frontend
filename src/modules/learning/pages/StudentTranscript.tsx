@@ -3,7 +3,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { studentAcademicService } from '../../academic/services/studentAcademicService';
 import { ProgressSummary } from '../components/ProgressSummary';
-import { SemesterSummary, TranscriptRecords } from '../components/TranscriptRecords';
+import { TranscriptRecords } from '../components/TranscriptRecords';
+import { SemesterSummary } from '../components/SemesterSummary';
 import { TranscriptImport } from '../components/TranscriptImport';
 
 export default function StudentTranscript() {

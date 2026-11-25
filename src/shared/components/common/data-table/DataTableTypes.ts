@@ -52,6 +52,14 @@ export interface DataTableProps<TData extends RowData, TValue = unknown> {
   /** Stable row id. Defaults to the row index. */
   getRowId?: (row: TData, index: number) => string;
   /**
+   * Controlled row selection. Provide the ids of the selected rows to keep
+   * the selection in sync with a parent that owns it (a bulk-action banner,
+   * a filter reset, ...). Omit it to let the table own the selection.
+   */
+  selectedRowIds?: string[];
+  /** Called whenever the controlled selection changes. */
+  onSelectedRowIdsChange?: (ids: string[]) => void;
+  /**
    * Rows the admin cannot select. A disabled row shows a greyed-out
    * checkbox and a tooltip naming the reason.
    */

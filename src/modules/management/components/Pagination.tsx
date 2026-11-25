@@ -30,10 +30,10 @@ export function Pagination({ page, pageSize, total, noun, onChange, bare }: Pagi
       className={
         bare
           ? 'flex flex-col items-center justify-between gap-3 sm:flex-row'
-          : 'flex flex-col items-center justify-between gap-3 border-t border-[#e7eefe] bg-[#f7f8fa]/60 px-4 py-3 sm:flex-row'
+          : 'flex flex-col items-center justify-between gap-3 border-t border-[var(--line)] bg-[var(--surface-page)]/60 px-4 py-3 sm:flex-row'
       }
     >
-      <p className="text-[13px] text-[#555f6f]">
+      <p className="text-[13px] text-[var(--ink-muted)]">
         Showing {from}–{to} of {total} {noun} · {pageSize} per page
       </p>
       <div className="flex items-center gap-1">
@@ -41,21 +41,21 @@ export function Pagination({ page, pageSize, total, noun, onChange, bare }: Pagi
           type="button"
           disabled={page === 0}
           onClick={() => onChange(page - 1)}
-          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#555f6f] hover:bg-gray-100 disabled:opacity-40"
+          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[var(--ink-muted)] hover:bg-gray-100 disabled:opacity-40"
         >
           Previous
         </button>
         {pages.map((p, i) => (
           <span key={p} className="flex items-center gap-1">
-            {i > 0 && p - pages[i - 1] > 1 && <span className="px-1 text-xs text-[#98a2b3]">...</span>}
+            {i > 0 && p - pages[i - 1] > 1 && <span className="px-1 text-xs text-[var(--ink-subtle)]">...</span>}
             <button
               type="button"
               onClick={() => onChange(p)}
               aria-current={p === page ? 'page' : undefined}
               className={
                 p === page
-                  ? 'flex size-8 items-center justify-center rounded-lg bg-[#f37021] text-xs font-bold text-white'
-                  : 'flex size-8 items-center justify-center rounded-lg text-xs font-semibold text-[#555f6f] hover:bg-gray-100'
+                  ? 'flex size-8 items-center justify-center rounded-lg bg-[var(--brand)] text-xs font-bold text-white'
+                  : 'flex size-8 items-center justify-center rounded-lg text-xs font-semibold text-[var(--ink-muted)] hover:bg-gray-100'
               }
             >
               {p + 1}
@@ -66,7 +66,7 @@ export function Pagination({ page, pageSize, total, noun, onChange, bare }: Pagi
           type="button"
           disabled={page + 1 >= totalPages}
           onClick={() => onChange(page + 1)}
-          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[#555f6f] hover:bg-gray-100 disabled:opacity-40"
+          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[var(--ink-muted)] hover:bg-gray-100 disabled:opacity-40"
         >
           Next
         </button>

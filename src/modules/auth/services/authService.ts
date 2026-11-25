@@ -62,4 +62,32 @@ export const authService = {
   logout: async (): Promise<void> => {
     await apiClient.post('/auth/logout', null, { headers: await getCsrfHeaders() });
   },
+
+  forgotPassword: async (email: string): Promise<{ success: boolean; message: string }> => {
+    const { data } = await apiClient.post<{ success: boolean; message: string }>(
+      '/auth/forgot-password',
+      { email },
+      { headers: await getCsrfHeaders() },
+    );
+    return data;
+  },
+
+  validateResetToken: async (token: string): Promise<{ valid: boolean }> => {
+    const { data } = await apiClient.get<{ valid: boolean }>('/auth/reset-password/validate', {
+      params: { token },
+    });
+    return data;
+  },
+
+  resetPassword: async (
+    token: string,
+    newPassword: string,
+  ): Promise<{ success: boolean; message: string }> => {
+    const { data } = await apiClient.post<{ success: boolean; message: string }>(
+      '/auth/reset-password',
+      { token, newPassword },
+      { headers: await getCsrfHeaders() },
+    );
+    return data;
+  },
 };

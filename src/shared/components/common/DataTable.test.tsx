@@ -174,4 +174,39 @@ describe('DataTable', () => {
       expect(screen.getByRole('button', { name: 'Delete 1 rows' })).toBeInTheDocument();
     });
   });
+
+  describe('controlled selection', () => {
+    it('shows the rows the parent marked as selected', () => {
+      render(
+        <DataTable
+          columns={columns}
+          data={data}
+          searchKey="name"
+          getRowId={(row) => row.id}
+          selectedRowIds={['2']}
+        />,
+      );
+
+      expect(screen.getByLabelText('Select row 2')).toBeChecked();
+      expect(screen.getByLabelText('Select row 1')).not.toBeChecked();
+    });
+
+    it('reports the new selection to the parent', async () => {
+      const user = userEvent.setup();
+      const onSelectedRowIdsChange = vi.fn();
+      render(
+        <DataTable
+          columns={columns}
+          data={data}
+          searchKey="name"
+          getRowId={(row) => row.id}
+          selectedRowIds={[]}
+          onSelectedRowIdsChange={onSelectedRowIdsChange}
+        />,
+      );
+
+      await user.click(screen.getByLabelText('Select row 1'));
+      expect(onSelectedRowIdsChange).toHaveBeenCalledWith(['1']);
+    });
+  });
 });

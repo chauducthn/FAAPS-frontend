@@ -7,6 +7,7 @@ import {
   type PaginationState,
   type Row,
   type RowData,
+  type RowSelectionState,
   type SortingState,
 } from '@tanstack/react-table';
 import { useDebounce } from '@/shared/hooks/useDebounce';
@@ -16,9 +17,10 @@ import {
   dataTableFeatures,
   resolveColumnId,
   useShallowStable,
-  type Alignment,
   type DataTableColumnDef,
 } from './features';
+import { toRowSelectionState, toSelectedRowIds } from './selection';
+import { useColumnAlignments } from './useColumnAlignments';
 
 export function useDataTable<TData extends RowData, TValue>(
   props: DataTableProps<TData, TValue>,
@@ -31,6 +33,8 @@ export function useDataTable<TData extends RowData, TValue>(
     onColumnFiltersChange,
     pageSizes = [10, 25, 50, 100],
     getRowId,
+    selectedRowIds,
+    onSelectedRowIdsChange,
     isRowSelectable,
     manual = false,
     searchValue,
@@ -73,6 +77,7 @@ export function useDataTable<TData extends RowData, TValue>(
   const stateRef = useRef({
     pagination: pagination ?? { pageIndex: 0, pageSize: pageSizes[0] },
     sorting: sorting ?? [],
+    rowSelection: {} as RowSelectionState,
   });
 
   const table = useTable({
@@ -110,11 +115,32 @@ export function useDataTable<TData extends RowData, TValue>(
       : {}),
     ...(pagination ? { state: { pagination } } : {}),
     ...(sorting ? { state: { ...(pagination ? { pagination } : {}), sorting } } : {}),
+    ...(selectedRowIds
+      ? {
+          state: {
+            ...(pagination ? { pagination } : {}),
+            ...(sorting ? { sorting } : {}),
+            rowSelection: toRowSelectionState(selectedRowIds),
+          },
+        }
+      : {}),
+    ...(selectedRowIds && onSelectedRowIdsChange
+      ? {
+          onRowSelectionChange: (updater: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
+            const next = typeof updater === 'function' ? updater(stateRef.current.rowSelection) : updater;
+            onSelectedRowIdsChange(toSelectedRowIds(next));
+          },
+        }
+      : {}),
   });
 
   const tableRef = useRef(table);
   tableRef.current = table;
-  stateRef.current = { pagination: table.state.pagination, sorting: table.state.sorting };
+  stateRef.current = {
+    pagination: table.state.pagination,
+    sorting: table.state.sorting,
+    rowSelection: table.state.rowSelection,
+  };
 
   const previousDataRef = useRef(stableData);
   useEffect(() => {
@@ -147,27 +173,7 @@ export function useDataTable<TData extends RowData, TValue>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [externalSignature, searchSignature, manual]);
 
-  const alignments = useMemo(() => {
-    const result: Record<string, Alignment> = {};
-    const sampleRows = table.getCoreRowModel().rows.slice(0, 20);
-    for (const column of table.getAllLeafColumns()) {
-      const declared = column.columnDef.meta?.align;
-      if (declared) {
-        result[column.id] = declared;
-        continue;
-      }
-      let align: Alignment = 'left';
-      for (const row of sampleRows) {
-        const value = row.getValue(column.id);
-        if (value === null || value === undefined) continue;
-        align = typeof value === 'number' ? 'right' : 'left';
-        break;
-      }
-      result[column.id] = align;
-    }
-    return result;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stableData, stableColumns]);
+  const alignments = useColumnAlignments(table, stableData, stableColumns);
 
   return {
     table,

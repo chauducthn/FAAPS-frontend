@@ -6,6 +6,8 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { RequireStudentProfile } from './RequireStudentProfile';
 import Login from '../modules/auth/pages/Login';
 import Register from '../modules/auth/pages/Register';
+import ForgotPassword from '../modules/auth/pages/ForgotPassword';
+import ResetPassword from '../modules/auth/pages/ResetPassword';
 import CompleteRegistration from '../modules/auth/pages/CompleteRegistration';
 import AuthCallback from '../modules/auth/pages/AuthCallback';
 import LandingPage from '../modules/landing/pages';
@@ -62,6 +64,8 @@ export const router = createBrowserRouter([
   { path: '/', element: <LandingPage />, errorElement: <RouteErrorElement /> },
   { path: '/login', element: <Login />, errorElement: <RouteErrorElement /> },
   { path: '/register', element: <Register />, errorElement: <RouteErrorElement /> },
+  { path: '/forgot-password', element: <ForgotPassword />, errorElement: <RouteErrorElement /> },
+  { path: '/reset-password', element: <ResetPassword />, errorElement: <RouteErrorElement /> },
   {
     element: <ProtectedRoute allowedRoles={['STUDENT']} />,
     errorElement: <RouteErrorElement />,

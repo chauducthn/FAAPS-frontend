@@ -11,6 +11,7 @@ import {
   TableBody,
   TableCell,
   TableEmpty,
+  TableError,
   TableHead,
   TableRow,
   TableShell,
@@ -37,6 +38,10 @@ export interface StaticTableProps<TData> {
   /** Stable key of each row. */
   rowKey: (row: TData, index: number) => string;
   loading?: boolean;
+  /** Replaces the body with an error message and a retry action. */
+  error?: string;
+  /** Called when the user asks to retry after an error. */
+  onRetry?: () => void;
   emptyTitle?: string;
   emptyDescription?: string;
   minWidth?: string;
@@ -49,6 +54,8 @@ export function StaticTable<TData>({
   rows,
   rowKey,
   loading = false,
+  error,
+  onRetry,
   emptyTitle = 'No data to display',
   emptyDescription,
   minWidth,
@@ -75,6 +82,8 @@ export function StaticTable<TData>({
       <TableBody>
         {loading ? (
           <TableSkeletonRows colSpan={colSpan} />
+        ) : error ? (
+          <TableError colSpan={colSpan} message={error} onRetry={onRetry} />
         ) : rows.length === 0 ? (
           <TableEmpty
             colSpan={colSpan}
