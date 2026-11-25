@@ -1,9 +1,4 @@
 // Change the role of one account.
-//
-// Switching the role changes the academic identity of the account and the
-// mail domain it must use, so the dialog asks for both and refuses to submit
-// when the address and the new role disagree.
-
 import { useEffect, useMemo, useState } from 'react';
 import { AlertTriangle, GraduationCap, Loader2, UserRound } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,6 +15,7 @@ import {
   parseStudentId,
 } from '../utils/accountRules';
 import type { AdminUserRole, AdminUserSummary } from '../types/admin';
+import { SetRoleStudentFields } from './SetRoleStudentFields';
 
 interface Props {
   open: boolean;
@@ -53,13 +49,8 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
 
   if (!user) return null;
 
-  /**
-   * The address of the account must fit the role it is moving to. The admin
-   * cannot edit the address here, so a mismatch blocks the change.
-   */
   const emailConflict =
     hasAllowedEmailDomain(user.email) && !emailMatchesRole(user.email, target);
-
   const studentCodeInvalid = target === 'STUDENT' && !STUDENT_ID_PATTERN.test(studentCode.trim().toUpperCase());
 
   const submit = async () => {
@@ -150,40 +141,15 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
         </div>
 
         {target === 'STUDENT' && (
-          <div className="space-y-3">
-            <label className="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500">
-              Student ID
-              <input
-                value={studentCode}
-                onChange={(event) => setStudentCode(event.target.value.toUpperCase())}
-                placeholder="SE173012"
-                maxLength={8}
-                aria-label="Student ID"
-                className={`${field} mt-1.5 font-mono font-bold uppercase`}
-              />
-            </label>
-            <label className="block text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500">
-              Curriculum
-              <select
-                value={curriculumId}
-                onChange={(event) => setCurriculumId(event.target.value)}
-                aria-label="Curriculum"
-                className={`${field} mt-1.5`}
-              >
-                <option value="">Select a curriculum…</option>
-                {curriculumList.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.majorCode} {item.version} — {item.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {identity && (
-              <p className="rounded-xl bg-orange-50 px-3 py-2 text-[12px] font-semibold text-[#9a3412] ring-1 ring-orange-200">
-                Major {identity.majorCode} · Cohort {identity.cohort}
-              </p>
-            )}
-          </div>
+          <SetRoleStudentFields
+            studentCode={studentCode}
+            curriculumId={curriculumId}
+            curriculumList={curriculumList}
+            identity={identity}
+            fieldClass={field}
+            onStudentCodeChange={setStudentCode}
+            onCurriculumChange={setCurriculumId}
+          />
         )}
 
         {emailConflict && (

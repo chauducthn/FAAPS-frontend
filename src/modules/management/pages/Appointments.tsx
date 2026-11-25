@@ -1,24 +1,16 @@
 import { useMemo, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { AppointmentDetailModal } from '../components/AppointmentDetailModal';
-import {
-  APPOINTMENT_STATUSES,
-  AppointmentAvatar,
-  AppointmentStatusBadge,
-  CalendarTile,
-  formatSlotDay,
-  formatSlotTimeRange,
-} from '../components/AppointmentBits';
 import { AppointmentFilters } from '../components/appointments/AppointmentFilters';
 import { AppointmentTimeline } from '../components/appointments/AppointmentTimeline';
-import { KPI_METRICS, KpiCard } from '../components/appointments/KpiCards';
-import { ViewActionButton } from '../components/appointments/ViewActionButton';
+import { KpiCard } from '../components/appointments/KpiCards';
 import { ViewToggle, type AppointmentViewMode } from '../components/appointments/ViewToggle';
 import { useAppointmentSummary, useAppointments } from '../hooks/queries/useAdminAppointments';
 import { useAssignmentAdvisors } from '../hooks/queries/useAdminAssignments';
-import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
+import { DataTable } from '../../../shared/components/common/DataTable';
 import type { PaginationState } from '@tanstack/react-table';
-import type { Appointment, AppointmentStatus } from '../types/admin';
+import type { AppointmentStatus } from '../types/admin';
+import { buildAppointmentMetrics, createAppointmentColumns } from './appointments/appointmentColumns';
 
 const PAGE_SIZE = 10;
 
@@ -67,115 +59,11 @@ export default function Appointments() {
     setPagination((p) => ({ ...p, pageIndex: 0 }));
   };
 
-  const columns = useMemo<DataTableColumnDef<Appointment>[]>(
-    () => [
-      {
-        accessorKey: 'studentName',
-        header: 'Student',
-        enableSorting: false,
-        cell: ({ row }) => {
-          // The backend may omit the student name — never call `.replace` on undefined.
-          const studentName = row.original.studentName ?? 'Unknown';
-          return (
-            <div className="flex items-center gap-2.5">
-              <AppointmentAvatar name={studentName} />
-              <span className="truncate font-semibold text-[#151c27]">{studentName}</span>
-            </div>
-          );
-        },
-      },
-      {
-        accessorKey: 'advisorName',
-        header: 'Advisor',
-        enableSorting: false,
-        cell: ({ row }) => {
-          // The backend may omit the advisor name — never call `.replace` on undefined.
-          const advisorName = row.original.advisorName ?? 'Unknown';
-          return (
-            <div className="flex items-center gap-2.5">
-              <AppointmentAvatar name={advisorName} kind="advisor" />
-              <span className="truncate text-[#151c27]">{advisorName}</span>
-            </div>
-          );
-        },
-      },
-      {
-        accessorKey: 'scheduledAt',
-        header: 'Date & Time',
-        enableSorting: false,
-        cell: ({ row }) => (
-          <div className="flex items-center gap-2.5">
-            <CalendarTile />
-            <div className="min-w-0">
-              <p className="whitespace-nowrap text-[13px] font-semibold text-[#151c27]">
-                {formatSlotDay(row.original.scheduledAt)}
-              </p>
-              <p className="whitespace-nowrap text-[12px] tabular-nums text-[#5b6577]">
-                {formatSlotTimeRange(row.original)}
-              </p>
-            </div>
-          </div>
-        ),
-      },
-      {
-        accessorKey: 'status',
-        header: 'Status',
-        enableSorting: false,
-        cell: ({ row }) => <AppointmentStatusBadge status={row.original.status} />,
-      },
-      {
-        id: 'actions',
-        header: 'Actions',
-        enableSorting: false,
-        meta: { align: 'right' },
-        cell: ({ row }) => (
-          <div className="flex justify-end">
-            <ViewActionButton
-              label={row.original.studentName ?? 'Unknown'}
-              onClick={() => setOpenId(row.original.id)}
-            />
-          </div>
-        ),
-      },
-    ],
-    [],
-  );
-
-  const metrics = useMemo(
-    () =>
-      KPI_METRICS.map((metric) => {
-        const summaryData = summary.data;
-        let raw: number | undefined;
-        switch (metric.key) {
-          case 'total':
-            raw = summaryData?.total;
-            break;
-          case 'SCHEDULED':
-            raw = summaryData?.scheduled;
-            break;
-          case 'COMPLETED':
-            raw = summaryData?.completed;
-            break;
-          case 'CANCELLED':
-            raw = summaryData?.cancelled;
-            break;
-          case 'NO_SHOW':
-            raw = summaryData?.noShow;
-            break;
-        }
-
-        return {
-          ...metric,
-          value: raw,
-          delta: summaryData?.deltas?.[metric.key] ?? null,
-        };
-      }),
-    [summary.data],
-  );
+  const columns = useMemo(() => createAppointmentColumns(setOpenId), []);
+  const metrics = useMemo(() => buildAppointmentMetrics(summary.data), [summary.data]);
 
   return (
     <div className="w-full space-y-6">
-      {/* Page header */}
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-[22px] font-semibold tracking-[-0.01em] text-[#151c27]">
@@ -204,15 +92,10 @@ export default function Appointments() {
         </div>
       </header>
 
-      {/* KPI cards */}
       {summary.isError ? (
         <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
           Could not load appointment totals.
-          <button
-            type="button"
-            onClick={() => summary.refetch()}
-            className="font-semibold hover:underline"
-          >
+          <button type="button" onClick={() => summary.refetch()} className="font-semibold hover:underline">
             Retry
           </button>
         </div>
@@ -227,17 +110,12 @@ export default function Appointments() {
       {list.isError && !list.data && (
         <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
           Could not load appointments.{' '}
-          <button
-            type="button"
-            onClick={() => list.refetch()}
-            className="font-semibold hover:underline"
-          >
+          <button type="button" onClick={() => list.refetch()} className="font-semibold hover:underline">
             Retry
           </button>
         </div>
       )}
 
-      {/* Filter toolbar */}
       <AppointmentFilters
         search={search}
         status={status}
@@ -254,7 +132,6 @@ export default function Appointments() {
         onClear={clearFilters}
       />
 
-      {/* Table or timeline */}
       {view === 'table' ? (
         <section className="rounded-2xl border border-[#e5e7eb] bg-white p-4 shadow-[0_1px_2px_rgba(20,32,51,0.04)] sm:p-5">
           <DataTable

@@ -13,6 +13,8 @@ import AdminLayout from '../shared/components/layout/management/AdminLayout';
 import StudentLayout from '../shared/components/layout/learning/StudentLayout';
 import AdvisorLayout from '../shared/components/layout/advising/AdvisorLayout';
 const AdminDashboard = lazy(() => import('../modules/management/pages/Dashboard'));
+const AdminProfile = lazy(() => import('../modules/management/pages/AdminProfile'));
+const AdvisingReports = lazy(() => import('../modules/management/pages/AdvisingReports'));
 const UserAccounts = lazy(() => import('../modules/management/pages/UserAccounts'));
 const MajorsPage = lazy(() => import('../modules/management/pages/Majors'));
 const Appointments = lazy(() => import('../modules/management/pages/Appointments'));
@@ -74,6 +76,7 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { path: '/admin', element: suspense(<AdminDashboard />) },
+          { path: '/admin/profile', element: suspense(<AdminProfile />) },
           { path: '/admin/users', element: suspense(<UserAccounts />) },
           { path: '/admin/majors', element: suspense(<MajorsPage />) },
           { path: '/admin/cohorts', element: suspense(<CohortsPage />) },
@@ -85,6 +88,7 @@ export const router = createBrowserRouter([
           { path: '/admin/ai-config', element: suspense(<AiConfigPage />) },
           { path: '/admin/ai-performance', element: suspense(<AiPerformancePage />) },
           { path: '/admin/appointments', element: suspense(<Appointments />) },
+          { path: '/admin/reports', element: suspense(<AdvisingReports />) },
           { path: '/admin/ai-reports', element: suspense(<AiReports />) },
           { path: '/admin/ai-reports/:id', element: suspense(<AiReportDetail />) },
           { path: '/admin/assignments', element: suspense(<AssignmentsOverview />) },

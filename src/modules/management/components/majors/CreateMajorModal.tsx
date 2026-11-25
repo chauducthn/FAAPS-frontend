@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { X, BookOpen, Hash, Layers, Clock, AlignLeft, Users, Flag } from 'lucide-react';
-import { CreateMajorDto, MajorStatus } from '../../../academic/types/major';
+import { X, BookOpen, Hash, AlignLeft, Users } from 'lucide-react';
+import type { CreateMajorDto } from '../../../academic/types/major';
+import { MajorAcademicFields } from './MajorAcademicFields';
 
 interface CreateMajorModalProps {
   isOpen: boolean;
@@ -34,7 +35,9 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
 
   useEffect(() => {
     if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
@@ -43,7 +46,12 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ ...formData, code: formData.code.trim().toUpperCase(), name: formData.name.trim(), cohort: formData.cohort.trim().toUpperCase() });
+    onSubmit({
+      ...formData,
+      code: formData.code.trim().toUpperCase(),
+      name: formData.name.trim(),
+      cohort: formData.cohort.trim().toUpperCase(),
+    });
   };
 
   const set = <K extends keyof CreateMajorDto>(key: K, value: CreateMajorDto[K]) =>
@@ -60,7 +68,6 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
         onClick={(e) => e.stopPropagation()}
         className="bg-white rounded-xl shadow-[0_20px_50px_-12px_rgba(16,24,40,0.25)] w-full max-w-[800px] max-h-[90vh] overflow-y-auto animate-in zoom-in-95 slide-in-from-bottom-2 duration-200"
       >
-        {/* Header */}
         <div className="px-7 pt-6 pb-5 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-orange-100/80 text-[#F26F21] flex items-center justify-center shrink-0">
@@ -81,7 +88,6 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
         </div>
 
         <form onSubmit={handleSubmit} className="px-7 pb-7">
-          {/* Section: Major details */}
           <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em] pb-2 border-b border-gray-100">Major details</p>
           <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -145,60 +151,8 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
             </div>
           </div>
 
-          {/* Section: Academic settings */}
-          <p className="mt-8 text-[11px] font-semibold text-gray-500 uppercase tracking-[0.06em] pb-2 border-b border-gray-100">Academic settings</p>
-          <div className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label htmlFor="major-credits" className={labelClass}>Total credits <span className="text-red-500">*</span></label>
-              <div className="relative">
-                <Layers className="size-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                <input
-                  id="major-credits"
-                  type="number"
-                  min={1}
-                  value={formData.totalCredits}
-                  onChange={(e) => set('totalCredits', Number(e.target.value))}
-                  className={`${inputClass} tabular-nums`}
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="major-duration" className={labelClass}>Duration (years) <span className="text-red-500">*</span></label>
-              <div className="relative">
-                <Clock className="size-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                <input
-                  id="major-duration"
-                  type="number"
-                  step="0.5"
-                  min={1}
-                  value={formData.durationYears}
-                  onChange={(e) => set('durationYears', Number(e.target.value))}
-                  className={`${inputClass} tabular-nums`}
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label htmlFor="major-status" className={labelClass}>Status <span className="text-red-500">*</span></label>
-              <div className="relative">
-                <Flag className="size-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                <select
-                  id="major-status"
-                  value={formData.status}
-                  onChange={(e) => set('status', e.target.value as MajorStatus)}
-                  className={`${inputClass} appearance-none cursor-pointer font-medium`}
-                  required
-                >
-                  <option value="DRAFT">Draft</option>
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
-                </select>
-              </div>
-            </div>
-          </div>
+          <MajorAcademicFields formData={formData} inputClass={inputClass} labelClass={labelClass} onChange={set} />
 
-          {/* Footer */}
           <div className="mt-8 pt-5 border-t border-gray-100 flex items-center justify-end gap-2.5">
             <button
               type="button"

@@ -8,22 +8,24 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import type { Appointment, AppointmentStatus } from '../types/admin';
+import type { AppointmentStatus } from '../types/admin';
 import { initialsOf } from './UserInitials';
 
-/**
- * One source of truth for every status: the label, the icon and the colour
- * ramp. The KPI cards, the table badges and the timeline all read from it,
- * so a status always looks the same across the page.
- */
+export {
+  durationMinutes,
+  formatSlot,
+  formatSlotDay,
+  formatSlotTime,
+  formatSlotTimeRange,
+  formatWeekday,
+  localDayKey,
+} from '../utils/appointmentFormat';
+
 interface StatusMeta {
   label: string;
   icon: LucideIcon;
-  /** Badge: tinted surface, readable label, hairline ring for definition. */
   badge: string;
-  /** Solid chip used inside the timeline cards. */
   chip: string;
-  /** Dot colour on the timeline rail. */
   dot: string;
 }
 
@@ -99,10 +101,6 @@ export function AppointmentStatusBadge({
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*                                   Avatars                                  */
-/* -------------------------------------------------------------------------- */
-
 const STUDENT_TONES = [
   'bg-orange-100 text-orange-700',
   'bg-amber-100 text-amber-700',
@@ -112,7 +110,6 @@ const STUDENT_TONES = [
   'bg-violet-100 text-violet-700',
 ];
 
-/** A stable tone per name, so the same person always looks the same. */
 function hashName(name: string | null | undefined) {
   const safe = name ?? '';
   let hash = 0;
@@ -122,22 +119,16 @@ function hashName(name: string | null | undefined) {
   return Math.abs(hash);
 }
 
-/**
- * Initials avatar. Students get a rotating warm palette; advisors keep one
- * cool tone, so the two roles are readable at a glance in a dense table.
- */
 export function AppointmentAvatar({
   name,
   kind = 'student',
   className,
 }: {
-  /** The backend may omit the name — never call `.replace` on undefined. */
   name: string | null | undefined;
   kind?: 'student' | 'advisor';
   className?: string;
 }) {
   const initials = initialsOf(name);
-
   const tone =
     kind === 'advisor'
       ? 'bg-[#eef2ff] text-[#4338ca]'
@@ -155,74 +146,6 @@ export function AppointmentAvatar({
       {initials}
     </span>
   );
-}
-
-/* -------------------------------------------------------------------------- */
-/*                              Date & time helpers                           */
-/* -------------------------------------------------------------------------- */
-
-const dateFmt: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: '2-digit' };
-const timeFmt: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit', hour12: false };
-
-/** "Oct 12, 2026" */
-export function formatSlotDay(iso: string | null) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('en-US', dateFmt);
-}
-
-/** "09:00" */
-export function formatSlotTime(iso: string | null) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleTimeString('en-US', timeFmt);
-}
-
-/** "09:00 – 09:30" (end omitted when the session has no end time). */
-export function formatSlotTimeRange(a: Pick<Appointment, 'scheduledAt' | 'endedAt'>) {
-  if (!a.scheduledAt) return '—';
-  const start = new Date(a.scheduledAt);
-  const from = start.toLocaleTimeString('en-US', timeFmt);
-  if (!a.endedAt) return from;
-  const end = new Date(a.endedAt);
-  const sameDay = end.toDateString() === start.toDateString();
-  const to = sameDay
-    ? end.toLocaleTimeString('en-US', timeFmt)
-    : `${end.toLocaleDateString('en-US', dateFmt)} ${end.toLocaleTimeString('en-US', timeFmt)}`;
-  return `${from} – ${to}`;
-}
-
-/** Local calendar key (yyyy-MM-dd) — the grouping key of the timeline. */
-export function localDayKey(iso: string | null) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('en-CA');
-}
-
-/** "Monday" */
-export function formatWeekday(iso: string | null) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleDateString('en-US', { weekday: 'long' });
-}
-
-/** "Oct 12, 2026 · 09:00 – 09:30" (kept for the detail modal). */
-export function formatSlot(a: Pick<Appointment, 'scheduledAt' | 'endedAt'>) {
-  if (!a.scheduledAt) return '—';
-  const start = new Date(a.scheduledAt);
-  const day = start.toLocaleDateString('en-US', dateFmt);
-  const from = start.toLocaleTimeString('en-US', timeFmt);
-  if (!a.endedAt) return `${day} · ${from}`;
-  const end = new Date(a.endedAt);
-  const sameDay = end.toDateString() === start.toDateString();
-  const to = sameDay
-    ? end.toLocaleTimeString('en-US', timeFmt)
-    : `${end.toLocaleDateString('en-US', dateFmt)} ${end.toLocaleTimeString('en-US', timeFmt)}`;
-  return `${day} · ${from} – ${to}`;
-}
-
-export function durationMinutes(a: Pick<Appointment, 'scheduledAt' | 'endedAt'>) {
-  if (!a.scheduledAt || !a.endedAt) return null;
-  const minutes = Math.round(
-    (new Date(a.endedAt).getTime() - new Date(a.scheduledAt).getTime()) / 60000,
-  );
-  return minutes > 0 ? minutes : null;
 }
 
 /** Icon tile used by the date cell and the schedule header. */

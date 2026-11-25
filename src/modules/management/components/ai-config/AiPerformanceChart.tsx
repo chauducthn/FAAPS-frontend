@@ -31,16 +31,30 @@ const shortDate = (iso: string) => {
 
 const fmtInt = (v: number | string) => Number(v).toLocaleString('en-US');
 
-function ChartTooltip({ active, payload, label }: any) {
+interface TooltipEntry {
+  dataKey?: string | number;
+  name?: string;
+  value?: number | string;
+  color?: string;
+  fill?: string;
+}
+
+interface ChartTooltipProps {
+  active?: boolean;
+  payload?: TooltipEntry[];
+  label?: string | number;
+}
+
+function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-lg">
       <p className="mb-1 text-[11px] font-extrabold uppercase tracking-wide text-gray-400">{label}</p>
       <div className="space-y-0.5">
-        {payload.map((p: any) => (
+        {payload.map((p) => (
           <p key={String(p.dataKey)} className="flex items-center gap-2 text-xs font-semibold text-gray-700">
             <span className="size-2 rounded-full" style={{ background: p.color ?? p.fill }} />
-            {p.name}: <span className="font-mono tabular-nums">{fmtInt(p.value)}</span>
+            {p.name}: <span className="font-mono tabular-nums">{fmtInt(p.value ?? 0)}</span>
           </p>
         ))}
       </div>

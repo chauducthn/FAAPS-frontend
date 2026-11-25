@@ -1,142 +1,32 @@
-// src/components/layout/portal/PortalLayout.tsx
-// Layout dùng chung cho Student Portal và Advisor Portal.
-// Cấu trúc giống hệt AdminLayout: sidebar trượt dọc (desktop) / overlay (mobile),
-// header sticky 1 hàng, dropdown đăng xuất — nhưng header/nav là riêng cho từng vai trò.
-
-import { Suspense, useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet } from 'react-router';
-import { ChevronDown, LogOut, Menu, X, type LucideIcon } from 'lucide-react';
+import { Suspense, useState } from 'react';
+import { Outlet } from 'react-router';
+import { X } from 'lucide-react';
 import { Logo } from '@/shared/components/common/Logo';
-import { cn } from '@/shared/lib/utils';
-import { useAuth } from '../../../../modules/auth/stores/useAuth';
-import { authService } from '../../../../modules/auth/services/authService';
+import { PortalHeader } from './PortalHeader';
+import { PortalSidebar, type PortalNavItem, type PortalNavSection } from './PortalSidebar';
 
-export interface PortalNavItem {
-  label: string;
-  to: string;
-  icon: LucideIcon;
-  /** Đánh dấu trang chủ — dùng `end` cho NavLink để không sáng ở các sub-route. */
-  end?: boolean;
-  /** Số badge nhỏ hiển thị bên phải (vd: số yêu cầu đang chờ). */
-  badge?: number;
-}
-
-export interface PortalNavSection {
-  /** Nhãn phân khu (WORKSPACE, ADVISING...) — hiển thị nhỏ, xám mờ phía trên nhóm mục. */
-  title?: string;
-  items: PortalNavItem[];
-}
+export { PortalSidebar, type PortalNavItem, type PortalNavSection };
 
 interface PortalLayoutProps {
   navSections: PortalNavSection[];
-  /** Đường dẫn logo trỏ tới. */
   homePath: string;
-  /** Nhãn vai trò hiển thị dưới tên người dùng. */
   roleLabel: string;
-  /** Nội dung bên phải header (vd: chuột thông báo, nút demo data). */
+  profilePath?: string;
   headerExtra?: React.ReactNode;
-}
-
-export function PortalSidebar({
-  navSections,
-  homePath,
-  onNavigate,
-}: {
-  navSections: PortalNavSection[];
-  homePath: string;
-  onNavigate?: () => void;
-}) {
-  return (
-    <nav className="flex flex-col gap-1" aria-label="Portal navigation">
-      {navSections.map((section, i) => (
-        <div key={section.title ?? i} className="flex flex-col">
-          {section.title && (
-            <p
-              className={cn(
-                'px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#98a2b3]',
-                i === 0 ? 'pt-1' : 'pt-6',
-              )}
-            >
-              {section.title}
-            </p>
-          )}
-          <div className="space-y-0.5">
-            {section.items.map(({ label, to, icon: Icon, end, badge }) => (
-              <NavLink
-                key={label}
-                to={to}
-                end={end}
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  cn(
-                    'group relative flex items-center gap-2.5 rounded-r-lg border-l-[3px] border-transparent py-2 pl-3 pr-3 text-sm font-medium text-[#555f6f] transition-colors hover:bg-gray-50 hover:text-[#151c27]',
-                    isActive &&
-                      'border-[#f37021] bg-[#fff7ed] font-semibold text-[#f37021] hover:bg-[#fff7ed] hover:text-[#f37021]',
-                  )
-                }
-              >
-                <Icon className="size-[18px] shrink-0" strokeWidth={2} aria-hidden />
-                <span className="min-w-0 flex-1 truncate">{label}</span>
-                {badge != null && badge > 0 && (
-                  <span
-                    className={cn(
-                      'inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-bold tabular-nums',
-                      'bg-[#F26F21] text-white',
-                    )}
-                    aria-label={`${badge} pending`}
-                  >
-                    {badge > 99 ? '99+' : badge}
-                  </span>
-                )}
-              </NavLink>
-            ))}
-          </div>
-        </div>
-      ))}
-    </nav>
-  );
 }
 
 export default function PortalLayout({
   navSections,
   homePath,
   roleLabel,
+  profilePath,
   headerExtra,
 }: PortalLayoutProps) {
-  const { user, logout: clearStore } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [logoutError, setLogoutError] = useState(false);
-  const profileRef = useRef<HTMLDivElement>(null);
-
-  // Đóng dropdown khi click ra ngoài hoặc nhấn Esc.
-  useEffect(() => {
-    if (!profileOpen) return;
-    const onDown = (e: MouseEvent) =>
-      profileRef.current && !profileRef.current.contains(e.target as Node) && setProfileOpen(false);
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setProfileOpen(false);
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [profileOpen]);
-
-  const handleLogout = async () => {
-    setLogoutError(false);
-    try {
-      await authService.logout();
-      clearStore();
-      window.location.href = '/';
-    } catch (error) {
-      console.error('Sign-out error', error);
-      setLogoutError(true);
-    }
-  };
+  const resolvedProfilePath = profilePath ?? `${homePath}/profile`;
 
   return (
-    <div className="flex min-h-screen bg-[#f7f8fa] font-sans">
+    <div className="flex min-h-screen bg-[var(--surface-page)] font-sans">
       <aside className="sticky top-0 hidden h-screen w-[248px] shrink-0 flex-col border-r border-[#e5e7eb] bg-white lg:flex">
         <div className="flex h-16 shrink-0 items-center border-b border-[#e5e7eb] px-4">
           <Logo to={homePath} />
@@ -147,57 +37,12 @@ export default function PortalLayout({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-[#e5e7eb] bg-white px-4 sm:px-6">
-          <button
-            type="button"
-            className="rounded-md p-2 text-gray-700 hover:bg-gray-100 lg:hidden"
-            aria-label="Open menu"
-            onClick={() => setMenuOpen(true)}
-          >
-            <Menu className="size-6" />
-          </button>
-          <div className="hidden lg:block" />
-
-          <div className="relative flex items-center gap-2 sm:gap-4">
-            {headerExtra}
-            {logoutError && (
-              <span className="text-sm text-red-600">Unable to sign out. Please try again.</span>
-            )}
-            <div ref={profileRef} className="relative">
-              <button
-                type="button"
-                onClick={() => setProfileOpen((v) => !v)}
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50"
-                aria-expanded={profileOpen}
-              >
-                <span className="flex size-8 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-700 ring-1 ring-[#e5e7eb]">
-                  {user?.fullName?.charAt(0).toUpperCase() ?? 'U'}
-                </span>
-                <span className="hidden text-left sm:block">
-                  <span className="block text-sm font-semibold leading-[19px] text-[#151c27]">
-                    {user?.fullName}
-                  </span>
-                  <span className="block text-[11px] uppercase leading-4 tracking-[0.05em] text-[#555f6f]">
-                    {roleLabel}
-                  </span>
-                </span>
-                <ChevronDown className="size-3 text-[#555f6f]" />
-              </button>
-              {profileOpen && (
-                <div className="absolute right-0 top-full mt-2 w-44 rounded-lg border border-[#e5e7eb] bg-white p-1 shadow-md">
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
-                  >
-                    <LogOut className="size-4" />
-                    Sign out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
+        <PortalHeader
+          roleLabel={roleLabel}
+          profilePath={resolvedProfilePath}
+          headerExtra={headerExtra}
+          onOpenMenu={() => setMenuOpen(true)}
+        />
 
         {menuOpen && (
           <div className="fixed inset-0 z-40 lg:hidden">

@@ -9,6 +9,13 @@
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   color: #142033;
   background: #f7f8fa;
+  --brand: #f37021;
+  --brand-hover: #d95f14;
+  --brand-soft: #fff7ed;
+  --surface-page: #f7f8fa;
+  --ink-primary: #151c27;
+  --ink-muted: #555f6f;
+  --ink-subtle: #98a2b3;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);

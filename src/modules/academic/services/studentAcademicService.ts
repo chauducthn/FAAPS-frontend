@@ -31,10 +31,25 @@ export type ImportPreview = { importId: string; rowCount: number; errorCount: nu
 export type ImportHistory = { id: string; fileName: string; status: string; rowCount: number;
   errorCount: number; createdAt: string; confirmedAt: string | null };
 export type Semester = { id: string; code: string; name: string; startDate: string; endDate: string };
-export type CurriculumPlan = { header: { id: string; semesterId: string; semesterCode: string;
-  version: number; status: string; planType: string; totalCredits: number; previousPlanId: string | null;
-  submittedAt: string | null; reviewedByUserId: string | null; reviewedAt: string | null;
-  reviewNotes: string | null; createdAt: string }; courses: { id: string; code: string; name: string; credits: number }[]; issues: string[] };
+export type CurriculumPlan = {
+  header: {
+    id: string;
+    semesterId: string;
+    semesterCode: string;
+    version: number;
+    status: string;
+    planType: string;
+    totalCredits: number;
+    previousPlanId: string | null;
+    submittedAt: string | null;
+    reviewedByUserId: string | null;
+    reviewedAt: string | null;
+    reviewNotes: string | null;
+    createdAt: string;
+  };
+  courses: { id: string; code: string; name: string; credits: number }[];
+  issues: string[];
+};
 export type LearningTask = { title: string; description: string | null; dueDate: string | null;
   resourceUrl: string | null };
 export type CoursePlan = { header: { id: string; courseId: string; courseCode: string;
@@ -60,13 +75,19 @@ export const studentAcademicService = {
     (await apiClient.put<AcademicStudentProfile>('/student/profile', body, { headers: await getCsrfHeaders() })).data,
   /** Saves the major / curriculum the student follows (chosen in the Profile page). */
   changeCurriculum: async (curriculumVersionId: string) =>
-    (await apiClient.put<AcademicStudentProfile>('/student/profile/curriculum', { curriculumVersionId }, { headers: await getCsrfHeaders() })).data,
+    (
+      await apiClient.put<AcademicStudentProfile>(
+        '/student/profile/curriculum',
+        { curriculumVersionId },
+        { headers: await getCsrfHeaders() },
+      )
+    ).data,
   transcript: () => get<TranscriptRow[]>('/transcript'),
   progress: () => get<Progress>('/progress'),
   /**
-   * Danh sách môn học có phân trang (GET /student/courses/paged).
-   * BE trả `Page` trần (items/page/size/totalElements/totalPages) — được chuẩn hoá
-   * về `PaginatedData` (pageSize/totalItems) để UI dùng chung một kiểu.
+   * Paginated course list (GET /student/courses/paged).
+   * The backend returns a raw Page shape (items/page/size/totalElements/totalPages),
+   * normalized to PaginatedData (pageSize/totalItems) for consistent UI usage.
    */
   courses: async (search = '', page = 0, size = 20): Promise<PaginatedData<Course>> => {
     const data = await get<{
@@ -84,8 +105,15 @@ export const studentAcademicService = {
   curriculum: () => get<Curriculum>('/curriculum'),
   curriculumCourses: () => get<CurriculumCourse[]>('/curriculum/courses'),
   importPreview: async (file: File) => {
-    const body = new FormData(); body.append('file', file);
+    const body = new FormData();
+    body.append('file', file);
     return (await apiClient.post<ImportPreview>('/student/transcript/imports/preview', body,
+      { headers: { ...(await getCsrfHeaders()), 'Content-Type': 'multipart/form-data' } })).data;
+  },
+  importOcrPreview: async (file: File) => {
+    const body = new FormData();
+    body.append('file', file);
+    return (await apiClient.post<ImportPreview>('/student/transcript/imports/ocr-preview', body,
       { headers: { ...(await getCsrfHeaders()), 'Content-Type': 'multipart/form-data' } })).data;
   },
   confirmImport: (id: string) => post<{ importId: string; importedCount: number; status: string }>(`/transcript/imports/${id}/confirm`),
@@ -103,7 +131,8 @@ export const studentAcademicService = {
   coursePlans: () => get<CoursePlan[]>('/course-learning-plans'),
   coursePlan: (id: string) => get<CoursePlan>(`/course-learning-plans/${id}`),
   coursePlanVersions: (id: string) => get<CoursePlan[]>(`/course-learning-plans/${id}/versions`),
-  saveCoursePlan: (body: { courseId: string; learningGoal: string; tasks: LearningTask[] }) => post<CoursePlan>('/course-learning-plans', body),
+  saveCoursePlan: (body: { courseId: string; learningGoal: string; tasks: LearningTask[] }) =>
+    post<CoursePlan>('/course-learning-plans', body),
   updateTask: async (planId: string, taskId: string, completed: boolean) =>
     (await apiClient.patch<CoursePlan>(`/student/course-learning-plans/${planId}/tasks/${taskId}`,
       { completed }, { headers: await getCsrfHeaders() })).data,

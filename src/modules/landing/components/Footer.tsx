@@ -13,7 +13,7 @@ export function Footer() {
             </a>
           ))}
         </nav>
-        <p className="text-xs text-gray-500">© {new Date().getFullYear()} FAAPS. All rights reserved.</p>
+        <p className="text-xs text-gray-500">&copy; {new Date().getFullYear()} FAAPS. All rights reserved.</p>
       </div>
     </footer>
   );

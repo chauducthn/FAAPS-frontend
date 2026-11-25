@@ -1,11 +1,12 @@
-// Checks an import spreadsheet in the browser before it is uploaded, and builds
-// the example sheets. The rules follow how the backend reads each file
+// Checks an import spreadsheet in the browser before it is uploaded, and re-exports
+// the example sheet builders. The rules follow how the backend reads each file
 // (CourseImportService, CurriculumImportService), plus the catalogue rule that
 // credits are one of CREDIT_OPTIONS (0, 2, 3 or 10).
 import { readFirstSheet, XlsxReadError, type SheetRows } from '../../../shared/lib/xlsxRead';
-import { buildXlsx, type XlsxRow } from '../../learning/utils/studyPlanXlsx';
 import type { CourseCategory } from '../../academic/types/course';
 import { CREDIT_OPTIONS, CREDIT_OPTIONS_MESSAGE } from '../../academic/validations/course.schema';
+
+export { courseTableExample, courseSyllabusExample, curriculumExample } from './importExamples';
 
 /** Whether an imported credits value is allowed. */
 export const isAllowedCredits = (credits: number) => (CREDIT_OPTIONS as readonly number[]).includes(credits);
@@ -22,11 +23,9 @@ export interface ImportCheck {
   problems: ImportProblem[];
 }
 
-/** Same normalisation as the backend: trimmed, lower case, without a trailing colon. */
 const cleanKey = (value: string) => value.trim().toLowerCase().replace(/[:：]+$/, '').trim();
 const cell = (rows: SheetRows, r: number, c: number) => (c < 0 ? '' : (rows[r]?.[c] ?? '').trim());
 
-// Header names the backend accepts for each course field.
 const CODE_KEYS = ['subject code', 'subjectcode', 'course code', 'code', 'mã môn', 'mã học phần'];
 const NAME_KEYS = ['course name english', 'course name', 'name', 'syllabus name', 'tên môn', 'tên học phần'];
 const CREDIT_KEYS = ['nocredit', 'no credit', 'nocredits', 'no credits', 'credits', 'credit', 'tín chỉ', 'số tín chỉ'];
@@ -86,11 +85,38 @@ function checkCourseRows(rows: CourseFields[], categories: CourseCategory[]): Im
   return problems;
 }
 
-/**
- * Checks a course import file. Two layouts are accepted, like the backend:
- * a table (a header row with a code column and a name or credits column within the first 6 rows),
- * or syllabus blocks (key in column A, value in column B, one block per course).
- */
+function extractSyllabusCourses(sheet: SheetRows): CourseFields[] {
+  const blocks: Map<string, string>[] = [];
+  let current = new Map<string, string>();
+  for (let r = 0; r < sheet.length; r++) {
+    const k = cleanKey(cell(sheet, r, 0));
+    const v = cell(sheet, r, 1);
+    if (!k && !v) {
+      if (current.size) blocks.push(current);
+      current = new Map();
+      continue;
+    }
+    if (current.size && ['syllabus id', 'subject code', 'code', 'mã môn'].some((key) => k === key && current.has(key))) {
+      blocks.push(current);
+      current = new Map();
+    }
+    if (k) current.set(k, v);
+  }
+  if (current.size) blocks.push(current);
+  const pick = (block: Map<string, string>, keys: string[]) =>
+    keys.map((k) => block.get(k)).find((v) => v !== undefined)?.trim() ?? '';
+  return blocks
+    .map((block, i) => ({
+      row: i + 1,
+      code: pick(block, CODE_KEYS),
+      name: pick(block, NAME_KEYS),
+      credits: pick(block, CREDIT_KEYS),
+      category: pick(block, CATEGORY_KEYS),
+    }))
+    .filter((c) => c.code || c.name);
+}
+
+/** Checks a course import file (table layout or syllabus block layout). */
 export async function checkCourseImport(file: File, categories: CourseCategory[]): Promise<ImportCheck> {
   const bad = checkExtension(file);
   if (bad) return { rowCount: 0, problems: [bad] };
@@ -112,28 +138,7 @@ export async function checkCourseImport(file: File, categories: CourseCategory[]
       if (fields.code || fields.name) courses.push(fields);
     }
   } else {
-    // Syllabus layout: blocks of "key | value" rows, split by a blank row or a repeated code key.
-    const blocks: Map<string, string>[] = [];
-    let current = new Map<string, string>();
-    for (let r = 0; r < sheet.length; r++) {
-      const k = cleanKey(cell(sheet, r, 0));
-      const v = cell(sheet, r, 1);
-      if (!k && !v) {
-        if (current.size) blocks.push(current);
-        current = new Map();
-        continue;
-      }
-      if (current.size && ['syllabus id', 'subject code', 'code', 'mã môn'].some((key) => k === key && current.has(key))) {
-        blocks.push(current);
-        current = new Map();
-      }
-      if (k) current.set(k, v);
-    }
-    if (current.size) blocks.push(current);
-    const pick = (block: Map<string, string>, keys: string[]) => keys.map((k) => block.get(k)).find((v) => v !== undefined)?.trim() ?? '';
-    courses = blocks
-      .map((block, i) => ({ row: i + 1, code: pick(block, CODE_KEYS), name: pick(block, NAME_KEYS), credits: pick(block, CREDIT_KEYS), category: pick(block, CATEGORY_KEYS) }))
-      .filter((c) => c.code || c.name);
+    courses = extractSyllabusCourses(sheet);
   }
 
   if (courses.length === 0) {
@@ -145,10 +150,7 @@ export async function checkCourseImport(file: File, categories: CourseCategory[]
   return { rowCount: courses.length, problems: checkCourseRows(courses, categories) };
 }
 
-/**
- * Checks a curriculum import file: row 1 is the header and is skipped by the backend,
- * then column A course code, B semester (1-9), C mandatory (YES/NO), D group (optional).
- */
+/** Checks a curriculum import file (row 1 header, columns A..D: code, semester, mandatory, group). */
 export async function checkCurriculumImport(file: File): Promise<ImportCheck> {
   const bad = checkExtension(file);
   if (bad) return { rowCount: 0, problems: [bad] };
@@ -176,46 +178,4 @@ export async function checkCurriculumImport(file: File): Promise<ImportCheck> {
   }
   if (rowCount === 0) problems.push({ row: null, message: 'No courses found below the header row.' });
   return { rowCount, problems };
-}
-
-// ---- Example sheets ----
-
-const exampleCategory = (categories: CourseCategory[]) => categories[0]?.code ?? 'SE';
-
-export function courseTableExample(categories: CourseCategory[]): Blob {
-  const cat = exampleCategory(categories);
-  const rows: XlsxRow[] = [
-    ['Course code', 'Course name', 'Credits', 'Category', 'Prerequisites'],
-    ['ABC101', 'Introduction to Programming', 3, cat, ''],
-    ['ABC102', 'Object-Oriented Programming', 3, cat, 'ABC101'],
-  ];
-  return buildXlsx(rows, { sheetName: 'Courses', widths: [14, 36, 10, 14, 22] });
-}
-
-export function courseSyllabusExample(categories: CourseCategory[]): Blob {
-  const cat = exampleCategory(categories);
-  const rows: XlsxRow[] = [
-    ['Subject Code:', 'ABC101'],
-    ['Syllabus Name:', 'Introduction to Programming'],
-    ['NoCredit:', 3],
-    ['Category:', cat],
-    ['Pre-Requisite:', ''],
-    [],
-    ['Subject Code:', 'ABC102'],
-    ['Syllabus Name:', 'Object-Oriented Programming'],
-    ['NoCredit:', 3],
-    ['Category:', cat],
-    ['Pre-Requisite:', 'ABC101'],
-  ];
-  return buildXlsx(rows, { sheetName: 'Syllabus', widths: [18, 40], header: false });
-}
-
-export function curriculumExample(): Blob {
-  const rows: XlsxRow[] = [
-    ['Course code', 'Semester', 'Mandatory', 'Group'],
-    ['PRF192', 1, 'YES', ''],
-    ['CSD201', 3, 'YES', ''],
-    ['SWD392', 7, 'NO', 'Elective 1'],
-  ];
-  return buildXlsx(rows, { sheetName: 'Curriculum', widths: [14, 10, 12, 18] });
 }

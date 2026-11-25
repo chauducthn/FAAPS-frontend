@@ -89,6 +89,13 @@ export default function MajorsPage() {
     }
   };
 
+  const clearFilters = () => {
+    setSearch('');
+    setSelectedCohort('ALL');
+    setSelectedStatus('ALL');
+    setPage(0);
+  };
+
   return (
     <div className="w-full space-y-5">
       {/* Page header — title + primary action */}
@@ -116,7 +123,7 @@ export default function MajorsPage() {
           onCohortChange={(value) => { setSelectedCohort(value); setPage(0); }}
           selectedStatus={selectedStatus}
           onStatusChange={(value) => { setSelectedStatus(value); setPage(0); }}
-          onClearContext={() => { setSearch(''); setSelectedCohort('ALL'); setSelectedStatus('ALL'); setPage(0); }}
+          onClearContext={clearFilters}
           resultCount={result?.totalItems}
         />
         {isLoading && (

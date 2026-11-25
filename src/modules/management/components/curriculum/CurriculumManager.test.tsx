@@ -34,7 +34,10 @@ function renderManager() {
 }
 
 describe('Curriculum list controls', () => {
-  beforeEach(() => { vi.clearAllMocks(); mocks.updateStatus.mockResolvedValue(undefined); });
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.updateStatus.mockResolvedValue(undefined);
+  });
 
   it('filters current versions and updates selected curricula after confirmation', async () => {
     const user = userEvent.setup();

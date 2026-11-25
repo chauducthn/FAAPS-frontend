@@ -5,69 +5,12 @@ import { cn } from '@/shared/lib/utils';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';
 import { useAttendanceImportMutations, useAttendanceImports } from '../../hooks/queries/useAttendance';
 import { attendanceErrorsCsv, attendanceTemplateCsv, TEMPLATE_HEADERS } from '../../services/attendance.service';
-import type { AttendanceImportPreview, AttendanceImportRow, AttendanceResult } from '../../types/attendance';
-
-function downloadCsv(name: string, text: string) {
-  const url = URL.createObjectURL(new Blob(['﻿', text], { type: 'text/csv;charset=utf-8' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-const RESULT_STYLE: Record<AttendanceResult, { label: string; className: string }> = {
-  OK: { label: 'OK', className: 'bg-[#ecfdf5] text-[#047857]' },
-  WARNING: { label: 'Warning', className: 'bg-[#fffbeb] text-[#b45309]' },
-  FAIL: { label: 'Attendance fail', className: 'bg-red-50 text-red-600' },
-};
-
-function Chip({ label, value, className }: { label: string; value: number; className?: string }) {
-  return (
-    <span className={cn('rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-[#555f6f]', className)}>
-      {label}: {value}
-    </span>
-  );
-}
-
-function PreviewTable({ rows }: { rows: AttendanceImportRow[] }) {
-  return (
-    <div className="max-h-[420px] overflow-auto rounded-lg border border-[#e7eefe]">
-      <table className="w-full min-w-[720px] text-left text-sm">
-        <thead className="sticky top-0 bg-[#f4f6fe] text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">
-          <tr>
-            <th className="px-4 py-2.5">Line</th>
-            <th className="px-4 py-2.5">Student ID</th>
-            <th className="px-4 py-2.5">Semester</th>
-            <th className="px-4 py-2.5">Course</th>
-            <th className="px-4 py-2.5">Absent / total</th>
-            <th className="px-4 py-2.5">Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.lineNumber} className={cn('border-t border-[#e7eefe]', r.error && 'bg-red-50/60')}>
-              <td className="px-4 py-2.5 text-[#555f6f]">{r.lineNumber}</td>
-              <td className="px-4 py-2.5 font-semibold text-[#151c27]">{r.studentCode || '—'}</td>
-              <td className="px-4 py-2.5 text-[#151c27]">{r.semesterCode || '—'}</td>
-              <td className="px-4 py-2.5 text-[#151c27]">{r.courseCode || '—'}</td>
-              <td className="px-4 py-2.5 text-[#151c27]">
-                {r.absentSessions ?? '—'} / {r.totalSessions ?? '—'}
-              </td>
-              <td className="px-4 py-2.5">
-                {r.error ? (
-                  <span className="text-xs font-medium text-red-600">{r.error}</span>
-                ) : (
-                  r.result && <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-semibold', RESULT_STYLE[r.result].className)}>{RESULT_STYLE[r.result].label}</span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+import type { AttendanceImportPreview, AttendanceResult } from '../../types/attendance';
+import {
+  AttendanceImportPreviewTable,
+  downloadAttendanceCsv,
+  ImportSummaryChip,
+} from './AttendanceImportPreviewTable';
 
 /** Upload a file, check the preview, confirm it, and see earlier imports. */
 export function AttendanceImportTab() {
@@ -116,7 +59,7 @@ export function AttendanceImportTab() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => downloadCsv('attendance-template.csv', attendanceTemplateCsv())}
+              onClick={() => downloadAttendanceCsv('attendance-template.csv', attendanceTemplateCsv())}
               className="inline-flex items-center gap-1.5 rounded-lg border border-[#e5e7eb] px-3 py-2 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50"
             >
               <Download className="size-4" aria-hidden />
@@ -156,13 +99,13 @@ export function AttendanceImportTab() {
             <div className="flex flex-wrap items-center gap-2">
               <FileSpreadsheet className="size-4 text-[#555f6f]" aria-hidden />
               <span className="text-sm font-semibold text-[#151c27]">{current.fileName}</span>
-              <Chip label="Rows" value={current.rows.length} />
-              <Chip label="Valid" value={current.validRows} className="bg-[#ecfdf5] text-[#047857]" />
-              {current.errorRows > 0 && <Chip label="Errors" value={current.errorRows} className="bg-red-50 text-red-600" />}
-              <Chip label="Warning" value={count('WARNING')} className="bg-[#fffbeb] text-[#b45309]" />
-              <Chip label="Attendance fail" value={count('FAIL')} className="bg-red-50 text-red-600" />
+              <ImportSummaryChip label="Rows" value={current.rows.length} />
+              <ImportSummaryChip label="Valid" value={current.validRows} className="bg-[#ecfdf5] text-[#047857]" />
+              {current.errorRows > 0 && <ImportSummaryChip label="Errors" value={current.errorRows} className="bg-red-50 text-red-600" />}
+              <ImportSummaryChip label="Warning" value={count('WARNING')} className="bg-[#fffbeb] text-[#b45309]" />
+              <ImportSummaryChip label="Attendance fail" value={count('FAIL')} className="bg-red-50 text-red-600" />
             </div>
-            <PreviewTable rows={current.rows} />
+            <AttendanceImportPreviewTable rows={current.rows} />
             <div className="flex flex-col-reverse justify-end gap-2 sm:flex-row">
               <button type="button" onClick={() => setCurrent(null)} className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-200">
                 Cancel
@@ -170,7 +113,7 @@ export function AttendanceImportTab() {
               {current.errorRows > 0 && (
                 <button
                   type="button"
-                  onClick={() => downloadCsv('attendance-errors.csv', attendanceErrorsCsv(current))}
+                  onClick={() => downloadAttendanceCsv('attendance-errors.csv', attendanceErrorsCsv(current))}
                   className="rounded-lg border border-[#e5e7eb] px-4 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-50"
                 >
                   Download errors

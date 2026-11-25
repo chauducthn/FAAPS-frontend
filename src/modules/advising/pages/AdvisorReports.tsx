@@ -1,43 +1,26 @@
-// src/pages/advising/AdvisorReports.tsx
-// "Reports & Analytics" — trang tong quan hoc vu cua advisor (Flow 5).
-//
-// Bo cuc: mot hang KPI (Overview) o tren, duoi la hai bieu do song song — LineChart
-// GPA theo hoc ky va PieChart phan bo trang thai hoc vu. Cung he cam FPT voi cac
-// trang advisor khac: hero gradient cam, card trang vien slate.
-//
-// Ba API (BE: AdvisorReportController):
-//   GET /advisor/reports/overview          -> KPI tong quan
-//   GET /advisor/reports/gpa-trend         -> { semesters: [...] }
-//   GET /advisor/reports/status-distribution -> { ACTIVE: 10, PROBATION: 2, ... }
+// Advisor Reports & Analytics page with KPI overview, charts, and CSV export.
 
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import {
   ArrowRight,
-  CalendarCheck,
-  CircleCheckBig,
   Download,
   GraduationCap,
-  Inbox,
   TriangleAlert,
   UserCheck,
   UsersRound,
 } from 'lucide-react';
-import { toast } from 'sonner';
-import { apiMessage } from '@/shared/lib/apiMessage';
-import { buildCsv, csvFilename, downloadCsv } from '@/shared/lib/csv';
 import {
   useAdvisorGpaTrend,
   useAdvisorReportOverview,
   useAdvisorStatusDistribution,
 } from '../hooks/queries/useAdvisorReports';
-import GpaTrendChart from '../components/reports/GpaTrendChart';
-import StatusPieChart, { STATUS_COLORS } from '../components/reports/StatusPieChart';
-import { ChartEmpty, ChartError, ChartSkeleton } from '../components/reports/ReportStates';
+import { STATUS_COLORS } from '../components/reports/StatusPieChart';
 import { ReportKpiCard, ReportKpiSkeleton, type ReportKpi } from '../components/reports/ReportKpiCard';
+import { AdvisorReportsCharts, AdvisorWorkloadSection } from '../components/reports/AdvisorReportsCharts';
+import { exportAdvisorReportsCsv } from '../components/reports/exportAdvisorReportsCsv';
 import type { StatusSlice } from '../types/reports';
 
-/** Thu tu cac trang thai — giong thu tu BE khoi tao ban do. */
 const STATUS_ORDER = [
   'ACTIVE',
   'PROBATION',
@@ -54,7 +37,6 @@ export default function AdvisorReports() {
 
   const overview = overviewQuery.data;
 
-  /** 4 KPI chinh theo brief: tong SV, active, at-risk, GPA trung binh. */
   const kpis: ReportKpi[] = useMemo(
     () => [
       {
@@ -93,7 +75,6 @@ export default function AdvisorReports() {
     [overview],
   );
 
-  /** Chuyen map cua BE thanh mang de ve PieChart. */
   const slices: StatusSlice[] = useMemo(() => {
     const dist = distributionQuery.data;
     if (!dist) return [];
@@ -120,70 +101,12 @@ export default function AdvisorReports() {
       .filter((s) => s.count > 0);
   }, [distributionQuery.data]);
 
-  const handleExport = () => {
-    if (!overview) {
-      toast.error('Chưa có dữ liệu tổng quan để xuất.');
-      return;
-    }
-    const csv = buildCsv([
-      {
-        title: 'Overview',
-        rows: [
-          ['Metric', 'Value'],
-          ['Assigned students', overview.totalStudents],
-          ['Active students', overview.activeStudents],
-          ['At-risk students', overview.atRiskStudents],
-          ['Probation', overview.probationCount],
-          ['Suspended', overview.suspendedCount],
-          ['Average GPA', overview.avgGpa.toFixed(2)],
-          ['Pending requests', overview.pendingRequests],
-          ['Open appointments', overview.openAppointments],
-          ['Completed appointments', overview.completedAppointments],
-          ['No-show appointments', overview.noShowCount],
-        ],
-      },
-      // Chỉ xuất section khi có dữ liệu — không để lại section chỉ có dòng header.
-      ...(slices.length > 0
-        ? [
-            {
-              title: 'Status distribution',
-              rows: [
-                ['Status', 'Students', 'Percent'],
-                ...slices.map((s) => [s.label, s.count, `${s.percent}%`]),
-              ],
-            },
-          ]
-        : []),
-      ...((trendQuery.data?.semesters.length ?? 0) > 0
-        ? [
-            {
-              title: 'GPA trend',
-              rows: [
-                ['Semester', 'Code', 'Avg GPA', 'Min GPA', 'Max GPA', 'Students'],
-                ...(trendQuery.data?.semesters ?? []).map((s) => [
-                  s.name,
-                  s.code,
-                  s.avgGpa.toFixed(2),
-                  s.minGpa.toFixed(2),
-                  s.maxGpa.toFixed(2),
-                  s.studentCount,
-                ]),
-              ],
-            },
-          ]
-        : []),
-    ]);
-    downloadCsv(csv, csvFilename('advisor-reports'));
-    toast.success('Đã xuất báo cáo CSV.');
-  };
-
   const overviewFailed = overviewQuery.isError && !overview;
   const trendFailed = trendQuery.isError && !trendQuery.data;
   const distributionFailed = distributionQuery.isError && !distributionQuery.data;
 
   return (
     <div className="w-full space-y-6 pb-4">
-      {/* ── Hero: cùng hệ cam FPT, nút trắng nổi rõ là clickable ── */}
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#b45309] via-[#F26F21] to-[#fb923c] px-6 py-7 text-white shadow-lg shadow-orange-500/20 sm:px-8 sm:py-8">
         <div aria-hidden className="pointer-events-none absolute -right-14 -top-20 size-64 rounded-full bg-white/15" />
         <div aria-hidden className="pointer-events-none absolute -bottom-24 right-48 size-40 rounded-full bg-white/10" />
@@ -202,7 +125,7 @@ export default function AdvisorReports() {
           <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
             <button
               type="button"
-              onClick={handleExport}
+              onClick={() => exportAdvisorReportsCsv(overview, slices, trendQuery.data?.semesters)}
               disabled={!overview}
               className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl border border-white/40 bg-white/10 px-4 text-sm font-extrabold text-white backdrop-blur-sm transition-colors hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
             >
@@ -219,17 +142,12 @@ export default function AdvisorReports() {
         </div>
       </div>
 
-      {/* ── KPI: dong bo 4 the Overview ── */}
       {overviewQuery.isLoading && !overview ? (
         <ReportKpiSkeleton />
       ) : overviewFailed ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm font-medium text-red-800">
           Không thể tải số liệu tổng quan.{' '}
-          <button
-            type="button"
-            onClick={() => void overviewQuery.refetch()}
-            className="font-bold underline"
-          >
+          <button type="button" onClick={() => void overviewQuery.refetch()} className="font-bold underline">
             Thử lại
           </button>
         </div>
@@ -241,144 +159,20 @@ export default function AdvisorReports() {
         </div>
       )}
 
-      {/* ── Bieu do: LineChart + PieChart ── */}
-      <div className="grid gap-5 xl:grid-cols-2">
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">GPA Trend</h2>
-              <p className="mt-1.5 text-sm font-medium leading-relaxed text-slate-600">
-                Average GPA of your students per semester.
-              </p>
-            </div>
-            {trendQuery.data && trendQuery.data.semesters.length > 0 && (
-              <span className="inline-flex h-7 items-center rounded-full bg-[#fff3ea] px-3 text-xs font-extrabold tabular-nums text-[#c2410c] ring-1 ring-inset ring-orange-200">
-                {trendQuery.data.semesters.length} semesters
-              </span>
-            )}
-          </div>
+      <AdvisorReportsCharts
+        semesters={trendQuery.data?.semesters}
+        trendLoading={trendQuery.isLoading}
+        trendFailed={trendFailed}
+        trendError={trendQuery.error}
+        onRetryTrend={() => void trendQuery.refetch()}
+        slices={slices}
+        distLoading={distributionQuery.isLoading}
+        distFailed={distributionFailed}
+        distError={distributionQuery.error}
+        onRetryDist={() => void distributionQuery.refetch()}
+      />
 
-          <div className="mt-6">
-            {trendQuery.isLoading && !trendQuery.data ? (
-              <ChartSkeleton />
-            ) : trendFailed ? (
-              <ChartError
-                message={apiMessage(trendQuery.error)}
-                onRetry={() => void trendQuery.refetch()}
-              />
-            ) : (trendQuery.data?.semesters.length ?? 0) === 0 ? (
-              <ChartEmpty message="Chưa có dữ liệu điểm học kỳ cho các sinh viên bạn phụ trách." />
-            ) : (
-              <GpaTrendChart semesters={trendQuery.data!.semesters} />
-            )}
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">Status Distribution</h2>
-              <p className="mt-1.5 text-sm font-medium leading-relaxed text-slate-600">
-                How your students are spread across academic statuses.
-              </p>
-            </div>
-            {slices.length > 0 && (
-              <span className="inline-flex h-7 items-center rounded-full bg-[#fff3ea] px-3 text-xs font-extrabold tabular-nums text-[#c2410c] ring-1 ring-inset ring-orange-200">
-                {slices.length} statuses
-              </span>
-            )}
-          </div>
-
-          <div className="mt-6">
-            {distributionQuery.isLoading && !distributionQuery.data ? (
-              <ChartSkeleton />
-            ) : distributionFailed ? (
-              <ChartError
-                message={apiMessage(distributionQuery.error)}
-                onRetry={() => void distributionQuery.refetch()}
-              />
-            ) : slices.length === 0 ? (
-              <ChartEmpty message="Chưa có sinh viên nào được phân công để thống kê trạng thái học vụ." />
-            ) : (
-              <StatusPieChart slices={slices} />
-            )}
-          </div>
-
-          {/* Chu giai: doc lai mau o chinh be, khong phai hover tooltip. */}
-          {slices.length > 0 && (
-            <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-200 pt-4">
-              {slices.map((s) => (
-                <li key={s.status} className="flex items-center gap-2 text-sm font-medium text-slate-600">
-                  <span
-                    aria-hidden
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ background: s.color }}
-                  />
-                  {s.label}
-                  <span className="font-extrabold tabular-nums text-slate-900">{s.count}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-
-      {/* ── Hang chi so phu: ho so cac buoc lam viec ── */}
-      {overview && (
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <h2 className="text-lg font-bold tracking-tight text-slate-900">Advising Workload</h2>
-          <p className="mt-1.5 text-sm font-medium leading-relaxed text-slate-600">
-            Requests and appointments in the current period.
-          </p>
-
-          <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {[
-              {
-                label: 'Pending requests',
-                value: overview.pendingRequests,
-                icon: Inbox,
-                tone: 'text-[#F26F21]',
-                bar: 'bg-[#F26F21]',
-              },
-              {
-                label: 'Open appointments',
-                value: overview.openAppointments,
-                icon: CalendarCheck,
-                tone: 'text-slate-900',
-                bar: 'bg-slate-300',
-              },
-              {
-                label: 'Completed',
-                value: overview.completedAppointments,
-                icon: CircleCheckBig,
-                tone: 'text-emerald-700',
-                bar: 'bg-emerald-600',
-              },
-              {
-                label: 'No-show',
-                value: overview.noShowCount,
-                icon: TriangleAlert,
-                tone: 'text-red-700',
-                bar: 'bg-red-500',
-              },
-            ].map((item) => (
-              <div key={item.label} className="rounded-xl bg-slate-50 p-5 ring-1 ring-inset ring-slate-200">
-                <div className="flex items-center gap-2.5">
-                  <span aria-hidden className={`size-2.5 shrink-0 rounded-full ${item.bar}`} />
-                  <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
-                    {item.label}
-                  </p>
-                </div>
-                <p
-                  className={`mt-2.5 text-[26px] font-extrabold leading-none tabular-nums ${item.tone}`}
-                >
-                  {item.value}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {overview && <AdvisorWorkloadSection overview={overview} />}
     </div>
   );
 }

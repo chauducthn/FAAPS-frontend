@@ -1,0 +1,105 @@
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
+import { toast } from 'sonner';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+import {
+  useAdvisorCohortRows,
+  useAssignmentAdvisors,
+  useAssignmentSummary,
+  useAutoAssignStudents,
+  useCohortPool,
+  useUnassignedStudents,
+} from '../../hooks/queries/useAdminAssignments';
+import type { SummaryCohort, UnassignedStudent } from '../../types/admin';
+import { ASSIGNMENT_TABS, type AssignmentTab } from './AssignmentsToolbar';
+import type { AdvisorRowItem } from './AssignmentsTables';
+
+export const OVERVIEW_PAGE_SIZE = 10;
+
+export function useAssignmentsOverviewState() {
+  const [params, setParams] = useSearchParams();
+  const tab: AssignmentTab = ASSIGNMENT_TABS.some((t) => t.key === params.get('tab'))
+    ? (params.get('tab') as AssignmentTab)
+    : 'advisors';
+  const pendingOnly = params.get('pending') === '1';
+  const [search, setSearch] = useState('');
+  const [cohortFilter, setCohortFilter] = useState('');
+  const [majorFilter, setMajorFilter] = useState('');
+  const [page, setPage] = useState(0);
+
+  const [assignCohortFor, setAssignCohortFor] = useState<{ cohortId?: string; advisorId?: string } | null>(null);
+  const [autoFor, setAutoFor] = useState<SummaryCohort | null>(null);
+  const [poolFor, setPoolFor] = useState<SummaryCohort | null>(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [bulkAssignStudents, setBulkAssignStudents] = useState<{ id: string; name: string }[] | null>(null);
+
+  const summary = useAssignmentSummary();
+  const advisors = useAssignmentAdvisors();
+  const advisorRows = useAdvisorCohortRows();
+  const autoAssign = useAutoAssignStudents();
+  const debouncedSearch = useDebounce(search.trim());
+  const unassigned = useUnassignedStudents({
+    search: tab === 'unassigned' ? debouncedSearch || undefined : undefined,
+    cohortId: cohortFilter || undefined,
+    hasPendingRequest: pendingOnly ? true : undefined,
+    page,
+    size: OVERVIEW_PAGE_SIZE,
+  });
+  const autoPool = useCohortPool(autoFor?.cohortId ?? poolFor?.cohortId);
+
+  const cohorts = useMemo(() => summary.data?.cohorts ?? [], [summary.data]);
+  const waitingCohorts = cohorts.filter((c) => c.unassigned > 0).length;
+  const term = search.trim().toLowerCase();
+
+  const setTab = (next: AssignmentTab, extra: Record<string, string> = {}) => {
+    setParams(next === 'advisors' && !Object.keys(extra).length ? {} : { tab: next, ...extra }, { replace: true });
+    setSearch('');
+    setCohortFilter('');
+    setMajorFilter('');
+    setPage(0);
+  };
+
+  const majors = useMemo(() => [...new Set(cohorts.map((c) => c.majorCode))].sort(), [cohorts]);
+  const advisorCohortOptions = majorFilter ? cohorts.filter((c) => c.majorCode === majorFilter) : cohorts;
+
+  const advisorList = useMemo(() => {
+    const map = new Map<string, AdvisorRowItem>();
+    (advisorRows.data ?? []).forEach((r) => {
+      const item = map.get(r.advisorId) ?? { id: r.advisorId, email: r.email, name: r.fullName, limit: r.maxAdvisees, chips: [] };
+      if (r.cohortId) {
+        item.chips.push({ key: r.cohortId, majorCode: r.majorCode ?? '', text: `${r.majorCode} ${r.cohort}`, inPool: r.inPool, students: r.studentCount });
+      }
+      map.set(r.advisorId, item);
+    });
+    return [...map.values()].filter(
+      (a) =>
+        (a.name.toLowerCase().includes(term) || a.email.toLowerCase().includes(term)) &&
+        (!majorFilter || a.chips.some((c) => c.majorCode === majorFilter)) &&
+        (!cohortFilter || a.chips.some((c) => c.key === cohortFilter)),
+    );
+  }, [advisorRows.data, term, majorFilter, cohortFilter]);
+
+  const loadOf = (id: string) => advisors.data?.find((a) => a.id === id)?.activeStudents ?? 0;
+  const unassignedRows = useMemo(() => unassigned.data?.items ?? [], [unassigned.data]);
+  const hasFilter = !!search || !!cohortFilter || !!majorFilter || pendingOnly;
+
+  const runAutoAssign = async (students: Pick<UnassignedStudent, 'id' | 'cohortId'>[]) => {
+    if (students.length === 0) return;
+    try {
+      const res = await autoAssign.mutateAsync({ students });
+      toast.success(`${res.assigned} student${res.assigned === 1 ? '' : 's'} assigned automatically.`);
+    } catch {
+      return;
+    }
+  };
+
+  return {
+    tab, pendingOnly, setParams, search, setSearch, cohortFilter, setCohortFilter,
+    majorFilter, setMajorFilter, page, setPage,
+    assignCohortFor, setAssignCohortFor, autoFor, setAutoFor, poolFor, setPoolFor,
+    pickerOpen, setPickerOpen, bulkAssignStudents, setBulkAssignStudents,
+    summary, advisors, advisorRows, autoAssign, unassigned, autoPool,
+    cohorts, waitingCohorts, majors, advisorCohortOptions, advisorList,
+    loadOf, unassignedRows, hasFilter, setTab, runAutoAssign,
+  };
+}
