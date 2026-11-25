@@ -49,10 +49,10 @@ describe('AdvisorSidebar', () => {
     const links = Array.from(nav.querySelectorAll('a')).map((a) => a.textContent?.trim());
 
     // "Academic Search" đã bị ẩn vì BE chưa có endpoint /advisor/academic/*.
+    // "My Profile" chỉ nằm trong menu avatar, không có trong sidebar.
     expect(links).toEqual([
       'Overview',
       'My Students',
-      'My Profile',
       'Advising Requests',
       'Advising Conversations',
       'Study Plan Reviews',
@@ -80,9 +80,9 @@ describe('AdvisorSidebar', () => {
     const active = nav.querySelector('a[aria-current="page"]');
     expect(active).not.toBeNull();
     expect(active?.textContent).toContain('Advising Requests');
-    expect(active?.className).toContain('text-[#f37021]');
-    expect(active?.className).toContain('bg-[#fff7ed]');
-    expect(active?.className).toContain('border-[#f37021]');
+    expect(active?.className).toContain('text-[var(--brand)]');
+    expect(active?.className).toContain('bg-[var(--brand-soft)]');
+    expect(active?.className).toContain('border-[var(--brand)]');
   });
 
   it('keeps Overview inactive on a sub-route', () => {
@@ -97,7 +97,7 @@ describe('AdvisorSidebar', () => {
       a.textContent?.trim() === 'Overview',
     );
     expect(overview?.getAttribute('aria-current')).toBeNull();
-    expect(overview?.className).not.toContain('text-[#f37021]');
+    expect(overview?.className).not.toContain('text-[var(--brand)]');
   });
 
   it('renders the section labels in muted gray', () => {
@@ -105,7 +105,7 @@ describe('AdvisorSidebar', () => {
     const nav = screen.getByRole('navigation', { name: /portal navigation/i });
     const label = within(nav).getByText('ADVISING');
 
-    expect(label.className).toContain('text-[#98a2b3]');
+    expect(label.className).toContain('text-[var(--ink-subtle)]');
     expect(label.className).toContain('uppercase');
   });
 });

@@ -1,0 +1,32 @@
+/*
+ * FAAPS design tokens.
+ *
+ * The orange is the only accent color of the product: no gradients, no second
+ * accent hue. Every component reads these tokens instead of hardcoding hex
+ * values, so the palette can be tuned in one place.
+ */
+
+:root {
+  /* Brand */
+  --brand: #f26f21;
+  --brand-hover: #d95f14;
+  --brand-soft: #fff7ed;
+  --brand-soft-strong: #ffedd5;
+  --brand-ink: #c2410c;
+  --brand-ring: rgb(242 111 33 / 0.4);
+
+  /* Surfaces */
+  --surface-page: #f7f8fa;
+  --surface-sunken: #fafbfd;
+  --surface-hover: #f9fafb;
+
+  /* Ink */
+  --ink-primary: #151c27;
+  --ink-secondary: #374151;
+  --ink-muted: #555f6f;
+  --ink-subtle: #98a2b3;
+
+  /* Lines */
+  --line: #e5e7eb;
+  --line-soft: #f1f5f9;
+}

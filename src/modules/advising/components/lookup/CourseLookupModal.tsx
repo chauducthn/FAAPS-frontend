@@ -19,7 +19,7 @@ export function CourseLookupModal({
   return (
     <Modal open={!!course} onClose={onClose} title={`Course ${course.code}`} className="max-w-2xl">
       <div className="flex max-h-[90vh] flex-col overflow-hidden">
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#b45309] via-[#F26F21] to-[#fb923c] px-6 pb-5 pt-6 text-white">
+        <div className="relative overflow-hidden bg-[var(--brand)] px-6 pb-5 pt-6 text-white">
           <div aria-hidden className="pointer-events-none absolute -right-10 -top-14 size-48 rounded-full bg-white/15" />
           <div aria-hidden className="pointer-events-none absolute -bottom-16 right-24 size-32 rounded-full bg-white/10" />
           <div className="relative flex flex-wrap items-center gap-4">

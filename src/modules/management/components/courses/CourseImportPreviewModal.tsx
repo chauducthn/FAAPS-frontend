@@ -1,5 +1,5 @@
 // Import XLSX — Preview & Confirm modal cho phân hệ Courses.
-// Đồng bộ visual với ImportPreviewModal của Curriculum: header gradient,
+// Đồng bộ visual với ImportPreviewModal của Curriculum: header cam,
 // badge valid/error, bảng preview, footer confirm.
 import { AlertTriangle, CheckCircle2, FileSpreadsheet, Upload, X } from 'lucide-react';
 import { Modal } from '../../../../shared/components/ui/Modal';
@@ -22,9 +22,9 @@ export default function CourseImportPreviewModal({ open, fileName, preview, isCo
 
   return (
     <Modal open={open} onClose={onClose} title="Preview course import" className="max-w-3xl">
-      <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#fff7ed] to-white px-6 py-5">
+      <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-[var(--brand-soft)] px-6 py-5">
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
             <FileSpreadsheet className="size-5" />
           </span>
           <div className="min-w-0">

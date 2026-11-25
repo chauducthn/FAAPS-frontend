@@ -80,7 +80,7 @@ export function KpiCard({ metric }: { metric: KpiMetric }) {
       {/* A soft brand wash that only appears on hover. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 -top-16 h-32 bg-gradient-to-b from-orange-50/70 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        className="pointer-events-none absolute inset-x-0 -top-16 h-32 bg-orange-50/70 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
       />
 
       <div className="relative flex items-start justify-between gap-3">

@@ -13,17 +13,13 @@ import {
   LayoutDashboard,
   Shield,
   User as UserIcon,
-  UserRound,
 } from 'lucide-react';
 import PortalLayout, { type PortalNavSection } from '../portal/PortalLayout';
 import { NotificationBell } from './NotificationBell';
 
 export const ADMIN_NAV_SECTIONS: PortalNavSection[] = [
   {
-    items: [
-      { label: 'Dashboard', to: '/admin', icon: LayoutDashboard, end: true },
-      { label: 'My Profile', to: '/admin/profile', icon: UserRound },
-    ],
+    items: [{ label: 'Dashboard', to: '/admin', icon: LayoutDashboard, end: true }],
   },
   {
     title: 'Users & Advisors',

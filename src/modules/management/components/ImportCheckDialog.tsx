@@ -60,7 +60,7 @@ export function ImportCheckDialog({ open, fileName, problems, examples, onClose 
   const shown = problems.slice(0, MAX_SHOWN);
   return (
     <Modal open={open} onClose={onClose} title="Fix the import file" className="max-w-xl">
-      <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-red-50 to-white px-6 py-5">
+      <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-red-50 px-6 py-5">
         <div className="flex items-start gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
             <AlertTriangle className="size-5" />

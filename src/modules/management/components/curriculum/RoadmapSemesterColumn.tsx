@@ -94,7 +94,7 @@ export default function RoadmapSemesterColumn({
       <header
         className={cn(
           'flex items-center justify-between gap-2 rounded-t-2xl border-b px-3.5 py-3 transition-colors',
-          active ? 'border-orange-200 bg-gradient-to-r from-[#F26F21] to-[#e05f14] text-white' : 'border-slate-200 bg-orange-50/70',
+          active ? 'border-orange-200 bg-[var(--brand)] text-white' : 'border-slate-200 bg-orange-50/70',
         )}
       >
         <h3 className={cn('text-sm font-extrabold tracking-tight', active ? 'text-white' : 'text-gray-900')}>

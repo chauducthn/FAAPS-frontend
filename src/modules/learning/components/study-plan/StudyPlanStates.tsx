@@ -103,7 +103,7 @@ export function StudyPlanErrorState({
 export function StudyPlanBoardSkeleton() {
   return (
     <div className="w-full space-y-5" aria-label="Loading study plan">
-      <div className="rounded-2xl bg-gradient-to-r from-[#b45309] via-[#F26F21] to-[#fb923c] px-6 py-7">
+      <div className="rounded-2xl bg-[var(--brand)] px-6 py-7">
         <div className="h-7 w-56 animate-pulse rounded bg-white/30" />
         <div className="mt-2 h-4 w-96 max-w-full animate-pulse rounded bg-white/20" />
       </div>

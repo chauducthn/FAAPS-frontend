@@ -14,7 +14,6 @@ import {
   Inbox,
   LayoutDashboard,
   MessageSquareText,
-  UserRound,
   UsersRound,
 } from 'lucide-react';
 import {
@@ -31,7 +30,6 @@ const NAV_SECTIONS: PortalNavSection[] = [
     items: [
       { label: 'Overview', to: '/advisor', icon: LayoutDashboard, end: true },
       { label: 'My Students', to: '/advisor/students', icon: UsersRound },
-      { label: 'My Profile', to: '/advisor/profile', icon: UserRound },
     ],
   },
   {

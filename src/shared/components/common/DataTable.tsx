@@ -9,6 +9,7 @@
 import { Search } from 'lucide-react';
 import type { RowData } from '@tanstack/react-table';
 import { cn } from '@/shared/lib/utils';
+import { TableShell } from './table/TablePrimitives';
 import { DataTableBody } from './data-table/DataTableBody';
 import { DataTableHeader } from './data-table/DataTableHeader';
 import { DataTableBulkBar, DataTablePagination } from './data-table/DataTablePagination';
@@ -83,28 +84,26 @@ export function DataTable<TData extends RowData, TValue = unknown>(
         {filters ? <div className="flex flex-wrap items-center gap-3">{filters}</div> : null}
       </div>
 
-      <div className="w-full overflow-x-auto">
-        <table className="w-full border-collapse text-left">
-          <DataTableHeader
-            headerGroups={table.getHeaderGroups()}
-            alignments={alignments}
-            allSelected={table.getIsAllRowsSelected()}
-            someSelected={table.getIsSomeRowsSelected()}
-            onToggleAllRows={table.getToggleAllRowsSelectedHandler()}
-          />
-          <DataTableBody
-            rows={rows}
-            columnCount={columnCount}
-            pageSize={pageSize}
-            isLoading={isLoading}
-            isSearching={isSearching}
-            emptyText={emptyText}
-            alignments={alignments}
-            isRowSelectable={isRowSelectable}
-            rowSelectDisabledReason={rowSelectDisabledReason}
-          />
-        </table>
-      </div>
+      <TableShell>
+        <DataTableHeader
+          headerGroups={table.getHeaderGroups()}
+          alignments={alignments}
+          allSelected={table.getIsAllRowsSelected()}
+          someSelected={table.getIsSomeRowsSelected()}
+          onToggleAllRows={table.getToggleAllRowsSelectedHandler()}
+        />
+        <DataTableBody
+          rows={rows}
+          columnCount={columnCount}
+          pageSize={pageSize}
+          isLoading={isLoading}
+          isSearching={isSearching}
+          emptyText={emptyText}
+          alignments={alignments}
+          isRowSelectable={isRowSelectable}
+          rowSelectDisabledReason={rowSelectDisabledReason}
+        />
+      </TableShell>
 
       <DataTablePagination
         totalRows={totalRows}

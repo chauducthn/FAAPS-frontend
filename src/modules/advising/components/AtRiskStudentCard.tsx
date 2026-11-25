@@ -78,7 +78,7 @@ export function AtRiskCard({
           aria-hidden
           className={cn(
             'flex size-12 shrink-0 items-center justify-center rounded-xl',
-            'bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-sm font-extrabold text-white shadow-sm',
+            'bg-[var(--brand)] text-sm font-extrabold text-white shadow-sm',
           )}
         >
           {initialsOf(student.fullName)}

@@ -2,12 +2,13 @@
 
 import { flexRender, type HeaderGroup, type RowData } from '@tanstack/react-table';
 import { cn } from '@/shared/lib/utils';
+import { TableHead } from '../table/TablePrimitives';
 import { Checkbox, SortIcon } from './DataTableControls';
-import { ALIGN_CLASS, SELECT_COLUMN_ID, type Alignment, type dataTableFeatures } from './features';
+import { SELECT_COLUMN_ID, type Alignment, type dataTableFeatures } from './features';
 
 interface DataTableHeaderProps<TData extends RowData> {
   headerGroups: HeaderGroup<typeof dataTableFeatures, TData>[];
-  alignments: Record<string, Alignment>;
+ alignments: Record<string, Alignment>;
   allSelected: boolean;
   someSelected: boolean;
   onToggleAllRows: (event: never) => void;
@@ -17,24 +18,24 @@ export function DataTableHeader<TData extends RowData>({
   headerGroups,
   alignments,
   allSelected,
-  someSelected,
+ someSelected,
   onToggleAllRows,
 }: DataTableHeaderProps<TData>) {
   return (
     <thead>
       {headerGroups.map((headerGroup) => (
-        <tr key={headerGroup.id} className="bg-slate-50">
+        <tr key={headerGroup.id}>
           {headerGroup.headers.map((header) => {
             if (header.column.id === SELECT_COLUMN_ID) {
               return (
-                <th key={header.id} scope="col" className="w-12 px-4 py-3">
+                <TableHead key={header.id} className="w-12">
                   <Checkbox
                     checked={allSelected}
                     indeterminate={someSelected}
                     onChange={onToggleAllRows}
                     label="Select all"
                   />
-                </th>
+                </TableHead>
               );
             }
 
@@ -47,23 +48,19 @@ export function DataTableHeader<TData extends RowData>({
               ? null
               : flexRender(header.column.columnDef.header, header.getContext());
 
-            return (
-              <th
+           return (
+              <TableHead
                 key={header.id}
-                scope="col"
+                align={align}
                 aria-sort={canSort ? ariaSort : undefined}
-                className={cn(
-                  'px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-slate-600',
-                  ALIGN_CLASS[align],
-                )}
               >
                 {canSort ? (
                   <button
                     type="button"
                     onClick={header.column.getToggleSortingHandler()}
                     className={cn(
-                      'inline-flex items-center gap-1.5 rounded transition-colors hover:text-slate-900',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40',
+                      'inline-flex items-center gap-1.5 rounded transition-colors hover:text-[var(--ink-primary)]',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
                       align === 'right' && 'flex-row-reverse',
                     )}
                   >
@@ -73,7 +70,7 @@ export function DataTableHeader<TData extends RowData>({
                 ) : (
                   label
                 )}
-              </th>
+              </TableHead>
             );
           })}
         </tr>

@@ -20,7 +20,7 @@ export function ProfileHero({ fullName, subtitle, isLoading, action }: ProfileHe
   const initials = initialsOf(fullName);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#b45309] via-[#F26F21] to-[#fb923c] px-6 py-7 text-white shadow-lg shadow-orange-500/20 sm:px-8">
+    <div className="relative overflow-hidden rounded-2xl bg-[var(--brand)] px-6 py-7 text-white shadow-lg shadow-orange-500/20 sm:px-8">
       <div
         aria-hidden
         className="pointer-events-none absolute -right-14 -top-20 size-64 rounded-full bg-white/15 blur-[1px]"

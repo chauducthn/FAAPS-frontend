@@ -22,7 +22,7 @@ export function CurriculumManagerHeader({
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center gap-3">
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_4px_12px_rgba(242,111,33,0.35)]">
+        <span className="flex size-11 items-center justify-center rounded-2xl bg-[var(--brand)] text-white shadow-[0_4px_12px_rgba(242,111,33,0.35)]">
           <GraduationCap className="size-5.5" />
         </span>
         <div>

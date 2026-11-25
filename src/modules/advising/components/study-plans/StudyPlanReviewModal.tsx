@@ -50,7 +50,7 @@ export function StudyPlanReviewModal({
     <Modal open={open} onClose={onClose} title="Study plan review" className="max-w-3xl">
       <div className="flex items-start justify-between gap-4 border-b border-slate-200 p-6 sm:px-7">
         <div className="flex min-w-0 items-center gap-3.5">
-          <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-sm font-extrabold text-white shadow-sm">
+          <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-sm font-extrabold text-white shadow-sm">
             {detail ? initialsOf(detail.studentName) : '–'}
           </span>
           <div className="min-w-0">

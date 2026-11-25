@@ -151,7 +151,7 @@ export function AssignedStudentsSection({
               return (
                 <li key={s.id} className="rounded-2xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md">
                   <Link to="/advisor/students" className="flex items-center gap-3 rounded-xl p-1">
-                    <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-sm font-extrabold text-white shadow-sm">
+                    <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-sm font-extrabold text-white shadow-sm">
                       {initialsOf(s.fullName)}
                     </span>
                     <span className="min-w-0 flex-1">
@@ -177,7 +177,7 @@ export function AssignedStudentsSection({
                     </span>
                   </div>
                   <div className="mx-1 mt-2.5 h-1.5 overflow-hidden rounded-full bg-slate-100" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100} aria-label={`Credits progress ${pct}%`}>
-                    <span className="block h-full rounded-full bg-gradient-to-r from-[#F26F21] to-[#ff9a4d]" style={{ width: `${pct}%` }} />
+                    <span className="block h-full rounded-full bg-[var(--brand)]" style={{ width: `${pct}%` }} />
                   </div>
                 </li>
               );

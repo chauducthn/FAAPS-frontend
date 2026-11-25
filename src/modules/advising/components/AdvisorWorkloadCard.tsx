@@ -94,7 +94,7 @@ export function AdvisorWorkloadCard({ profile }: AdvisorWorkloadCardProps) {
           aria-label={`Advising capacity ${capacityPct}%`}
         >
           <span
-            className="block h-full rounded-full bg-gradient-to-r from-[#F26F21] to-[#ff9a4d]"
+            className="block h-full rounded-full bg-[var(--brand)]"
             style={{ width: `${capacityPct}%` }}
           />
         </div>

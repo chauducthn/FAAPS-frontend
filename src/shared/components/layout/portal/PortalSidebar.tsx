@@ -29,7 +29,7 @@ export function PortalSidebar({ navSections, onNavigate }: PortalSidebarProps) {
           {section.title && (
             <p
               className={cn(
-                'px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#98a2b3]',
+                'px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--ink-subtle)]',
                 idx === 0 ? 'pt-1' : 'pt-5',
               )}
             >
@@ -47,9 +47,11 @@ export function PortalSidebar({ navSections, onNavigate }: PortalSidebarProps) {
                   className={({ isActive }) =>
                     cn(
                       'group relative flex items-center gap-2.5 rounded-r-lg border-l-[3px] border-transparent py-2 pl-3 pr-3',
-                      'text-sm font-medium text-[#555f6f] transition-colors hover:bg-gray-50 hover:text-[#151c27]',
+                      'text-sm font-medium text-[var(--ink-muted)] transition-colors',
+                      'hover:bg-[var(--surface-hover)] hover:text-[var(--ink-primary)]',
                       isActive &&
-                        'border-[#f37021] bg-[#fff7ed] font-semibold text-[#f37021] hover:bg-[#fff7ed]',
+                        'border-[var(--brand)] bg-[var(--brand-soft)] font-semibold text-[var(--brand)]',
+                      isActive && 'hover:bg-[var(--brand-soft)]',
                     )
                   }
                 >

@@ -1,4 +1,4 @@
-// Orange gradient hero header for the advisor appointment action modal.
+// Solid orange hero header for the advisor appointment action modal.
 
 import { CalendarDays, Clock } from 'lucide-react';
 import { formatIsoDay, formatIsoTime } from '../../../../shared/lib/appointmentDate';
@@ -12,7 +12,7 @@ interface AppointmentModalHeroProps {
 
 export function AppointmentModalHero({ appointment }: AppointmentModalHeroProps) {
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-[#F26F21] to-[#ff8f3f] px-6 pb-5 pt-6 text-white">
+    <div className="relative overflow-hidden bg-[var(--brand)] px-6 pb-5 pt-6 text-white">
       <div aria-hidden className="pointer-events-none absolute -right-10 -top-14 size-48 rounded-full bg-white/10" />
       <div aria-hidden className="pointer-events-none absolute -bottom-16 right-24 size-32 rounded-full bg-white/10" />
       <div className="relative flex flex-wrap items-center gap-4">

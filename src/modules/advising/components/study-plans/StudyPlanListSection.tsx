@@ -90,7 +90,7 @@ export function StudyPlanList({
                 <div className="flex min-w-0 flex-1 items-center gap-3.5">
                   <span
                     aria-hidden
-                    className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-sm font-extrabold text-white shadow-sm"
+                    className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-sm font-extrabold text-white shadow-sm"
                   >
                     {initialsOf(plan.studentName)}
                   </span>

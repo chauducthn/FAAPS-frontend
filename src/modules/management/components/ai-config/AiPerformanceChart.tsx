@@ -151,17 +151,11 @@ export default function AiPerformanceChart({ data, isLoading }: Props) {
           <div className="h-36 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="perfTokens" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#F26F21" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#F26F21" stopOpacity={0.04} />
-                  </linearGradient>
-                </defs>
                 <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#eef2f7" />
                 <XAxis dataKey="label" tick={axisTick} tickLine={false} axisLine={{ stroke: '#e5e7eb' }} interval="preserveStartEnd" />
                 <YAxis tick={axisTick} tickLine={false} axisLine={false} width={48} tickFormatter={(v: number) => (v >= 1000 ? `${Math.round(v / 1000)}k` : `${v}`)} />
                 <Tooltip content={<ChartTooltip />} />
-                <Area type="monotone" dataKey="tokens" name="Tokens" stroke="#F26F21" strokeWidth={2.5} fill="url(#perfTokens)" />
+                <Area type="monotone" dataKey="tokens" name="Tokens" stroke="#F26F21" strokeWidth={2.5} fill="#F26F21" fillOpacity={0.15} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

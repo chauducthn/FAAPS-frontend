@@ -45,10 +45,10 @@ export function UserDetailModal({ userId, onClose }: { userId: string | null; on
       ) : (
         <div className="flex max-h-[90vh] flex-col overflow-hidden">
           <div className="overflow-hidden rounded-t-2xl">
-            <div className="h-1.5 bg-gradient-to-r from-[#F26F21] via-[#f97316] to-[#C2410C]" />
-            <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#fff7ed] to-white px-6 py-5">
+            <div className="h-1.5 bg-[var(--brand)]" />
+            <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-[var(--brand-soft)] px-6 py-5">
               <div className="flex min-w-0 items-start gap-3.5">
-                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_4px_12px_rgba(242,111,33,0.35)]">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand)] text-white shadow-[0_4px_12px_rgba(242,111,33,0.35)]">
                   {isStudent ? <GraduationCap className="size-6" /> : <UserRound className="size-6" />}
                 </span>
                 <div className="min-w-0">

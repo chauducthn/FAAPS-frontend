@@ -1,0 +1,163 @@
+// Shared table primitives.
+//
+// Every table in FAAPS renders the same visual language, whether it is a
+// server-paged management list, a preview table inside a modal, or a
+// read-only transcript. These primitives own that language so a table only
+// has to describe its own columns and rows.
+//
+// The palette is the product orange on a neutral gray scale. No gradients.
+
+import type { ReactNode } from 'react';
+import { cn } from '@/shared/lib/utils';
+
+export interface TableShellProps {
+  children: ReactNode;
+  /** Keeps the header visible while the body scrolls. */
+  stickyHeader?: boolean;
+  /** Minimum width so narrow columns never collapse. */
+  minWidth?: string;
+  className?: string;
+}
+
+export function TableShell({
+  children,
+  stickyHeader = false,
+  minWidth,
+  className,
+}: TableShellProps) {
+  return (
+    <div className={cn('w-full overflow-x-auto', className)}>
+      <table
+        className={cn(
+          'w-full border-collapse text-left',
+          minWidth && 'min-w-[720px]',
+          '[&_tbody_tr]:border-b [&_tbody_tr]:border-[var(--line-soft)]',
+          '[&_tbody_tr]:transition-colors [&_tbody_tr]:hover:bg-[var(--surface-hover)]',
+          '[&_thead_tr]:bg-[var(--surface-sunken)]',
+          stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10',
+        )}
+      >
+        {children}
+      </table>
+    </div>
+  );
+}
+
+/** Header cell. `align` keeps numeric columns aligned with their data. */
+export function TableHead({
+  children,
+  align = 'left',
+  className,
+  ...rest
+}: {
+  children?: ReactNode;
+  align?: 'left' | 'center' | 'right';
+  className?: string;
+} & React.ThHTMLAttributes<HTMLTableCellElement>) {
+  return (
+    <th
+      scope="col"
+      className={cn(
+        'px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--ink-muted)]',
+        align === 'center' && 'text-center',
+        align === 'right' && 'text-right',
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </th>
+  );
+}
+
+export function TableBody({ children, className }: { children: ReactNode; className?: string }) {
+  return <tbody className={cn('text-[13px] text-[var(--ink-secondary)]', className)}>{children}</tbody>;
+}
+
+export function TableRow({
+  children,
+  selected = false,
+  className,
+}: {
+  children: ReactNode;
+  selected?: boolean;
+  className?: string;
+}) {
+  return (
+    <tr className={cn(selected && 'bg-[var(--brand-soft)]', className)}>{children}</tr>
+  );
+}
+
+export function TableCell({
+  children,
+  align = 'left',
+  className,
+  ...rest
+}: {
+  children?: ReactNode;
+  align?: 'left' | 'center' | 'right';
+  className?: string;
+} & React.TdHTMLAttributes<HTMLTableCellElement>) {
+  return (
+    <td
+      className={cn(
+        'px-4 py-3 text-[13px] text-[var(--ink-secondary)]',
+        align === 'center' && 'text-center',
+        align === 'right' && 'text-right tabular-nums',
+        className,
+      )}
+      {...rest}
+    >
+      {children}
+    </td>
+  );
+}
+
+/** Placeholder row shown when a table has nothing to display. */
+export function TableEmpty({
+  colSpan,
+  title,
+  description,
+  icon,
+}: {
+  colSpan: number;
+  title: string;
+  description?: string;
+  icon?: ReactNode;
+}) {
+  return (
+    <tr>
+      <td colSpan={colSpan} className="px-4 py-14 text-center">
+        <div className="flex flex-col items-center justify-center gap-2">
+          {icon ? (
+            <span className="flex size-11 items-center justify-center rounded-xl bg-[var(--line-soft)] text-[var(--ink-subtle)]">
+              {icon}
+            </span>
+          ) : null}
+          <p className="text-sm font-semibold text-[var(--ink-primary)]">{title}</p>
+          {description ? (
+            <p className="text-[13px] text-[var(--ink-muted)]">{description}</p>
+          ) : null}
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+/** Placeholder rows shown while the table data loads. */
+export function TableSkeletonRows({ colSpan, rows = 4 }: { colSpan: number; rows?: number }) {
+  return (
+    <>
+      {Array.from({ length: rows }).map((_, rowIndex) => (
+        <tr key={`skeleton-${rowIndex}`}>
+          <td colSpan={colSpan} className="px-4 py-4">
+            <div
+              className="h-3.5 animate-pulse rounded bg-[var(--line-soft)]"
+              style={{ width: `${45 + ((rowIndex * 7) % 3) * 18}%` }}
+            />
+          </td>
+        </tr>
+      ))}
+    </>
+  );
+}

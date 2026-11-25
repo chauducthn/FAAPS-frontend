@@ -28,7 +28,7 @@ export function StudentCoursesHeader({
 }: StudentCoursesHeaderProps) {
   return (
     <>
-      <div className="overflow-hidden rounded-2xl bg-gradient-to-r from-[#F26F21] via-[#f97316] to-[#C2410C] p-5 text-white shadow-[0_4px_16px_rgba(242,111,33,0.35)]">
+      <div className="overflow-hidden rounded-2xl bg-[var(--brand)] p-5 text-white shadow-[0_4px_16px_rgba(242,111,33,0.35)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-white ring-1 ring-white/30">

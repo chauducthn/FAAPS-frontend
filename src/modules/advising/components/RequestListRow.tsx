@@ -103,7 +103,7 @@ export function RequestTableRow({
         <div className="flex min-w-0 items-center gap-3">
           <span
             aria-hidden
-            className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-sm font-extrabold text-white shadow-sm"
+            className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-sm font-extrabold text-white shadow-sm"
           >
             {initialsOf(r.studentName)}
           </span>

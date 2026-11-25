@@ -69,7 +69,7 @@ export function Student360Modal({
       {!detail ? null : (
         <div className="flex max-h-[90vh] flex-col overflow-hidden">
           {/* Header — cam FPT */}
-          <div className="relative overflow-hidden bg-gradient-to-r from-[#F26F21] to-[#ff8f3f] px-6 pb-5 pt-6 text-white">
+          <div className="relative overflow-hidden bg-[var(--brand)] px-6 pb-5 pt-6 text-white">
             <div
               aria-hidden
               className="pointer-events-none absolute -right-10 -top-14 size-48 rounded-full bg-white/10"

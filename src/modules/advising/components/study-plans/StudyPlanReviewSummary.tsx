@@ -68,7 +68,7 @@ export function StudyPlanReviewSummary({
         {progress && (
           <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-slate-200">
             <span
-              className="block h-full rounded-full bg-gradient-to-r from-[#F26F21] to-[#ff9a4d]"
+              className="block h-full rounded-full bg-[var(--brand)]"
               style={{ width: `${Math.min(100, Math.round((progress.earnedCredits / progress.requiredCredits) * 100))}%` }}
             />
           </div>

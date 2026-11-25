@@ -84,7 +84,7 @@ export function AdvisorPortalHeader({
 
   return (
     <>
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#b45309] via-[#F26F21] to-[#fb923c] px-6 py-7 text-white shadow-lg shadow-orange-500/20 sm:px-8 sm:py-8">
+      <div className="relative overflow-hidden rounded-2xl bg-[var(--brand)] px-6 py-7 text-white shadow-lg shadow-orange-500/20 sm:px-8 sm:py-8">
         <div aria-hidden className="pointer-events-none absolute -right-14 -top-20 size-64 rounded-full bg-white/15 blur-[1px]" />
         <div aria-hidden className="pointer-events-none absolute -bottom-24 right-48 size-40 rounded-full bg-white/10" />
         <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-white/30" />
@@ -148,7 +148,7 @@ export function AdvisorQuickLinks({ totalStudents, atRiskCount }: { totalStudent
           to={l.to}
           className="group flex min-h-[80px] items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06),0_8px_24px_-14px_rgba(15,23,42,0.22)] transition-all hover:-translate-y-[1px] hover:border-[#F26F21]/50 hover:shadow-[0_2px_4px_rgba(15,23,42,0.06),0_14px_32px_-12px_rgba(242,111,33,0.35)]"
         >
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.7)]">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.7)]">
             <l.icon className="size-5" aria-hidden strokeWidth={2.25} />
           </span>
           <span className="min-w-0 flex-1">

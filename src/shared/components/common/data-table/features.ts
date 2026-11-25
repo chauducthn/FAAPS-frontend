@@ -74,7 +74,7 @@ export type Alignment = 'left' | 'center' | 'right';
 export const ALIGN_CLASS: Record<Alignment, string> = {
   left: 'text-left',
   center: 'text-center',
-  right: 'text-right',
+  right: 'text-right tabular-nums',
 };
 
 /** Creates the selection column injected as the first column of every table. */

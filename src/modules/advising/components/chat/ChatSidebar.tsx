@@ -138,7 +138,7 @@ export default function ChatSidebar({
                   >
                     <span
                       aria-hidden
-                      className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-[13px] font-extrabold text-white shadow-sm"
+                      className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-[13px] font-extrabold text-white shadow-sm"
                     >
                       {initialsOf(r.studentName)}
                     </span>

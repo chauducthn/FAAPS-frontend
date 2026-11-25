@@ -53,7 +53,7 @@ export function buildAdvisorStudentColumns({
           <div className="flex min-w-0 items-center gap-3">
             <span
               aria-hidden
-              className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-[13px] font-bold text-white shadow-sm"
+              className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-[13px] font-bold text-white shadow-sm"
             >
               {initialsOf(s.fullName)}
             </span>

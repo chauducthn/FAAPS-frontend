@@ -11,7 +11,6 @@ import {
   Map,
   MessageSquareText,
   Route,
-  UserRound,
 } from 'lucide-react';
 import {
   PortalSidebar,
@@ -27,7 +26,6 @@ export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
     items: [
       { label: 'Chat AI', to: '/student/ai-chat', icon: BotMessageSquare },
       { label: 'AI Roadmap', to: '/student/ai-roadmap', icon: Route },
-      { label: 'Profile', to: '/student/profile', icon: UserRound },
       { label: 'Transcript', to: '/student/transcript', icon: FileText },
       { label: 'Courses & Curriculum', to: '/student/courses', icon: BookOpenCheck },
       { label: 'Learning Plan', to: '/student/learning-plan', icon: ListChecks },

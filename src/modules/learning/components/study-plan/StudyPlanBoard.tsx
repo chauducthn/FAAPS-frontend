@@ -27,7 +27,7 @@ export default function StudyPlanBoard({
     <section aria-label="Study plan board" className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200/80 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
         <h2 className="flex items-center gap-2.5 text-sm font-extrabold tracking-tight text-gray-900">
-          <span className="flex size-8 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_2px_8px_rgba(242,111,33,0.35)]">
+          <span className="flex size-8 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.35)]">
             <CalendarDays className="size-4" />
           </span>
           Semester Board
@@ -52,7 +52,7 @@ export default function StudyPlanBoard({
       </div>
 
       <div className="roadmap-scroll overflow-x-auto pb-3">
-        <div className="flex items-stretch gap-4 rounded-2xl border border-slate-200/70 bg-gradient-to-b from-slate-50 to-slate-100/60 p-4">
+        <div className="flex items-stretch gap-4 rounded-2xl border border-slate-200/70 bg-slate-50 p-4">
           {columns.map((col) => (
             <StudyPlanColumnView
               key={col.number}

@@ -3,13 +3,13 @@
 
 import { cn } from '@/shared/lib/utils';
 
-/** A slim gradient progress bar (credits earned / credits required). */
+/** A slim progress bar (credits earned / credits required). */
 export function ProgressBar({ value, max }: { value: number; max: number }) {
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
   return (
     <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#f1f4f9]">
       <div
-        className="h-full rounded-full bg-gradient-to-r from-[#F26F21] to-[#ff9a4d] transition-all"
+        className="h-full rounded-full bg-[var(--brand)] transition-all"
         style={{ width: `${pct}%` }}
       />
     </div>

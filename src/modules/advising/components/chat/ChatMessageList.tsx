@@ -91,7 +91,7 @@ export default function ChatMessageList({
                   className={cn(
                     'mt-1.5 whitespace-pre-wrap break-words rounded-2xl px-4 py-3 text-sm font-medium leading-relaxed shadow-sm',
                     mine
-                      ? 'rounded-br-md bg-gradient-to-br from-[#F26F21] to-[#e05f14] text-white shadow-[0_6px_16px_-8px_rgba(242,111,33,0.7)]'
+                      ? 'rounded-br-md bg-[var(--brand)] text-white shadow-[0_6px_16px_-8px_rgba(242,111,33,0.7)]'
                       : 'rounded-bl-md border border-slate-200 bg-white text-slate-900',
                   )}
                 >

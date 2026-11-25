@@ -8,7 +8,7 @@ export function PageSkeleton() {
       <span className="sr-only">Loading…</span>
 
       {/* Hero */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-200 via-orange-100 to-orange-50 px-6 py-7 sm:px-8 sm:py-8">
+      <div className="relative overflow-hidden rounded-2xl bg-orange-100 px-6 py-7 sm:px-8 sm:py-8">
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1">
             <div className="h-7 w-56 animate-pulse rounded-lg bg-white/60" />

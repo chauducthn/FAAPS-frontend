@@ -59,10 +59,10 @@ export default function CurriculumHeader({
 }: Props) {
   return (
     <header className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-      <div className="h-1.5 bg-gradient-to-r from-[#F26F21] via-[#f97316] to-[#C2410C]" />
+      <div className="h-1.5 bg-[var(--brand)]" />
       <div className="flex flex-wrap items-start justify-between gap-4 p-5">
         <div className="flex min-w-0 items-start gap-3.5">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_4px_12px_rgba(242,111,33,0.35)]">
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[var(--brand)] text-white shadow-[0_4px_12px_rgba(242,111,33,0.35)]">
             <GraduationCap className="size-6" />
           </span>
           <div className="min-w-0">

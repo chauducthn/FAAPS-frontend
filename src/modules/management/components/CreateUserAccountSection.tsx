@@ -15,9 +15,9 @@ export function CreateUserModalHeader({
   onClose: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#fff7ed] to-white px-6 py-4">
+    <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-[var(--brand-soft)] px-6 py-4">
       <div className="flex items-center gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
           {role === 'STUDENT' ? <GraduationCap className="size-5" /> : <UserRound className="size-5" />}
         </span>
         <h2 className="text-base font-extrabold tracking-tight text-gray-900">{isEdit ? 'Edit user' : 'Create user'}</h2>

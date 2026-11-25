@@ -3,7 +3,7 @@ import { CTAButton } from '@/shared/components/common/CTAButton';
 
 export function Hero() {
   return (
-    <section id="about" className="scroll-mt-16 bg-gradient-to-b from-orange-50 to-white">
+    <section id="about" className="scroll-mt-16 bg-orange-50">
       <div className="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 sm:py-24">
         <span className="mb-4 inline-block rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
           Academic Advising &amp; Planning System

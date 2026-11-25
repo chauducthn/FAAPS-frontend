@@ -55,8 +55,8 @@ export function DataTablePagination({
               onChange={(event) => onPageSizeChange(Number(event.target.value))}
               aria-label="Rows per page"
               className={cn(
-                'h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] font-medium text-[#151c27]',
-                'outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
+                'h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] font-medium text-[var(--ink-primary)]',
+                'outline-none focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand-ring)]',
               )}
             >
               {pageSizes.map((size) => (
@@ -84,7 +84,7 @@ export function DataTablePagination({
             className={cn(
               'inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-[13px] font-medium text-slate-600',
               'transition-colors hover:bg-slate-100 hover:text-slate-900',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
               'disabled:pointer-events-none disabled:opacity-40',
             )}
           >
@@ -98,7 +98,7 @@ export function DataTablePagination({
             className={cn(
               'inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-[13px] font-medium text-slate-600',
               'transition-colors hover:bg-slate-100 hover:text-slate-900',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
               'disabled:pointer-events-none disabled:opacity-40',
             )}
           >
@@ -136,7 +136,7 @@ export function DataTableBulkBar<TData>({
           'animate-in slide-in-from-bottom-4 fade-in duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
         )}
       >
-        <span className="rounded-full bg-[#F26F21] px-2.5 py-1 text-xs font-bold text-white">
+        <span className="rounded-full bg-[var(--brand)] px-2.5 py-1 text-xs font-bold text-white">
           {selectedCount} row{selectedCount === 1 ? '' : 's'} selected
         </span>
         {bulkActions ? (
@@ -149,7 +149,7 @@ export function DataTableBulkBar<TData>({
           className={cn(
             'inline-flex size-7 items-center justify-center rounded-md text-slate-400',
             'transition-colors hover:bg-slate-100 hover:text-slate-700',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
           )}
         >
           <X className="size-4" aria-hidden />

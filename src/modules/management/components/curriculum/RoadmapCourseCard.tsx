@@ -47,7 +47,7 @@ export default function RoadmapCourseCard({ course, semesterCount, onMove, onRem
         'active:cursor-grabbing',
         dragging && 'rotate-2 scale-[1.03] border-[#F26F21] opacity-70 shadow-[0_12px_28px_rgba(242,111,33,0.35)] ring-2 ring-[#F26F21]/40',
         !dragging && isMilestone
-          ? 'border-dashed border-[#F26F21]/70 bg-gradient-to-b from-[#FFF7ED] to-[#ffedd5]/60 hover:border-[#F26F21]'
+          ? 'border-dashed border-[#F26F21]/70 bg-[var(--brand-soft)] hover:border-[#F26F21]'
           : !dragging && 'border-slate-200 hover:border-orange-300',
       )}
     >
@@ -61,7 +61,7 @@ export default function RoadmapCourseCard({ course, semesterCount, onMove, onRem
         </span>
         <div className="flex shrink-0 items-center gap-1.5">
           {isMilestone && course.milestone && (
-            <span className="rounded-full bg-gradient-to-r from-[#F26F21] to-[#C2410C] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-xs">
+            <span className="rounded-full bg-[var(--brand)] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white shadow-xs">
               {course.milestone.badge}
             </span>
           )}

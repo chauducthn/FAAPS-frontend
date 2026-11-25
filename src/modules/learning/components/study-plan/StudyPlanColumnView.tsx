@@ -87,7 +87,7 @@ export function StudyPlanColumnView({
         className={cn(
           'flex items-center justify-between gap-2 rounded-t-2xl border-b px-3.5 py-3 transition-colors',
           active
-            ? 'border-orange-200 bg-gradient-to-r from-[#F26F21] to-[#e05f14] text-white'
+            ? 'border-orange-200 bg-[var(--brand)] text-white'
             : isPool
               ? 'border-slate-200 bg-slate-100'
               : 'border-slate-200 bg-orange-50/70',

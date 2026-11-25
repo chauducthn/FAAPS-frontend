@@ -102,7 +102,7 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
     <Modal open={open} onClose={() => !changeRole.isPending && onClose()} title="Change user role" className="max-w-lg">
       <div className="flex flex-col gap-4 overflow-y-auto p-6">
         <div className="flex items-start gap-3.5">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#C2410C] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
             {target === 'STUDENT' ? <GraduationCap className="size-5" /> : <UserRound className="size-5" />}
           </span>
           <div className="min-w-0">

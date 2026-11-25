@@ -86,7 +86,7 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
       />
 
       <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 bg-gradient-to-r from-white to-orange-50/40 px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 bg-white px-5 py-4">
           <div>
             <h2 className="text-sm font-extrabold text-gray-900">{kind === 'curriculum' ? 'Curriculum catalog' : 'Cohort catalog'}</h2>
             <p className="mt-0.5 text-xs text-gray-500">{data?.totalElements ?? 0} records{kind === 'curriculum' ? ' · select rows on this page for bulk actions' : ''}</p>

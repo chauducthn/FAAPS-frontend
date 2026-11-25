@@ -40,10 +40,10 @@ export function Checkbox({
       disabled={disabled}
       aria-label={label}
       className={cn(
-        'size-4 shrink-0 rounded border-gray-300 accent-[#F26F21]',
+        'size-4 shrink-0 rounded border-gray-300 accent-[var(--brand)]',
         disabled
           ? 'cursor-not-allowed border-gray-200 bg-gray-100'
-          : 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40',
+          : 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
         className,
       )}
     />
@@ -71,8 +71,8 @@ export function Checkbox({
 }
 
 export function SortIcon({ sorted }: { sorted: false | 'asc' | 'desc' }) {
-  if (sorted === 'asc') return <ArrowUp className="size-3.5 text-[#F26F21]" aria-hidden />;
-  if (sorted === 'desc') return <ArrowDown className="size-3.5 text-[#F26F21]" aria-hidden />;
+  if (sorted === 'asc') return <ArrowUp className="size-3.5 text-[var(--brand)]" aria-hidden />;
+  if (sorted === 'desc') return <ArrowDown className="size-3.5 text-[var(--brand)]" aria-hidden />;
   return <ChevronsUpDown className="size-3.5 text-slate-400" aria-hidden />;
 }
 
@@ -124,8 +124,8 @@ export function PageJumpInput({
         }}
         aria-label="Go to page"
         className={cn(
-          'h-8 w-16 rounded-md border border-slate-200 bg-white px-2 text-center text-[13px] font-semibold text-[#151c27]',
-          'tabular-nums outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
+          'h-8 w-16 rounded-md border border-slate-200 bg-white px-2 text-center text-[13px] font-semibold text-[var(--ink-primary)]',
+          'tabular-nums outline-none focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand-ring)]',
           '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
         )}
       />

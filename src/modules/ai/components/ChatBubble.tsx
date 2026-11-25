@@ -87,7 +87,7 @@ export function ChatBubble({ message }: { message: AiChatMessage }) {
 
   return (
     <div className="flex justify-start gap-2.5">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F26F21] to-[#b45309] text-white shadow-sm">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand)] text-white shadow-sm">
         <Sparkles className="size-4" />
       </span>
       <div className="min-w-0 max-w-[85%] sm:max-w-[75%]">
@@ -138,7 +138,7 @@ export function ChatBubble({ message }: { message: AiChatMessage }) {
 export function TypingBubble() {
   return (
     <div className="flex justify-start gap-2.5" aria-label="AI is responding">
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#F26F21] to-[#b45309] text-white shadow-sm">
+      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--brand)] text-white shadow-sm">
         <Sparkles className="size-4" />
       </span>
       <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-md border border-[#e5e7eb] bg-white px-4 py-3 shadow-sm">
