@@ -14,6 +14,9 @@ interface Props {
   onEdit: (item: CurriculumItem) => void;
   onToggleStatus: (item: CurriculumItem) => void;
   onDelete: (item: CurriculumItem) => void;
+  selectedIds?: Set<string>;
+  onSelect?: (id: string, selected: boolean) => void;
+  onSelectPage?: (selected: boolean) => void;
 }
 
 const th = 'px-4 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-gray-500 whitespace-nowrap';
@@ -27,14 +30,17 @@ const MAJOR_TONES: Record<string, string> = {
 };
 const majorTone = (code: string) => MAJOR_TONES[code] ?? 'bg-gray-100 text-gray-700';
 
-export default function CurriculumTable({ kind, data, onOpen, onEdit, onToggleStatus, onDelete }: Props) {
+export default function CurriculumTable({ kind, data, onOpen, onEdit, onToggleStatus, onDelete, selectedIds, onSelect, onSelectPage }: Props) {
   const isCohort = kind === 'cohort';
+  const canSelect = !isCohort && !!selectedIds && !!onSelect && !!onSelectPage;
+  const selectedOnPage = data.filter((item) => selectedIds?.has(item.id)).length;
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[860px] border-collapse text-left" role="table">
+      <table className="w-full min-w-[920px] border-collapse text-left" role="table">
         <thead className="sticky top-0 z-10">
           <tr className="border-b border-gray-100 bg-[#fafbfd]">
+            {canSelect && <th className="w-12 px-4 py-3"><input type="checkbox" aria-label="Select all curriculums on this page" checked={data.length > 0 && selectedOnPage === data.length} ref={(node) => { if (node) node.indeterminate = selectedOnPage > 0 && selectedOnPage < data.length; }} onChange={(event) => onSelectPage(event.target.checked)} className="size-4 accent-[#F26F21]" /></th>}
             {isCohort ? (
               <>
                 <th className={th}>Cohort</th>
@@ -67,7 +73,8 @@ export default function CurriculumTable({ kind, data, onOpen, onEdit, onToggleSt
               { label: 'Delete', onSelect: () => onDelete(item), danger: true },
             ];
             return (
-              <tr key={item.id} className="group transition-colors hover:bg-[#fff7ed]/60">
+              <tr key={item.id} className={cn('group transition-colors hover:bg-[#fff7ed]/70', selectedIds?.has(item.id) && 'bg-orange-50/80')}>
+                {canSelect && <td className="px-4 py-3.5"><input type="checkbox" aria-label={`Select ${item.majorCode} ${item.version}`} checked={selectedIds.has(item.id)} onChange={(event) => onSelect(item.id, event.target.checked)} className="size-4 accent-[#F26F21]" /></td>}
                 {isCohort ? (
                   <>
                     <td className="px-4 py-3.5">
@@ -96,14 +103,14 @@ export default function CurriculumTable({ kind, data, onOpen, onEdit, onToggleSt
                       <button
                         type="button"
                         onClick={() => onOpen(item)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-gray-900 px-2.5 py-1 font-mono text-[11px] font-bold text-white transition-colors hover:bg-[#F26F21]"
+                        className="inline-flex items-center gap-1 rounded-lg bg-[#fff3e9] px-2.5 py-1 font-mono text-[11px] font-bold text-[#a43e08] ring-1 ring-orange-200 transition-colors hover:bg-[#F26F21] hover:text-white"
                         title={`Open ${item.majorCode} ${item.version}`}
                       >
                         {item.majorCode}_{item.version}
                         <ArrowUpRight className="size-3 opacity-60" />
                       </button>
                     </td>
-                    <td className="max-w-[280px] px-4 py-3.5">
+                    <td className="max-w-[320px] px-4 py-3.5">
                       <button type="button" onClick={() => onOpen(item)} className="block max-w-full truncate text-left font-semibold hover:text-[#C2410C] hover:underline">
                         {item.name}
                       </button>

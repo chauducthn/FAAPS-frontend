@@ -3,16 +3,25 @@
 // Operate-mode redesign: KPI strip, skeleton loading, teaching empty state, rich error state.
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { BookOpenCheck, ChevronDown, CircleAlert, GraduationCap, Layers, Plus, RotateCcw, Search, SearchX } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { BookOpenCheck, CheckCircle2, ChevronDown, CircleAlert, CircleOff, FileSpreadsheet, GraduationCap, Layers, Plus, RotateCcw, Search, SearchX, Trash2 } from 'lucide-react';
 import { ConfirmDialog } from '../ConfirmDialog';
+import { ImportCheckDialog, ExampleSheetButton } from '../ImportCheckDialog';
 import { Pagination } from '../Pagination';
+import { Modal } from '../../../../shared/components/ui/Modal';
 import CurriculumFormModal from './CurriculumFormModal';
+import ImportPreviewModal from './ImportPreviewModal';
 import CurriculumTable from './CurriculumTable';
-import { useCurriculumsQuery, type CurriculumKind } from '../../../academic/hooks/queries/useCurriculumsQuery';
+import { CURRICULUM_QUERY_KEYS, useCurriculumsQuery, type CurriculumKind } from '../../../academic/hooks/queries/useCurriculumsQuery';
 import { useCurriculumMutations } from '../../../academic/hooks/mutations/useCurriculumMutations';
 import { useMajorsQuery } from '../../../academic/hooks/queries/useMajorsQuery';
+import { curriculumService } from '../../services/curriculum.service';
+import { checkCurriculumImport, curriculumExample, type ImportProblem } from '../../utils/importChecks';
+import { runCurriculumBulkAction, type CurriculumBulkAction } from '../../utils/curriculumBulk';
+import { downloadBlob } from '../../../learning/utils/studyPlanXlsx';
 import { useDebounce } from '@/shared/hooks/useDebounce';
-import type { CurriculumFilterParams, CurriculumItem, CurriculumStatus } from '../../../academic/types/curriculum';
+import type { CurriculumFilterParams, CurriculumImportPreview, CurriculumItem, CurriculumStatus } from '../../../academic/types/curriculum';
 
 const PAGE_SIZE = 10;
 
@@ -26,8 +35,8 @@ const COPY = {
     plural: 'cohorts',
   },
   curriculum: {
-    title: 'Curriculum List',
-    subtitle: 'Curriculums define which courses a cohort studies in each semester',
+    title: 'Curriculum',
+    subtitle: 'Manage curriculum versions, semester courses, and imports in one place',
     noun: 'Curriculum' as const,
     create: 'Create curriculum',
     search: 'Search by curriculum code, name, or major...',
@@ -38,10 +47,20 @@ const COPY = {
 export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
   const copy = COPY[kind];
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [majorId, setMajorId] = useState('');
   const [status, setStatus] = useState('');
+  const [current, setCurrent] = useState('');
   const [page, setPage] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [bulkAction, setBulkAction] = useState<CurriculumBulkAction | null>(null);
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [importTargetId, setImportTargetId] = useState('');
+  const [importChooserOpen, setImportChooserOpen] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importPreview, setImportPreview] = useState<CurriculumImportPreview | null>(null);
+  const [importProblems, setImportProblems] = useState<{ fileName: string; problems: ImportProblem[] } | null>(null);
   const debounced = useDebounce(search, 300);
 
   const [formOpen, setFormOpen] = useState(false);
@@ -53,30 +72,80 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
       search: debounced || undefined,
       majorId: majorId || undefined,
       status: (status || undefined) as CurriculumStatus | undefined,
+      isCurrent: current === '' ? undefined : current === 'true',
       page,
       size: PAGE_SIZE,
     }),
-    [debounced, majorId, status, page],
+    [debounced, majorId, status, current, page],
   );
 
   const { data, isLoading, isError, refetch, isFetching } = useCurriculumsQuery(kind, params);
   const majors = useMajorsQuery({ page: 0, size: 100 });
-  const { create, update, remove, updateStatus, isCreating, isUpdating, isRemoving } = useCurriculumMutations(kind);
+  const { create, update, remove, updateStatus, previewImport, confirmImport, isCreating, isUpdating, isRemoving, isPreviewingImport, isConfirmingImport } = useCurriculumMutations(kind);
 
   const resetPage = <T,>(setter: (v: T) => void) => (v: T) => {
     setter(v);
     setPage(0);
+    setSelectedIds(new Set());
   };
 
-  const hasFilters = search.trim() !== '' || majorId !== '' || status !== '';
+  const hasFilters = search.trim() !== '' || majorId !== '' || status !== '' || current !== '';
   const clearFilters = () => {
     setSearch('');
     setMajorId('');
     setStatus('');
+    setCurrent('');
     setPage(0);
+    setSelectedIds(new Set());
   };
 
   const items = data?.items ?? [];
+  const selectedItems = items.filter((item) => selectedIds.has(item.id));
+  const selectOne = (id: string, selected: boolean) => setSelectedIds((previous) => {
+    const next = new Set(previous);
+    if (selected) next.add(id); else next.delete(id);
+    return next;
+  });
+  const selectPage = (selected: boolean) => setSelectedIds(selected ? new Set(items.map((item) => item.id)) : new Set());
+  const changePage = (next: number) => { setSelectedIds(new Set()); setPage(next); };
+  const downloadExample = () => downloadBlob(curriculumExample(), 'curriculum-import-example.xlsx');
+  const handleImportFile = async (file: File | undefined) => {
+    if (!file || !importTargetId) return;
+    const check = await checkCurriculumImport(file);
+    if (check.problems.length > 0) {
+      setImportProblems({ fileName: file.name, problems: check.problems });
+      return;
+    }
+    setImportFile(file);
+    setImportPreview(null);
+    setImportChooserOpen(false);
+    try {
+      setImportPreview(await previewImport({ id: importTargetId, file }));
+    } catch {
+      setImportFile(null);
+    }
+  };
+  const handleConfirmImport = async () => {
+    if (!importPreview || !importTargetId) return;
+    try {
+      await confirmImport({ id: importTargetId, preview: importPreview });
+      setImportPreview(null);
+      setImportFile(null);
+    } catch {
+      // The mutation reports the API error; keep the preview open for correction.
+    }
+  };
+  const handleBulkAction = async () => {
+    if (!bulkAction || selectedItems.length === 0) return;
+    setBulkSaving(true);
+    const result = await runCurriculumBulkAction(selectedItems, bulkAction, curriculumService);
+    await queryClient.invalidateQueries({ queryKey: CURRICULUM_QUERY_KEYS.all });
+    setSelectedIds(new Set(result.failed.map((item) => item.id)));
+    setBulkSaving(false);
+    setBulkAction(null);
+    if (result.succeeded.length) toast.success(`${result.succeeded.length} curriculum${result.succeeded.length === 1 ? '' : 's'} updated`);
+    if (result.failed.length) toast.error(`${result.failed.length} curriculum${result.failed.length === 1 ? '' : 's'} could not be changed. They remain selected for retry.`);
+  };
   const activeOnPage = items.filter((i) => i.status === 'ACTIVE').length;
   const creditsOnPage = items.reduce((sum, i) => sum + i.totalCredits, 0);
 
@@ -96,6 +165,13 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
             <p className="mt-0.5 max-w-[560px] text-xs leading-relaxed text-gray-500">{copy.subtitle}</p>
           </div>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+        {kind === 'curriculum' && (
+          <button type="button" disabled={items.length === 0} onClick={() => { setImportTargetId(selectedItems.length === 1 ? selectedItems[0].id : items[0]?.id ?? ''); setImportChooserOpen(true); }}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-orange-200 bg-white px-4 py-2.5 text-xs font-bold text-[#a43e08] shadow-sm hover:bg-orange-50 disabled:opacity-50">
+            <FileSpreadsheet className="size-4" /> Import Excel
+          </button>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -106,6 +182,7 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
         >
           <Plus className="size-4" strokeWidth={2.5} /> {copy.create}
         </button>
+        </div>
       </div>
 
       {/* KPI strip */}
@@ -176,6 +253,14 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
               </select>
               <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
             </div>
+            {kind === 'curriculum' && <div className="relative">
+              <select value={current} onChange={(e) => resetPage(setCurrent)(e.target.value)} aria-label="Current version filter" className={`${select} w-full sm:w-48`}>
+                <option value="">Version: All</option>
+                <option value="true">Current only</option>
+                <option value="false">Previous only</option>
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+            </div>}
             {hasFilters && (
               <button
                 type="button"
@@ -189,8 +274,25 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
         </div>
       </div>
 
+      {kind === 'curriculum' && selectedItems.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-orange-200 bg-orange-50 px-4 py-3 text-xs font-semibold text-[#713f12]" role="toolbar" aria-label="Curriculum bulk actions">
+          <span className="mr-auto">{selectedItems.length} selected on this page</span>
+          <button type="button" onClick={() => setBulkAction('ACTIVE')} className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-2 font-bold text-white hover:bg-emerald-700"><CheckCircle2 className="size-3.5" /> Set active</button>
+          <button type="button" onClick={() => setBulkAction('INACTIVE')} className="inline-flex items-center gap-1 rounded-lg bg-gray-700 px-3 py-2 font-bold text-white hover:bg-gray-800"><CircleOff className="size-3.5" /> Set inactive</button>
+          <button type="button" onClick={() => setBulkAction('DELETE')} className="inline-flex items-center gap-1 rounded-lg bg-red-700 px-3 py-2 font-bold text-white hover:bg-red-800"><Trash2 className="size-3.5" /> Delete selected</button>
+          <button type="button" onClick={() => setSelectedIds(new Set())} className="rounded-lg px-2 py-2 text-gray-600 hover:bg-white">Clear</button>
+        </div>
+      )}
+
       {/* List card */}
       <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 bg-gradient-to-r from-white to-orange-50/40 px-5 py-4">
+          <div>
+            <h2 className="text-sm font-extrabold text-gray-900">{kind === 'curriculum' ? 'Curriculum catalog' : 'Cohort catalog'}</h2>
+            <p className="mt-0.5 text-xs text-gray-500">{data?.totalElements ?? 0} records{kind === 'curriculum' ? ' · select rows on this page for bulk actions' : ''}</p>
+          </div>
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-[11px] font-semibold text-gray-600">Page {page + 1} / {Math.max(1, data?.totalPages ?? 1)}</span>
+        </div>
         {isLoading ? (
           <ListSkeleton />
         ) : isError ? (
@@ -201,7 +303,7 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
             <div>
               <p className="text-sm font-bold text-gray-900">Could not load {copy.plural}</p>
               <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
-                The list failed to load. Check your connection or mock flag, then try again — your filters are kept.
+                The list failed to load. Check your connection, then try again — your filters are kept.
               </p>
             </div>
             <button
@@ -269,9 +371,12 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
                   updateStatus({ id: item.id, status: item.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' }).catch(() => undefined)
                 }
                 onDelete={setDeleting}
+                selectedIds={kind === 'curriculum' ? selectedIds : undefined}
+                onSelect={kind === 'curriculum' ? selectOne : undefined}
+                onSelectPage={kind === 'curriculum' ? selectPage : undefined}
               />
             </div>
-            <Pagination page={page} pageSize={PAGE_SIZE} total={data?.totalElements ?? 0} noun={copy.plural} onChange={setPage} />
+            <Pagination page={page} pageSize={PAGE_SIZE} total={data?.totalElements ?? 0} noun={copy.plural} onChange={changePage} />
           </>
         )}
       </div>
@@ -311,6 +416,41 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
           setDeleting(null);
         }}
       />
+
+      <ConfirmDialog
+        open={!!bulkAction}
+        title={bulkAction === 'DELETE' ? 'Delete selected curriculums?' : `Set selected curriculums ${bulkAction === 'ACTIVE' ? 'active' : 'inactive'}?`}
+        message={`${selectedItems.length} selected curriculum${selectedItems.length === 1 ? '' : 's'} will be ${bulkAction === 'DELETE' ? 'deleted if no students or courses use them' : bulkAction === 'ACTIVE' ? 'activated' : 'deactivated'}. Each record is processed separately; failures remain selected.`}
+        confirmLabel={bulkAction === 'DELETE' ? 'Delete selected' : 'Apply to selected'}
+        destructive={bulkAction === 'DELETE'}
+        isLoading={bulkSaving}
+        onCancel={() => setBulkAction(null)}
+        onConfirm={() => void handleBulkAction()}
+      />
+
+      <Modal open={importChooserOpen} onClose={() => setImportChooserOpen(false)} title="Import curriculum from Excel" className="max-w-lg">
+        <div className="space-y-4 p-6">
+          <div><h2 className="text-lg font-bold text-gray-900">Import courses into a curriculum</h2><p className="mt-1 text-sm text-gray-600">Choose a curriculum on this page. The Excel file maps course codes to semesters; the system checks every row before import.</p></div>
+          <label className="block text-sm font-semibold text-gray-800">Target curriculum
+            <select value={importTargetId} onChange={(event) => setImportTargetId(event.target.value)} className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm">
+              {items.map((item) => <option key={item.id} value={item.id}>{item.majorCode}_{item.version} · {item.name}</option>)}
+            </select>
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <ExampleSheetButton examples={[{ label: 'Example sheet', download: downloadExample }]} />
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#dc6018]">
+              <FileSpreadsheet className="size-4" /> Choose Excel file
+              <input type="file" accept=".xlsx,.xls" className="sr-only" disabled={!importTargetId || isPreviewingImport} onChange={(event) => { void handleImportFile(event.target.files?.[0]); event.target.value = ''; }} />
+            </label>
+            {isPreviewingImport && <span className="text-xs text-gray-500">Checking file…</span>}
+          </div>
+          <p className="text-xs text-gray-500">For a new curriculum, create it first, then import its course list.</p>
+        </div>
+      </Modal>
+      <ImportPreviewModal open={!!importFile} fileName={importFile?.name ?? ''} preview={importPreview} isConfirming={isConfirmingImport}
+        onClose={() => { setImportFile(null); setImportPreview(null); }} onConfirm={() => void handleConfirmImport()} />
+      <ImportCheckDialog open={!!importProblems} fileName={importProblems?.fileName ?? ''} problems={importProblems?.problems ?? []}
+        examples={[{ label: 'Example sheet', download: downloadExample }]} onClose={() => setImportProblems(null)} />
 
       <style>{`@keyframes slide { 0% { transform: translateX(-100%);} 100% { transform: translateX(300%);} }`}</style>
     </div>
@@ -354,7 +494,7 @@ function ListSkeleton() {
           </div>
         ))}
       </div>
-      <p className="mt-3 text-center text-[11px] font-medium text-gray-400">Loading curriculums… (mock delay 500ms)</p>
+      <p className="mt-3 text-center text-[11px] font-medium text-gray-400">Loading curriculums…</p>
     </div>
   );
 }
