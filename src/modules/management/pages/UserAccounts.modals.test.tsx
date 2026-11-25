@@ -271,7 +271,7 @@ describe('UserAccounts modals', () => {
       await screen.findByText('Nguyen Van A');
 
       await user.click(screen.getByRole('button', { name: /create user/i }));
-      await user.click(await screen.findByText('Advisor', { selector: 'label' }));
+      await user.selectOptions(await screen.findByLabelText('Role'), 'ADVISOR');
       await user.type(screen.getByLabelText('Email'), 'advisor@fpt.edu.vn');
 
       expect(await screen.findByText(/Advisor accounts must use an @fe\.edu\.vn/)).toBeInTheDocument();
@@ -292,7 +292,7 @@ describe('UserAccounts modals', () => {
       expect(screen.getByLabelText('Expected graduation semester')).toBeInTheDocument();
       expect(screen.queryByLabelText('Max advisees')).not.toBeInTheDocument();
 
-      await user.click(await screen.findByText('Advisor', { selector: 'label' }));
+      await user.selectOptions(screen.getByLabelText('Role'), 'ADVISOR');
 
       await waitFor(() => {
         expect(screen.queryByLabelText('Student ID')).not.toBeInTheDocument();
@@ -359,7 +359,7 @@ describe('UserAccounts modals', () => {
       await screen.findByText('Nguyen Van A');
 
       await user.click(screen.getByRole('button', { name: /create user/i }));
-      await user.click(await screen.findByText('Advisor', { selector: 'label' }));
+      await user.selectOptions(await screen.findByLabelText('Role'), 'ADVISOR');
       await user.type(screen.getByLabelText('Full name'), 'Tran Advisor');
       await user.type(screen.getByLabelText('Email'), 'advisor@fe.edu.vn');
       await user.type(screen.getByLabelText('Max advisees'), '12');

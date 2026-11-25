@@ -324,4 +324,23 @@ describe('UserAccounts', () => {
       expect(item).toHaveAttribute('title', expect.stringContaining('Google'));
     });
   });
+
+  it('exports matching user accounts to CSV', async () => {
+    const user = userEvent.setup();
+    const createObjectURL = vi.fn(() => 'blob:mock-users-csv');
+    const revokeObjectURL = vi.fn();
+    Object.defineProperty(URL, 'createObjectURL', { value: createObjectURL, writable: true });
+    Object.defineProperty(URL, 'revokeObjectURL', { value: revokeObjectURL, writable: true });
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+
+    renderPage();
+    await screen.findByText('Nguyen Van A');
+
+    await user.click(screen.getByRole('button', { name: /export csv/i }));
+
+    await waitFor(() => expect(createObjectURL).toHaveBeenCalledTimes(1));
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:mock-users-csv');
+    clickSpy.mockRestore();
+  });
 });

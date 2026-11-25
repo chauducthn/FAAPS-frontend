@@ -45,7 +45,12 @@ export default function UserAccounts() {
 
   return (
     <div className="w-full space-y-5">
-      <UserAccountsHeader onCreate={() => s.setCreating(true)} />
+      <UserAccountsHeader
+        onCreate={() => s.setCreating(true)}
+        onExport={() => void s.runExportCsv()}
+        isExporting={s.isExporting}
+        canExport={s.total > 0}
+      />
 
       <UserAccountsKpiStrip
         studentCount={s.studentCount.data}

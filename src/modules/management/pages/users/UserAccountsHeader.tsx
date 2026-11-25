@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { GraduationCap, Plus, ShieldCheck, UserRound, Users } from 'lucide-react';
+import { Download, GraduationCap, Loader2, Plus, ShieldCheck, UserRound, Users } from 'lucide-react';
 import type { AdminUserRole } from '../../types/admin';
 
 interface KpiCardProps {
@@ -54,7 +54,17 @@ function KpiCard({ icon, label, value, hint, active, accent = 'orange', onClick 
   return <div className={`${baseClass} border-gray-200/80`}>{content}</div>;
 }
 
-export function UserAccountsHeader({ onCreate }: { onCreate: () => void }) {
+export function UserAccountsHeader({
+  onCreate,
+  onExport,
+  isExporting,
+  canExport,
+}: {
+  onCreate: () => void;
+  onExport: () => void;
+  isExporting: boolean;
+  canExport: boolean;
+}) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
       <div className="flex items-center gap-3.5">
@@ -68,13 +78,24 @@ export function UserAccountsHeader({ onCreate }: { onCreate: () => void }) {
           </p>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onCreate}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.35)] transition-all hover:-translate-y-px hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50 active:translate-y-0"
-      >
-        <Plus className="size-4" strokeWidth={2.5} /> Create user
-      </button>
+      <div className="flex items-center gap-2.5">
+        <button
+          type="button"
+          onClick={onExport}
+          disabled={!canExport || isExporting}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-700 shadow-2xs transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isExporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+          {isExporting ? 'Exporting…' : 'Export CSV'}
+        </button>
+        <button
+          type="button"
+          onClick={onCreate}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.35)] transition-all hover:-translate-y-px hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50 active:translate-y-0"
+        >
+          <Plus className="size-4" strokeWidth={2.5} /> Create user
+        </button>
+      </div>
     </div>
   );
 }

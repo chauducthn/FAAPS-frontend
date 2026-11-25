@@ -16,6 +16,7 @@ import { useDebounce } from '@/shared/hooks/useDebounce';
 import { useAuth } from '../../../auth/stores/useAuth';
 import type { AdminUserRole, AdminUserStatus, AdminUserSummary, PasswordResetEntry } from '../../types/admin';
 import { toUserSort, USER_PAGE_SIZE, USER_ROLES } from './userAccountColumns';
+import { exportUsersToCsv } from './exportUsersCsv';
 
 export function useUserAccountsState() {
   const me = useAuth((s) => s.user);
@@ -37,6 +38,7 @@ export function useUserAccountsState() {
   const [resetTargets, setResetTargets] = useState<ResetPasswordTarget[] | null>(null);
   const [resetResults, setResetResults] = useState<PasswordResetEntry[] | null>(null);
   const [resetError, setResetError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const changeStatus = useChangeUserStatus();
   const resetPasswords = useResetPasswords();
@@ -125,13 +127,33 @@ export function useUserAccountsState() {
     setConfirm(null);
   };
 
+  const runExportCsv = async () => {
+    setIsExporting(true);
+    try {
+      const count = await exportUsersToCsv({
+        role: role || undefined,
+        status: status || undefined,
+        search: search.trim() || undefined,
+        majorId: majorId || undefined,
+        curriculumVersionId: cohortId || undefined,
+        sort: toUserSort(sorting),
+      });
+      if (count === 0) toast.info('No accounts to export.');
+      else toast.success(`Exported ${count} account${count === 1 ? '' : 's'} to CSV.`);
+    } catch {
+      toast.error('Failed to export user accounts. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return {
     me, role, setRole, status, setStatus, majorId, setMajorId, cohortId, setCohortId,
     search, setSearch, pagination, setPagination, sorting, setSorting,
     detailId, setDetailId, confirm, setConfirm, roleChange, setRoleChange,
     creating, setCreating, resetTargets, setResetTargets, resetResults, setResetResults,
-    resetError, setResetError, changeStatus, resetPasswords, majors, cohortOptions,
+    resetError, setResetError, isExporting, changeStatus, resetPasswords, majors, cohortOptions,
     studentCount, advisorCount, usersQuery, items, total, hasFilters,
-    clearFilters, resetPage, askBulk, askReset, runReset, runConfirm,
+    clearFilters, resetPage, askBulk, askReset, runReset, runConfirm, runExportCsv,
   };
 }
