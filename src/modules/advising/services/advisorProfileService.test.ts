@@ -14,11 +14,10 @@ describe('advisor profile API', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/advisor/profile');
   });
 
-  it('updates editable profile fields', async () => {
+  it('writes only the advisor-specific field', async () => {
     vi.mocked(apiClient.put).mockResolvedValue({ data: { id: 'a-1' } });
-    const input = { fullName: 'Nguyen Van Binh', phone: '+84 901 234 567', specialization: 'AI' };
-    await advisorService.updateProfile(input);
-    expect(apiClient.put).toHaveBeenCalledWith('/advisor/profile', input,
+    await advisorService.updateSpecialization('AI');
+    expect(apiClient.put).toHaveBeenCalledWith('/advisor/profile/specialization', { specialization: 'AI' },
       { headers: { 'X-CSRF': 'token' } });
   });
 });

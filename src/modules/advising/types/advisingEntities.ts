@@ -35,25 +35,23 @@ export type NotificationType =
   | 'MESSAGE'
   | 'ADVISOR_REQUEST';
 
-/** Current student academic profile. */
+/**
+ * The academic profile of a student: everything the students table adds on top of the shared identity
+ * (see the shared /api/profile endpoint for the name, email, phone and date of birth).
+ */
 export interface StudentProfile {
   id: string;
   studentCode: string;
-  fullName: string | null;
-  email: string;
-  phone: string | null;
   majorId: string | null;
   majorCode: string | null;
   majorName: string | null;
   curriculumVersionId: string | null;
-  curriculumVersion: string | null;
-  enrollmentSemesterCode: string | null;
+  /** The curriculum version label, e.g. "K19". */
+  cohort: string | null;
   currentSemester: number;
   currentGpa: number | null;
   totalCreditsEarned: number;
   academicStatus: AcademicStatus;
-  cohort?: string | null;
-  dateOfBirth?: string | null;
 }
 
 /** Primary advisor assigned to the current student. */

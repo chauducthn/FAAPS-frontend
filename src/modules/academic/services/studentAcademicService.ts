@@ -71,8 +71,6 @@ const post = async <T>(path: string, body?: object): Promise<T> =>
 /** API backed by the current academic-learning backend endpoints. */
 export const studentAcademicService = {
   profile: () => get<AcademicStudentProfile>('/profile'),
-  updateProfile: async (body: { fullName: string; phone: string }) =>
-    (await apiClient.put<AcademicStudentProfile>('/student/profile', body, { headers: await getCsrfHeaders() })).data,
   /** Saves the major / curriculum the student follows (chosen in the Profile page). */
   changeCurriculum: async (curriculumVersionId: string) =>
     (

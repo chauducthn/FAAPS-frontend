@@ -1,11 +1,29 @@
-import { Suspense, useState } from 'react';
-import { Outlet } from 'react-router';
+import { Suspense, useMemo, useState } from 'react';
+import { Outlet, useLocation } from 'react-router';
 import { X } from 'lucide-react';
 import { Logo } from '@/shared/components/common/Logo';
 import { PortalHeader } from './PortalHeader';
 import { PortalSidebar, type PortalNavItem, type PortalNavSection } from './PortalSidebar';
 
 export { PortalSidebar, type PortalNavItem, type PortalNavSection };
+
+function findActiveNavItem(sections: PortalNavSection[], pathname: string): PortalNavItem | undefined {
+  let bestMatch: PortalNavItem | undefined;
+  let bestLen = -1;
+  for (const section of sections) {
+    for (const item of section.items) {
+      if (!item.to) continue;
+      const matches = item.end
+        ? pathname === item.to
+        : pathname === item.to || pathname.startsWith(`${item.to}/`);
+      if (matches && item.to.length > bestLen) {
+        bestMatch = item;
+        bestLen = item.to.length;
+      }
+    }
+  }
+  return bestMatch;
+}
 
 interface PortalLayoutProps {
   navSections: PortalNavSection[];
@@ -23,7 +41,9 @@ export default function PortalLayout({
   headerExtra,
 }: PortalLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { pathname } = useLocation();
   const resolvedProfilePath = profilePath ?? `${homePath}/profile`;
+  const activeItem = useMemo(() => findActiveNavItem(navSections, pathname), [navSections, pathname]);
 
   return (
     <div className="flex min-h-screen bg-[var(--surface-page)] font-sans">
@@ -40,6 +60,7 @@ export default function PortalLayout({
         <PortalHeader
           roleLabel={roleLabel}
           profilePath={resolvedProfilePath}
+          activeItem={activeItem}
           headerExtra={headerExtra}
           onOpenMenu={() => setMenuOpen(true)}
         />

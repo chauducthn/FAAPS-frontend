@@ -6,9 +6,8 @@ import { NO_PASSWORD_REASON } from '../components/UserRowMenu';
 import { canResetPassword } from '../utils/passwordReset';
 import { DataTable } from '../../../shared/components/common/DataTable';
 import { createUserAccountColumns } from './users/userAccountColumns';
-import { UserAccountsHeader, UserAccountsKpiStrip } from './users/UserAccountsHeader';
-import { UserAccountsFilterBar } from './users/UserAccountsFilterBar';
-import { UserAccountsActiveChips, UserAccountsErrorState } from './users/UserAccountsActiveChips';
+import { UserAccountsHeader } from './users/UserAccountsHeader';
+import { UserAccountsErrorState, UserAccountsFilterBar } from './users/UserAccountsFilterBar';
 import { UserAccountsModals } from './users/UserAccountsModals';
 import { useUserAccountsState } from './users/useUserAccountsState';
 
@@ -41,37 +40,34 @@ export default function UserAccounts() {
     await usersQuery.refetch();
   };
 
-  const majorsList = s.majors.data ?? [];
-
   return (
-    <div className="w-full space-y-5">
+    <div className="w-full min-w-0 space-y-4">
       <UserAccountsHeader
+        studentCount={s.studentCount.data}
+        advisorCount={s.advisorCount.data}
+        activeCount={s.activeCount.data}
+        suspendedCount={s.suspendedCount.data}
+        activeRole={s.role}
+        activeStatus={s.status}
+        onSelectRole={s.resetPage(s.setRole)}
+        onSelectStatus={s.resetPage(s.setStatus)}
+        onClearAll={s.clearFilters}
         onCreate={() => s.setCreating(true)}
         onExport={() => void s.runExportCsv()}
         isExporting={s.isExporting}
         canExport={s.total > 0}
       />
 
-      <UserAccountsKpiStrip
-        studentCount={s.studentCount.data}
-        advisorCount={s.advisorCount.data}
-        total={s.total}
-        activeRole={s.role}
-        onSelectRole={s.resetPage(s.setRole)}
-      />
-
-      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
         <UserAccountsFilterBar
           search={s.search}
           role={s.role}
           status={s.status}
           majorId={s.majorId}
           cohortId={s.cohortId}
-          majors={majorsList}
+          majors={s.majors.data ?? []}
           cohortOptions={s.cohortOptions}
           hasFilters={s.hasFilters}
-          total={s.total}
-          shownCount={s.items.length}
           onSearchChange={s.resetPage(s.setSearch)}
           onRoleChange={s.resetPage(s.setRole)}
           onStatusChange={s.resetPage(s.setStatus)}
@@ -86,29 +82,17 @@ export default function UserAccounts() {
           onClear={s.clearFilters}
         />
 
-        <UserAccountsActiveChips
-          role={s.role}
-          status={s.status}
-          majorId={s.majorId}
-          cohortId={s.cohortId}
-          majors={majorsList}
-          cohortOptions={s.cohortOptions}
-          onClearRole={() => s.resetPage(s.setRole)('')}
-          onClearStatus={() => s.resetPage(s.setStatus)('')}
-          onClearMajor={() => s.resetPage(s.setMajorId)('')}
-          onClearCohort={() => s.resetPage(s.setCohortId)('')}
-        />
-
         {usersQuery.isError && !usersQuery.data ? (
           <UserAccountsErrorState onRetry={() => usersQuery.refetch()} />
         ) : (
-          <div className="relative p-4 sm:p-5">
+          <div className="relative">
             {usersQuery.isFetching && !usersQuery.isLoading && (
               <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
                 <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
               </div>
             )}
             <DataTable
+              className="flex min-h-[540px] flex-col justify-between"
               manual
               columns={columns}
               data={s.items}
@@ -131,21 +115,21 @@ export default function UserAccounts() {
                   <button
                     type="button"
                     onClick={() => s.askReset(selectedRows)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3.5 py-2 text-xs font-bold text-[#151c27] ring-1 ring-[#e5e7eb] transition-colors hover:bg-gray-50"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-gray-800 ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
                   >
                     <KeyRound className="size-3.5" aria-hidden /> Reset password
                   </button>
                   <button
                     type="button"
                     onClick={() => s.askBulk(selectedRows, 'ACTIVE')}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#ecfdf5] px-3.5 py-2 text-xs font-bold text-[#047857] transition-colors hover:bg-emerald-100"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 transition-colors hover:bg-emerald-100"
                   >
                     <CheckCircle2 className="size-3.5" aria-hidden /> Activate
                   </button>
                   <button
                     type="button"
                     onClick={() => s.askBulk(selectedRows, 'SUSPENDED')}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-[#fef2f2] px-3.5 py-2 text-xs font-bold text-[#b91c1c] transition-colors hover:bg-red-100"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-700 transition-colors hover:bg-red-100"
                   >
                     <ShieldOff className="size-3.5" aria-hidden /> Suspend
                   </button>

@@ -1,157 +1,168 @@
 import type { ReactNode } from 'react';
-import { Download, GraduationCap, Loader2, Plus, ShieldCheck, UserRound, Users } from 'lucide-react';
-import type { AdminUserRole } from '../../types/admin';
+import { CheckCircle2, Download, GraduationCap, Loader2, Plus, ShieldOff, UserRound, Users } from 'lucide-react';
+import { cn } from '@/shared/lib/utils';
+import type { AdminUserRole, AdminUserStatus } from '../../types/admin';
 
-interface KpiCardProps {
+function StatItem({
+  icon,
+  label,
+  value,
+  sub,
+  tone,
+  active,
+  onClick,
+}: {
   icon: ReactNode;
   label: string;
   value: string;
-  hint: string;
+  sub?: string;
+  tone: 'slate' | 'orange' | 'indigo' | 'emerald' | 'red';
   active?: boolean;
-  accent?: 'orange' | 'indigo' | 'slate';
   onClick?: () => void;
-}
+}) {
+  const iconTone: Record<typeof tone, string> = {
+    slate: 'bg-gray-100 text-gray-700',
+    orange: 'bg-orange-50 text-[#C2410C]',
+    indigo: 'bg-indigo-50 text-indigo-700',
+    emerald: 'bg-emerald-50 text-emerald-700',
+    red: 'bg-red-50 text-red-600',
+  };
+  const activeTone: Record<typeof tone, string> = {
+    slate: 'border-gray-400 bg-gray-50/70',
+    orange: 'border-[#F26F21]/60 bg-orange-50/40',
+    indigo: 'border-indigo-400/70 bg-indigo-50/40',
+    emerald: 'border-emerald-400/70 bg-emerald-50/40',
+    red: 'border-red-300 bg-red-50/40',
+  };
 
-const ACCENT_ICON: Record<NonNullable<KpiCardProps['accent']>, string> = {
-  orange: 'bg-orange-100 text-[#C2410C]',
-  indigo: 'bg-indigo-100 text-indigo-700',
-  slate: 'bg-gray-100 text-gray-700',
-};
-
-const ACCENT_RING: Record<NonNullable<KpiCardProps['accent']>, string> = {
-  orange: 'border-[#F26F21]/60 bg-orange-50/40 ring-2 ring-[#F26F21]/15',
-  indigo: 'border-indigo-400/70 bg-indigo-50/40 ring-2 ring-indigo-500/15',
-  slate: 'border-gray-300 bg-gray-50/60 ring-2 ring-gray-900/5',
-};
-
-function KpiCard({ icon, label, value, hint, active, accent = 'orange', onClick }: KpiCardProps) {
-  const baseClass =
-    'flex items-center gap-3.5 rounded-2xl border bg-white px-4 py-3.5 text-left shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all';
-  const stateClass = active ? ACCENT_RING[accent] : 'border-gray-200/80 hover:border-gray-300';
-
-  const content = (
-    <>
-      <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${ACCENT_ICON[accent]}`}>
+  return (
+    <div
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-3 rounded-xl border bg-white px-3.5 py-2.5 text-left transition-colors',
+        onClick && 'cursor-pointer',
+        active ? activeTone[tone] : 'border-gray-200/80 hover:border-gray-300',
+      )}
+    >
+      <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg', iconTone[tone])}>
         {icon}
       </span>
       <div className="min-w-0">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-500">{label}</p>
-        <p className="mt-0.5 flex items-baseline gap-1.5 text-xl font-extrabold tabular-nums leading-none text-gray-900">
-          <span>{value}</span>
-          <span className="truncate text-[11px] font-medium text-gray-500">{hint}</span>
-        </p>
-      </div>
-    </>
-  );
-
-  if (onClick) {
-    return (
-      <button type="button" onClick={onClick} aria-pressed={active} className={`${baseClass} ${stateClass} cursor-pointer`}>
-        {content}
-      </button>
-    );
-  }
-  return <div className={`${baseClass} border-gray-200/80`}>{content}</div>;
-}
-
-export function UserAccountsHeader({
-  onCreate,
-  onExport,
-  isExporting,
-  canExport,
-}: {
-  onCreate: () => void;
-  onExport: () => void;
-  isExporting: boolean;
-  canExport: boolean;
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
-      <div className="flex items-center gap-3.5">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-[#F26F21] text-white shadow-[0_4px_12px_rgba(242,111,33,0.3)]">
-          <Users className="size-5" />
-        </span>
-        <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-gray-900">User Accounts</h1>
-          <p className="mt-0.5 text-xs text-gray-500">
-            Manage student and advisor accounts, access status, and password resets.
-          </p>
+        <p className="truncate text-[11px] font-medium text-gray-500">{label}</p>
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-base font-bold leading-tight tabular-nums text-gray-900">{value}</span>
+          {sub && <span className="truncate text-[11px] text-gray-400">{sub}</span>}
         </div>
-      </div>
-      <div className="flex items-center gap-2.5">
-        <button
-          type="button"
-          onClick={onExport}
-          disabled={!canExport || isExporting}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-700 shadow-2xs transition-colors hover:border-gray-300 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isExporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
-          {isExporting ? 'Exporting…' : 'Export CSV'}
-        </button>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.35)] transition-all hover:-translate-y-px hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50 active:translate-y-0"
-        >
-          <Plus className="size-4" strokeWidth={2.5} /> Create user
-        </button>
       </div>
     </div>
   );
 }
 
-export function UserAccountsKpiStrip({
+export function UserAccountsHeader({
   studentCount,
   advisorCount,
-  total,
+  activeCount,
+  suspendedCount,
   activeRole,
+  activeStatus,
   onSelectRole,
+  onSelectStatus,
+  onClearAll,
+  onCreate,
+  onExport,
+  isExporting,
+  canExport,
 }: {
   studentCount?: number;
   advisorCount?: number;
-  total: number;
+  activeCount?: number;
+  suspendedCount?: number;
   activeRole: AdminUserRole | '';
+  activeStatus: AdminUserStatus | '';
   onSelectRole: (role: AdminUserRole | '') => void;
+  onSelectStatus: (status: AdminUserStatus | '') => void;
+  onClearAll: () => void;
+  onCreate: () => void;
+  onExport: () => void;
+  isExporting: boolean;
+  canExport: boolean;
 }) {
-  const combinedTotal =
-    studentCount !== undefined && advisorCount !== undefined ? String(studentCount + advisorCount) : '—';
+  const totalUsers =
+    studentCount !== undefined && advisorCount !== undefined ? studentCount + advisorCount : undefined;
+  const studentPct =
+    totalUsers && totalUsers > 0 && studentCount !== undefined
+      ? `${Math.round((studentCount / totalUsers) * 100)}%`
+      : undefined;
+  const advisorPct =
+    totalUsers && totalUsers > 0 && advisorCount !== undefined
+      ? `${Math.round((advisorCount / totalUsers) * 100)}%`
+      : undefined;
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-      <KpiCard
-        icon={<Users className="size-4" />}
-        label="All Accounts"
-        value={combinedTotal}
-        hint="total users"
-        accent="slate"
-        active={activeRole === ''}
-        onClick={() => onSelectRole('')}
-      />
-      <KpiCard
-        icon={<GraduationCap className="size-4" />}
-        label="Students"
-        value={String(studentCount ?? '—')}
-        hint="accounts"
-        accent="orange"
-        active={activeRole === 'STUDENT'}
-        onClick={() => onSelectRole(activeRole === 'STUDENT' ? '' : 'STUDENT')}
-      />
-      <KpiCard
-        icon={<UserRound className="size-4" />}
-        label="Advisors"
-        value={String(advisorCount ?? '—')}
-        hint="accounts"
-        accent="indigo"
-        active={activeRole === 'ADVISOR'}
-        onClick={() => onSelectRole(activeRole === 'ADVISOR' ? '' : 'ADVISOR')}
-      />
-      <KpiCard
-        icon={<ShieldCheck className="size-4" />}
-        label="Matching"
-        value={String(total)}
-        hint="current filters"
-        accent="orange"
-      />
+    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+        <StatItem
+          icon={<Users className="size-4" />}
+          label="Total users"
+          value={totalUsers !== undefined ? String(totalUsers) : '—'}
+          tone="slate"
+          active={!activeRole && !activeStatus}
+          onClick={onClearAll}
+        />
+        <StatItem
+          icon={<GraduationCap className="size-4" />}
+          label="Students"
+          value={String(studentCount ?? '—')}
+          sub={studentPct}
+          tone="orange"
+          active={activeRole === 'STUDENT'}
+          onClick={() => onSelectRole(activeRole === 'STUDENT' ? '' : 'STUDENT')}
+        />
+        <StatItem
+          icon={<UserRound className="size-4" />}
+          label="Advisors"
+          value={String(advisorCount ?? '—')}
+          sub={advisorPct}
+          tone="indigo"
+          active={activeRole === 'ADVISOR'}
+          onClick={() => onSelectRole(activeRole === 'ADVISOR' ? '' : 'ADVISOR')}
+        />
+        <StatItem
+          icon={<CheckCircle2 className="size-4" />}
+          label="Active"
+          value={String(activeCount ?? '—')}
+          tone="emerald"
+          active={activeStatus === 'ACTIVE'}
+          onClick={() => onSelectStatus(activeStatus === 'ACTIVE' ? '' : 'ACTIVE')}
+        />
+        <StatItem
+          icon={<ShieldOff className="size-4" />}
+          label="Suspended"
+          value={String(suspendedCount ?? '—')}
+          tone="red"
+          active={activeStatus === 'SUSPENDED'}
+          onClick={() => onSelectStatus(activeStatus === 'SUSPENDED' ? '' : 'SUSPENDED')}
+        />
+      </div>
+
+      <div className="flex shrink-0 items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={onExport}
+          disabled={!canExport || isExporting}
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {isExporting ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
+          {isExporting ? 'Exporting…' : 'Export CSV'}
+        </button>
+        <button
+          type="button"
+          onClick={onCreate}
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+        >
+          <Plus className="size-3.5" strokeWidth={2.5} /> Create user
+        </button>
+      </div>
     </div>
   );
 }

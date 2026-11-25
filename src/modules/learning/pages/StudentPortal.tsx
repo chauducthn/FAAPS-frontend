@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { BotMessageSquare, CalendarClock, MessageSquareText, Route } from 'lucide-react';
 import { useAuth } from '../../auth/stores/useAuth';
+import { useIdentityProfile } from '@/shared/hooks/useIdentityProfile';
 import {
   useMyAdvisingRequests,
   useMyAdvisor,
@@ -30,7 +31,7 @@ export default function StudentPortal() {
   const appointmentsQuery = useMyAppointments();
   const requestsQuery = useMyAdvisingRequests();
 
-  const displayName = profileQuery.data?.fullName || user?.fullName || 'Student';
+  const displayName = useIdentityProfile().data?.fullName || user?.fullName || 'Student';
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-5">

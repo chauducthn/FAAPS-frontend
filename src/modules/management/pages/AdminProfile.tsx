@@ -1,38 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { toast } from 'sonner';
 import { AccountMetaCard } from '@/shared/components/profile/AccountMetaCard';
 import { ChangePasswordCard } from '@/shared/components/profile/ChangePasswordCard';
-import { PersonalInfoForm, type PersonalInfoValues } from '@/shared/components/profile/PersonalInfoForm';
+import { PersonalInfoForm } from '@/shared/components/profile/PersonalInfoForm';
 import { ProfileHero } from '@/shared/components/profile/ProfileHero';
-import { apiMessage } from '@/shared/lib/apiMessage';
-import { profileService } from '@/shared/services/profileService';
+import { useIdentityProfile } from '@/shared/hooks/useIdentityProfile';
+import { useProfileSave } from '@/shared/hooks/useProfileSave';
 import { useAuth } from '../../auth/stores/useAuth';
 
 export default function AdminProfile() {
-  const queryClient = useQueryClient();
   const user = useAuth((state) => state.user);
-  const setUser = useAuth((state) => state.setUser);
-
-  const profileQuery = useQuery({
-    queryKey: ['user', 'profile'],
-    queryFn: profileService.getProfile,
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (values: PersonalInfoValues) =>
-      profileService.updateProfile({
-        fullName: values.fullName,
-        phone: values.phone || null,
-      }),
-    onSuccess: async (updated) => {
-      if (user) {
-        setUser({ ...user, fullName: updated.fullName });
-      }
-      await queryClient.invalidateQueries({ queryKey: ['user', 'profile'] });
-      toast.success('Profile updated successfully');
-    },
-    onError: (error) => toast.error(apiMessage(error)),
-  });
+  const profileQuery = useIdentityProfile();
+  const save = useProfileSave();
 
   const data = profileQuery.data;
 
@@ -64,10 +41,8 @@ export default function AdminProfile() {
               email={data.email}
               dateOfBirth={data.dateOfBirth}
               initialValues={{ fullName: data.fullName, phone: data.phone ?? '' }}
-              isSaving={updateMutation.isPending}
-              onSave={(values) => {
-                updateMutation.mutate(values);
-              }}
+              isSaving={save.isPending}
+              onSave={(values) => save.mutate(values)}
             />
             <ChangePasswordCard authProvider={data.authProvider} />
           </div>

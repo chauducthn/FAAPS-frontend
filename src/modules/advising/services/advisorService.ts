@@ -70,8 +70,9 @@ export const advisorService = {
     return (await apiClient.get<AdvisorProfile>('/advisor/profile')).data;
   },
 
-  updateProfile: async (input: Pick<AdvisorProfile, 'fullName' | 'phone' | 'specialization'>): Promise<AdvisorProfile> => {
-    return (await apiClient.put<AdvisorProfile>('/advisor/profile', input,
+  /** Writes the advisor-specific field only; the identity fields belong to the shared /api/profile endpoint. */
+  updateSpecialization: async (specialization: string | null): Promise<AdvisorProfile> => {
+    return (await apiClient.put<AdvisorProfile>('/advisor/profile/specialization', { specialization },
       { headers: await getCsrfHeaders() })).data;
   },
 

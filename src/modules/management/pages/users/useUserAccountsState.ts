@@ -10,6 +10,7 @@ import {
   useCohortOptions,
   useResetPasswords,
   useRoleCount,
+  useStatusCount,
 } from '../../hooks/queries/useAdminUsers';
 import { useMajorOptions } from '../../hooks/queries/useAdminDashboard';
 import { useDebounce } from '@/shared/hooks/useDebounce';
@@ -46,6 +47,8 @@ export function useUserAccountsState() {
   const cohortOptionsQuery = useCohortOptions();
   const studentCount = useRoleCount('STUDENT');
   const advisorCount = useRoleCount('ADVISOR');
+  const activeCount = useStatusCount('ACTIVE');
+  const suspendedCount = useStatusCount('SUSPENDED');
   const debouncedSearch = useDebounce(search.trim(), 300);
   const cohortOptions = useMemo(() => cohortOptionsQuery.data ?? [], [cohortOptionsQuery.data]);
 
@@ -153,7 +156,7 @@ export function useUserAccountsState() {
     detailId, setDetailId, confirm, setConfirm, roleChange, setRoleChange,
     creating, setCreating, resetTargets, setResetTargets, resetResults, setResetResults,
     resetError, setResetError, isExporting, changeStatus, resetPasswords, majors, cohortOptions,
-    studentCount, advisorCount, usersQuery, items, total, hasFilters,
+    studentCount, advisorCount, activeCount, suspendedCount, usersQuery, items, total, hasFilters,
     clearFilters, resetPage, askBulk, askReset, runReset, runConfirm, runExportCsv,
   };
 }

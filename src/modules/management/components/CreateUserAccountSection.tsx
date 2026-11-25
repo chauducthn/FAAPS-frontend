@@ -1,8 +1,10 @@
 import type { FieldErrors, UseFormRegister } from 'react-hook-form';
 import { ChevronDown, GraduationCap, Loader2, UserRound, X } from 'lucide-react';
+import { cn } from '@/shared/lib/utils';
+import { STUDENT_ID_PLACEHOLDER } from '../utils/accountRules';
 import type { AdminUserRole } from '../types/admin';
 import { userFieldClass, type CreateUserValues } from './createUserSchema';
-import { UserFormField, UserFormSection } from './CreateUserProfileSection';
+import { UserFormField, UserFormSection } from './UserFormPrimitives';
 
 export function CreateUserModalHeader({
   isEdit,
@@ -14,17 +16,17 @@ export function CreateUserModalHeader({
   onClose: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-gradient-to-r from-[#fff7ed] via-white to-white px-6 py-4">
+    <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
       <div className="flex items-center gap-3">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#F26F21] text-white shadow-[0_2px_8px_rgba(242,111,33,0.35)]">
-          {role === 'STUDENT' ? <GraduationCap className="size-5" /> : <UserRound className="size-5" />}
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
+          {role === 'STUDENT' ? <GraduationCap className="size-4.5" /> : <UserRound className="size-4.5" />}
         </span>
         <div>
-          <h2 className="text-base font-extrabold tracking-tight text-gray-900">
+          <h2 className="text-base font-bold tracking-tight text-gray-900">
             {isEdit ? 'Edit user' : 'Create user'}
           </h2>
           <p className="text-xs text-gray-500">
-            {role === 'STUDENT' ? 'Student account & academic profile' : 'Advisor account & capacity'}
+            {role === 'STUDENT' ? 'Student account & academic placement' : 'Advisor account & advising capacity'}
           </p>
         </div>
       </div>
@@ -54,15 +56,15 @@ export function CreateUserAccountSection({
   onChangeRole: (next: AdminUserRole) => void;
 }) {
   return (
-    <UserFormSection title="Account details">
-      <div className="grid gap-3.5 sm:grid-cols-2">
+    <UserFormSection>
+      <div className="grid gap-4 sm:grid-cols-2">
         <UserFormField label="Role" required>
           <div className="relative">
             <select
               value={role}
               onChange={(e) => onChangeRole(e.target.value as AdminUserRole)}
               aria-label="Role"
-              className={`${userFieldClass(false)} appearance-none pr-9 font-semibold`}
+              className={`${userFieldClass(false)} appearance-none pr-9 font-medium`}
             >
               <option value="STUDENT">Student</option>
               <option value="ADVISOR">Advisor</option>
@@ -71,17 +73,41 @@ export function CreateUserAccountSection({
           </div>
         </UserFormField>
 
-        <UserFormField label="Full name" required error={errors.fullName?.message}>
-          <input
-            {...register('fullName')}
-            placeholder="Nguyen Van A"
-            className={userFieldClass(!!errors.fullName)}
-            aria-label="Full name"
-          />
-        </UserFormField>
+        {role === 'STUDENT' ? (
+          <UserFormField label="Student ID" required error={errors.studentCode?.message}>
+            <input
+              {...register('studentCode', { setValueAs: (v: string) => v.toUpperCase() })}
+              maxLength={8}
+              placeholder={STUDENT_ID_PLACEHOLDER}
+              className={cn(userFieldClass(!!errors.studentCode), 'font-mono font-semibold uppercase tracking-wide')}
+              aria-label="Student ID"
+            />
+          </UserFormField>
+        ) : (
+          <UserFormField label="Max advisees" required error={errors.maxAdvisees?.message}>
+            <input
+              type="number"
+              min={1}
+              max={500}
+              {...register('maxAdvisees')}
+              placeholder="30"
+              className={userFieldClass(!!errors.maxAdvisees)}
+              aria-label="Max advisees"
+            />
+          </UserFormField>
+        )}
       </div>
 
-      <div className="grid gap-3.5 sm:grid-cols-2">
+      <UserFormField label="Full name" required error={errors.fullName?.message}>
+        <input
+          {...register('fullName')}
+          placeholder="Nguyen Van A"
+          className={userFieldClass(!!errors.fullName)}
+          aria-label="Full name"
+        />
+      </UserFormField>
+
+      <div className="grid gap-4 sm:grid-cols-2">
         <UserFormField label="Email" required error={emailError}>
           <input
             type="email"
@@ -121,7 +147,7 @@ export function CreateUserModalFooter({
       <button
         type="button"
         onClick={onClose}
-        className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+        className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
       >
         Cancel
       </button>
@@ -129,9 +155,9 @@ export function CreateUserModalFooter({
         type="submit"
         disabled={isSubmitting || blocked}
         title={blocked ? 'Fix the highlighted field to continue' : undefined}
-        className="inline-flex min-w-36 items-center justify-center gap-2 rounded-xl bg-[#F26F21] px-5 py-2 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.35)] transition-all hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-9 min-w-28 items-center justify-center gap-2 rounded-lg bg-[#F26F21] px-4 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55"
       >
-        {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
+        {isSubmitting && <Loader2 className="size-4 animate-spin" />}
         {isSubmitting ? 'Saving…' : isEdit ? 'Save changes' : 'Create user'}
       </button>
     </div>

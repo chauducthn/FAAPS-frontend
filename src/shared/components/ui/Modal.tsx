@@ -32,7 +32,10 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={cn('relative flex max-h-[90vh] w-full max-w-[708px] flex-col rounded-2xl bg-white shadow-xl', className)}
+        className={cn(
+          'relative flex max-h-[90vh] w-full max-w-[708px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5',
+          className,
+        )}
       >
         {children}
       </div>

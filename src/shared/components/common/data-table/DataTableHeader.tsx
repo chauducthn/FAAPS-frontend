@@ -59,7 +59,7 @@ export function DataTableHeader<TData extends RowData>({
                     type="button"
                     onClick={header.column.getToggleSortingHandler()}
                     className={cn(
-                      'inline-flex items-center gap-1.5 rounded transition-colors hover:text-[var(--ink-primary)]',
+                      'inline-flex items-center gap-1.5 rounded uppercase tracking-wider transition-colors hover:text-[var(--ink-primary)]',
                       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
                       align === 'right' && 'flex-row-reverse',
                     )}

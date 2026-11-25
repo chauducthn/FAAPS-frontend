@@ -4,6 +4,7 @@ import { cn } from '@/shared/lib/utils';
 
 export interface PortalNavItem {
   label: string;
+  description?: string;
   to?: string;
   icon: LucideIcon;
   end?: boolean;

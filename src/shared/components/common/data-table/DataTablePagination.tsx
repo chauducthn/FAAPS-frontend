@@ -41,7 +41,7 @@ export function DataTablePagination({
   onNextPage,
 }: DataTablePaginationProps) {
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200 px-1 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
       <p className="text-[13px] text-slate-500">
         {totalRows === 0 ? 'No rows' : `Showing ${firstRow}–${lastRow} of ${totalRows} rows`}
       </p>
@@ -126,35 +126,35 @@ export function DataTableBulkBar<TData>({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-5">
-      <div
-        role="region"
-        aria-label="Bulk actions"
-        className={cn(
-          'pointer-events-auto flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white py-3 pl-4 pr-3',
-          'shadow-[0_12px_32px_rgba(20,32,51,0.14)]',
-          'animate-in slide-in-from-bottom-4 fade-in duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]',
-        )}
-      >
-        <span className="rounded-full bg-[var(--brand)] px-2.5 py-1 text-xs font-bold text-white">
+    <div
+      role="region"
+      aria-label="Bulk actions"
+      className={cn(
+        'flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5',
+        'animate-in fade-in duration-150',
+      )}
+    >
+      <div className="flex items-center gap-2">
+        <span className="rounded-md bg-[var(--brand)] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
           {selectedCount} row{selectedCount === 1 ? '' : 's'} selected
         </span>
-        {bulkActions ? (
-          <div className="flex flex-wrap items-center gap-2">{bulkActions(selectedRows)}</div>
-        ) : null}
         <button
           type="button"
           onClick={onClearSelection}
           aria-label="Clear selection"
           className={cn(
-            'inline-flex size-7 items-center justify-center rounded-md text-slate-400',
-            'transition-colors hover:bg-slate-100 hover:text-slate-700',
+            'inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-600',
+            'transition-colors hover:bg-orange-100/80 hover:text-slate-900',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
           )}
         >
-          <X className="size-4" aria-hidden />
+          <X className="size-3.5" aria-hidden />
+          Clear
         </button>
       </div>
+      {bulkActions ? (
+        <div className="flex flex-wrap items-center gap-2">{bulkActions(selectedRows)}</div>
+      ) : null}
     </div>
   );
 }

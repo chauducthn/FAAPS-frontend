@@ -1,12 +1,16 @@
-// The three-dot menu of one account row.
-//
-// It lists what the admin can do with this single account: open the details,
-// jump to the advisor assignments, change the role, reset the password or
-// suspend the account.
+// The three-dot action menu of one account row.
 
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreHorizontal } from 'lucide-react';
+import {
+  ArrowLeftRight,
+  Briefcase,
+  CheckCircle2,
+  Eye,
+  KeyRound,
+  MoreHorizontal,
+  ShieldOff,
+} from 'lucide-react';
 import { cn } from '../../../shared/lib/utils';
 import { canResetPassword, NO_PASSWORD_REASON } from '../utils/passwordReset';
 import type { AdminUserSummary } from '../types/admin';
@@ -44,9 +48,9 @@ export function UserRowMenu({
     if (!rect) return;
     const right = window.innerWidth - rect.right;
     setPos(
-      window.innerHeight - rect.bottom < 180
-        ? { bottom: window.innerHeight - rect.top + 4, right }
-        : { top: rect.bottom + 4, right },
+      window.innerHeight - rect.bottom < 210
+        ? { bottom: window.innerHeight - rect.top + 6, right }
+        : { top: rect.bottom + 6, right },
     );
     setOpen(true);
   };
@@ -72,11 +76,9 @@ export function UserRowMenu({
   }, [open]);
 
   const suspended = user.status === 'SUSPENDED';
-  // A Google-only account has no local password, so there is nothing to reset.
-  // When the backend does not tell us either way, we let the request through:
-  // the backend answers SKIPPED for an account it cannot reset.
   const canReset = canResetPassword(user);
-  const item = 'block w-full px-3 py-2 text-left text-xs font-semibold hover:bg-gray-50';
+  const item =
+    'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium transition-colors hover:bg-gray-100/80';
   const action = (handler: () => void) => {
     setOpen(false);
     handler();
@@ -91,7 +93,7 @@ export function UserRowMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={toggle}
-        className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
       >
         <MoreHorizontal className="size-4" />
       </button>
@@ -102,45 +104,63 @@ export function UserRowMenu({
             ref={menuRef}
             role="menu"
             style={{ position: 'fixed', top: pos.top, bottom: pos.bottom, right: pos.right }}
-            className="z-[60] w-52 overflow-hidden rounded-lg border border-gray-200 bg-white p-1 shadow-xl"
+            className="z-[60] w-52 rounded-xl border border-gray-200/80 bg-white p-1.5 shadow-lg ring-1 ring-black/5"
           >
             <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onView)}>
+              <Eye className="size-4 text-gray-400" aria-hidden />
               View details
             </button>
             {onAssignments && (
               <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onAssignments)}>
+                <Briefcase className="size-4 text-gray-400" aria-hidden />
                 View assignments
               </button>
             )}
             <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onRole)}>
+              <ArrowLeftRight className="size-4 text-gray-400" aria-hidden />
               Set role: {user.role === 'STUDENT' ? 'Advisor' : 'Student'}
             </button>
             {canReset ? (
               <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onResetPassword)}>
+                <KeyRound className="size-4 text-gray-400" aria-hidden />
                 Reset password
               </button>
             ) : (
-              // A disabled button cannot hold a tooltip, so the reason sits in the title.
               <button
                 role="menuitem"
                 disabled
                 title={NO_PASSWORD_REASON}
                 aria-label={`Reset password (unavailable: ${NO_PASSWORD_REASON})`}
-                className={cn(item, 'cursor-not-allowed text-gray-400')}
+                className={cn(item, 'cursor-not-allowed text-gray-400 hover:bg-transparent')}
               >
+                <KeyRound className="size-4 text-gray-300" aria-hidden />
                 Reset password
               </button>
             )}
             {(user.status === 'ACTIVE' || suspended) && (
-              <button
-                role="menuitem"
-                disabled={isSelf && !suspended}
-                title={isSelf && !suspended ? 'You cannot suspend your own account' : undefined}
-                className={cn(item, suspended ? 'text-[#047857]' : 'text-[#b91c1c]', 'disabled:opacity-40')}
-                onClick={() => action(onToggle)}
-              >
-                {suspended ? 'Activate account' : 'Suspend account'}
-              </button>
+              <>
+                <div className="my-1 border-t border-gray-100" role="separator" />
+                <button
+                  role="menuitem"
+                  disabled={isSelf && !suspended}
+                  title={isSelf && !suspended ? 'You cannot suspend your own account' : undefined}
+                  className={cn(
+                    item,
+                    suspended
+                      ? 'text-emerald-700 hover:bg-emerald-50'
+                      : 'text-red-600 hover:bg-red-50',
+                    'disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent',
+                  )}
+                  onClick={() => action(onToggle)}
+                >
+                  {suspended ? (
+                    <CheckCircle2 className="size-4" aria-hidden />
+                  ) : (
+                    <ShieldOff className="size-4" aria-hidden />
+                  )}
+                  {suspended ? 'Activate account' : 'Suspend account'}
+                </button>
+              </>
             )}
           </div>,
           document.body,

@@ -157,10 +157,10 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit user' : 'Create user'} className="max-w-2xl">
+    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit user' : 'Create user'} className="max-w-xl">
       <form noValidate onSubmit={submit} className="flex min-h-0 flex-col">
         <CreateUserModalHeader isEdit={isEdit} role={role} onClose={onClose} />
-        <div className="space-y-4 overflow-y-auto px-6 py-5 text-[13px]">
+        <div className="space-y-5 overflow-y-auto px-6 py-5">
           <CreateUserAccountSection role={role} emailError={emailError} register={register} errors={errors} onChangeRole={changeRole} />
           <CreateUserProfileSection
             role={role}

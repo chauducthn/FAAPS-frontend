@@ -84,6 +84,12 @@ export function DataTable<TData extends RowData, TValue = unknown>(
         {filters ? <div className="flex flex-wrap items-center gap-3">{filters}</div> : null}
       </div>
 
+      <DataTableBulkBar
+        selectedRows={selectedRows}
+        bulkActions={bulkActions}
+        onClearSelection={() => table.resetRowSelection()}
+      />
+
       <TableShell>
         <DataTableHeader
           headerGroups={table.getHeaderGroups()}
@@ -121,12 +127,6 @@ export function DataTable<TData extends RowData, TValue = unknown>(
         onPageIndexChange={(index) => table.setPageIndex(index)}
         onPreviousPage={() => table.previousPage()}
         onNextPage={() => table.nextPage()}
-      />
-
-      <DataTableBulkBar
-        selectedRows={selectedRows}
-        bulkActions={bulkActions}
-        onClearSelection={() => table.resetRowSelection()}
       />
     </div>
   );

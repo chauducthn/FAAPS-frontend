@@ -9,7 +9,7 @@ import type { AdminUserRole, AdminUserStatus, AdminUserSummary, UserSort } from 
 
 export const USER_PAGE_SIZE = 10;
 export const USER_ROLES: AdminUserRole[] = ['STUDENT', 'ADVISOR'];
-export const USER_STATUSES: AdminUserStatus[] = ['ACTIVE', 'SUSPENDED', 'LOCKED', 'INACTIVE'];
+export const USER_STATUSES: AdminUserStatus[] = ['ACTIVE', 'SUSPENDED'];
 export const USER_ROLE_LABEL: Record<AdminUserRole, string> = {
   STUDENT: 'Student',
   ADVISOR: 'Advisor',
@@ -35,9 +35,11 @@ export function createUserAccountColumns(handlers: {
       accessorKey: 'fullName',
       header: 'Full Name',
       cell: ({ row }) => (
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex max-w-[220px] min-w-0 items-center gap-2.5">
           <UserInitials name={row.original.fullName} />
-          <span className="truncate font-semibold text-gray-900">{row.original.fullName}</span>
+          <span title={row.original.fullName} className="truncate font-semibold text-gray-900">
+            {row.original.fullName}
+          </span>
         </div>
       ),
     },
@@ -46,7 +48,10 @@ export function createUserAccountColumns(handlers: {
       header: 'Identifier',
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="inline-flex items-center rounded-md bg-gray-900 px-2 py-0.5 font-mono text-[11px] font-bold text-white">
+        <span
+          title={row.original.userId}
+          className="inline-block max-w-[220px] truncate rounded-md bg-gray-100 px-2 py-0.5 align-middle font-mono text-xs font-medium text-gray-700"
+        >
           {row.original.userId}
         </span>
       ),
@@ -55,7 +60,11 @@ export function createUserAccountColumns(handlers: {
       accessorKey: 'email',
       header: 'Email',
       enableSorting: false,
-      cell: ({ row }) => <span className="text-[#555f6f]">{row.original.email}</span>,
+      cell: ({ row }) => (
+        <span title={row.original.email} className="block max-w-[230px] truncate text-[#555f6f]">
+          {row.original.email}
+        </span>
+      ),
     },
     {
       accessorKey: 'role',

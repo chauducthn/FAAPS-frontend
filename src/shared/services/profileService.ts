@@ -1,6 +1,11 @@
 import { apiClient } from '@/shared/lib/apiClient';
 import { getCsrfHeaders } from '@/shared/lib/csrf';
 
+/**
+ * The identity fields of the signed-in user. This is the single source of truth for the name, phone, email and
+ * account metadata of every role — the role-specific endpoints only add the data that is unique to that role
+ * (a student curriculum, an advisor specialty).
+ */
 export interface UserProfileDto {
   id: string;
   email: string;

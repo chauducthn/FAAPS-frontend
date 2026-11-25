@@ -14,7 +14,7 @@ interface PersonalInfoFormProps {
   initialValues: PersonalInfoValues;
   showSpecialization?: boolean;
   isSaving?: boolean;
-  onSave: (values: PersonalInfoValues) => Promise<void> | void;
+  onSave: (values: PersonalInfoValues) => void;
 }
 
 function formatDob(value?: string | null): string {
@@ -127,26 +127,26 @@ export function PersonalInfoForm({
             </p>
           </div>
 
-          {showSpecialization ? (
-            <label className="block text-xs font-semibold text-slate-700">
-              Specialty
-              <input
-                value={specialization}
-                onChange={(event) => setSpecialization(event.target.value)}
-                maxLength={120}
-                placeholder="e.g. Software Engineering"
-                className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-900 outline-none focus:border-[var(--brand)]"
-              />
-            </label>
-          ) : (
-            <div>
-              <p className="text-xs font-semibold text-slate-700">Date of birth</p>
-              <p className="mt-1.5 flex h-10 items-center rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600">
-                {formatDob(dateOfBirth)}
-              </p>
-            </div>
-          )}
+          <div>
+            <p className="text-xs font-semibold text-slate-700">Date of birth</p>
+            <p className="mt-1.5 flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600">
+              {formatDob(dateOfBirth)}
+            </p>
+          </div>
         </div>
+
+        {showSpecialization && (
+          <label className="block text-xs font-semibold text-slate-700">
+            Specialty
+            <input
+              value={specialization}
+              onChange={(event) => setSpecialization(event.target.value)}
+              maxLength={120}
+              placeholder="e.g. Software Engineering"
+              className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm text-slate-900 outline-none focus:border-[var(--brand)]"
+            />
+          </label>
+        )}
 
         <div className="flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
           <button

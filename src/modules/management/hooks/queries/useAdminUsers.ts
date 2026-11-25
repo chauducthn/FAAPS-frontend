@@ -35,11 +35,18 @@ export const useCohortOptions = () =>
     staleTime: 5 * 60_000,
   });
 
-/** Total accounts for one role, used by the tab counters. */
+/** Total accounts for one role, used by the stat counters. */
 export const useRoleCount = (role: AdminUserRole) =>
   useQuery({
     queryKey: ['admin', 'users', 'count', role],
     queryFn: async () => (await adminService.getUsers({ role, page: 0, size: 1 })).totalElements,
+  });
+
+/** Total accounts for one status, used by the stat counters. */
+export const useStatusCount = (status: AdminUserStatus) =>
+  useQuery({
+    queryKey: ['admin', 'users', 'count', 'status', status],
+    queryFn: async () => (await adminService.getUsers({ status, page: 0, size: 1 })).totalElements,
   });
 
 export const useAdminUser = (id: string | null) =>
