@@ -1,8 +1,9 @@
 // Import XLSX — Preview & Confirm modal.
 import { AlertTriangle, CheckCircle2, FileSpreadsheet, Upload, X } from 'lucide-react';
 import { Modal } from '../../../../shared/components/ui/Modal';
+import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
 import { cn } from '@/shared/lib/utils';
-import type { CurriculumImportPreview } from '../../../academic/types/curriculum';
+import type { CurriculumImportPreview, CurriculumImportPreviewRow } from '../../../academic/types/curriculum';
 
 interface Props {
   open: boolean;
@@ -13,9 +14,58 @@ interface Props {
   onConfirm: () => void;
 }
 
+const columns: StaticColumn<CurriculumImportPreviewRow>[] = [
+  {
+    key: 'rowNumber',
+    header: 'Row',
+    render: (row) => <span className="tabular-nums">{row.rowNumber}</span>,
+    cellClassName: 'text-[var(--ink-muted)]',
+  },
+  {
+    key: 'courseCode',
+    header: 'Course code',
+    render: (row) => (
+      <span className={row.errors.length > 0 ? 'font-mono font-bold text-red-700' : 'font-mono font-bold'}>
+        {row.courseCode}
+      </span>
+    ),
+  },
+  {
+    key: 'semesterNumber',
+    header: 'Semester',
+    align: 'center',
+    render: (row) =>
+      row.errors.length > 0 ? (
+        <span className="text-[var(--ink-muted)]">Sem {row.semesterNumber}</span>
+      ) : (
+        <span className="rounded-md bg-[var(--brand-soft)] px-2 py-0.5 font-bold text-[var(--brand-ink)]">
+          Sem {row.semesterNumber}
+        </span>
+      ),
+  },
+  {
+    key: 'result',
+    header: 'Result',
+    render: (row) =>
+      row.errors.length === 0 ? (
+        <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
+          <CheckCircle2 className="size-3.5" /> Ready
+        </span>
+      ) : (
+        <span className="flex flex-col gap-0.5">
+          {row.errors.map((error) => (
+            <span key={error} className="flex items-start gap-1 text-[11px] font-medium text-red-600">
+              <AlertTriangle className="mt-0.5 size-3 shrink-0" /> {error}
+            </span>
+          ))}
+        </span>
+      ),
+  },
+];
+
 export default function ImportPreviewModal({ open, fileName, preview, isConfirming, onClose, onConfirm }: Props) {
   const validRows = preview?.items.filter((r) => r.errors.length === 0) ?? [];
-  const errorRows = preview?.items.filter((r) => r.errors.length > 0) ?? [];
+  const rows = preview?.items ?? [];
 
   return (
     <Modal open={open} onClose={onClose} title="Preview XLSX import" className="max-w-3xl">
@@ -64,48 +114,13 @@ export default function ImportPreviewModal({ open, fileName, preview, isConfirmi
 
           <div className="max-h-[46vh] overflow-y-auto px-6 py-4">
             <div className="overflow-hidden rounded-xl border border-gray-200">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-gray-50 text-[10px] font-bold uppercase tracking-wide text-gray-500">
-                    <th className="px-3 py-2.5">Row</th>
-                    <th className="px-3 py-2.5">Course code</th>
-                    <th className="px-3 py-2.5 text-center">Semester</th>
-                    <th className="px-3 py-2.5">Result</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {validRows.map((row) => (
-                    <tr key={row.rowNumber} className="bg-white">
-                      <td className="px-3 py-2.5 tabular-nums text-gray-500">{row.rowNumber}</td>
-                      <td className="px-3 py-2.5 font-mono font-bold text-gray-900">{row.courseCode}</td>
-                      <td className="px-3 py-2.5 text-center">
-                        <span className="rounded-md bg-orange-50 px-2 py-0.5 font-bold text-[#C2410C]">
-                          Sem {row.semesterNumber}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
-                          <CheckCircle2 className="size-3.5" /> Ready
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                  {errorRows.map((row) => (
-                    <tr key={row.rowNumber} className="bg-red-50/50">
-                      <td className="px-3 py-2.5 tabular-nums text-gray-500">{row.rowNumber}</td>
-                      <td className="px-3 py-2.5 font-mono font-bold text-red-700">{row.courseCode}</td>
-                      <td className="px-3 py-2.5 text-center text-gray-500">Sem {row.semesterNumber}</td>
-                      <td className="px-3 py-2.5">
-                        {row.errors.map((e) => (
-                          <p key={e} className="flex items-start gap-1 text-[11px] font-medium text-red-600">
-                            <AlertTriangle className="mt-0.5 size-3 shrink-0" /> {e}
-                          </p>
-                        ))}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <StaticTable
+                columns={columns}
+                rows={rows}
+                rowKey={(row) => String(row.rowNumber)}
+                emptyTitle="No rows to import"
+                emptyDescription="The spreadsheet did not contain any curriculum row."
+              />
             </div>
           </div>
         </>
@@ -119,7 +134,11 @@ export default function ImportPreviewModal({ open, fileName, preview, isConfirmi
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+            className={cn(
+                'rounded-lg border border-gray-200 bg-white px-4 py-2',
+                'text-xs font-semibold text-gray-700',
+                'transition-colors hover:bg-gray-50'
+              )}
           >
             Cancel
           </button>
@@ -128,7 +147,9 @@ export default function ImportPreviewModal({ open, fileName, preview, isConfirmi
             disabled={!preview || validRows.length === 0 || isConfirming}
             onClick={onConfirm}
             className={cn(
-              'inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-xs font-bold text-white shadow-[0_1px_2px_rgba(242,111,33,0.4)] transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60',
+              'inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-xs font-bold text-white',
+              'shadow-[0_1px_2px_rgba(242,111,33,0.4)] transition-colors hover:bg-[#e05f14]',
+              'disabled:cursor-not-allowed disabled:opacity-60',
             )}
           >
             <Upload className="size-3.5" />

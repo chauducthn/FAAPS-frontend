@@ -9,9 +9,6 @@ export const REPORT_TABS: { value: AiReportStatus | ''; label: string }[] = [
   { value: 'DISMISSED', label: 'Dismissed' },
 ];
 
-export const REPORT_TH_CLASS =
-  'px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]';
-
 /** Human-readable labels for AI report reason enum codes returned by the backend. */
 export const REASON_LABEL: Record<string, string> = {
   HALLUCINATION: 'Hallucination',

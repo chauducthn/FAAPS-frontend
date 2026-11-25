@@ -2,6 +2,7 @@
 
 import { BookMarked, Layers } from 'lucide-react';
 import { Pagination } from '../../../management/components/Pagination';
+import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
 import type { LookupCourse } from '../../types/academic-lookup';
 import { cn } from '@/shared/lib/utils';
 
@@ -36,6 +37,76 @@ export function CoursesLookupView({
   onOpenCourse,
   onRetry,
 }: CoursesViewProps) {
+  const columns: StaticColumn<LookupCourse>[] = [
+    {
+      key: 'code',
+      header: 'Code',
+      render: (course) => (
+        <span className="inline-flex items-center rounded-lg bg-[var(--surface-sunken)] px-2 py-0.5 text-xs font-bold">
+          {course.code}
+        </span>
+      ),
+    },
+    {
+      key: 'name',
+      header: 'Course',
+      render: (course) => (
+        <span className="block max-w-64">
+          <button
+            type="button"
+            onClick={() => onOpenCourse(course)}
+            className="block max-w-full truncate text-left text-[15px] font-bold hover:text-[var(--brand)] hover:underline"
+          >
+            {course.name}
+          </button>
+          <span className="mt-0.5 line-clamp-1 block text-sm font-medium text-[var(--ink-muted)]">
+            {course.description}
+          </span>
+        </span>
+      ),
+    },
+    {
+      key: 'category',
+      header: 'Category',
+      render: (course) => (
+        <span
+          className={cn(
+            'inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold ring-1 ring-inset',
+            CATEGORY_TONE[course.category] ?? 'bg-slate-100 text-slate-700 ring-slate-200',
+          )}
+        >
+          {course.category}
+        </span>
+      ),
+    },
+    {
+      key: 'credits',
+      header: 'Credits',
+      align: 'right',
+      render: (course) => <span className="font-bold tabular-nums">{course.credits}</span>,
+    },
+    {
+      key: 'detail',
+      header: 'Detail',
+      align: 'right',
+      render: (course) => (
+        <button
+          type="button"
+          onClick={() => onOpenCourse(course)}
+          className={cn(
+              'inline-flex h-11 items-center gap-1.5',
+              'whitespace-nowrap rounded-xl bg-[var(--brand)] px-4',
+              'text-sm font-bold text-white shadow-sm',
+              'transition-colors hover:bg-[var(--brand-hover)]'
+            )}
+        >
+          <Layers className="size-4" aria-hidden />
+          Syllabus
+        </button>
+      ),
+    },
+  ];
+
   return (
     <>
       {isLoading ? (
@@ -53,70 +124,14 @@ export function CoursesLookupView({
         </div>
       ) : (
         <div className="w-full overflow-x-auto rounded-2xl border border-slate-200">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="bg-slate-50">
-                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Code</th>
-                <th scope="col" className="px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Course</th>
-                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Category</th>
-                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Credits</th>
-                <th scope="col" className="whitespace-nowrap px-6 py-4 text-right text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Detail</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {rows.length === 0 ? (
-                <tr>
-                  <td colSpan={5}>
-                    <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
-                      <span className="flex size-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600">
-                        <BookMarked className="size-5" aria-hidden />
-                      </span>
-                      <p className="text-base font-bold text-slate-900">No courses match your filters.</p>
-                      <p className="text-sm font-medium text-slate-600">Try a different keyword or category.</p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                rows.map((c) => (
-                  <tr key={c.id} className="bg-white transition-colors hover:bg-slate-50/70">
-                    <td className="px-6 py-5">
-                      <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700">
-                        {c.code}
-                      </span>
-                    </td>
-                    <td className="max-w-64 px-6 py-5">
-                      <button
-                        type="button"
-                        onClick={() => onOpenCourse(c)}
-                        className="block max-w-full truncate text-left text-[15px] font-bold text-slate-900 hover:text-[#F26F21] hover:underline"
-                      >
-                        {c.name}
-                      </button>
-                      <p className="mt-0.5 line-clamp-1 text-sm font-medium text-slate-600">{c.description}</p>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-5">
-                      <span className={cn('inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ring-1 ring-inset', CATEGORY_TONE[c.category] ?? 'bg-slate-100 text-slate-700 ring-slate-200')}>
-                        {c.category}
-                      </span>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-5 text-sm font-bold tabular-nums text-slate-900">{c.credits}</td>
-                    <td className="px-6 py-5">
-                      <div className="flex justify-end">
-                        <button
-                          type="button"
-                          onClick={() => onOpenCourse(c)}
-                          className="inline-flex h-11 items-center gap-1.5 whitespace-nowrap rounded-xl bg-[#F26F21] px-4 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14]"
-                        >
-                          <Layers className="size-4" aria-hidden />
-                          Syllabus
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <StaticTable
+            columns={columns}
+            rows={rows}
+            rowKey={(course) => course.id}
+            emptyTitle="No courses match your filters."
+            emptyDescription="Try a different keyword or category."
+            emptyIcon={<BookMarked className="size-5" aria-hidden />}
+          />
         </div>
       )}
       <div className="mt-5">

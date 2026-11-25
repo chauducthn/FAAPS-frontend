@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { Pagination } from '../../management/components/Pagination';
+import { TableBody, TableHead, TableShell } from '../../../shared/components/common/table/TablePrimitives';
 import { RequestActionModal } from './RequestActionModal';
-import { RequestTableRow, RequestTableState } from './RequestListRow';
+import { RequestTableRow } from './RequestListRow';
+import { RequestTableState } from './RequestTableState';
 import { useAdvisorAdvisingRequests } from '../hooks/queries/useAdvisorQueries';
 import { useUpdateAdvisingRequestStatus } from '../hooks/mutations/useAdvisingMutations';
 import type { AdvisingRequest, AdvisingRequestStatus } from '../types/advising';
@@ -115,18 +117,20 @@ export function RequestListTable({ search = '' }: { search?: string }) {
         </div>
 
         <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-          <table className="w-full border-collapse text-left">
+          <TableShell>
             <thead>
-              <tr className="bg-slate-50">
-                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Student</th>
-                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Type</th>
-                <th scope="col" className="px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Title</th>
-                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Submitted</th>
-                <th scope="col" className="whitespace-nowrap px-6 py-4 text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Status</th>
-                <th scope="col" className="whitespace-nowrap px-6 py-4 text-right text-xs font-bold uppercase tracking-[0.06em] text-slate-700">Actions</th>
+              <tr>
+                <TableHead className="whitespace-nowrap">Student</TableHead>
+                <TableHead className="whitespace-nowrap">Type</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead className="whitespace-nowrap">Submitted</TableHead>
+                <TableHead className="whitespace-nowrap">Status</TableHead>
+                <TableHead align="right" className="whitespace-nowrap">
+                  Actions
+                </TableHead>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <TableBody>
               {isLoading || (isError && !data) || rows.length === 0 ? (
                 <RequestTableState
                   cols={6}
@@ -154,8 +158,8 @@ export function RequestListTable({ search = '' }: { search?: string }) {
                   />
                 ))
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </TableShell>
         </div>
 
         <div className="mt-5">

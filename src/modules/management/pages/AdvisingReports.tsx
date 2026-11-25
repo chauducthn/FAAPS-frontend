@@ -3,7 +3,51 @@ import { useQuery } from '@tanstack/react-query';
 import { BarChart3, Download, Mail, ShieldAlert, Users, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiMessage } from '@/shared/lib/apiMessage';
-import { advisingReportService } from '../services/advising-report.service';
+import { StaticTable, type StaticColumn } from '../../../shared/components/common/table/StaticTable';
+import { cn } from '@/shared/lib/utils';
+import {
+  advisingReportService,
+  type AdvisorEffectivenessRow,
+} from '../services/advising-report.service';
+
+const advisorEffectivenessColumns: StaticColumn<AdvisorEffectivenessRow>[] = [
+  {
+    key: 'advisor',
+    header: 'Advisor',
+    render: (row) => (
+      <span className="font-semibold text-[var(--ink-primary)]">
+        {row.fullName}
+        <span className="block text-xs font-normal text-[var(--ink-muted)]">{row.email}</span>
+      </span>
+    ),
+  },
+  {
+    key: 'assignedStudents',
+    header: 'Assigned Students',
+    align: 'right',
+    render: (row) => <span>{row.assignedStudents}</span>,
+  },
+  {
+    key: 'completedSessions',
+    header: 'Completed Sessions',
+    align: 'right',
+    render: (row) => (
+      <span className="font-semibold text-emerald-700">{row.completedSessions}</span>
+    ),
+  },
+  {
+    key: 'emailOutreaches',
+    header: 'Email Outreaches',
+    align: 'right',
+    render: (row) => <span>{row.emailOutreaches}</span>,
+  },
+  {
+    key: 'pendingRequests',
+    header: 'Pending Requests',
+    align: 'right',
+    render: (row) => <span>{row.pendingRequests}</span>,
+  },
+];
 
 export default function AdvisingReports() {
   const [semesterId, setSemesterId] = useState<string>('');
@@ -54,7 +98,11 @@ export default function AdvisingReports() {
             aria-label="Filter by semester"
             value={semesterId}
             onChange={(event) => setSemesterId(event.target.value)}
-            className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-800 outline-none focus:border-[var(--brand)]"
+            className={cn(
+                'h-10 rounded-lg border border-slate-200 bg-white',
+                'px-3 text-sm font-medium text-slate-800 outline-none',
+                'focus:border-[var(--brand)]'
+              )}
           >
             <option value="">All Semesters</option>
             {(semestersQuery.data ?? []).map((sem) => (
@@ -67,7 +115,11 @@ export default function AdvisingReports() {
           <button
             type="button"
             onClick={handleExport}
-            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[var(--brand)] px-4 text-sm font-bold text-white hover:bg-[var(--brand-hover)]"
+            className={cn(
+                'inline-flex h-10 items-center gap-2 rounded-lg',
+                'bg-[var(--brand)] px-4 text-sm font-bold text-white',
+                'hover:bg-[var(--brand-hover)]'
+              )}
           >
             <Download className="size-4" />
             Export CSV
@@ -122,40 +174,14 @@ export default function AdvisingReports() {
           <Users className="size-4 text-[var(--brand)]" />
           <h2 className="text-base font-bold text-slate-900">Advisor Effectiveness Breakdown</h2>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-500">
-              <tr>
-                <th className="px-6 py-3">Advisor</th>
-                <th className="px-4 py-3 text-right">Assigned Students</th>
-                <th className="px-4 py-3 text-right">Completed Sessions</th>
-                <th className="px-4 py-3 text-right">Email Outreaches</th>
-                <th className="px-6 py-3 text-right">Pending Requests</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {(advisorsQuery.data ?? []).map((row) => (
-                <tr key={row.advisorId} className="hover:bg-slate-50/60">
-                  <td className="px-6 py-3">
-                    <p className="font-semibold text-slate-900">{row.fullName}</p>
-                    <p className="text-xs text-slate-500">{row.email}</p>
-                  </td>
-                  <td className="px-4 py-3 text-right tabular-nums">{row.assignedStudents}</td>
-                  <td className="px-4 py-3 text-right font-semibold tabular-nums text-emerald-700">{row.completedSessions}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">{row.emailOutreaches}</td>
-                  <td className="px-6 py-3 text-right tabular-nums">{row.pendingRequests}</td>
-                </tr>
-              ))}
-              {!advisorsQuery.isLoading && (advisorsQuery.data ?? []).length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-sm text-slate-500">
-                    No advisor activity recorded for this semester yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <StaticTable
+          columns={advisorEffectivenessColumns}
+          rows={advisorsQuery.data ?? []}
+          rowKey={(row) => row.advisorId}
+          loading={advisorsQuery.isLoading}
+          error={advisorsQuery.isError ? 'Could not load the advisor breakdown.' : undefined}
+          emptyTitle="No advisor activity recorded for this semester yet."
+        />
       </section>
     </div>
   );

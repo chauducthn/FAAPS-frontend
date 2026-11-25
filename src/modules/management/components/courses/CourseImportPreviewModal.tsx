@@ -3,8 +3,9 @@
 // badge valid/error, bảng preview, footer confirm.
 import { AlertTriangle, CheckCircle2, FileSpreadsheet, Upload, X } from 'lucide-react';
 import { Modal } from '../../../../shared/components/ui/Modal';
+import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
 import { cn } from '@/shared/lib/utils';
-import type { CourseImportPreview } from '../../../academic/types/course';
+import type { CourseImportPreview, CourseImportRow } from '../../../academic/types/course';
 
 interface Props {
   open: boolean;
@@ -16,15 +17,77 @@ interface Props {
   onConfirm: () => void;
 }
 
+const columns: StaticColumn<CourseImportRow>[] = [
+  {
+    key: 'rowNumber',
+    header: 'Row',
+    render: (row) => <span className="tabular-nums">{row.rowNumber}</span>,
+    cellClassName: 'text-[var(--ink-muted)]',
+  },
+  {
+    key: 'code',
+    header: 'Code',
+    render: (row) => (
+      <span className={row.errors.length > 0 ? 'font-mono font-bold text-red-700' : 'font-mono font-bold'}>
+        {row.code || '—'}
+      </span>
+    ),
+  },
+  {
+    key: 'name',
+    header: 'Course name',
+    render: (row) => (
+      <span className="block max-w-[220px] truncate" title={row.name}>
+        {row.name || '—'}
+      </span>
+    ),
+  },
+  {
+    key: 'credits',
+    header: 'Credits',
+    align: 'center',
+    render: (row) =>
+      row.errors.length > 0 ? (
+        <span className="text-[var(--ink-muted)]">{row.credits}</span>
+      ) : (
+        <span className="rounded-md bg-[var(--brand-soft)] px-2 py-0.5 font-bold tabular-nums text-[var(--brand-ink)]">
+          {row.credits}
+        </span>
+      ),
+  },
+  {
+    key: 'result',
+    header: 'Result',
+    render: (row) =>
+      row.errors.length === 0 ? (
+        <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
+          <CheckCircle2 className="size-3.5" /> Ready
+        </span>
+      ) : (
+        <span className="flex flex-col gap-0.5">
+          {row.errors.map((error) => (
+            <span key={error} className="flex items-start gap-1 text-[11px] font-medium text-red-600">
+              <AlertTriangle className="mt-0.5 size-3 shrink-0" /> {error}
+            </span>
+          ))}
+        </span>
+      ),
+  },
+];
+
 export default function CourseImportPreviewModal({ open, fileName, preview, isConfirming, isReading, onClose, onConfirm }: Props) {
   const validRows = preview?.items.filter((r) => r.errors.length === 0) ?? [];
-  const errorRows = preview?.items.filter((r) => r.errors.length > 0) ?? [];
+  const rows = preview?.items ?? [];
 
   return (
     <Modal open={open} onClose={onClose} title="Preview course import" className="max-w-3xl">
       <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-[var(--brand-soft)] px-6 py-5">
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
+          <span className={cn(
+              'flex size-10 shrink-0 items-center justify-center',
+              'rounded-xl bg-[var(--brand)] text-white',
+              'shadow-[0_2px_8px_rgba(242,111,33,0.4)]'
+            )}>
             <FileSpreadsheet className="size-5" />
           </span>
           <div className="min-w-0">
@@ -54,10 +117,18 @@ export default function CourseImportPreviewModal({ open, fileName, preview, isCo
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2 px-6 pt-4">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200">
+            <span className={cn(
+                'inline-flex items-center gap-1.5 rounded-full',
+                'bg-emerald-50 px-3 py-1 text-[11px] font-bold',
+                'text-emerald-700 ring-1 ring-emerald-200'
+              )}>
               <CheckCircle2 className="size-3.5" /> {preview.validRows} valid
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-[11px] font-bold text-red-700 ring-1 ring-red-200">
+            <span className={cn(
+                'inline-flex items-center gap-1.5 rounded-full',
+                'bg-red-50 px-3 py-1 text-[11px] font-bold',
+                'text-red-700 ring-1 ring-red-200'
+              )}>
               <AlertTriangle className="size-3.5" /> {preview.errorRows} error
             </span>
             <span className="ml-auto text-[11px] text-gray-500">
@@ -67,49 +138,13 @@ export default function CourseImportPreviewModal({ open, fileName, preview, isCo
 
           <div className="max-h-[46vh] overflow-y-auto px-6 py-4">
             <div className="overflow-hidden rounded-xl border border-gray-200">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-gray-50 text-[10px] font-bold uppercase tracking-wide text-gray-500">
-                    <th className="px-3 py-2.5">Row</th>
-                    <th className="px-3 py-2.5">Code</th>
-                    <th className="px-3 py-2.5">Course name</th>
-                    <th className="px-3 py-2.5 text-center">Credits</th>
-                    <th className="px-3 py-2.5">Result</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {validRows.map((row) => (
-                    <tr key={row.rowNumber} className="bg-white">
-                      <td className="px-3 py-2.5 tabular-nums text-gray-500">{row.rowNumber}</td>
-                      <td className="px-3 py-2.5 font-mono font-bold text-gray-900">{row.code}</td>
-                      <td className="max-w-[220px] truncate px-3 py-2.5 font-medium text-gray-700" title={row.name}>{row.name}</td>
-                      <td className="px-3 py-2.5 text-center">
-                        <span className="rounded-md bg-orange-50 px-2 py-0.5 font-bold tabular-nums text-[#C2410C]">{row.credits}</span>
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
-                          <CheckCircle2 className="size-3.5" /> Ready
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                  {errorRows.map((row) => (
-                    <tr key={row.rowNumber} className="bg-red-50/50">
-                      <td className="px-3 py-2.5 tabular-nums text-gray-500">{row.rowNumber}</td>
-                      <td className="px-3 py-2.5 font-mono font-bold text-red-700">{row.code || '—'}</td>
-                      <td className="max-w-[220px] truncate px-3 py-2.5 text-gray-500" title={row.name}>{row.name || '—'}</td>
-                      <td className="px-3 py-2.5 text-center text-gray-500">{row.credits}</td>
-                      <td className="px-3 py-2.5">
-                        {row.errors.map((e) => (
-                          <p key={e} className="flex items-start gap-1 text-[11px] font-medium text-red-600">
-                            <AlertTriangle className="mt-0.5 size-3 shrink-0" /> {e}
-                          </p>
-                        ))}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <StaticTable
+                columns={columns}
+                rows={rows}
+                rowKey={(row) => String(row.rowNumber)}
+                emptyTitle="No rows to import"
+                emptyDescription="The spreadsheet did not contain any course row."
+              />
             </div>
           </div>
         </>
@@ -123,7 +158,11 @@ export default function CourseImportPreviewModal({ open, fileName, preview, isCo
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50"
+            className={cn(
+                'rounded-xl border border-gray-200 bg-white px-4 py-2',
+                'text-xs font-bold text-gray-600 transition-colors',
+                'hover:bg-gray-50'
+              )}
           >
             Cancel
           </button>
@@ -132,7 +171,9 @@ export default function CourseImportPreviewModal({ open, fileName, preview, isCo
             disabled={!preview || validRows.length === 0 || isConfirming || isReading}
             onClick={onConfirm}
             className={cn(
-              'inline-flex items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2 text-xs font-bold text-white shadow-[0_1px_2px_rgba(242,111,33,0.4)] transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60',
+              'inline-flex items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2 text-xs font-bold text-white',
+              'shadow-[0_1px_2px_rgba(242,111,33,0.4)] transition-colors hover:bg-[#e05f14]',
+              'disabled:cursor-not-allowed disabled:opacity-60',
             )}
           >
             <Upload className="size-3.5" />

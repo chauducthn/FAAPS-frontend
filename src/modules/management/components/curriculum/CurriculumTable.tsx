@@ -1,9 +1,16 @@
 // src/components/management/curriculum/CurriculumTable.tsx
 // List table — FPT orange accent, sticky header, rich empty state handled by parent.
-import { ArrowUpRight } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { StatusBadge } from '../StatusBadge';
+import {
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TableShell,
+} from '../../../../shared/components/common/table/TablePrimitives';
 import { RowActionMenu, type RowAction } from '../RowActionMenu';
+import { CohortCells, CurriculumCells } from './CurriculumTableCells';
 import type { CurriculumItem } from '../../../academic/types/curriculum';
 import type { CurriculumKind } from '../../../academic/hooks/queries/useCurriculumsQuery';
 
@@ -19,149 +26,125 @@ interface Props {
   onSelectPage?: (selected: boolean) => void;
 }
 
-const th = 'px-4 py-3 text-[11px] font-bold uppercase tracking-[0.06em] text-gray-500 whitespace-nowrap';
-
-const MAJOR_TONES: Record<string, string> = {
-  SE: 'bg-orange-100 text-[#9a3412]',
-  IT: 'bg-blue-100 text-blue-800',
-  CE: 'bg-violet-100 text-violet-800',
-  BA: 'bg-emerald-100 text-emerald-800',
-  DS: 'bg-cyan-100 text-cyan-800',
-};
-const majorTone = (code: string) => MAJOR_TONES[code] ?? 'bg-gray-100 text-gray-700';
-
-export default function CurriculumTable({ kind, data, onOpen, onEdit, onToggleStatus, onDelete, selectedIds, onSelect, onSelectPage }: Props) {
+export default function CurriculumTable({
+  kind,
+  data,
+  onOpen,
+  onEdit,
+  onToggleStatus,
+  onDelete,
+  selectedIds,
+  onSelect,
+  onSelectPage,
+}: Props) {
   const isCohort = kind === 'cohort';
   const canSelect = !isCohort && !!selectedIds && !!onSelect && !!onSelectPage;
   const selectedOnPage = data.filter((item) => selectedIds?.has(item.id)).length;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[920px] border-collapse text-left" role="table">
-        <thead className="sticky top-0 z-10">
-          <tr className="border-b border-gray-100 bg-[#fafbfd]">
-            {canSelect && <th className="w-12 px-4 py-3"><input type="checkbox" aria-label="Select all curriculums on this page" checked={data.length > 0 && selectedOnPage === data.length} ref={(node) => { if (node) node.indeterminate = selectedOnPage > 0 && selectedOnPage < data.length; }} onChange={(event) => onSelectPage(event.target.checked)} className="size-4 accent-[#F26F21]" /></th>}
-            {isCohort ? (
-              <>
-                <th className={th}>Cohort</th>
-                <th className={th}>Major</th>
-                <th className={th}>Name</th>
-                <th className={th}>Start</th>
-              </>
-            ) : (
-              <>
-                <th className={th}>Code</th>
-                <th className={th}>Curriculum</th>
-                <th className={th}>Major</th>
-                <th className={th}>Cohort</th>
-              </>
-            )}
-            <th className={cn(th, 'text-center')}>Courses</th>
-            <th className={cn(th, 'text-center')}>Credits</th>
-            <th className={th}>Status</th>
-            {!isCohort && <th className={th}>Start</th>}
-            <th className={cn(th, 'text-right')}>Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100 text-[13px] text-gray-900">
-          {data.map((item) => {
-            const active = item.status === 'ACTIVE';
-            const actions: RowAction[] = [
-              { label: isCohort ? 'View curriculum' : 'Open roadmap', onSelect: () => onOpen(item) },
-              { label: 'Edit details', onSelect: () => onEdit(item) },
-              { label: active ? 'Archive (deactivate)' : 'Publish (activate)', onSelect: () => onToggleStatus(item) },
-              { label: 'Delete', onSelect: () => onDelete(item), danger: true },
-            ];
-            return (
-              <tr key={item.id} className={cn('group transition-colors hover:bg-[#fff7ed]/70', selectedIds?.has(item.id) && 'bg-orange-50/80')}>
-                {canSelect && <td className="px-4 py-3.5"><input type="checkbox" aria-label={`Select ${item.majorCode} ${item.version}`} checked={selectedIds.has(item.id)} onChange={(event) => onSelect(item.id, event.target.checked)} className="size-4 accent-[#F26F21]" /></td>}
-                {isCohort ? (
-                  <>
-                    <td className="px-4 py-3.5">
-                      <span className="inline-flex items-center rounded-lg bg-[#1f2937] px-2.5 py-1 font-mono text-[11px] font-bold text-white">
-                        {item.version}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="flex items-center gap-2">
-                        <span className={cn('flex size-7 items-center justify-center rounded-lg text-[11px] font-black', majorTone(item.majorCode))}>
-                          {item.majorCode.slice(0, 2)}
-                        </span>
-                        <span className="font-medium text-gray-600">{item.majorName}</span>
-                      </span>
-                    </td>
-                    <td className="max-w-[260px] truncate px-4 py-3.5 font-semibold" title={item.name}>{item.name}</td>
-                    <td className="px-4 py-3.5">
-                      <span className="rounded-md bg-gray-100 px-2 py-1 font-mono text-[11px] font-semibold text-gray-700">
-                        {item.effectiveFromSemesterCode}
-                      </span>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td className="px-4 py-3.5">
-                      <button
-                        type="button"
-                        onClick={() => onOpen(item)}
-                        className="inline-flex items-center gap-1 rounded-lg bg-[#fff3e9] px-2.5 py-1 font-mono text-[11px] font-bold text-[#a43e08] ring-1 ring-orange-200 transition-colors hover:bg-[#F26F21] hover:text-white"
-                        title={`Open ${item.majorCode} ${item.version}`}
-                      >
-                        {item.majorCode}_{item.version}
-                        <ArrowUpRight className="size-3 opacity-60" />
-                      </button>
-                    </td>
-                    <td className="max-w-[320px] px-4 py-3.5">
-                      <button type="button" onClick={() => onOpen(item)} className="block max-w-full truncate text-left font-semibold hover:text-[#C2410C] hover:underline">
-                        {item.name}
-                      </button>
-                      {item.isCurrent && (
-                        <span className="mt-1 inline-block rounded-full bg-orange-100 px-2 py-px text-[10px] font-bold text-[#9a3412]">
-                          Current version
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="flex items-center gap-2">
-                        <span className={cn('flex size-7 items-center justify-center rounded-lg text-[11px] font-black', majorTone(item.majorCode))}>
-                          {item.majorCode.slice(0, 2)}
-                        </span>
-                        <span className="whitespace-nowrap font-medium text-gray-600">{item.majorName}</span>
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="rounded-md bg-orange-50 px-2.5 py-1 font-mono text-[11px] font-bold text-[#9a3412] ring-1 ring-orange-200">
-                        {item.version}
-                      </span>
-                    </td>
-                  </>
-                )}
-                <td className="px-4 py-3.5 text-center">
-                  <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-gray-100 px-2.5 py-1 text-[12px] font-bold tabular-nums text-gray-800">
-                    {item.courseCount}
+    <TableShell minWidth="920px">
+      <thead>
+        <tr>
+          {canSelect && (
+            <TableHead className="w-12">
+              <input
+                type="checkbox"
+                aria-label="Select all curriculums on this page"
+                checked={data.length > 0 && selectedOnPage === data.length}
+                ref={(node) => {
+                  if (node) node.indeterminate = selectedOnPage > 0 && selectedOnPage < data.length;
+                }}
+                onChange={(event) => onSelectPage(event.target.checked)}
+                className="size-4 accent-[var(--brand)]"
+              />
+            </TableHead>
+          )}
+          {isCohort ? (
+            <>
+              <TableHead>Cohort</TableHead>
+              <TableHead>Major</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Start</TableHead>
+            </>
+          ) : (
+            <>
+              <TableHead>Code</TableHead>
+              <TableHead>Curriculum</TableHead>
+              <TableHead>Major</TableHead>
+              <TableHead>Cohort</TableHead>
+            </>
+          )}
+          <TableHead align="center">Courses</TableHead>
+          <TableHead align="center">Credits</TableHead>
+          <TableHead>Status</TableHead>
+          {!isCohort && <TableHead>Start</TableHead>}
+          <TableHead align="right">Actions</TableHead>
+        </tr>
+      </thead>
+      <TableBody>
+        {data.map((item) => {
+          const active = item.status === 'ACTIVE';
+          const actions: RowAction[] = [
+            { label: isCohort ? 'View curriculum' : 'Open roadmap', onSelect: () => onOpen(item) },
+            { label: 'Edit details', onSelect: () => onEdit(item) },
+            { label: active ? 'Archive (deactivate)' : 'Publish (activate)', onSelect: () => onToggleStatus(item) },
+            { label: 'Delete', onSelect: () => onDelete(item), danger: true },
+          ];
+          return (
+            <TableRow key={item.id} selected={selectedIds?.has(item.id)}>
+              {canSelect && (
+                <TableCell className="w-12">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${item.majorCode} ${item.version}`}
+                    checked={selectedIds.has(item.id)}
+                    onChange={(event) => onSelect(item.id, event.target.checked)}
+                    className="size-4 accent-[var(--brand)]"
+                  />
+                </TableCell>
+              )}
+              {isCohort ? <CohortCells item={item} /> : <CurriculumCells item={item} onOpen={onOpen} />}
+              <TableCell align="center">
+                <span
+                  className={cn(
+                    'inline-flex min-w-9 items-center justify-center',
+                    'rounded-full bg-[var(--surface-sunken)] px-2.5 py-1',
+                    'text-[12px] font-bold tabular-nums',
+                    'text-[var(--ink-primary)]',
+                  )}
+                >
+                  {item.courseCount}
+                </span>
+              </TableCell>
+              <TableCell align="center">
+                <span className="font-mono text-[13px] font-bold tabular-nums text-[var(--ink-primary)]">
+                  {item.totalCredits}
+                </span>
+                <span className="ml-1 text-[11px] text-[var(--ink-subtle)]">cr</span>
+              </TableCell>
+              <TableCell>
+                <StatusBadge status={item.status} />
+              </TableCell>
+              {!isCohort && (
+                <TableCell>
+                  <span
+                    className={cn(
+                      'rounded-md bg-[var(--surface-sunken)] px-2 py-1',
+                      'font-mono text-[11px] font-semibold',
+                      'text-[var(--ink-secondary)]',
+                    )}
+                  >
+                    {item.effectiveFromSemesterCode}
                   </span>
-                </td>
-                <td className="px-4 py-3.5 text-center">
-                  <span className="font-mono text-[13px] font-bold tabular-nums text-gray-900">{item.totalCredits}</span>
-                  <span className="ml-1 text-[11px] text-gray-400">cr</span>
-                </td>
-                <td className="px-4 py-3.5">
-                  <StatusBadge status={item.status} />
-                </td>
-                {!isCohort && (
-                  <td className="px-4 py-3.5">
-                    <span className="rounded-md bg-gray-100 px-2 py-1 font-mono text-[11px] font-semibold text-gray-700">
-                      {item.effectiveFromSemesterCode}
-                    </span>
-                  </td>
-                )}
-                <td className="px-4 py-3.5 text-right">
-                  <RowActionMenu label={`Actions for ${item.majorCode} ${item.version}`} actions={actions} />
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+                </TableCell>
+              )}
+              <TableCell align="right">
+                <RowActionMenu label={`Actions for ${item.majorCode} ${item.version}`} actions={actions} />
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </TableShell>
   );
 }

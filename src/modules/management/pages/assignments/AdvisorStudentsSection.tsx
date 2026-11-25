@@ -1,10 +1,8 @@
-import { Link } from 'react-router';
 import { Search } from 'lucide-react';
-import { backState } from '../../../../shared/lib/backLink';
 import { Pagination } from '../../components/Pagination';
+import { StaticTable } from '../../../../shared/components/common/table/StaticTable';
 import { cn } from '@/shared/lib/utils';
-
-const th = 'px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]';
+import { buildAdvisorStudentColumns } from './advisorStudentColumns';
 
 export interface AdvisorStudentRow {
   id: string;
@@ -56,6 +54,8 @@ export function AdvisorStudentsSection({
   onUnassignOne: (student: { id: string; name: string }) => void;
   onPageChange: (page: number) => void;
 }) {
+
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -63,7 +63,12 @@ export function AdvisorStudentsSection({
         <p className="text-[13px] text-[#555f6f]">Each student has only one active advisor.</p>
       </div>
       <section className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:p-5">
-        <label className="flex h-[38px] flex-1 items-center gap-2 rounded-lg border border-[#e5e7eb] px-3 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500">
+        <label className={cn(
+            'flex h-[38px] flex-1 items-center gap-2 rounded-lg',
+            'border border-[#e5e7eb] px-3',
+            'focus-within:border-orange-500 focus-within:ring-1',
+            'focus-within:ring-orange-500'
+          )}>
           <Search className="size-4 text-[#98a2b3]" />
           <input
             value={search}
@@ -109,66 +114,21 @@ export function AdvisorStudentsSection({
             </div>
           </div>
         )}
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[620px] text-left">
-            <thead className="bg-[rgba(240,243,255,0.7)]">
-              <tr>
-                <th className="w-12 px-4 py-3.5">
-                  <input type="checkbox" checked={allPageSelected} onChange={onToggleAll} aria-label="Select all students on this page" className="size-4 accent-[#f37021]" />
-                </th>
-                <th className={th}>Student ID</th>
-                <th className={th}>Name</th>
-                <th className={th}>Major</th>
-                <th className={th}>Cohort</th>
-                <th className={th}>Assigned</th>
-                <th className={cn(th, 'text-right')}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageRows.length === 0 ? (
-                <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={7} className="px-4 py-12 text-center text-sm text-[#555f6f]">
-                    {search ? 'No students match your search.' : 'No assigned students.'}
-                  </td>
-                </tr>
-              ) : (
-                pageRows.map((s) => (
-                  <tr key={s.id} className={cn('border-t border-[#e7eefe] hover:bg-gray-50/60', selected.has(s.id) && 'bg-[#fff7ed]/50')}>
-                    <td className="px-4 py-3.5">
-                      <input type="checkbox" checked={selected.has(s.id)} onChange={() => onToggleOne(s.id)} aria-label={`Select ${s.fullName}`} className="size-4 accent-[#f37021]" />
-                    </td>
-                    <td className="px-3 py-3.5 text-[13px] font-semibold text-[#151c27]">{s.studentCode}</td>
-                    <td className="px-3 py-3.5 text-sm font-semibold text-[#151c27]">{s.fullName}</td>
-                    <td className="px-3 py-3.5 text-sm text-[#555f6f]">{s.majorCode}</td>
-                    <td className="px-3 py-3.5 text-sm text-[#555f6f]">{s.cohort}</td>
-                    <td className="px-3 py-3.5 text-[13px] text-[#555f6f]">
-                      {s.assignedDate
-                        ? new Date(`${s.assignedDate}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' })
-                        : '—'}
-                    </td>
-                    <td className="px-3 py-3.5">
-                      <div className="flex justify-end gap-2">
-                        <button type="button" onClick={() => onReassignOne({ id: s.id, name: s.fullName })} className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50">
-                          Reassign
-                        </button>
-                        <button type="button" onClick={() => onUnassignOne({ id: s.id, name: s.fullName })} className="rounded-lg border border-red-300 px-3 py-1.5 text-[13px] font-semibold text-red-700 hover:bg-red-50">
-                          Unassign
-                        </button>
-                        <Link
-                          to={`/admin/assignments/students/${s.id}/history`}
-                          state={backState(`/admin/assignments/advisors/${advisorId}`, `Advisor ${advisorName}`)}
-                          className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50"
-                        >
-                          History
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <StaticTable
+          columns={buildAdvisorStudentColumns({ advisorId, advisorName, onReassignOne, onUnassignOne })}
+          rows={pageRows}
+          rowKey={(row) => row.id}
+          emptyTitle={search ? 'No students match your search.' : 'No assigned students.'}
+          minWidth="620px"
+          selection={{
+            selectedIds: selected,
+            allSelected: allPageSelected,
+            someSelected: pageRows.some((row) => selected.has(row.id)),
+            onToggleAll: () => onToggleAll(),
+            onToggleOne: (id) => onToggleOne(id),
+            label: (row) => row.fullName,
+          }}
+        />
         <Pagination page={page} pageSize={pageSize} total={totalFiltered} noun="students" onChange={onPageChange} />
       </section>
     </div>

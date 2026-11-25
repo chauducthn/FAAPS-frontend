@@ -44,6 +44,17 @@ export interface StaticTableProps<TData> {
   onRetry?: () => void;
   emptyTitle?: string;
   emptyDescription?: string;
+  /** Custom icon for the empty state. Defaults to an inbox glyph. */
+  emptyIcon?: ReactNode;
+  /** Renders a checkbox column in front of the data. */
+  selection?: {
+    selectedIds: Set<string>;
+    allSelected: boolean;
+    someSelected: boolean;
+    onToggleAll: (checked: boolean) => void;
+    onToggleOne: (id: string, checked: boolean) => void;
+    label: (row: TData) => string;
+  };
   minWidth?: string;
   stickyHeader?: boolean;
   className?: string;
@@ -58,16 +69,32 @@ export function StaticTable<TData>({
   onRetry,
   emptyTitle = 'No data to display',
   emptyDescription,
+  emptyIcon,
+  selection,
   minWidth,
   stickyHeader = false,
   className,
 }: StaticTableProps<TData>) {
-  const colSpan = columns.length;
+  const colSpan = columns.length + (selection ? 1 : 0);
 
   return (
     <TableShell stickyHeader={stickyHeader} minWidth={minWidth} className={className}>
       <thead>
         <tr>
+          {selection ? (
+            <TableHead className="w-12">
+              <input
+                type="checkbox"
+                aria-label="Select all rows on this page"
+                checked={selection.allSelected}
+                ref={(node) => {
+                  if (node) node.indeterminate = selection.someSelected && !selection.allSelected;
+                }}
+                onChange={(event) => selection.onToggleAll(event.target.checked)}
+                className="size-4 accent-[var(--brand)]"
+              />
+            </TableHead>
+          ) : null}
           {columns.map((column) => (
             <TableHead
               key={column.key}
@@ -89,11 +116,22 @@ export function StaticTable<TData>({
             colSpan={colSpan}
             title={emptyTitle}
             description={emptyDescription}
-            icon={<Inbox className="size-5" aria-hidden />}
+            icon={emptyIcon ?? <Inbox className="size-5" aria-hidden />}
           />
         ) : (
           rows.map((row, index) => (
             <TableRow key={rowKey(row, index)}>
+              {selection ? (
+                <TableCell className="w-12">
+                  <input
+                    type="checkbox"
+                    aria-label={`Select ${selection.label(row)}`}
+                    checked={selection.selectedIds.has(rowKey(row, index))}
+                    onChange={(event) => selection.onToggleOne(rowKey(row, index), event.target.checked)}
+                    className="size-4 accent-[var(--brand)]"
+                  />
+                </TableCell>
+              ) : null}
               {columns.map((column) => (
                 <TableCell
                   key={column.key}

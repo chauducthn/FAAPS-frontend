@@ -1,19 +1,7 @@
-import { Link } from 'react-router';
 import { AlertTriangle, Search } from 'lucide-react';
-import { ReportStatusBadge, formatDateTime, shortReportId } from '../../components/AiReportBits';
 import type { AiReportStatus } from '../../types/admin';
 import { cn } from '@/shared/lib/utils';
-import { REASON_LABEL, REPORT_TABS, REPORT_TH_CLASS } from './reportConstants';
-
-export interface AiReportListItem {
-  id: string;
-  studentCode?: string | null;
-  studentName: string;
-  reason: string;
-  flaggedCount: number;
-  createdAt: string;
-  status: AiReportStatus;
-}
+import { REPORT_TABS } from './reportConstants';
 
 export function StatusCard({
   label,
@@ -66,7 +54,12 @@ export function AiReportsFilterBar({
 }) {
   return (
     <section className="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:p-5">
-      <label className="flex h-[38px] flex-1 items-center gap-2 rounded-lg border border-[#e5e7eb] px-3 focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500">
+      <label
+        className={cn(
+          'flex h-[38px] flex-1 items-center gap-2 rounded-lg border border-[#e5e7eb] px-3',
+          'focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500',
+        )}
+      >
         <Search className="size-4 text-[#98a2b3]" />
         <input
           value={search}
@@ -105,94 +98,5 @@ export function AiReportsFilterBar({
         Clear filters
       </button>
     </section>
-  );
-}
-
-export function AiReportsTable({
-  items,
-  isLoading,
-  isError,
-  hasData,
-  debouncedSearch,
-  onRetry,
-}: {
-  items: AiReportListItem[];
-  isLoading: boolean;
-  isError: boolean;
-  hasData: boolean;
-  debouncedSearch: string;
-  onRetry: () => void;
-}) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[900px] text-left">
-        <thead className="bg-[rgba(240,243,255,0.7)]">
-          <tr>
-            <th className={REPORT_TH_CLASS}>Report ID</th>
-            <th className={REPORT_TH_CLASS}>Student ID (MSSV)</th>
-            <th className={REPORT_TH_CLASS}>Student name</th>
-            <th className={REPORT_TH_CLASS}>Reason</th>
-            <th className={`${REPORT_TH_CLASS} text-right`}>Flagged</th>
-            <th className={REPORT_TH_CLASS}>Date</th>
-            <th className={REPORT_TH_CLASS}>Status</th>
-            <th className={`${REPORT_TH_CLASS} text-right`}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {isLoading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <tr key={i} className="border-t border-[#e7eefe]">
-                <td colSpan={8} className="px-4 py-5">
-                  <div className="h-4 animate-pulse rounded bg-gray-100" />
-                </td>
-              </tr>
-            ))
-          ) : isError && !hasData ? (
-            <tr className="border-t border-[#e7eefe]">
-              <td colSpan={8} className="px-4 py-12 text-center text-sm text-[#555f6f]">
-                Could not load reports.{' '}
-                <button type="button" onClick={onRetry} className="font-semibold text-orange-600 hover:underline">
-                  Retry
-                </button>
-              </td>
-            </tr>
-          ) : items.length === 0 ? (
-            <tr className="border-t border-[#e7eefe]">
-              <td colSpan={8} className="px-4 py-12 text-center text-sm text-[#555f6f]">
-                {debouncedSearch ? 'No reports match your search.' : 'No reports in this status.'}
-              </td>
-            </tr>
-          ) : (
-            items.map((r) => (
-              <tr key={r.id} className="border-t border-[#e7eefe] hover:bg-[#f7f8fa]">
-                <td className="px-3 py-4 text-[13px] font-semibold text-[#151c27]" title={r.id}>
-                  {shortReportId(r.id)}
-                </td>
-                <td className="px-3 py-4 text-[13px] font-semibold text-[#151c27]">{r.studentCode ?? '—'}</td>
-                <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">{r.studentName}</td>
-                <td className="max-w-[240px] px-3 py-4 text-[13px] text-[#555f6f]">
-                  <p className="line-clamp-2">{REASON_LABEL[r.reason] ?? r.reason}</p>
-                </td>
-                <td className="px-3 py-4 text-right text-[13px] font-medium text-[#555f6f]">{r.flaggedCount}</td>
-                <td className="whitespace-nowrap px-3 py-4 text-[13px] font-medium text-[#555f6f]">
-                  {formatDateTime(r.createdAt)}
-                </td>
-                <td className="px-3 py-4">
-                  <ReportStatusBadge status={r.status} />
-                </td>
-                <td className="px-3 py-4 text-right">
-                  <Link
-                    to={`/admin/ai-reports/${r.id}`}
-                    className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-[#f7f8fa]"
-                  >
-                    Report details
-                  </Link>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
   );
 }

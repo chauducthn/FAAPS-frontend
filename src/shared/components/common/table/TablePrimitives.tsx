@@ -36,6 +36,7 @@ export function TableShell({
           '[&_thead_tr]:bg-[var(--surface-sunken)]',
           stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10',
         )}
+        style={minWidth ? { minWidth } : undefined}
       >
         {children}
       </table>
@@ -162,7 +163,12 @@ export function TableError({
           <button
             type="button"
             onClick={onRetry}
-            className="mt-2 rounded-lg border border-[var(--line)] bg-white px-3 py-1.5 text-[13px] font-semibold text-[var(--ink-muted)] transition-colors hover:bg-[var(--surface-hover)]"
+            className={cn(
+                'mt-2 rounded-lg border border-[var(--line)] bg-white',
+                'px-3 py-1.5 text-[13px] font-semibold',
+                'text-[var(--ink-muted)] transition-colors',
+                'hover:bg-[var(--surface-hover)]',
+              )}
           >
             Retry
           </button>

@@ -4,16 +4,69 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { useBackTarget } from '../../../../shared/lib/backLink';
 import { useStudentHistory } from '../../hooks/queries/useAdminAssignments';
 import { useAdminUser } from '../../hooks/queries/useAdminUsers';
+import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
+import type { AssignmentHistoryRecord } from '../../types/admin-assignments';
 import { cn } from '@/shared/lib/utils';
-
-const th = 'px-3 py-3.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]';
 
 // Dates from the API are plain yyyy-MM-dd values; parse them as local dates.
 const formatDateTime = (value: string) =>
-  new Date(value).toLocaleString('en-US', { year: 'numeric', month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false });
+  new Date(value).toLocaleString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
 
 const formatDate = (value: string) =>
   new Date(`${value}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+
+const historyColumns: StaticColumn<AssignmentHistoryRecord>[] = [
+  {
+    key: 'advisor',
+    header: 'Assigned advisor',
+    render: (record) => (
+      <span className="text-sm font-semibold">
+        {record.advisorName}
+        <span className="block text-xs font-normal text-[var(--ink-muted)]">{record.advisorEmail}</span>
+      </span>
+    ),
+  },
+  {
+    key: 'start',
+    header: 'Start date',
+    render: (record) => (
+      <span className="text-sm">{record.assignedAt ? formatDateTime(record.assignedAt) : formatDate(record.assignedDate)}</span>
+    ),
+  },
+  {
+    key: 'end',
+    header: 'End date',
+    render: (record) => <span className="text-sm">{record.endDate ? formatDate(record.endDate) : 'Present'}</span>,
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    render: (record) => (
+      <span className={cn('text-sm font-semibold', record.status === 'ACTIVE' ? 'text-[#047857]' : 'text-[var(--ink-muted)]')}>
+        {record.status}
+      </span>
+    ),
+  },
+  {
+    key: 'assignedBy',
+    header: 'Assigned by',
+    render: (record) => <span className="text-sm">{record.assignedByName ?? '—'}</span>,
+  },
+  {
+    key: 'notes',
+    header: 'Note',
+    render: (record) => (
+      <span className="block max-w-[220px] text-[13px]">{record.notes?.trim() ? record.notes : '—'}</span>
+    ),
+  },
+];
 
 function Tile({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -72,57 +125,16 @@ export default function StudentHistory() {
           <h2 className="text-base font-semibold text-[#151c27]">All assignment records</h2>
           <p className="text-[13px] text-[#555f6f]">{history?.length ?? 0} records · Newest first</p>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-left">
-            <thead className="bg-[rgba(240,243,255,0.7)]">
-              <tr>
-                <th className={th}>Assigned advisor</th>
-                <th className={th}>Start date</th>
-                <th className={th}>End date</th>
-                <th className={th}>Status</th>
-                <th className={th}>Assigned by</th>
-                <th className={th}>Note</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={6} className="px-4 py-8">
-                    <div className="h-4 animate-pulse rounded bg-gray-100" />
-                  </td>
-                </tr>
-              ) : isError && !history ? (
-                <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-[#555f6f]">
-                    Could not load the history.{' '}
-                    <button type="button" onClick={() => refetch()} className="font-semibold text-orange-600 hover:underline">
-                      Retry
-                    </button>
-                  </td>
-                </tr>
-              ) : !history || history.length === 0 ? (
-                <tr className="border-t border-[#e7eefe]">
-                  <td colSpan={6} className="px-4 py-12 text-center text-sm text-[#555f6f]">
-                    This student has never been assigned an advisor.
-                  </td>
-                </tr>
-              ) : (
-                history.map((h) => (
-                  <tr key={h.id} className="border-t border-[#e7eefe]">
-                    <td className="px-3 py-4 text-sm font-semibold text-[#151c27]">{h.advisorName}<span className="block text-xs font-normal text-[#555f6f]">{h.advisorEmail}</span></td>
-                    <td className="px-3 py-4 text-sm text-[#151c27]">{h.assignedAt ? formatDateTime(h.assignedAt) : formatDate(h.assignedDate)}</td>
-                    <td className="px-3 py-4 text-sm text-[#151c27]">{h.endDate ? formatDate(h.endDate) : 'Present'}</td>
-                    <td className={cn('px-3 py-4 text-sm font-semibold', h.status === 'ACTIVE' ? 'text-[#047857]' : 'text-[#555f6f]')}>
-                      {h.status}
-                    </td>
-                    <td className="px-3 py-4 text-sm text-[#555f6f]">{h.assignedByName ?? '—'}</td>
-                    <td className="max-w-[220px] px-3 py-4 text-[13px] text-[#555f6f]">{h.notes?.trim() ? h.notes : '—'}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <StaticTable
+          columns={historyColumns}
+          rows={history ?? []}
+          rowKey={(record) => record.id}
+          loading={isLoading}
+          error={isError && !history ? 'Could not load the history.' : undefined}
+          onRetry={() => refetch()}
+          emptyTitle="This student has never been assigned an advisor."
+          minWidth="820px"
+        />
       </section>
     </div>
   );

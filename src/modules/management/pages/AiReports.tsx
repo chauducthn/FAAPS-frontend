@@ -5,7 +5,8 @@ import { useAiReports } from '../../ai/hooks/queries/useAdminAiReports';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import type { AiReportStatus } from '../types/admin';
 import { REPORT_PAGE_SIZE } from './ai/reportConstants';
-import { AiReportsFilterBar, AiReportsTable, StatusCard } from './ai/AiReportsComponents';
+import { AiReportsFilterBar, StatusCard } from './ai/AiReportsComponents';
+import { AiReportsTable } from './ai/AiReportsTable';
 
 export default function AiReports() {
   const [status, setStatus] = useState<AiReportStatus | ''>('PENDING');
