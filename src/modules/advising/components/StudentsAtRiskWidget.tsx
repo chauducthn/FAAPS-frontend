@@ -23,7 +23,7 @@ const RISK_TONES = [
   {
     key: 'high' as const,
     label: 'High',
-    description: 'Cần liên hệ ngay',
+    description: 'Needs immediate contact',
     number: 'text-red-700',
     surface: 'bg-red-50 ring-red-200',
     bar: 'bg-red-500',
@@ -32,7 +32,7 @@ const RISK_TONES = [
   {
     key: 'medium' as const,
     label: 'Medium',
-    description: 'Cần lên lịch gặp',
+    description: 'Schedule a meeting',
     number: 'text-orange-700',
     surface: 'bg-orange-50 ring-orange-200',
     bar: 'bg-orange-500',
@@ -41,7 +41,7 @@ const RISK_TONES = [
   {
     key: 'low' as const,
     label: 'Low',
-    description: 'Theo dõi',
+    description: 'Monitor',
     number: 'text-amber-700',
     surface: 'bg-amber-50 ring-amber-200',
     bar: 'bg-amber-500',
@@ -98,7 +98,7 @@ function RiskCountsStrip({ counts }: { counts: AtRiskCounts }) {
             <div
               className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/70"
               role="img"
-              aria-label={`${tone.label}: ${value} sinh viên`}
+              aria-label={`${tone.label}: ${value} students`}
             >
               <span
                 className={cn('block h-full rounded-full transition-[width] duration-500 ease-out', tone.bar)}
@@ -154,9 +154,9 @@ export function StudentsAtRiskWidget() {
             <button
               type="button"
               onClick={() => void refetch()}
-              className="h-11 text-sm font-bold text-red-900 underline"
+              className="h-11 cursor-pointer text-sm font-bold text-red-900 underline"
             >
-              Thử lại
+              Retry
             </button>
           </div>
         ) : counts ? (
@@ -164,8 +164,8 @@ export function StudentsAtRiskWidget() {
             <RiskCountsStrip counts={counts} />
             <p className="mt-3 text-sm font-medium text-slate-600">
               Tổng{' '}
-              <span className="font-extrabold tabular-nums text-slate-900">{counts.total}</span> sinh viên
-              đang bị cảnh báo.
+              <span className="font-extrabold tabular-nums text-slate-900">{counts.total}</span> students are
+              currently flagged.
               {counts.high > 0 && (
                 <>
                   {' '}

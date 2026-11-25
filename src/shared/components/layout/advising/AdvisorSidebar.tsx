@@ -13,7 +13,6 @@ import {
   ClipboardCheck,
   Inbox,
   LayoutDashboard,
-  MessageSquareText,
   UserRound,
   UsersRound,
 } from 'lucide-react';
@@ -38,7 +37,6 @@ const NAV_SECTIONS: PortalNavSection[] = [
     title: 'ADVISING',
     items: [
       { label: 'Advising Requests', to: '/advisor/advising-requests', icon: Inbox },
-      { label: 'Advising Conversations', to: '/advisor/conversations', icon: MessageSquareText },
       { label: 'Study Plan Reviews', to: '/advisor/study-plans', icon: ClipboardCheck },
     ],
   },

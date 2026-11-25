@@ -353,7 +353,7 @@ export default function AiConfigForm({ open, mode, initial, preset, isLoading, o
                 rows={3}
                 {...register('fallbackMessage')}
                 disabled={readOnly || isLoading}
-                placeholder="Hệ thống đang bận. Vui lòng thử lại sau ít phút..."
+                placeholder="The system is busy. Please try again in a few minutes..."
                 aria-label="Fallback message"
                 className={cn(field, 'resize-y leading-relaxed')}
               />

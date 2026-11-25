@@ -100,7 +100,7 @@ export function ResetPasswordConfirmDialog({ open, users, onConfirm, onCancel, i
             className="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-gray-300 accent-[#F26F21] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40"
           />
           <span className="text-[13px] font-semibold leading-relaxed text-gray-800">
-            Tôi hiểu password chỉ hiện 1 lần
+            I understand the password is shown only once
             <span className="mt-0.5 block text-[12px] font-medium text-gray-500">
               The new passwords are shown once, right after the reset. I will save them before closing this window.
             </span>

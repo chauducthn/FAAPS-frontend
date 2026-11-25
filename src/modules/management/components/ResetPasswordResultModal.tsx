@@ -127,9 +127,9 @@ export function ResetPasswordResultModal({ open, results, onClose }: Props) {
         <div className="flex items-start gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3.5">
           <TriangleAlert className="mt-0.5 size-5 shrink-0 text-red-600" aria-hidden />
           <div className="min-w-0">
-            <p className="text-[13px] font-extrabold text-red-800">Lưu ngay kẻo mất</p>
+            <p className="text-[13px] font-extrabold text-red-800">Save these now — they are shown only once</p>
             <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-red-700">
-              Mật khẩu chỉ hiển thị đúng một lần. Copy hoặc tải CSV xuống ngay — đóng cửa sổ này là mất vĩnh viễn.
+              Each password is displayed exactly once. Copy or download the CSV now — closing this dialog loses them permanently.
             </p>
           </div>
         </div>
@@ -259,14 +259,14 @@ export function ResetPasswordResultModal({ open, results, onClose }: Props) {
 
       {/* The footer carries the two ways to save the passwords, plus the way out. */}
       <div className="flex flex-col gap-3 border-t border-[#e5e7eb] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p className="text-[12px] font-medium text-gray-500">Đóng cửa sổ này là mất vĩnh viễn các mật khẩu này.</p>
+        <p className="text-[12px] font-medium text-gray-500">Closing this dialog permanently discards these passwords.</p>
         <div className="flex flex-col-reverse gap-2 sm:flex-row">
           <button
             type="button"
             onClick={onClose}
             className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-[#555f6f] transition-colors hover:bg-gray-50 hover:text-[#151c27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40"
           >
-            Đóng lại
+            Close
           </button>
           <button
             type="button"

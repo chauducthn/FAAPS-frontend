@@ -118,15 +118,15 @@ export default function AdvisorPortal() {
     {
       label: 'Pending',
       value: pendingQuery.isLoading ? '–' : String(pendingQuery.data?.length ?? '–'),
-      sub: 'needs response',
+      sub: 'in the queue',
       icon: Inbox,
       iconBox: 'bg-[#F26F21] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.6)]',
       topBar: 'bg-[#F26F21]',
     },
     {
-      label: 'In Progress',
+      label: 'In progress',
       value: inProgressQuery.isLoading ? '–' : String(inProgressQuery.data?.length ?? '–'),
-      sub: 'being handled',
+      sub: 'claimed by an advisor',
       icon: Hourglass,
       iconBox: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200',
       topBar: 'bg-slate-300',
@@ -165,8 +165,8 @@ export default function AdvisorPortal() {
             </h1>
             <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-white/95">
               {pendingCount > 0
-                ? `${pendingCount} pending request${pendingCount === 1 ? '' : 's'} need your response today.`
-                : 'No pending requests right now. Nice work!'}
+                ? `${pendingCount} request${pendingCount === 1 ? '' : 's'} waiting in the queue — claim one to start replying to the student.`
+                : 'The queue is empty. No requests are waiting!'}
             </p>
           </div>
           {/* Primary trên nền cam = nút trắng — nhìn là biết bấm được */}
@@ -174,7 +174,7 @@ export default function AdvisorPortal() {
             to="/advisor/advising-requests"
             className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-white px-5 text-sm font-extrabold text-[#c2410c] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-all hover:bg-orange-50 hover:shadow-[0_6px_20px_rgba(0,0,0,0.22)] active:scale-[0.98]"
           >
-            Review requests <ArrowRight className="size-4" aria-hidden />
+            View requests <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>
       </div>
@@ -243,13 +243,13 @@ export default function AdvisorPortal() {
         ))}
       </div>
 
-      {/* ── Advising Requests: điểm nhấn chính duy nhất (nút Accept trong bảng) ── */}
+      {/* ── Advising Requests: hàng đợi ticket dùng chung — nhận xử lý để bắt đầu ── */}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-lg font-bold tracking-tight text-slate-900">Advising Requests</h2>
             <p className="mt-1.5 text-sm font-medium leading-relaxed text-slate-600">
-              One primary action per row — extras live under More.
+              Every advisor sees the requests in the shared queue — claim the ones you want to help with.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -286,7 +286,7 @@ export default function AdvisorPortal() {
               Assigned Students
               <TermTip
                 term="Cohort"
-                tip="Cohort = khóa/lứa nhập học của sinh viên (ví dụ K17, K18). Sinh viên cùng cohort học cùng chương trình đào tạo."
+                tip="Cohort = the intake/entry group of students (e.g. K17, K18). Students in the same cohort follow the same study programme."
               />
             </h2>
             <p className="mt-1.5 text-sm font-medium text-slate-600">
@@ -307,19 +307,19 @@ export default function AdvisorPortal() {
           <span className="font-bold text-slate-900">Academic terms:</span>
           <span className="inline-flex items-center gap-1">
             GPA
-            <TermTip term="GPA" tip="Grade Point Average — điểm trung bình tích lũy thang 10. >= 8 Giỏi, 6.5–8 Khá, 5–6.5 Trung bình, < 5 Nguy cơ probation." />
+            <TermTip term="GPA" tip="Grade Point Average — cumulative average on a 10-point scale. >= 8 Excellent, 6.5–8 Good, 5–6.5 Average, < 5 At risk of probation." />
           </span>
           <span className="inline-flex items-center gap-1">
             Probation
-            <TermTip term="Probation" tip="Cảnh báo học vụ — sinh viên có GPA thấp hoặc nợ tín chỉ, cần gặp advisor sớm để lập kế hoạch cải thiện." />
+            <TermTip term="Probation" tip="Academic warning — the student has a low GPA or outstanding credits, and should meet an advisor early to build an improvement plan." />
           </span>
           <span className="inline-flex items-center gap-1">
             OJT
-            <TermTip term="OJT" tip="On-the-Job Training — kỳ thực tập tại doanh nghiệp, thường ở năm 3. Sinh viên cần đủ tín chỉ và GPA tối thiểu." />
+            <TermTip term="OJT" tip="On-the-Job Training — the internship period at a company, usually in year 3. Students need enough credits and a minimum GPA." />
           </span>
           <span className="inline-flex items-center gap-1">
             Credits
-            <TermTip term="Credits" tip="Tín chỉ tích lũy / tổng tín chỉ yêu cầu tốt nghiệp của chương trình đào tạo. Thanh tiến trình bên dưới mỗi thẻ cho biết % hoàn thành." />
+            <TermTip term="Credits" tip="Accumulated credits / total credits required to graduate from the study programme. The bar under each card shows the completion percentage." />
           </span>
         </div>
 
@@ -346,7 +346,7 @@ export default function AdvisorPortal() {
           ) : studentsQuery.isError ? (
             <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-sm font-medium text-red-800">
               Could not load students.{' '}
-              <button type="button" onClick={() => studentsQuery.refetch()} className="h-11 font-bold underline">
+              <button type="button" onClick={() => studentsQuery.refetch()} className="h-11 cursor-pointer font-bold underline">
                 Retry
               </button>
             </div>
@@ -407,7 +407,7 @@ export default function AdvisorPortal() {
                         {(s.academicStatus === 'PROBATION' || s.academicStatus === 'SUSPENDED') && (
                           <TermTip
                             term={style.label}
-                            tip="Sinh viên đang bị cảnh báo/đình chỉ học vụ — ưu tiên liên hệ và lập kế hoạch hỗ trợ."
+                            tip="The student is on academic probation or suspension — prioritise contacting them and building a support plan."
                           />
                         )}
                       </span>

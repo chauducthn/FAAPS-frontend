@@ -5,7 +5,11 @@ import { RequestStatusBadge } from '../../advising/components/RequestStatusBadge
 import type { AdvisingRequest } from '../../advising/types/advising';
 
 const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  });
 
 export function RecentRequestsCard({
   requests,
@@ -22,7 +26,10 @@ export function RecentRequestsCard({
     <section className="flex flex-col rounded-xl bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-[#151c27]">Recent Advising Requests</h2>
-        <Link to="/student/advising-requests" className="text-[13px] font-semibold text-[#F26F21] hover:underline">
+        <Link
+          to="/student/advising-requests"
+          className="cursor-pointer text-[13px] font-semibold text-[#F26F21] hover:underline"
+        >
           View all
         </Link>
       </div>
@@ -38,7 +45,7 @@ export function RecentRequestsCard({
           <p className="text-sm font-semibold text-[#151c27]">No requests yet</p>
           <Link
             to="/student/advising-requests"
-            className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#555f6f] hover:bg-gray-50"
+            className="cursor-pointer rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#555f6f] hover:bg-gray-50"
           >
             Send a request
           </Link>
@@ -51,7 +58,7 @@ export function RecentRequestsCard({
                 <p className="truncate text-[13px] font-semibold text-[#151c27]">{request.title}</p>
                 <p className="text-[12px] text-[#98a2b3]">{formatDate(request.createdAt)}</p>
               </div>
-              <RequestStatusBadge status={request.status} cancelledLabel="Cancelled" />
+              <RequestStatusBadge status={request.status} />
             </li>
           ))}
         </ul>

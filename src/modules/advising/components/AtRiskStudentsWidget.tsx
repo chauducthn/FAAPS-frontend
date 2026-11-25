@@ -28,9 +28,9 @@ const LEVEL_STYLES: Record<RiskLevel, { pill: string; bar: string; label: string
 
 /** Nhãn + màu chip cho từng lý do bị cảnh báo. */
 const REASON_STYLES: Record<RiskReason, { label: string; chip: string }> = {
-  LOW_GPA: { label: 'GPA thấp', chip: 'bg-orange-100 text-orange-900 ring-orange-300' },
-  HIGH_ABSENCE: { label: 'Vắng nhiều', chip: 'bg-purple-100 text-purple-900 ring-purple-300' },
-  FAILED_COURSES: { label: 'Nợ môn', chip: 'bg-red-100 text-red-900 ring-red-300' },
+  LOW_GPA: { label: 'Low GPA', chip: 'bg-orange-100 text-orange-900 ring-orange-300' },
+  HIGH_ABSENCE: { label: 'High absence', chip: 'bg-purple-100 text-purple-900 ring-purple-300' },
+  FAILED_COURSES: { label: 'Failed courses', chip: 'bg-red-100 text-red-900 ring-red-300' },
 };
 
 function initialsOf(name: string | null | undefined) {
@@ -145,7 +145,7 @@ function AtRiskCard({
         disabled={pending}
         className="mt-4 inline-flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#F26F21]/40 hover:text-[#F26F21] disabled:opacity-60"
       >
-        {pending ? 'Đang tải...' : 'Xem chi tiết'}
+        {pending ? 'Loading...' : 'View details'}
         {!pending && <ArrowRight className="size-4" aria-hidden />}
       </button>
     </li>
@@ -178,14 +178,14 @@ export function AtRiskStudentsWidget({ onViewDetail }: AtRiskStudentsWidgetProps
           <RiskSkeleton />
         ) : isError ? (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-sm font-medium text-red-800">
-            Không thể tải danh sách sinh viên có nguy cơ.{' '}
-            <button type="button" onClick={() => void refetch()} className="h-11 font-bold underline">
-              Thử lại
+            Unable to load the at-risk student list.{' '}
+            <button type="button" onClick={() => void refetch()} className="h-11 cursor-pointer font-bold underline">
+              Retry
             </button>
           </div>
         ) : students.length === 0 ? (
           <p className="rounded-xl bg-slate-50 px-4 py-8 text-center text-sm font-medium text-slate-600">
-            🎉 Không có sinh viên nào bị cảnh báo
+            🎉 No students are currently flagged
           </p>
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

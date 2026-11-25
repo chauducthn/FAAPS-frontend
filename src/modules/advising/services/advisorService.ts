@@ -11,6 +11,7 @@ import type {
   AcademicStatus,
   AdviseeStudent,
   AdvisingRequest,
+  AdvisingRequestDetail,
   AdvisingRequestStatus,
   UpdateAdvisingRequestStatusDto,
   StudentNotification,
@@ -33,24 +34,17 @@ export interface GraduationCheck {
 }
 
 /**
- * BE yêu cầu `resolutionSummary` non-blank cho MỌI lần chuyển trạng thái request
- * (xem `BE_BACKLOG.md` → "Ràng buộc kỹ thuật bắt buộc cho BE").
+ * Lọc danh sách ticket theo status và từ khoá (client-side).
  *
- * Thao tác "Mark in progress" không có ô nhập nội dung, nên default được gắn ở tầng
- * service — body mà toast đọc vẫn giữ nguyên (không có `resolutionSummary`) nên
- * phân biệt "Request rejected" vs "Request is now in progress" không bị ảnh hưởng.
+ * `status` = 'RESOLVED' gộp cả RESOLVED (đã đóng) và CANCELLED (SV hủy).
+ * Không có filter theo advisor ở đây — xem `filterByOwner` trong RequestListTable.
  */
-export const DEFAULT_RESOLUTION_SUMMARY = 'Your advisor is now processing this request.';
-
-/** Lọc danh sách yêu cầu theo status và từ khoá (client-side). */
 const filterRequests = (
   requests: AdvisingRequest[],
   params: { status?: AdvisingRequestStatus; search?: string },
 ): AdvisingRequest[] => {
   const keyword = params.search?.trim().toLowerCase();
   return requests.filter((request) => {
-    // "Resolved" gộp cả request đã chấp nhận (RESOLVED) và đã từ chối
-    // (CANCELLED): cả hai đều đã đóng nên không còn việc cho advisor xử lý.
     if (params.status === 'RESOLVED') {
       if (request.status !== 'RESOLVED' && request.status !== 'CANCELLED') return false;
     } else if (params.status && request.status !== params.status) {
@@ -132,39 +126,97 @@ export const advisorService = {
   },
 
   /**
-   * Yêu cầu tư vấn mà advisor nhận xử lý.
+   * Danh sách ticket yêu cầu tư vấn.
+   *
    * API trả về mảng thô `AdvisingRequest[]` — lọc status/từ khoá và phân trang
    * đều do client đảm nhiệm nên không gửi tham số phân trang lên URL.
+   *
+   * QUAN TRỌNG (hệ thống ticket):
+   *   • KHÔNG bao giờ gửi `advisorId` cho tab "Chờ xử lý" (PENDING) — mọi cố vấn
+   *     đều phải thấy toàn bộ ticket đang chờ trong hàng đợi.
+   *   • `advisorId` chỉ được truyền khi lọc "Đang xử lý" (IN_PROGRESS) và chỉ
+   *     với mục đích xem ticket của chính mình.
    */
   getAdvisingRequests: async (
     params: {
       status?: AdvisingRequestStatus;
       search?: string;
+      /** Chỉ dùng cho tab IN_PROGRESS — lọc theo cố vấn đang giữ ticket. */
+      advisorId?: string | null;
     } = {},
   ): Promise<AdvisingRequest[]> => {
-    const { data } = await apiClient.get<AdvisingRequest[]>('/advisor/advising-requests');
+    // PENDING / RESOLVED: không gửi bất kỳ filter cố vấn nào — cố vấn nào cũng
+    // phải thấy ticket trong hàng đợi chung.
+    const advisorId =
+      params.status === 'IN_PROGRESS' && params.advisorId ? params.advisorId : undefined;
+
+    const { data } = await apiClient.get<AdvisingRequest[]>('/advisor/advising-requests', {
+      params: advisorId ? { advisorId } : undefined,
+    });
     // Lọc phía client: API trả về toàn bộ danh sách.
     return filterRequests(data ?? [], params);
   },
 
-  /** Chuyển trạng thái request: RESOLVED = Chấp nhận, IN_PROGRESS = Từ chối (kèm lý do). */
-  updateRequestStatus: async (
-    id: string,
-    body: UpdateAdvisingRequestStatusDto,
-  ): Promise<AdvisingRequest> => {
-    // BE validate `resolutionSummary` non-blank cho mọi lần chuyển trạng thái.
-    // Đảm bảo payload luôn có giá trị ⇒ không bao giờ nhận 400 vì thiếu trường này.
-    const payload: UpdateAdvisingRequestStatusDto = {
-      ...body,
-      resolutionSummary: body.resolutionSummary?.trim()
-        ? body.resolutionSummary.trim()
-        : DEFAULT_RESOLUTION_SUMMARY,
-    };
-    const { data } = await apiClient.put<AdvisingRequest>(
+  /**
+   * Chi tiết 1 ticket + toàn bộ tin nhắn: `GET /advisor/advising-requests/{id}`.
+   * Dùng cho màn hình chat của cố vấn.
+   */
+  getRequestDetail: async (id: string): Promise<AdvisingRequestDetail> => {
+    return (await apiClient.get<AdvisingRequestDetail>(`/advisor/advising-requests/${id}`)).data;
+  },
+
+/**
+ * Chuyển trạng thái ticket: `PATCH /advisor/advising-requests/{id}/status`.
+ *
+ * Ticket system (không phải chat 1-1 được assign):
+ *   PENDING     → IN_PROGRESS : cố vấn bấm "Claim request" (nhận xử lý).
+ *   IN_PROGRESS → RESOLVED    : cố vấn xử lý xong, bấm "Resolve request" (đóng yêu cầu).
+ *
+ * `resolutionSummary` CHỈ được gửi khi đóng yêu cầu (RESOLVED). Thao tác claim
+ * gửi đúng `{ status: 'IN_PROGRESS' }` — không có field nào khác.
+ */
+updateRequestStatus: async (
+  id: string,
+  body: UpdateAdvisingRequestStatusDto,
+): Promise<AdvisingRequest> => {
+  // Chỉ gửi `resolutionSummary` khi người dùng thực sự nhập nội dung kết quả.
+  // Claim (IN_PROGRESS) tuyệt đối không gửi field này.
+  const payload: UpdateAdvisingRequestStatusDto = { ...body };
+  if (body.resolutionSummary !== undefined) {
+    const summary = body.resolutionSummary.trim();
+    if (summary) payload.resolutionSummary = summary;
+    else delete payload.resolutionSummary;
+  }
+  const { data } = await apiClient.patch<AdvisingRequest>(
+    `/advisor/advising-requests/${id}/status`,
+    payload,
+    { headers: await getCsrfHeaders() },
+  );
+  return data;
+},
+
+  /**
+   * Cố vấn "nhận xử lý" một ticket đang PENDING.
+   * BE tự ghi `advisor_id = advisor đang đăng nhập` ⇒ không cần gửi advisorId.
+   *
+   * Body gửi đi CHỈ có `status` — KHÔNG gửi `resolutionSummary` (trường này chỉ
+   * dùng cho bước đóng yêu cầu, không phải lúc nhận xử lý).
+   */
+  claimRequest: async (id: string): Promise<AdvisingRequest> => {
+    const { data } = await apiClient.patch<AdvisingRequest>(
       `/advisor/advising-requests/${id}/status`,
-      payload,
+      { status: 'IN_PROGRESS' },
       { headers: await getCsrfHeaders() },
     );
     return data;
+  },
+
+  /** Gửi tin nhắn trong 1 ticket: `POST /advisor/advising-requests/{id}/messages`. */
+  sendRequestMessage: async (id: string, content: string): Promise<void> => {
+    await apiClient.post(
+      `/advisor/advising-requests/${id}/messages`,
+      { content, internal: false },
+      { headers: await getCsrfHeaders() },
+    );
   },
 };

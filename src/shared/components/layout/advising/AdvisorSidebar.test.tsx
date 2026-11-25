@@ -49,12 +49,12 @@ describe('AdvisorSidebar', () => {
     const links = Array.from(nav.querySelectorAll('a')).map((a) => a.textContent?.trim());
 
     // "Academic Search" đã bị ẩn vì BE chưa có endpoint /advisor/academic/*.
+    // "Advising Conversations" đã sáp nhập vào "Advising Requests" (hệ thống ticket).
     expect(links).toEqual([
       'Overview',
       'My Students',
       'My Profile',
       'Advising Requests',
-      'Advising Conversations',
       'Study Plan Reviews',
       'Appointments',
       'Notifications',

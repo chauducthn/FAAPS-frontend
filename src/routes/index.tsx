@@ -43,7 +43,6 @@ const StudentLearningPlan = lazy(() => import('../modules/learning/pages/Student
 const AdvisorAppointments = lazy(() => import('../modules/advising/pages/AdvisorAppointments'));
 const AdvisorPortal = lazy(() => import('../modules/advising/pages/AdvisorPortal'));
 const AdvisorAdvisingRequests = lazy(() => import('../modules/advising/pages/AdvisorAdvisingRequests'));
-const AdvisorConversationWorkspace = lazy(() => import('../modules/advising/pages/AdvisorConversationWorkspace'));
 const AdvisorStudyPlans = lazy(() => import('../modules/advising/pages/AdvisorStudyPlans'));
 const AdvisorStudents = lazy(() => import('../modules/advising/pages/AdvisorStudents'));
 const AdvisorAcademicLookup = lazy(() => import('../modules/advising/pages/AdvisorAcademicLookup'));
@@ -137,7 +136,9 @@ export const router = createBrowserRouter([
           { path: '/advisor/advising-requests', element: suspense(<AdvisorAdvisingRequests />) },
           { path: '/advisor/students', element: suspense(<AdvisorStudents />) },
           { path: '/advisor/appointments', element: suspense(<AdvisorAppointments />) },
-          { path: '/advisor/conversations', element: suspense(<AdvisorConversationWorkspace />) },
+          // Advising Requests giờ là hệ thống TICKET: danh sách + chat + đóng yêu cầu
+          // đều nằm trong cùng 1 trang ⇒ trang "Conversations" cũ đã sáp nhập.
+          { path: '/advisor/conversations', element: <Navigate to="/advisor/advising-requests" replace /> },
           { path: '/advisor/study-plans', element: suspense(<AdvisorStudyPlans />) },
           { path: '/advisor/academic-lookup', element: suspense(<AdvisorAcademicLookup />) },
           { path: '/advisor/reports', element: suspense(<AdvisorReports />) },

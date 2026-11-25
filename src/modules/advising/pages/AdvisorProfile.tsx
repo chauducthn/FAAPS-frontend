@@ -272,7 +272,7 @@ export default function AdvisorProfile() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   maxLength={255}
-                  placeholder="e.g. Trần Minh Khoa"
+                  placeholder="e.g. John Smith"
                   className="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-900 shadow-sm outline-none transition-colors placeholder:font-normal placeholder:text-slate-500 focus:border-[#F26F21] focus:ring-2 focus:ring-[#F26F21]/30"
                 />
               </label>

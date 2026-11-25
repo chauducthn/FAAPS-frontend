@@ -25,7 +25,7 @@ export function ChartError({ message, onRetry }: { message: string; onRetry: () 
       <button
         type="button"
         onClick={onRetry}
-        className="mt-1 inline-flex h-10 items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#F26F21]/40 hover:text-[#F26F21]"
+        className="mt-1 inline-flex h-10 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#F26F21]/40 hover:text-[#F26F21]"
       >
         Retry
       </button>
