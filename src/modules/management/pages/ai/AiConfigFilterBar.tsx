@@ -54,7 +54,8 @@ export function AiConfigFilterBar({
       <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[136px]">
         <select value={provider} onChange={(e) => onProviderChange(e.target.value)} aria-label="Filter by provider" className={selectClass}>
           <option value="ALL">All providers</option>
-          <option value="GEMINI">Gemini</option>
+          <option value="GEMINI">Google AI Studio</option>
+          <option value="OPENROUTER">OpenRouter</option>
           <option value="OTHER">Other</option>
         </select>
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />

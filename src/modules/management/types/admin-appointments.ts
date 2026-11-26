@@ -33,6 +33,8 @@ export interface Appointment {
   endedAt: string | null;
   location: string | null;
   agenda: string | null;
+  decisionNote?: string | null;
+  consultationSummary?: string | null;
   status: AppointmentStatus;
 }
 

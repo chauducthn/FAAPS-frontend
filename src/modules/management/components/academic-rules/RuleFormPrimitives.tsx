@@ -2,10 +2,10 @@ import type { ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 
 export const RULE_FIELD_CLASS =
-  'w-full rounded-xl border border-gray-200 bg-gray-50/50 px-3.5 py-2.5 text-[13px] font-medium text-gray-900 placeholder:font-normal placeholder:text-gray-400 transition-all focus:border-[#F37021] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F37021]/20 disabled:cursor-not-allowed disabled:opacity-60';
-export const RULE_LABEL_CLASS = 'mb-1.5 block text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500';
+  'h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-[13px] text-gray-900 placeholder:text-gray-400 shadow-2xs transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-60';
+export const RULE_LABEL_CLASS = 'mb-1.5 block text-[13px] font-medium text-gray-700';
 export const RULE_SELECT_CLASS = cn(RULE_FIELD_CLASS, 'appearance-none pr-9');
-export const RULE_NUM_CLASS = cn(RULE_FIELD_CLASS, 'font-mono font-bold tabular-nums');
+export const RULE_NUM_CLASS = cn(RULE_FIELD_CLASS, 'font-mono font-semibold tabular-nums');
 
 export function RuleToggleChip({
   checked,
@@ -23,7 +23,8 @@ export function RuleToggleChip({
   return (
     <label
       className={cn(
-        'flex cursor-pointer items-center gap-2.5 rounded-xl border border-gray-200 bg-gray-50/50 p-3 transition-colors has-checked:border-orange-300 has-checked:bg-orange-50',
+        'flex cursor-pointer items-start gap-2.5 rounded-lg border px-3 py-2.5 transition-colors',
+        checked ? 'border-[#F26F21]/60 bg-orange-50/60' : 'border-gray-200 bg-white hover:border-gray-300',
         disabled && 'cursor-not-allowed opacity-60',
       )}
     >
@@ -32,22 +33,41 @@ export function RuleToggleChip({
         checked={checked}
         disabled={disabled}
         onChange={(e) => onChange(e.target.checked)}
-        className="size-4 shrink-0 accent-[#F37021]"
+        className="mt-0.5 size-4 shrink-0 accent-[#F26F21]"
       />
-      <span>
-        <span className="block text-xs font-bold text-gray-700">{label}</span>
-        <span className="block text-[11px] font-medium text-gray-400">{hint}</span>
+      <span className="min-w-0">
+        <span className="block text-xs font-semibold text-gray-800">{label}</span>
+        <span className="block text-[11px] text-gray-400">{hint}</span>
       </span>
     </label>
   );
 }
 
-export function RuleFormSection({ title, hint, children }: { title: string; hint: string; children: ReactNode }) {
+export function RuleFormSection({
+  step,
+  title,
+  hint,
+  children,
+}: {
+  step?: number;
+  title: string;
+  hint: string;
+  children: ReactNode;
+}) {
   return (
-    <section className="rounded-2xl border border-gray-100 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-      <h3 className="text-[13px] font-extrabold tracking-tight text-gray-900">{title}</h3>
-      <p className="mb-3.5 mt-0.5 text-[11px] text-gray-400">{hint}</p>
-      <div className="space-y-4">{children}</div>
+    <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+      <div className="flex items-center gap-2.5 border-b border-gray-100 px-4 py-3">
+        {step !== undefined && (
+          <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-orange-50 text-[11px] font-bold text-[#C2410C] ring-1 ring-orange-200/80">
+            {step}
+          </span>
+        )}
+        <div className="min-w-0">
+          <h3 className="text-[13px] font-bold text-gray-900">{title}</h3>
+          <p className="text-[11px] text-gray-400">{hint}</p>
+        </div>
+      </div>
+      <div className="space-y-4 p-4">{children}</div>
     </section>
   );
 }
@@ -69,11 +89,11 @@ export function RuleFormField({
     <div>
       <label className={RULE_LABEL_CLASS}>
         {label}
-        {required && <span className="ml-0.5 text-[#F37021]">*</span>}
+        {required && <span className="ml-0.5 text-[#F26F21]">*</span>}
       </label>
       {children}
       {hint && !error && <p className="mt-1 text-[11px] text-gray-400">{hint}</p>}
-      {error && <p className="mt-1.5 flex items-center gap-1 text-[11px] font-semibold text-red-600">{error}</p>}
+      {error && <p className="mt-1 text-xs font-medium text-red-600">{error}</p>}
     </div>
   );
 }

@@ -7,13 +7,13 @@ import {
 } from './RuleFormPrimitives';
 
 const CHIPS: { key: Exclude<keyof RestrDraft, 'maxCreditsNextSemester' | 'maxExtraCredits'>; label: string; hint: string }[] = [
-  { key: 'blockRegistration', label: 'Block registration', hint: 'Stop the action' },
+  { key: 'blockRegistration', label: 'Block registration', hint: 'Stop enrollment' },
   { key: 'blockFinalExam', label: 'Block final exam', hint: 'Attendance gate' },
-  { key: 'notifyAdvisor', label: 'Notify advisor', hint: 'Email the advisor' },
-  { key: 'requireMeeting', label: 'Require meeting', hint: 'Student meets advisor' },
-  { key: 'requireDeanApproval', label: 'Require dean approval', hint: 'Manual sign-off' },
-  { key: 'keepHighestScore', label: 'Keep highest score', hint: 'For retakes' },
-  { key: 'allowExtraCredits', label: 'Allow extra credits', hint: 'Fast-track perk' },
+  { key: 'notifyAdvisor', label: 'Notify advisor', hint: 'Alert advisor' },
+  { key: 'requireMeeting', label: 'Require meeting', hint: 'Advising session' },
+  { key: 'requireDeanApproval', label: 'Dean approval', hint: 'Manual sign-off' },
+  { key: 'keepHighestScore', label: 'Keep best score', hint: 'For retakes' },
+  { key: 'allowExtraCredits', label: 'Allow overload', hint: 'Fast-track perk' },
   { key: 'warnOnly', label: 'Warn only', hint: 'No hard block' },
 ];
 
@@ -26,8 +26,8 @@ interface Props {
 
 export function RuleRestrictionSection({ restr, disabled, errors, setR }: Props) {
   return (
-    <RuleFormSection title="When triggered" hint="What the system does when a student hits this rule.">
-      <div className="grid gap-2.5 sm:grid-cols-2">
+    <RuleFormSection step={3} title="Actions when triggered" hint="Select what happens when a student matches this rule.">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {CHIPS.map((c) => (
           <RuleToggleChip
             key={c.key}
@@ -39,7 +39,7 @@ export function RuleRestrictionSection({ restr, disabled, errors, setR }: Props)
           />
         ))}
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-4 border-t border-gray-100 pt-3.5 sm:grid-cols-2">
         <RuleFormField label="Cap credits next semester" error={errors.maxCreditsNextSemester} hint="Leave empty for no cap.">
           <input
             type="number"
@@ -48,7 +48,7 @@ export function RuleRestrictionSection({ restr, disabled, errors, setR }: Props)
             value={restr.maxCreditsNextSemester}
             disabled={disabled}
             onChange={(e) => setR('maxCreditsNextSemester', e.target.value === '' ? '' : Number(e.target.value))}
-            placeholder="e.g. 12"
+            placeholder="e.g. 15"
             aria-label="Cap credits next semester"
             className={RULE_NUM_CLASS}
           />

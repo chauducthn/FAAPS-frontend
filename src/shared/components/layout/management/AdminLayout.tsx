@@ -66,6 +66,12 @@ export const ADMIN_NAV_SECTIONS: PortalNavSection[] = [
         to: '/admin/attendance',
         icon: ClipboardCheck,
       },
+      {
+        label: 'Academic Rules',
+        description: 'Define FPTU FLM academic policies, credit limits, and probation rules.',
+        to: '/admin/rules',
+        icon: Shield,
+      },
     ],
   },
   {
@@ -82,17 +88,6 @@ export const ADMIN_NAV_SECTIONS: PortalNavSection[] = [
         description: 'Monitor scheduled and completed advising appointments.',
         to: '/admin/appointments',
         icon: CalendarCheck,
-      },
-    ],
-  },
-  {
-    title: 'Academic Rules',
-    items: [
-      {
-        label: 'Academic Rules',
-        description: 'Define academic policies, credit limits, and probation rules.',
-        to: '/admin/rules',
-        icon: Shield,
       },
     ],
   },

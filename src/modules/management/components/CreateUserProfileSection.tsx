@@ -26,6 +26,12 @@ interface ProfileProps {
   role: AdminUserRole;
   register: UseFormRegister<CreateUserValues>;
   errors: FieldErrors<CreateUserValues>;
+  selectedMajor: string;
+  selectedCohort: string;
+  majorOptions: { code: string; name: string }[];
+  cohortOptions: string[];
+  onMajorChange: (code: string) => void;
+  onCohortChange: (version: string) => void;
   curriculumList: { id: string; majorCode: string; version: string; name: string }[];
   semesterList: { id: string; code: string }[];
   graduationOptions: { id: string; code: string }[];
@@ -38,6 +44,12 @@ export function CreateUserProfileSection({
   role,
   register,
   errors,
+  selectedMajor,
+  selectedCohort,
+  majorOptions,
+  cohortOptions,
+  onMajorChange,
+  onCohortChange,
   curriculumList,
   semesterList,
   graduationOptions,
@@ -60,6 +72,46 @@ export function CreateUserProfileSection({
           )}
         </div>
       )}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <UserFormField label="Major">
+          <div className="relative">
+            <select
+              value={selectedMajor}
+              onChange={(e) => onMajorChange(e.target.value)}
+              className={`${userFieldClass(false)} appearance-none pr-9`}
+              aria-label="Filter by major"
+            >
+              <option value="">All majors</option>
+              {majorOptions.map((m) => (
+                <option key={m.code} value={m.code}>
+                  {m.code} — {m.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          </div>
+        </UserFormField>
+
+        <UserFormField label="Cohort">
+          <div className="relative">
+            <select
+              value={selectedCohort}
+              onChange={(e) => onCohortChange(e.target.value)}
+              className={`${userFieldClass(false)} appearance-none pr-9`}
+              aria-label="Filter by cohort"
+            >
+              <option value="">All cohorts</option>
+              {cohortOptions.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          </div>
+        </UserFormField>
+      </div>
 
       <UserFormField label="Curriculum" required error={errors.curriculumId?.message}>
         <div className="relative">

@@ -1,17 +1,23 @@
+import { KeyRound } from 'lucide-react';
 import { RowActionMenu } from '../../components/RowActionMenu';
 import type { DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import type { AiConfig } from '../../../ai/types/ai-config';
 import { cn } from '@/shared/lib/utils';
 
+const providerLabel = (provider: string) =>
+  provider === 'GEMINI' ? 'Google AI Studio' : provider === 'OPENROUTER' ? 'OpenRouter' : provider;
+
 export function createAiConfigColumns(handlers: {
   onView: (cfg: AiConfig) => void;
   onEdit: (cfg: AiConfig) => void;
+  onTest: (cfg: AiConfig) => void;
   onDelete: (cfg: AiConfig) => void;
 }): DataTableColumnDef<AiConfig>[] {
   return [
     {
       accessorKey: 'name',
       header: 'Configuration',
+      enableSorting: false,
       cell: ({ row }) => (
         <div className="min-w-0">
           <button
@@ -23,7 +29,7 @@ export function createAiConfigColumns(handlers: {
             {row.original.name}
           </button>
           <p className="mt-0.5 truncate text-[11px] font-medium text-gray-400">
-            {row.original.provider} · {row.original.purpose} · {row.original.modelName}
+            {providerLabel(row.original.provider)} · {row.original.purpose}
           </p>
         </div>
       ),
@@ -33,14 +39,31 @@ export function createAiConfigColumns(handlers: {
       header: 'Model',
       enableSorting: false,
       cell: ({ row }) => (
-        <code className="inline-block max-w-[180px] truncate font-mono text-[13px] font-semibold text-gray-900">
+        <code className="inline-block max-w-[210px] truncate font-mono text-[13px] font-semibold text-gray-900">
           {row.original.modelName}
         </code>
       ),
     },
     {
+      id: 'apiKey',
+      header: 'API Key',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <span
+          className={cn(
+            'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold',
+            row.original.hasApiKey ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700',
+          )}
+        >
+          <KeyRound className="size-3" />
+          {row.original.hasApiKey ? (row.original.apiKeyMasked ?? 'Configured') : 'Missing'}
+        </span>
+      ),
+    },
+    {
       accessorKey: 'temperature',
       header: 'Temp',
+      enableSorting: false,
       meta: { align: 'center' },
       cell: ({ row }) => (
         <span className="font-mono text-[13px] font-semibold tabular-nums text-gray-700">
@@ -51,19 +74,12 @@ export function createAiConfigColumns(handlers: {
     {
       accessorKey: 'maxTokens',
       header: 'Max tokens',
+      enableSorting: false,
       meta: { align: 'right' },
       cell: ({ row }) => (
         <span className="font-mono text-[13px] font-semibold tabular-nums text-[#C2410C]">
           {row.original.maxTokens.toLocaleString('en-US')}
         </span>
-      ),
-    },
-    {
-      accessorKey: 'timeoutSeconds',
-      header: 'Timeout',
-      meta: { align: 'center' },
-      cell: ({ row }) => (
-        <span className="text-[13px] font-medium tabular-nums text-gray-600">{row.original.timeoutSeconds}s</span>
       ),
     },
     {
@@ -93,6 +109,7 @@ export function createAiConfigColumns(handlers: {
             <RowActionMenu
               label={`Actions for ${cfg.name}`}
               actions={[
+                { label: 'Test connection', onSelect: () => handlers.onTest(cfg) },
                 { label: 'View detail', onSelect: () => handlers.onView(cfg) },
                 { label: 'Edit configuration', onSelect: () => handlers.onEdit(cfg) },
                 { label: 'Delete configuration', danger: true, onSelect: () => handlers.onDelete(cfg) },

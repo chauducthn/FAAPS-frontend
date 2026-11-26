@@ -33,10 +33,15 @@ export interface AdminUserDetail {
   createdAt: string;
   updatedAt: string;
   majorId: string | null;
+  majorCode?: string | null;
   majorName: string | null;
   curriculumVersionId: string | null;
   curriculumCode: string | null;
+  curriculumName?: string | null;
   enrollmentSemesterId: string | null;
+  enrollmentSemesterCode?: string | null;
+  expectedGraduationSemesterId?: string | null;
+  expectedGraduationSemesterCode?: string | null;
   currentSemester: number | null;
   academicStatus: string | null;
 }

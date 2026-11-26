@@ -64,6 +64,9 @@ export default function CourseFormModal({
         categoryId: initial.categoryId,
         status: initial.status,
         materialLink: initial.materialLink ?? '',
+        prerequisiteIds: initial.relations
+          .filter((r) => r.kind === 'PREREQUISITE')
+          .map((r) => r.otherCourseId),
       });
     } else {
       reset(EMPTY_DEFAULTS);

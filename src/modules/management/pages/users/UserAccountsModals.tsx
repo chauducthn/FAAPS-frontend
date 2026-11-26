@@ -5,6 +5,8 @@ import { SetRoleModal } from '../../components/SetRoleModal';
 import { BulkSetRoleModal } from '../../components/BulkSetRoleModal';
 import { ResetPasswordConfirmDialog, type ResetPasswordTarget } from '../../components/ResetPasswordConfirmDialog';
 import { ResetPasswordResultModal } from '../../components/ResetPasswordResultModal';
+import { ImportCheckDialog, type ExampleSheet } from '../../components/ImportCheckDialog';
+import type { ImportProblem } from '../../utils/importChecks';
 import type { AdminUserRole, AdminUserSummary, PasswordResetEntry } from '../../types/admin';
 
 export function UserAccountsModals({
@@ -34,6 +36,9 @@ export function UserAccountsModals({
   deletePending,
   onConfirmDelete,
   onCancelDelete,
+  importIssues,
+  importExamples,
+  onCloseImportIssues,
 }: {
   detailId: string | null;
   onCloseDetail: () => void;
@@ -61,6 +66,9 @@ export function UserAccountsModals({
   deletePending: boolean;
   onConfirmDelete: () => Promise<void>;
   onCancelDelete: () => void;
+  importIssues: { fileName: string; problems: ImportProblem[] } | null;
+  importExamples: ExampleSheet[];
+  onCloseImportIssues: () => void;
 }) {
   return (
     <>
@@ -125,6 +133,14 @@ export function UserAccountsModals({
         isLoading={deletePending}
         onConfirm={onConfirmDelete}
         onCancel={onCancelDelete}
+      />
+
+      <ImportCheckDialog
+        open={!!importIssues}
+        fileName={importIssues?.fileName ?? ''}
+        problems={importIssues?.problems ?? []}
+        examples={importExamples}
+        onClose={onCloseImportIssues}
       />
     </>
   );

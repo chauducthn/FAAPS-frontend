@@ -138,25 +138,25 @@ export default function RuleFormModal({ open, mode, initial, isLoading, onClose,
   const title = isCreate ? 'Create rule' : isView ? `Rule ${initial?.ruleName ?? ''}` : `Edit ${initial?.ruleName ?? 'rule'}`;
 
   return (
-    <Modal open={open} onClose={onClose} title={title} className="max-w-2xl">
+    <Modal open={open} onClose={onClose} title={title} className="max-w-3xl">
       <form noValidate onSubmit={handleSubmit(submit)} className="flex min-h-0 flex-col">
         <RuleFormHeader title={title} isCreate={isCreate} readOnly={readOnly} initial={initial} onClose={onClose} />
-        <div className="space-y-5 overflow-y-auto px-6 py-6 text-[13px]">
+        <div className="max-h-[68vh] space-y-4 overflow-y-auto bg-gray-50/40 px-6 py-5 text-[13px]">
           <RuleIdentitySection activeReadOnly={activeReadOnly} isView={isView} disabled={disabled} register={register} errors={errors} />
-          <RuleFormSection title="Condition" hint="Answer the questions — the rule builds itself. No code needed.">
+          <RuleFormSection step={2} title="Trigger condition" hint="Configure thresholds — the rule expression builds automatically.">
             <RuleConditionFields policyType={policyType as AcademicRuleType} cond={cond} set={set} errors={condErrors} readOnly={disabled} />
-            <div className="flex items-start gap-2.5 rounded-xl bg-orange-50 px-4 py-3 ring-1 ring-orange-100">
-              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#9A3412]" aria-hidden />
+            <div className="flex items-start gap-2.5 rounded-lg border border-orange-200/80 bg-orange-50/60 px-3.5 py-2.5">
+              <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#C2410C]" aria-hidden />
               <p className="text-xs leading-relaxed text-[#7C2D12]">
-                <span className="font-bold">In plain words: </span>{summary}
+                <span className="font-semibold">Rule summary: </span>{summary}
               </p>
             </div>
           </RuleFormSection>
           <RuleRestrictionSection restr={restr} disabled={disabled} errors={condErrors} setR={setR} />
           <RuleEnforcementSection isCreate={isCreate} initial={initial} priority={priority} approvalRequired={approvalRequired} disabled={disabled} register={register} setValue={setValue} errors={errors} />
         </div>
-        <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50 px-6 py-4">
-          <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+        <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-white px-6 py-3.5">
+          <button type="button" onClick={onClose} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-50">
             {readOnly ? 'Close' : 'Cancel'}
           </button>
           {!readOnly && (
@@ -164,9 +164,9 @@ export default function RuleFormModal({ open, mode, initial, isLoading, onClose,
               type="submit"
               disabled={!canSubmit}
               title={hasCondError ? 'Answer every required question above to continue' : undefined}
-              className="inline-flex min-w-36 items-center justify-center gap-2 rounded-xl bg-[#F37021] px-5 py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#D9601A] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-9 min-w-32 items-center justify-center gap-2 rounded-lg bg-[#F26F21] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55"
             >
-              {isLoading && <Loader2 className="size-3.5 animate-spin" />}
+              {isLoading && <Loader2 className="size-4 animate-spin" />}
               {isLoading ? 'Saving…' : isCreate ? 'Create rule' : 'Save changes'}
             </button>
           )}

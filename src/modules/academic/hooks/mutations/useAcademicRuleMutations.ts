@@ -68,6 +68,19 @@ export const useAcademicRuleMutations = () => {
     onError: (e: unknown) => toast.error(e instanceof Error ? e.message : 'Could not delete rule'),
   });
 
+  const seedFlm = useMutation({
+    mutationFn: () => academicRuleService.seedFlmDefaults(),
+    onSuccess: (res) => {
+      if (res.created > 0) {
+        toast.success(`Loaded ${res.created} FPTU FLM rule${res.created === 1 ? '' : 's'}${res.skipped > 0 ? ` (${res.skipped} already existed)` : ''}.`);
+      } else {
+        toast.info('All FPTU FLM default rules are already loaded.');
+      }
+      invalidate();
+    },
+    onError: (e: unknown) => toast.error(e instanceof Error ? e.message : 'Could not load FLM defaults'),
+  });
+
   return {
     create: create.mutateAsync,
     isCreating: create.isPending,
@@ -81,5 +94,7 @@ export const useAcademicRuleMutations = () => {
     isChangingStatus: updateStatus.isPending,
     remove: remove.mutateAsync,
     isRemoving: remove.isPending,
+    seedFlm: seedFlm.mutateAsync,
+    isSeedingFlm: seedFlm.isPending,
   };
 };

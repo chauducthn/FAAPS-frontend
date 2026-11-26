@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import type { PaginationState } from '@tanstack/react-table';
 import { RuleTable } from '../components/academic-rules';
-import { useAcademicRulesQuery } from '../../academic/hooks/queries/useAcademicRulesQuery';
+import { ACADEMIC_RULE_QUERY_KEYS, useAcademicRulesQuery } from '../../academic/hooks/queries/useAcademicRulesQuery';
 import { useAcademicRuleMutations } from '../../academic/hooks/mutations/useAcademicRuleMutations';
+import { academicRuleService } from '../services/academic-rule.service';
 import type {
   AcademicRule,
   AcademicRuleFilterParams,
@@ -46,17 +48,13 @@ export default function AcademicRulesPage() {
   );
 
   const { data, isLoading, isFetching, isError, refetch } = useAcademicRulesQuery(params);
+  const summaryQuery = useQuery({
+    queryKey: [...ACADEMIC_RULE_QUERY_KEYS.all, 'summary'],
+    queryFn: academicRuleService.summary,
+  });
   const {
-    create,
-    isCreating,
-    update,
-    isUpdating,
-    publish,
-    archive,
-    reopen,
-    isChangingStatus,
-    remove,
-    isRemoving,
+    create, isCreating, update, isUpdating, publish, archive, reopen,
+    isChangingStatus, remove, isRemoving, seedFlm, isSeedingFlm,
   } = useAcademicRuleMutations();
 
   const items = useMemo(() => data?.items ?? [], [data]);
@@ -106,16 +104,18 @@ export default function AcademicRulesPage() {
   return (
     <div className="w-full space-y-4">
       <AcademicRulesTopBar
-        totalItems={data?.totalItems}
+        totalItems={summaryQuery.data?.total ?? data?.totalItems}
         isFetching={isFetching}
         pageIndex={pagination.pageIndex}
         totalPages={data?.totalPages ?? 1}
-        activeCount={items.filter((r) => r.status === 'ACTIVE').length}
-        shownCount={items.length}
-        draftCount={items.filter((r) => r.status === 'DRAFT').length}
+        activeCount={summaryQuery.data?.active ?? items.filter((r) => r.status === 'ACTIVE').length}
+        draftCount={summaryQuery.data?.draft ?? items.filter((r) => r.status === 'DRAFT').length}
+        inactiveCount={summaryQuery.data?.inactive ?? items.filter((r) => r.status === 'INACTIVE').length}
         selectedStatus={status}
         onSelectStatus={resetPage(setStatus)}
         onCreate={openCreate}
+        onSeedFlm={() => void guard(() => seedFlm())}
+        isSeedingFlm={isSeedingFlm}
       />
 
       <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">

@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeftRight, CheckCircle2, KeyRound, ShieldOff, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { NO_PASSWORD_REASON } from '../components/UserRowMenu';
 import { canResetPassword } from '../utils/passwordReset';
@@ -9,11 +8,14 @@ import { createUserAccountColumns } from './users/userAccountColumns';
 import { UserAccountsHeader } from './users/UserAccountsHeader';
 import { UserAccountsErrorState, UserAccountsFilterBar } from './users/UserAccountsFilterBar';
 import { UserAccountsModals } from './users/UserAccountsModals';
+import { UserBulkActions } from './users/UserBulkActions';
 import { useUserAccountsState } from './users/useUserAccountsState';
+import { useUserImport } from './users/useUserImport';
 
 export default function UserAccounts() {
   const navigate = useNavigate();
   const s = useUserAccountsState();
+  const imp = useUserImport();
   const { usersQuery } = s;
 
   const columns = useMemo(
@@ -43,6 +45,16 @@ export default function UserAccounts() {
 
   return (
     <div className="w-full min-w-0 space-y-4">
+      <input
+        ref={imp.inputRef}
+        type="file"
+        accept=".xlsx"
+        className="hidden"
+        onChange={(e) => {
+          void imp.handleFile(e.target.files?.[0]);
+          e.target.value = '';
+        }}
+      />
       <UserAccountsHeader
         studentCount={s.studentCount.data}
         advisorCount={s.advisorCount.data}
@@ -57,6 +69,10 @@ export default function UserAccounts() {
         onExport={() => void s.runExportCsv()}
         isExporting={s.isExporting}
         canExport={s.total > 0}
+        onImportStudents={imp.openStudentPicker}
+        onImportAdvisors={imp.openAdvisorPicker}
+        isImporting={imp.isImporting}
+        importExamples={imp.examples}
       />
 
       <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
@@ -111,43 +127,14 @@ export default function UserAccounts() {
               showPageSizeSelect={false}
               showPageJump
               bulkActions={(selectedRows) => (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => s.setBulkRoleTargets(selectedRows)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-800 ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
-                  >
-                    <ArrowLeftRight className="size-3.5" aria-hidden /> Set role
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => s.askReset(selectedRows)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-800 ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
-                  >
-                    <KeyRound className="size-3.5" aria-hidden /> Reset password
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => s.askBulk(selectedRows, 'ACTIVE')}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
-                  >
-                    <CheckCircle2 className="size-3.5" aria-hidden /> Activate
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => s.askBulk(selectedRows, 'SUSPENDED')}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-[13px] font-medium text-amber-700 transition-colors hover:bg-amber-100"
-                  >
-                    <ShieldOff className="size-3.5" aria-hidden /> Suspend
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => s.askDelete(selectedRows)}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"
-                  >
-                    <Trash2 className="size-3.5" aria-hidden /> Delete
-                  </button>
-                </>
+                <UserBulkActions
+                  selectedRows={selectedRows}
+                  onSetRole={s.setBulkRoleTargets}
+                  onResetPassword={s.askReset}
+                  onActivate={(rows) => s.askBulk(rows, 'ACTIVE')}
+                  onSuspend={(rows) => s.askBulk(rows, 'SUSPENDED')}
+                  onDelete={s.askDelete}
+                />
               )}
             />
           </div>
@@ -187,6 +174,9 @@ export default function UserAccounts() {
         deletePending={s.deleteUsers.isPending}
         onConfirmDelete={s.runDelete}
         onCancelDelete={() => s.setDeleteTargets(null)}
+        importIssues={imp.issues}
+        importExamples={imp.examples}
+        onCloseImportIssues={imp.clearIssues}
       />
 
       <style>{`@keyframes slide { 0% { transform: translateX(-100%);} 100% { transform: translateX(300%);} }`}</style>

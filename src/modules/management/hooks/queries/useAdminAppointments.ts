@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminAppointmentService, type AppointmentFilterParams } from '../../services/appointment.service';
 import type { AppointmentStatus } from '../../types/admin';
 
@@ -21,5 +21,14 @@ export const useAppointment = (id: string | null) =>
     queryFn: () => adminAppointmentService.getAppointment(id as string),
     enabled: !!id,
   });
+
+export const useUpdateAppointmentStatus = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status, note }: { id: string; status: AppointmentStatus; note?: string }) =>
+      adminAppointmentService.updateStatus(id, status, note),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'appointments'] }),
+  });
+};
 
 export type { AppointmentStatus };

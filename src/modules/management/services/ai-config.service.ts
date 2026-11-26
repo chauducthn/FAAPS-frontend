@@ -8,6 +8,7 @@ import type {
   AiPerformanceFilterParams,
   AiPerformanceResult,
   AiPreset,
+  AiTestResult,
   CreateAiConfigDto,
   UpdateAiConfigDto,
 } from '../../ai/types/ai-config';
@@ -63,6 +64,15 @@ export const aiConfigService = {
   // Secret is write-only; never returned by GET endpoints
   setSecret: async (id: string, body: AiConfigSecretDto): Promise<void> => {
     await apiClient.post(`/admin/ai-configurations/${id}/secret`, body);
+  },
+
+  testConnection: async (id: string): Promise<AiTestResult> => {
+    const { data } = await apiClient.post<ApiResponse<AiTestResult>>(
+      `/admin/ai-configurations/${id}/test`,
+      {},
+    );
+    if (!data.data) throw new Error('No test result returned');
+    return data.data;
   },
 
   remove: async (id: string): Promise<void> => {

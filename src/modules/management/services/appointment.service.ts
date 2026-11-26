@@ -1,5 +1,6 @@
 // src/services/management/appointment.service.ts
 import { apiClient } from '../../../shared/lib/apiClient';
+import { getCsrfHeaders } from '../../../shared/lib/csrf';
 import type { AdminPage, Appointment, AppointmentStatus, AppointmentSummary } from '../types/admin';
 
 /** Query parameters accepted by `GET /admin/appointments`. */
@@ -25,4 +26,14 @@ export const adminAppointmentService = {
 
   getAppointment: async (id: string): Promise<Appointment> =>
     (await apiClient.get<Appointment>(`/admin/appointments/${id}`)).data,
+
+  updateStatus: async (id: string, status: AppointmentStatus, note?: string): Promise<Appointment> => {
+    const headers = await getCsrfHeaders();
+    const { data } = await apiClient.patch<Appointment>(
+      `/admin/appointments/${id}/status`,
+      { status, note: note?.trim() || undefined },
+      { headers },
+    );
+    return data;
+  },
 };

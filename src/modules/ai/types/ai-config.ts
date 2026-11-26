@@ -6,7 +6,7 @@
 //   ai_usage_logs (feature, prompt_tokens, completion_tokens, total_tokens, latency_ms,
 //                  status, error_message, created_at)
 
-export type AiProvider = 'GEMINI' | 'OTHER';
+export type AiProvider = 'GEMINI' | 'OPENROUTER' | 'OTHER';
 export type AiPurpose = 'CHAT' | 'EMBEDDING' | 'OCR';
 export type AiFeature = 'CHAT' | 'EMBEDDING' | 'OCR' | 'RECOMMENDATION' | 'SUMMARIZATION';
 export type AiUsageStatus = 'SUCCESS' | 'TIMEOUT' | 'ERROR' | 'RATE_LIMITED' | 'FALLBACK';
@@ -26,8 +26,19 @@ export interface AiConfig {
   systemPrompt: string | null;
   fallbackMessage: string | null;
   isActive: boolean;
+  hasApiKey?: boolean;
+  apiKeyMasked?: string | null;
   updatedByUserId: string | null;
   updatedAt: string;
+}
+
+export interface AiTestResult {
+  ok: boolean;
+  latencyMs: number;
+  provider: string;
+  modelName: string;
+  replyPreview: string | null;
+  error: string | null;
 }
 
 export type AiPreset = {

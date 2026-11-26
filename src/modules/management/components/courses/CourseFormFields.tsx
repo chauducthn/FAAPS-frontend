@@ -123,15 +123,13 @@ export function CourseFormFields({
         </Field>
       </div>
 
-      {isCreate && (
-        <Field label="Prerequisites" optional>
-          <Controller
-            control={control}
-            name="prerequisiteIds"
-            render={({ field: f }) => <PrerequisitePicker value={f.value ?? []} onChange={f.onChange} excludeCode={code} />}
-          />
-        </Field>
-      )}
+      <Field label="Prerequisites" optional>
+        <Controller
+          control={control}
+          name="prerequisiteIds"
+          render={({ field: f }) => <PrerequisitePicker value={f.value ?? []} onChange={f.onChange} excludeCode={code} />}
+        />
+      </Field>
     </div>
   );
 }

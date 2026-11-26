@@ -41,10 +41,28 @@ export const useAiConfigMutations = () => {
   const setSecret = useMutation({
     mutationFn: ({ id, body }: { id: string; body: AiConfigSecretDto }) =>
       aiConfigService.setSecret(id, body),
-    onSuccess: () => {
-      toast.success('API key saved');
+    onSuccess: (_data, vars) => {
+      toast.success('API key saved securely');
+      invalidate(vars.id);
     },
     onError: (e: unknown) => toast.error(errMsg(e, 'Could not save API key')),
+  });
+
+  const testConnection = useMutation({
+    mutationFn: (id: string) => aiConfigService.testConnection(id),
+    onSuccess: (res) => {
+      if (res.ok) {
+        toast.success(`${res.provider} · ${res.modelName} connected (${res.latencyMs}ms)`, {
+          description: res.replyPreview ?? undefined,
+        });
+      } else {
+        toast.error(`${res.provider} connection failed (${res.latencyMs}ms)`, {
+          description: res.error ?? 'Check your API key and model name.',
+        });
+      }
+      qc.invalidateQueries({ queryKey: AI_CONFIG_QUERY_KEYS.all });
+    },
+    onError: (e: unknown) => toast.error(errMsg(e, 'Connection test failed')),
   });
 
   const remove = useMutation({
@@ -63,6 +81,8 @@ export const useAiConfigMutations = () => {
     isUpdating: update.isPending,
     setSecret: setSecret.mutateAsync,
     isSettingSecret: setSecret.isPending,
+    testConnection: testConnection.mutateAsync,
+    isTesting: testConnection.isPending,
     remove: remove.mutateAsync,
     isRemoving: remove.isPending,
   };

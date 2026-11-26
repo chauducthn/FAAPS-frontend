@@ -1,5 +1,7 @@
 import type { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
+import { KeyRound } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import type { AiConfig } from '../../../ai/types/ai-config';
 import type { CreateAiConfigFormValues } from '../../../ai/validations/ai-config.schema';
 import {
   AiFormField,
@@ -30,7 +32,8 @@ export function AiConfigIdentitySection({ disabled, register, errors }: Omit<Pro
       <div className="grid gap-4 sm:grid-cols-2">
         <AiFormField label="Provider" required error={errors.provider?.message}>
           <select {...register('provider')} disabled={disabled} aria-label="Provider" className={aiSelectClass}>
-            <option value="GEMINI">Gemini</option>
+            <option value="GEMINI">Google AI Studio (Gemini)</option>
+            <option value="OPENROUTER">OpenRouter</option>
             <option value="OTHER">Other</option>
           </select>
         </AiFormField>
@@ -94,5 +97,48 @@ export function AiConfigPromptAndStatus({ disabled, approvalActive, register, se
         </div>
       </AiFormSection>
     </>
+  );
+}
+
+export function AiConfigSecretSection({
+  provider,
+  initial,
+  apiKey,
+  onApiKeyChange,
+  readOnly,
+  disabled,
+}: {
+  provider: string;
+  initial?: AiConfig | null;
+  apiKey: string;
+  onApiKeyChange: (val: string) => void;
+  readOnly: boolean;
+  disabled: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-4">
+      <div className="flex items-center justify-between gap-2">
+        <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800">
+          <KeyRound className="size-3.5 text-[#F26F21]" />
+          {provider === 'OPENROUTER' ? 'OpenRouter API Key' : 'Google AI Studio API Key'} (write-only)
+        </label>
+        {initial?.hasApiKey && (
+          <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+            Saved: {initial.apiKeyMasked ?? 'Configured'}
+          </span>
+        )}
+      </div>
+      {!readOnly && (
+        <input
+          type="password"
+          value={apiKey}
+          onChange={(e) => onApiKeyChange(e.target.value)}
+          disabled={disabled}
+          placeholder={provider === 'OPENROUTER' ? 'sk-or-v1-… (leave blank to keep existing or use ENV)' : 'AIza… (leave blank to keep existing or use ENV)'}
+          aria-label="Provider API key"
+          className="mt-2 h-9 w-full rounded-lg border border-gray-200 bg-white px-3 font-mono text-xs text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+        />
+      )}
+    </div>
   );
 }

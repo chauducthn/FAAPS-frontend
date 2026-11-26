@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';
 import { useAttendanceConfigMutations } from '../../hooks/queries/useAttendance';
@@ -32,41 +33,47 @@ export function DefaultRuleCard({ rule }: { rule: AttendanceRule | undefined }) 
   };
 
   return (
-    <section aria-labelledby="default-rule" className="flex flex-col gap-4 rounded-xl bg-white p-4 shadow-sm sm:p-5">
-      <div>
-        <h2 id="default-rule" className="text-base font-semibold text-[#151c27]">
-          Default condition
-        </h2>
-        <p className="mt-0.5 text-sm text-[#555f6f]">Used by every course that has no condition of its own.</p>
+    <section aria-labelledby="default-rule" className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
+      <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-3.5">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21]">
+          <ShieldCheck className="size-4" aria-hidden />
+        </span>
+        <div>
+          <h2 id="default-rule" className="text-sm font-bold text-gray-900">Default condition</h2>
+          <p className="text-xs text-gray-500">Used by every course that has no custom attendance override.</p>
+        </div>
       </div>
-      {draft ? (
-        <AttendanceRuleFields draft={draft} onChange={setDraft} idPrefix="default-rule" disabled={saveDefault.isPending} />
-      ) : (
-        <div className="h-24 animate-pulse rounded-lg bg-gray-100" />
-      )}
-      {error && (
-        <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-          {error}
-        </p>
-      )}
-      <div className="flex justify-end gap-2">
-        {dirty && (
+
+      <div className="flex flex-col gap-4 p-5">
+        {draft ? (
+          <AttendanceRuleFields draft={draft} onChange={setDraft} idPrefix="default-rule" disabled={saveDefault.isPending} />
+        ) : (
+          <div className="h-24 animate-pulse rounded-xl bg-gray-100" />
+        )}
+        {error && (
+          <p role="alert" className="rounded-xl border border-red-200/80 bg-red-50 px-3.5 py-2.5 text-[13px] font-medium text-red-700">
+            {error}
+          </p>
+        )}
+        <div className="flex justify-end gap-2">
+          {dirty && (
+            <button
+              type="button"
+              onClick={() => rule && setDraft(toDraft(rule))}
+              className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-semibold text-gray-700 hover:bg-gray-50"
+            >
+              Discard
+            </button>
+          )}
           <button
             type="button"
-            onClick={() => rule && setDraft(toDraft(rule))}
-            className="rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-200"
+            onClick={save}
+            disabled={!dirty || saveDefault.isPending}
+            className="h-9 rounded-lg bg-[#F26F21] px-4 text-[13px] font-semibold text-white shadow-2xs hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Discard
+            {saveDefault.isPending ? 'Saving…' : 'Save default'}
           </button>
-        )}
-        <button
-          type="button"
-          onClick={save}
-          disabled={!dirty || saveDefault.isPending}
-          className="rounded-lg bg-[#f37021] px-4 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-50"
-        >
-          {saveDefault.isPending ? 'Saving...' : 'Save default'}
-        </button>
+        </div>
       </div>
     </section>
   );

@@ -8,6 +8,15 @@ export function UserDetailBody({
   user: AdminUserDetail;
   isStudent: boolean;
 }) {
+  const majorDisplay =
+    user.majorCode && user.majorName
+      ? `${user.majorCode} — ${user.majorName}`
+      : (user.majorName ?? user.majorCode);
+  const curriculumDisplay =
+    user.curriculumName && user.curriculumCode
+      ? `${user.majorCode ? `${user.majorCode} ` : ''}${user.curriculumCode} — ${user.curriculumName}`
+      : (user.curriculumName ?? user.curriculumCode);
+
   return (
     <div className="min-h-0 flex-1 space-y-5 overflow-y-auto bg-white px-6 py-5">
       <UserDetailSection title="Account">
@@ -22,10 +31,13 @@ export function UserDetailBody({
       {isStudent ? (
         <UserDetailSection title="Academic record" bordered>
           <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-            <UserDetailField label="Major" value={user.majorName} />
-            <UserDetailField label="Curriculum" value={user.curriculumCode} mono />
-            <UserDetailField label="Current semester" value={user.currentSemester} />
+            <UserDetailField label="Major" value={majorDisplay} />
+            <UserDetailField label="Cohort" value={user.curriculumCode} mono />
+            <UserDetailField label="Curriculum" value={curriculumDisplay} />
             <UserDetailField label="Academic status" value={user.academicStatus} />
+            <UserDetailField label="Enrollment semester" value={user.enrollmentSemesterCode} mono />
+            <UserDetailField label="Current semester" value={user.currentSemester} />
+            <UserDetailField label="Expected graduation" value={user.expectedGraduationSemesterCode} mono />
           </div>
         </UserDetailSection>
       ) : (

@@ -13,6 +13,7 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'code',
       header: 'Code',
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-mono text-[13px] font-semibold text-gray-900">
           {row.original.code}
@@ -22,7 +23,6 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'name',
       header: 'Course Name',
-      // The backend whitelist has no `name` sort, so the column is not sortable.
       enableSorting: false,
       cell: ({ row }) => (
         <div className="min-w-0">
@@ -40,6 +40,7 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'credits',
       header: 'Credits',
+      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-mono text-[13px] font-semibold tabular-nums text-[#C2410C]">
           {row.original.credits}
@@ -48,17 +49,25 @@ export function createCourseColumns(handlers: {
     },
     {
       accessorKey: 'categoryCode',
-      header: 'Category',
+      header: 'Category Code',
       enableSorting: false,
       cell: ({ row }) => (
-        <div className="min-w-0" title={row.original.categoryName}>
-          <span className="font-mono text-xs font-semibold text-gray-800">
-            {row.original.categoryCode}
-          </span>
-          <p className="mt-0.5 max-w-[180px] truncate text-[11px] font-medium text-gray-400">
-            {row.original.categoryName}
-          </p>
-        </div>
+        <span className="font-mono text-xs font-semibold text-gray-800">
+          {row.original.categoryCode || '—'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'categoryName',
+      header: 'Category Name',
+      enableSorting: false,
+      cell: ({ row }) => (
+        <span
+          className="block max-w-[180px] truncate text-[13px] text-gray-600"
+          title={row.original.categoryName}
+        >
+          {row.original.categoryName || '—'}
+        </span>
       ),
     },
     {

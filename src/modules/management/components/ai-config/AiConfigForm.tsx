@@ -1,5 +1,5 @@
 // AI Configuration form — orange header, sectioned layout, strict numeric validation, read-only view mode.
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Cpu, Loader2, X } from 'lucide-react';
@@ -8,7 +8,7 @@ import { cn } from '@/shared/lib/utils';
 import { createAiConfigSchema, type CreateAiConfigFormValues } from '../../../ai/validations/ai-config.schema';
 import type { AiConfig, AiPreset } from '../../../ai/types/ai-config';
 import { AiConfigLimitsSection } from './AiConfigLimitsSection';
-import { AiConfigIdentitySection, AiConfigPromptAndStatus } from './AiConfigTextSections';
+import { AiConfigIdentitySection, AiConfigPromptAndStatus, AiConfigSecretSection } from './AiConfigTextSections';
 
 interface Props {
   open: boolean;
@@ -17,7 +17,7 @@ interface Props {
   preset?: AiPreset | null;
   isLoading?: boolean;
   onClose: () => void;
-  onSubmit: (values: CreateAiConfigFormValues) => void;
+  onSubmit: (values: CreateAiConfigFormValues, apiKey?: string) => void;
 }
 
 const DEFAULT_VALUES: CreateAiConfigFormValues = {
@@ -55,11 +55,14 @@ export default function AiConfigForm({ open, mode, initial, preset, isLoading, o
   });
 
   const purpose = watch('purpose');
+  const provider = watch('provider');
   const temperature = watch('temperature');
   const approvalActive = watch('isActive');
+  const [apiKey, setApiKey] = useState('');
 
   useEffect(() => {
     if (!open) return;
+    setApiKey('');
     if (initial) {
       reset({
         name: initial.name,
@@ -105,7 +108,7 @@ export default function AiConfigForm({ open, mode, initial, preset, isLoading, o
 
   return (
     <Modal open={open} onClose={onClose} title={title} className="max-w-3xl">
-      <form noValidate onSubmit={handleSubmit(onSubmit)} className="flex min-h-0 flex-col">
+      <form noValidate onSubmit={handleSubmit((vals) => onSubmit(vals, apiKey.trim() || undefined))} className="flex min-h-0 flex-col">
         <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-[var(--brand-soft)] px-6 py-5">
           <div className="flex items-start gap-3">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
@@ -154,28 +157,9 @@ export default function AiConfigForm({ open, mode, initial, preset, isLoading, o
           )}
 
           <AiConfigIdentitySection disabled={disabled} register={register} errors={errors} />
-          <AiConfigLimitsSection
-            purpose={purpose}
-            temperature={temperature}
-            disabled={disabled}
-            register={register}
-            watch={watch}
-            setValue={setValue}
-            errors={errors}
-          />
-          <AiConfigPromptAndStatus
-            disabled={disabled}
-            approvalActive={!!approvalActive}
-            register={register}
-            setValue={setValue}
-            errors={errors}
-          />
-
-          {!isCreate && (
-            <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-800">
-              API keys are write-only and configured via backend environment — never stored in this form.
-            </p>
-          )}
+          <AiConfigLimitsSection purpose={purpose} temperature={temperature} disabled={disabled} register={register} watch={watch} setValue={setValue} errors={errors} />
+          <AiConfigPromptAndStatus disabled={disabled} approvalActive={!!approvalActive} register={register} setValue={setValue} errors={errors} />
+          <AiConfigSecretSection provider={provider} initial={initial} apiKey={apiKey} onApiKeyChange={setApiKey} readOnly={readOnly} disabled={disabled} />
         </div>
 
         <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/60 px-6 py-4">

@@ -2,6 +2,15 @@ import { apiClient } from '@/shared/lib/apiClient';
 import { getCsrfHeaders } from '@/shared/lib/csrf';
 import type { ApiResponse } from '@/shared/types/api';
 
+export interface DatabaseResetScope {
+  id: string;
+  label: string;
+  description: string;
+  rowCount: number;
+  tables: string[];
+  preserves: string;
+}
+
 export interface DatabaseOverview {
   totalTables: number;
   users: number;
@@ -12,9 +21,11 @@ export interface DatabaseOverview {
   courses: number;
   semesters: number;
   preservedAdminEmail: string;
+  scopes: DatabaseResetScope[];
 }
 
 export interface DatabaseResetResult {
+  scope: string;
   clearedTables: number;
   deletedRows: number;
   preservedAdminEmail: string;
@@ -26,10 +37,10 @@ export const databaseService = {
     if (!data.data) throw new Error('Could not load database overview');
     return data.data;
   },
-  resetDatabase: async (confirmation: string): Promise<DatabaseResetResult> => {
+  resetDatabase: async (confirmation: string, scope = 'ALL'): Promise<DatabaseResetResult> => {
     const { data } = await apiClient.post<ApiResponse<DatabaseResetResult>>(
       '/admin/database/reset',
-      { confirmation },
+      { confirmation, scope },
       { headers: await getCsrfHeaders() },
     );
     if (!data.data) throw new Error(data.message || 'Could not reset database');

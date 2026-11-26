@@ -65,4 +65,18 @@ export const academicRuleService = {
   remove: async (id: string): Promise<void> => {
     await apiClient.delete(`/admin/academic-rules/${id}`);
   },
+
+  summary: async (): Promise<{ total: number; active: number; draft: number; inactive: number }> => {
+    const { data } = await apiClient.get<{ total: number; active: number; draft: number; inactive: number }>(
+      '/admin/academic-rules/summary',
+    );
+    return data;
+  },
+
+  seedFlmDefaults: async (): Promise<{ created: number; skipped: number }> => {
+    const { data } = await apiClient.post<{ created: number; skipped: number }>(
+      '/admin/academic-rules/seed-flm',
+    );
+    return data;
+  },
 };

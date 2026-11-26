@@ -111,42 +111,22 @@ export const toRule = (rule: BackendRule): AcademicRule => {
 };
 
 /**
- * The backend still requires `curriculumVersionId` on create. The FE no longer
- * picks a curriculum (rules apply system-wide), so the field is left out and
- * the mismatch is reported instead of failing silently.
- */
-const warnAboutCurriculumPayload = (body: CreateAcademicRuleDto | UpdateAcademicRuleDto) => {
-  console.warn(
-    '[academic-rule] Sending payload without `curriculumVersionId`. '
-      + 'Rules are system-wide, but the backend still declares the field as required on create — '
-      + 'the request may be rejected until the backend accepts system-wide rules.',
-    { payload: body },
-  );
-};
-
-/**
  * Maps the FE body onto the wire format. `ruleName` and `grade` are folded
- * into the condition payload so they survive the round-trip while the backend
- * contract catches up.
+ * into the condition payload so they survive the round-trip.
  */
 export const toRequest = (body: CreateAcademicRuleDto | UpdateAcademicRuleDto) => {
   const condition: Record<string, unknown> = { ...(body.condition ?? {}) };
   if (body.ruleName !== undefined) condition.rule_name = body.ruleName;
   if (body.grade !== undefined && body.grade !== null) condition.grade = body.grade;
 
-  const payload = {
+  return {
     ...body,
-    // Not part of the FE contract anymore.
     curriculumVersionId: undefined,
-    displayMessage: undefined,
+    displayMessage: body.ruleName,
     condition: undefined,
     restriction: undefined,
     conditionExpression: JSON.stringify(condition),
     restrictionExpression:
       body.restriction === undefined ? undefined : JSON.stringify(body.restriction),
   };
-
-  warnAboutCurriculumPayload(body);
-
-  return payload;
 };

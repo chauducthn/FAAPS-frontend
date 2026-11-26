@@ -31,8 +31,28 @@ export default function CoursesPage() {
 
   const handleSubmitForm = async (values: CreateCourseFormValues) => {
     try {
-      if (s.editing) await mutations.update({ id: s.editing.id, body: toCourseBody(values, false) });
-      else await mutations.create(toCourseBody(values, true));
+      if (s.editing) {
+        await mutations.update({ id: s.editing.id, body: toCourseBody(values, false) });
+        const existingPrereqs = (s.editingQuery.data?.relations ?? []).filter((r) => r.kind === 'PREREQUISITE');
+        const nextIds = values.prerequisiteIds ?? [];
+        const existingIdSet = new Set(existingPrereqs.map((r) => r.otherCourseId));
+        const nextIdSet = new Set(nextIds);
+        for (const otherCourseId of nextIds) {
+          if (!existingIdSet.has(otherCourseId)) {
+            await mutations.addRelation({
+              courseId: s.editing.id,
+              body: { kind: 'PREREQUISITE', groupNo: 1, otherCourseId, minimumScore: null },
+            });
+          }
+        }
+        for (const rel of existingPrereqs) {
+          if (!nextIdSet.has(rel.otherCourseId)) {
+            await mutations.removeRelation({ courseId: s.editing.id, relationId: rel.relationId });
+          }
+        }
+      } else {
+        await mutations.create(toCourseBody(values, true));
+      }
       s.setFormOpen(false);
     } catch {
       return;

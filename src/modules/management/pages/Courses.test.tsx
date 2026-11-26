@@ -205,19 +205,13 @@ describe('Courses', () => {
     );
   });
 
-  it('sorts by the requested column', async () => {
-    const user = userEvent.setup();
+  it('renders plain table headers without column sort buttons', async () => {
     renderPage();
 
     await screen.findByText('SE101');
 
     const header = screen.getByRole('columnheader', { name: /^Code$/i });
-    await user.click(header.querySelector('button') as HTMLButtonElement);
-
-    await waitFor(() => {
-      const call = listCourses.mock.calls.at(-1)?.[0];
-      expect(call).toMatchObject({ sort: 'code,asc' });
-    });
+    expect(header.querySelector('button')).toBeNull();
   });
 
   it('reveals the bulk delete action when a row is selected', async () => {
@@ -264,10 +258,11 @@ describe('Courses', () => {
     // The confirmation dialog is never opened.
     expect(screen.queryByText('Delete course?')).not.toBeInTheDocument();
   });
-  it('shows the category in its own column', async () => {
+  it('shows category code and category name in two separate columns', async () => {
     renderPage();
     await screen.findByText('SE101');
-    expect(screen.getByRole('columnheader', { name: /Category/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Category Code/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Category Name/i })).toBeInTheDocument();
     expect(screen.getAllByText('SE').length).toBeGreaterThanOrEqual(2);
   });
 

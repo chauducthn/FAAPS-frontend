@@ -34,12 +34,12 @@ export function RuleEnforcementSection({
   errors,
 }: Props) {
   return (
-    <RuleFormSection title="Enforcement" hint="How this rule competes and who must sign off.">
-      <div className="grid items-start gap-4 md:grid-cols-[1.2fr_1fr_1fr]">
+    <RuleFormSection step={4} title="Enforcement & notes" hint="Evaluation priority, sign-off requirement, and admin notes.">
+      <div className="grid items-start gap-4 sm:grid-cols-3">
         <RuleFormField
           label="Priority"
           error={errors.priority?.message}
-          hint={errors.priority?.message ? undefined : 'Higher wins when rules overlap.'}
+          hint={errors.priority?.message ? undefined : 'Higher wins on overlap.'}
         >
           <div className="flex items-center gap-1.5">
             <button
@@ -47,7 +47,7 @@ export function RuleEnforcementSection({
               aria-label="Decrease priority"
               disabled={disabled}
               onClick={() => setValue('priority', Math.max(0, Number(priority ?? 0) - 1))}
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F37021] hover:text-[#F37021] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#F26F21] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Minus className="size-3.5" />
             </button>
@@ -60,7 +60,7 @@ export function RuleEnforcementSection({
               aria-label="Priority"
               className={cn(
                 RULE_NUM_CLASS,
-                'bg-white text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none',
+                'text-center [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none',
               )}
             />
             <button
@@ -68,7 +68,7 @@ export function RuleEnforcementSection({
               aria-label="Increase priority"
               disabled={disabled}
               onClick={() => setValue('priority', Math.min(1000, Number(priority ?? 0) + 1))}
-              className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F37021] hover:text-[#F37021] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#F26F21] disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Plus className="size-3.5" />
             </button>
@@ -77,38 +77,40 @@ export function RuleEnforcementSection({
 
         <div>
           <p className={RULE_LABEL_CLASS}>Approval</p>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={!!approvalRequired}
-            aria-label="Approval required"
-            disabled={disabled}
-            onClick={() => setValue('approvalRequired', !approvalRequired)}
-            className="flex items-center gap-2.5 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <span className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', approvalRequired ? 'bg-[#F37021]' : 'bg-gray-300')}>
-              <span className={cn('absolute top-0.5 size-5 rounded-full bg-white shadow transition-all', approvalRequired ? 'left-[22px]' : 'left-0.5')} />
-            </span>
-            <span className="text-xs font-bold text-gray-700">{approvalRequired ? 'Required' : 'Automatic'}</span>
-          </button>
+          <div className="flex h-10 items-center">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={!!approvalRequired}
+              aria-label="Approval required"
+              disabled={disabled}
+              onClick={() => setValue('approvalRequired', !approvalRequired)}
+              className="flex items-center gap-2.5 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <span className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', approvalRequired ? 'bg-[#F26F21]' : 'bg-gray-300')}>
+                <span className={cn('absolute top-0.5 size-5 rounded-full bg-white shadow transition-all', approvalRequired ? 'left-[22px]' : 'left-0.5')} />
+              </span>
+              <span className="text-[13px] font-semibold text-gray-700">{approvalRequired ? 'Required' : 'Automatic'}</span>
+            </button>
+          </div>
           <p className="mt-1 text-[11px] text-gray-400">
-            {approvalRequired ? 'A person must sign off first.' : 'Applies on its own.'}
+            {approvalRequired ? 'Advisor / dean sign-off needed.' : 'Enforced automatically.'}
           </p>
         </div>
 
         <div>
-          <p className={RULE_LABEL_CLASS}>Status</p>
-          <div className="flex h-8 items-center">
+          <p className={RULE_LABEL_CLASS}>Lifecycle status</p>
+          <div className="flex h-10 items-center">
             {initial ? <RuleStatusBadge status={initial.status} /> : <RuleStatusBadge status="DRAFT" />}
           </div>
-          <p className="mt-1 text-[11px] leading-relaxed text-gray-400">
+          <p className="mt-1 text-[11px] text-gray-400">
             {isCreate
-              ? 'Starts as DRAFT. Publish from the list.'
+              ? 'Starts as DRAFT.'
               : initial?.status === 'DRAFT'
-                ? 'DRAFT → Publish when ready.'
+                ? 'Publish when ready.'
                 : initial?.status === 'ACTIVE'
-                  ? 'ACTIVE is live & locked.'
-                  : 'INACTIVE. Reopen or delete.'}
+                  ? 'Live & read-only.'
+                  : 'Archived.'}
           </p>
         </div>
       </div>
@@ -118,9 +120,9 @@ export function RuleEnforcementSection({
           rows={2}
           {...register('description')}
           disabled={disabled}
-          placeholder="When does this rule trigger…"
+          placeholder="Explain when this rule applies and how advisors should handle it…"
           aria-label="Description"
-          className={cn(RULE_FIELD_CLASS, 'resize-none leading-relaxed')}
+          className={cn(RULE_FIELD_CLASS, 'h-auto resize-none py-2.5 leading-relaxed')}
         />
       </RuleFormField>
     </RuleFormSection>

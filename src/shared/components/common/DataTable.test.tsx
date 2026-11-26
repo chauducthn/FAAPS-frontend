@@ -59,15 +59,11 @@ describe('DataTable', () => {
     expect(screen.getByText('Grace Hopper')).toBeInTheDocument();
   });
 
-  it('sorts by a column when its header is clicked', async () => {
-    const user = userEvent.setup();
+  it('renders plain column headers without sort buttons', () => {
     render(<DataTable columns={columns} data={data} searchKey="name" />);
 
     const header = screen.getByRole('columnheader', { name: /Name/i });
-    await user.click(within(header).getByRole('button'));
-
-    const bodyRows = screen.getAllByRole('row').slice(1);
-    expect(bodyRows[0]).toHaveTextContent('Ada Lovelace');
+    expect(within(header).queryByRole('button')).toBeNull();
   });
 
   it('selects rows and reveals the floating bulk-action bar', async () => {

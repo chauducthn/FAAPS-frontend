@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Database, Loader2, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
+import { AlertTriangle, Database, Layers, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Modal } from '@/shared/components/ui/Modal';
 import { toastBadRequest } from '@/shared/lib/apiError';
-import { databaseService } from '../services/database.service';
+import { databaseService, type DatabaseResetScope } from '../services/database.service';
+import { DatabaseResetModal } from '../components/DatabaseResetModal';
 
 const DB_KEY = ['admin', 'database', 'overview'] as const;
 
 export default function DatabaseManagementPage() {
   const queryClient = useQueryClient();
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [target, setTarget] = useState<DatabaseResetScope | 'ALL' | null>(null);
   const [confirmText, setConfirmText] = useState('');
 
   const overviewQuery = useQuery({
@@ -19,17 +19,26 @@ export default function DatabaseManagementPage() {
   });
 
   const resetMutation = useMutation({
-    mutationFn: () => databaseService.resetDatabase(confirmText.trim()),
+    mutationFn: () => {
+      const scopeId = target === 'ALL' || !target ? 'ALL' : target.id;
+      return databaseService.resetDatabase(confirmText.trim(), scopeId);
+    },
     onSuccess: async (res) => {
-      setConfirmOpen(false);
+      const label = target === 'ALL' || !target ? 'Entire database' : target.label;
+      setTarget(null);
       setConfirmText('');
       await queryClient.invalidateQueries();
       toast.success(
-        `Database cleared (${res.deletedRows} rows across ${res.clearedTables} tables). Kept ${res.preservedAdminEmail}.`,
+        `${label} reset (${res.deletedRows.toLocaleString()} rows cleared across ${res.clearedTables} tables).`,
       );
     },
     onError: (err) => toastBadRequest(err),
   });
+
+  const openConfirm = (next: DatabaseResetScope | 'ALL') => {
+    setConfirmText('');
+    setTarget(next);
+  };
 
   const d = overviewQuery.data;
   const stats = [
@@ -42,8 +51,6 @@ export default function DatabaseManagementPage() {
     { label: 'Semesters', value: d?.semesters },
     { label: 'Total tables', value: d?.totalTables },
   ];
-
-  const canConfirm = confirmText.trim().toUpperCase() === 'RESET' && !resetMutation.isPending;
 
   return (
     <div className="w-full space-y-5">
@@ -74,15 +81,60 @@ export default function DatabaseManagementPage() {
         ))}
       </div>
 
+      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
+        <div className="flex items-center gap-2.5 border-b border-gray-100 px-6 py-4">
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21]">
+            <Layers className="size-4" />
+          </span>
+          <div>
+            <h3 className="text-[15px] font-semibold text-gray-900">Reset by Module</h3>
+            <p className="text-xs text-gray-500">
+              Clear individual modules safely with foreign-key dependencies handled automatically.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-3">
+          {(d?.scopes ?? []).map((scope) => (
+            <div
+              key={scope.id}
+              className="flex flex-col justify-between gap-3 rounded-xl border border-gray-200/80 bg-gray-50/40 p-4 transition-colors hover:border-gray-300"
+            >
+              <div>
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-[13px] font-bold text-gray-900">{scope.label}</h4>
+                  <span className="rounded-full bg-white px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums text-gray-600 ring-1 ring-gray-200">
+                    {scope.rowCount.toLocaleString()} rows
+                  </span>
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-gray-600">{scope.description}</p>
+                <p className="mt-1.5 text-[11px] font-medium text-emerald-700">{scope.preserves}</p>
+              </div>
+              <div className="flex items-center justify-between border-t border-gray-200/60 pt-2.5">
+                <span className="text-[11px] text-gray-400">{scope.tables.length} tables</span>
+                <button
+                  type="button"
+                  disabled={scope.rowCount === 0}
+                  onClick={() => openConfirm(scope)}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:border-gray-200 disabled:text-gray-400 disabled:hover:bg-white"
+                >
+                  <Trash2 className="size-3.5" /> Reset
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="overflow-hidden rounded-2xl border border-red-200/90 bg-white shadow-2xs">
         <div className="flex items-start gap-3 border-b border-red-100 bg-red-50/60 px-6 py-4">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-100 text-red-600">
             <AlertTriangle className="size-4.5" />
           </span>
           <div>
-            <h3 className="text-[15px] font-semibold text-red-900">Danger Zone — Reset Database</h3>
+            <h3 className="text-[15px] font-semibold text-red-900">Danger Zone — Reset Entire Database</h3>
             <p className="mt-0.5 text-[13px] text-red-700/90">
-              Permanently delete all operational data across the database and start fresh.
+              Permanently delete all operational data across every table and start fresh.
             </p>
           </div>
         </div>
@@ -105,7 +157,7 @@ export default function DatabaseManagementPage() {
               <p className="mt-1.5 leading-relaxed text-emerald-800/90">
                 Only your current Admin account (
                 <span className="font-mono font-semibold">{d?.preservedAdminEmail ?? 'current admin'}</span>
-                ) along with system roles and course categories so you can keep signing in and creating data.
+                ) along with system roles and course categories.
               </p>
             </div>
           </div>
@@ -113,70 +165,25 @@ export default function DatabaseManagementPage() {
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={() => { setConfirmText(''); setConfirmOpen(true); }}
+              onClick={() => openConfirm('ALL')}
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-red-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-red-700"
             >
-              <Trash2 className="size-4" /> Reset database
+              <Trash2 className="size-4" /> Reset entire database
             </button>
           </div>
         </div>
       </section>
 
-      <Modal
-        open={confirmOpen}
-        onClose={() => !resetMutation.isPending && setConfirmOpen(false)}
-        title="Confirm database reset"
-        className="max-w-md"
-      >
-        <div className="space-y-4 p-6">
-          <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 ring-1 ring-red-200/70">
-              <AlertTriangle className="size-5" />
-            </span>
-            <div>
-              <h3 className="text-[15px] font-semibold text-gray-900">Reset entire database?</h3>
-              <p className="mt-1 text-[13px] text-gray-600">
-                This action cannot be undone. Every record will be deleted except your admin account (
-                <span className="font-mono font-medium text-gray-900">{d?.preservedAdminEmail}</span>).
-              </p>
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="confirm-reset-input" className="mb-1.5 block text-xs font-medium text-gray-700">
-              Type <span className="font-mono font-bold text-red-600">RESET</span> to confirm
-            </label>
-            <input
-              id="confirm-reset-input"
-              type="text"
-              value={confirmText}
-              onChange={(e) => setConfirmText(e.target.value)}
-              placeholder="RESET"
-              className="h-10 w-full rounded-lg border border-gray-200 px-3 font-mono text-[13px] uppercase focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100"
-            />
-          </div>
-
-          <div className="flex justify-end gap-2 pt-1">
-            <button
-              type="button"
-              disabled={resetMutation.isPending}
-              onClick={() => setConfirmOpen(false)}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              disabled={!canConfirm}
-              onClick={() => resetMutation.mutate()}
-              className="inline-flex h-9 items-center gap-2 rounded-lg bg-red-600 px-4 text-[13px] font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {resetMutation.isPending && <Loader2 className="size-4 animate-spin" />}
-              {resetMutation.isPending ? 'Resetting…' : 'Confirm reset'}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <DatabaseResetModal
+        open={target !== null}
+        target={target}
+        preservedAdminEmail={d?.preservedAdminEmail}
+        confirmText={confirmText}
+        isPending={resetMutation.isPending}
+        onConfirmTextChange={setConfirmText}
+        onClose={() => setTarget(null)}
+        onConfirm={() => resetMutation.mutate()}
+      />
     </div>
   );
 }

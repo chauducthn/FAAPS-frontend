@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Archive, FileWarning, Plus, ShieldCheck } from 'lucide-react';
+import { Archive, BookOpenCheck, CheckCircle2, FileWarning, Loader2, Plus, ShieldCheck } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import type { AcademicRuleStatus } from '../../../academic/types/academic-rule';
 
@@ -18,7 +18,7 @@ function StatTile({
   label: string;
   value: string;
   meta?: string;
-  tone: 'slate' | 'emerald' | 'amber';
+  tone: 'slate' | 'emerald' | 'amber' | 'gray';
   active?: boolean;
   onClick?: () => void;
 }) {
@@ -26,11 +26,13 @@ function StatTile({
     slate: 'bg-gray-100 text-gray-700',
     emerald: 'bg-emerald-50 text-emerald-700',
     amber: 'bg-amber-50 text-amber-700',
+    gray: 'bg-slate-100 text-slate-600',
   };
   const activeTone: Record<typeof tone, string> = {
     slate: 'border-gray-400 bg-gray-50/70',
     emerald: 'border-emerald-400/70 bg-emerald-50/40',
     amber: 'border-amber-400/70 bg-amber-50/40',
+    gray: 'border-slate-400/70 bg-slate-50/50',
   };
 
   return (
@@ -62,26 +64,30 @@ export function AcademicRulesTopBar({
   pageIndex,
   totalPages,
   activeCount,
-  shownCount,
   draftCount,
+  inactiveCount,
   selectedStatus,
   onSelectStatus,
   onCreate,
+  onSeedFlm,
+  isSeedingFlm,
 }: {
   totalItems?: number;
   isFetching: boolean;
   pageIndex: number;
   totalPages: number;
   activeCount: number;
-  shownCount: number;
   draftCount: number;
+  inactiveCount: number;
   selectedStatus: 'ALL' | AcademicRuleStatus;
   onSelectStatus: (status: 'ALL' | AcademicRuleStatus) => void;
   onCreate: () => void;
+  onSeedFlm: () => void;
+  isSeedingFlm: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div className="grid flex-1 grid-cols-1 gap-2.5 sm:grid-cols-3">
+      <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-4">
         <StatTile
           icon={<ShieldCheck className="size-4" />}
           label="Total rules"
@@ -92,26 +98,44 @@ export function AcademicRulesTopBar({
           onClick={() => onSelectStatus('ALL')}
         />
         <StatTile
-          icon={<FileWarning className="size-4" />}
-          label="Active on page"
+          icon={<CheckCircle2 className="size-4" />}
+          label="Active"
           value={String(activeCount)}
-          meta={`${shownCount} shown`}
+          meta="enforced"
           tone="emerald"
           active={selectedStatus === 'ACTIVE'}
           onClick={() => onSelectStatus(selectedStatus === 'ACTIVE' ? 'ALL' : 'ACTIVE')}
         />
         <StatTile
-          icon={<Archive className="size-4" />}
-          label="Drafts on page"
+          icon={<FileWarning className="size-4" />}
+          label="Draft"
           value={String(draftCount)}
           meta="ready to publish"
           tone="amber"
           active={selectedStatus === 'DRAFT'}
           onClick={() => onSelectStatus(selectedStatus === 'DRAFT' ? 'ALL' : 'DRAFT')}
         />
+        <StatTile
+          icon={<Archive className="size-4" />}
+          label="Archived"
+          value={String(inactiveCount)}
+          meta="inactive"
+          tone="gray"
+          active={selectedStatus === 'INACTIVE'}
+          onClick={() => onSelectStatus(selectedStatus === 'INACTIVE' ? 'ALL' : 'INACTIVE')}
+        />
       </div>
 
-      <div className="flex shrink-0 items-center justify-end">
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+        <button
+          type="button"
+          onClick={onSeedFlm}
+          disabled={isSeedingFlm}
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#C2410C] disabled:cursor-not-allowed disabled:opacity-55"
+        >
+          {isSeedingFlm ? <Loader2 className="size-4 animate-spin" /> : <BookOpenCheck className="size-4 text-[#F26F21]" />}
+          {isSeedingFlm ? 'Loading FLM…' : 'Load FLM defaults'}
+        </button>
         <button
           type="button"
           onClick={onCreate}

@@ -30,7 +30,7 @@ export default function AiConfigPage() {
   const params = useMemo(
     () => ({
       search: search || undefined,
-      provider: provider === 'ALL' ? undefined : (provider as 'GEMINI' | 'OTHER'),
+      provider: provider === 'ALL' ? undefined : (provider as 'GEMINI' | 'OPENROUTER' | 'OTHER'),
       purpose: purpose === 'ALL' ? undefined : (purpose as 'CHAT' | 'EMBEDDING' | 'OCR'),
       isActive: status === 'ALL' ? undefined : status === 'ACTIVE',
       page: pagination.pageIndex,
@@ -41,7 +41,7 @@ export default function AiConfigPage() {
 
   const listQuery = useAiConfigsQuery(params);
   const presetsQuery = useAiPresetsQuery();
-  const { create, isCreating, update, isUpdating, remove, isRemoving } = useAiConfigMutations();
+  const { create, isCreating, update, isUpdating, setSecret, testConnection, remove, isRemoving } = useAiConfigMutations();
 
   const items = useMemo(() => listQuery.data?.items ?? [], [listQuery.data]);
   const totalItems = listQuery.data?.totalItems ?? 0;
@@ -81,9 +81,10 @@ export default function AiConfigPage() {
     () => createAiConfigColumns({
       onView: (cfg) => openForm('view', cfg),
       onEdit: (cfg) => openForm('edit', cfg),
+      onTest: (cfg) => void testConnection(cfg.id).catch(() => undefined),
       onDelete: setDeleting,
     }),
-    [],
+    [testConnection],
   );
 
   return (
@@ -153,12 +154,14 @@ export default function AiConfigPage() {
         preset={selectedPreset}
         isLoading={isCreating || isUpdating}
         onClose={() => setFormOpen(false)}
-        onSubmit={async (values: CreateAiConfigFormValues) => {
+        onSubmit={async (values: CreateAiConfigFormValues, apiKey?: string) => {
           try {
-            if (formMode === 'edit' && selected) {
-              await update({ id: selected.id, body: values });
-            } else {
-              await create(values);
+            const saved =
+              formMode === 'edit' && selected
+                ? await update({ id: selected.id, body: values })
+                : await create(values);
+            if (apiKey) {
+              await setSecret({ id: saved.id, body: { apiKey } });
             }
             setFormOpen(false);
             setSelectedPreset(null);

@@ -127,6 +127,24 @@ export const suggestGraduationSemester = <T extends SemesterLike>(
   return ordered[index + SEMESTERS_TO_GRADUATE] ?? null;
 };
 
+/** Estimates the student's current semester (1–9) from their enrollment semester up to today. */
+export const suggestCurrentSemester = <T extends SemesterLike>(
+  semesters: readonly T[],
+  enrollmentSemesterId: string,
+  todayIso = new Date().toISOString().slice(0, 10),
+): number => {
+  const ordered = sortSemesters(semesters);
+  const startIdx = ordered.findIndex((s) => s.id === enrollmentSemesterId);
+  if (startIdx < 0) return 1;
+  let currentIdx = -1;
+  for (let i = 0; i < ordered.length; i++) {
+    const start = ordered[i].startDate;
+    if (start && start <= todayIso) currentIdx = i;
+  }
+  if (currentIdx < startIdx) return 1;
+  return Math.max(1, Math.min(9, currentIdx - startIdx + 1));
+};
+
 /** True when `later` starts after `earlier`. Missing dates never conflict. */
 export const isAfterSemester = (
   later: SemesterLike | undefined,

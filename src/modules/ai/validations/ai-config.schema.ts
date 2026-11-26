@@ -11,7 +11,7 @@ const numMsg = (label: string) => ({
 
 export const createAiConfigSchema = z.object({
   name: z.string().min(2, 'Name needs at least 2 characters').max(100, 'Name is too long'),
-  provider: z.enum(['GEMINI', 'OTHER']),
+  provider: z.enum(['GEMINI', 'OPENROUTER', 'OTHER']),
   modelName: z.string().min(1, 'Model name is required').max(100, 'Model name is too long'),
   purpose: z.enum(['CHAT', 'EMBEDDING', 'OCR']),
   temperature: z

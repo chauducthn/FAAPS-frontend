@@ -32,9 +32,9 @@ export function CourseDetailSkeleton({ onClose }: { onClose: () => void }) {
 
 export function CourseStat({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className={cn('rounded-2xl border p-3', accent ? 'border-orange-200 bg-orange-50/70' : 'border-gray-200 bg-gray-50/60')}>
-      <p className="text-[10px] font-extrabold uppercase tracking-[0.06em] text-gray-500">{label}</p>
-      <p className={cn('mt-1 text-base font-extrabold tabular-nums', accent ? 'text-[#9a3412]' : 'text-gray-900')}>{value}</p>
+    <div className={cn('rounded-xl border px-3.5 py-3 shadow-2xs', accent ? 'border-orange-200/80 bg-orange-50/50' : 'border-gray-200/80 bg-white')}>
+      <p className="text-[11px] font-semibold text-gray-500">{label}</p>
+      <p className={cn('mt-1 text-lg font-bold leading-none tabular-nums', accent ? 'text-[#C2410C]' : 'text-gray-900')}>{value}</p>
     </div>
   );
 }
