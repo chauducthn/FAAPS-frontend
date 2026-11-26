@@ -23,7 +23,7 @@ const readOnlyRelation = async (): Promise<never> => {
   throw new Error('Read-only for students');
 };
 
-export function StudentCurriculumCoursesCard() {
+export function StudentCurriculumCoursesCard({ onOpenSetup }: { onOpenSetup?: () => void } = {}) {
   const profile = useMyProfile();
   const curriculum = useMyCurriculum();
   const coursesQuery = useMyCurriculumCourses();
@@ -124,9 +124,19 @@ export function StudentCurriculumCoursesCard() {
               )}
             </div>
           )}
-          <Link to="/student/profile" className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-[#C2410C]">
-            <SlidersHorizontal className="size-3.5" /> Major / Combo
-          </Link>
+          {onOpenSetup ? (
+            <button
+              type="button"
+              onClick={onOpenSetup}
+              className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-[#C2410C]"
+            >
+              <SlidersHorizontal className="size-3.5" /> Major / Combo
+            </button>
+          ) : (
+            <Link to="/student/curriculum" className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition-colors hover:border-orange-300 hover:text-[#C2410C]">
+              <SlidersHorizontal className="size-3.5" /> Major / Combo
+            </Link>
+          )}
         </div>
       </div>
 

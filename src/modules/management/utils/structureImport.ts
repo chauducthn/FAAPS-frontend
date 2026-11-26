@@ -1,60 +1,69 @@
-import { readFirstSheet, XlsxReadError, type SheetRows } from '../../../shared/lib/xlsxRead';
+import { readNamedSheets, XlsxReadError, type SheetRows } from '../../../shared/lib/xlsxRead';
 import type { CreateMajorDto, MajorStatus } from '../../academic/types/major';
 import type { CurriculumStatus } from '../../academic/types/curriculum';
 import { CREDIT_OPTIONS_MESSAGE } from '../../academic/validations/course.schema';
 import { currentSemesterOrdinal, MIN_END_TERM_GAP, semesterOrdinal } from '../components/curriculum/semesterRangeUtils';
+import { detectFlmGroupSheetType, parseFlmGroupSheet, type PendingFlmGroup } from './flmGroupImport';
 import { isAllowedCredits, type ImportProblem } from './importChecks';
 
 export { majorExample, majorCohortExample, cohortExample, cohortCurriculumExample } from './structureExamples';
+export type { PendingFlmGroup } from './flmGroupImport';
 
 const MAJOR_CODE_RE = /^[A-Z][A-Z0-9]{1,5}$/;
 const COHORT_RE = /^K(0[1-9]|[1-9]\d)$/;
 const SEM_CODE_RE = /^(SP|SU|FA)\d{4}$/;
 
-export type StructureImportMode = 'major_only' | 'cohort_only' | 'major_cohort' | 'major_cohort_curriculum';
-
+export type StructureImportMode = 'major_only' | 'cohort_only' | 'major_cohort' | 'major_cohort_curriculum' | 'flm_groups';
 export interface PendingCohortRow {
   majorCode: string; majorName: string; majorId?: string; version: string;
   effectiveFromSemesterId?: string; effectiveToSemesterId?: string;
-  startSemesterCode: string; endSemesterCode: string;
-  isCurrent: boolean; status: CurriculumStatus;
+  startSemesterCode: string; endSemesterCode: string; isCurrent: boolean; status: CurriculumStatus;
 }
-
 export interface PendingCurriculumLink {
   majorCode: string; majorName: string; version: string; courseId: string; term: number;
 }
-
 export interface StructureParseResult {
   mode: StructureImportMode; majors: CreateMajorDto[]; cohorts: PendingCohortRow[];
-  curriculumLinks: PendingCurriculumLink[]; problems: ImportProblem[];
+  curriculumLinks: PendingCurriculumLink[]; flmGroups: PendingFlmGroup[]; problems: ImportProblem[];
 }
 
 const cell = (rows: SheetRows, r: number, c: number) => (c < 0 ? '' : (rows[r]?.[c] ?? '').trim());
 const clean = (v: string) => v.trim().toLowerCase().replace(/[:：]+$/, '').trim();
-const findCol = (cleanedHeader: string[], keys: string[]) => keys.map((k) => cleanedHeader.indexOf(k)).find((i) => i >= 0) ?? -1;
+const findCol = (h: string[], keys: string[]) => keys.map((k) => h.indexOf(k)).find((i) => i >= 0) ?? -1;
 
-async function readWorkbook(file: File): Promise<SheetRows | ImportProblem> {
-  if (!/\.xlsx$/i.test(file.name)) return { row: null, message: 'Upload an Excel file (.xlsx). Download an example sheet to start from the right layout.' };
-  try { return await readFirstSheet(file); }
-  catch (error) { return { row: null, message: error instanceof XlsxReadError ? error.message : 'The file could not be read as an Excel workbook.' }; }
+async function readAllSheets(file: File): Promise<{ sheets: Record<string, SheetRows> } | { problem: ImportProblem }> {
+  if (!/\.xlsx$/i.test(file.name)) return { problem: { row: null, message: 'Upload an Excel file (.xlsx).' } };
+  try { return { sheets: await readNamedSheets(file) }; }
+  catch (error) { return { problem: { row: null, message: error instanceof XlsxReadError ? error.message : 'Could not read Excel workbook.' } }; }
 }
 
 export async function parseStructureImport(
-  file: File,
-  context: 'majors' | 'cohorts',
+  file: File, context: 'majors' | 'cohorts',
   existingMajors: { id: string; code: string; name: string }[],
   semesters: { id: string; code: string }[],
   activeCourses: { id: string; code: string; credits?: number }[] = [],
 ): Promise<StructureParseResult> {
   const empty = (msg: string, row: number | null = 1): StructureParseResult => ({
     mode: context === 'majors' ? 'major_only' : 'cohort_only',
-    majors: [], cohorts: [], curriculumLinks: [], problems: [{ row, message: msg }],
+    majors: [], cohorts: [], curriculumLinks: [], flmGroups: [], problems: [{ row, message: msg }],
   });
+  const readRes = await readAllSheets(file);
+  if ('problem' in readRes) return empty(readRes.problem.message, readRes.problem.row);
+  const sheetsMap = readRes.sheets;
+  const sheetEntries = Object.entries(sheetsMap);
+  if (sheetEntries.length === 0) return empty('The workbook has no sheets.');
 
-  const sheet = await readWorkbook(file);
-  if (!Array.isArray(sheet)) return { ...empty(sheet.message, sheet.row) };
+  const flmGroups: PendingFlmGroup[] = [];
+  for (const [, sRows] of sheetEntries) {
+    const gType = detectFlmGroupSheetType(sRows);
+    if (gType) flmGroups.push(...parseFlmGroupSheet(sRows, gType));
+  }
+  const firstSheet = sheetEntries[0][1];
+  if (detectFlmGroupSheetType(firstSheet)) {
+    return { mode: 'flm_groups', majors: [], cohorts: [], curriculumLinks: [], flmGroups, problems: [] };
+  }
+  const sheet = sheetsMap.Curriculum ?? firstSheet;
   const header = (sheet[0] ?? []).map(clean);
-
   const codeCol = findCol(header, ['major code', 'major', 'code']);
   const nameCol = findCol(header, ['major name', 'name']);
   const credCol = findCol(header, ['total credits', 'credits', 'credit']);
@@ -68,27 +77,22 @@ export async function parseStructureImport(
   const courseCol = findCol(header, ['course code', 'subject code', 'course']);
   const courseCreditsCol = findCol(header, ['course credits', 'course credit']);
   const termCol = findCol(header, ['term', 'semester', 'semester number']);
-
   const hasCohort = cohortCol >= 0;
   const hasCourse = courseCol >= 0;
   const hasMajorDetails = credCol >= 0 || durCol >= 0 || findCol(header, ['major status']) >= 0;
 
-  if (context === 'majors' && hasCourse) return empty('This file includes curriculum courses. Upload it in the Cohorts tab instead.');
-  if (context === 'cohorts' && !hasCohort) return empty('Row 1 must include "Major code", "Cohort", "Start semester", and "End semester" headers.');
   if (codeCol < 0 || (!hasCohort && nameCol < 0)) return empty('Row 1 must include "Major code" and "Major name" headers.');
   if (hasCohort && (startCol < 0 || endCol < 0)) return empty('Row 1 must include "Start semester" and "End semester" headers.');
-  if (hasCourse && termCol < 0) return empty('Row 1 must include a "Term" (0–9) header when importing curriculum courses.');
-
-  const mode: StructureImportMode = hasCourse ? 'major_cohort_curriculum' : hasCohort ? (hasMajorDetails || context === 'majors' ? 'major_cohort' : 'cohort_only') : 'major_only';
+  if (hasCourse && !hasCohort) return empty('Row 1 must include "Cohort", "Start semester", and "End semester" headers.');
+  if (hasCourse && termCol < 0) return empty('Row 1 must include a "Term" (0–12) header when importing curriculum courses.');
+  const mode: StructureImportMode = hasCourse ? 'major_cohort_curriculum' : hasCohort ? (hasMajorDetails ? 'major_cohort' : 'cohort_only') : 'major_only';
 
   const semByCode = new Map(semesters.map((s) => [s.code.toUpperCase(), s]));
   const courseByCode = new Map(activeCourses.map((c) => [c.code.toUpperCase(), c]));
   const majorsByCode = new Map<string, { id: string; code: string; name: string }[]>();
   for (const m of existingMajors) {
     const k = m.code.toUpperCase();
-    const list = majorsByCode.get(k);
-    if (list) list.push(m);
-    else majorsByCode.set(k, [m]);
+    majorsByCode.set(k, [...(majorsByCode.get(k) ?? []), m]);
   }
   const nowOrd = currentSemesterOrdinal();
   const majorsMap = new Map<string, CreateMajorDto>();
@@ -164,13 +168,10 @@ export async function parseStructureImport(
         cohortsMap.set(cKey, {
           majorCode, majorName: resolvedMajorName, majorId: matchedExistingMajorId, version,
           effectiveFromSemesterId: startSem?.id, effectiveToSemesterId: endSem?.id,
-          startSemesterCode: startCode, endSemesterCode: endCode,
-          isCurrent, status: cStatus as CurriculumStatus,
+          startSemesterCode: startCode, endSemesterCode: endCode, isCurrent, status: cStatus as CurriculumStatus,
         });
       }
-    } else if (hasCohort && mode === 'cohort_only') {
-      addErr('Cohort is required.');
-    }
+    } else if (hasCohort && mode === 'cohort_only') addErr('Cohort is required.');
 
     if (hasCourse && courseCode) {
       const course = courseByCode.get(courseCode.toUpperCase());
@@ -182,15 +183,16 @@ export async function parseStructureImport(
       }
       const termRaw = cell(sheet, r, termCol);
       const term = Number(termRaw);
-      if (!/^\d+$/.test(termRaw) || term < 0 || term > 9) addErr(`Term must be an integer from 0 to 9 (found "${termRaw}").`);
+      if (!/^\d+$/.test(termRaw) || term < 0 || term > 12) addErr(`Term must be an integer from 0 to 12 (found "${termRaw}").`);
       if (!version) addErr('Cohort is required when assigning a course to a curriculum.');
-      if (course && version && resolvedMajorName && term >= 0 && term <= 9) {
+      if (course && version && resolvedMajorName && term >= 0 && term <= 12) {
         const lKey = `${majorCode}::${resolvedMajorName.toLowerCase()}::${version}::${course.id}`;
         if (!linkSeen.has(lKey)) { linkSeen.add(lKey); curriculumLinks.push({ majorCode, majorName: resolvedMajorName, version, courseId: course.id, term }); }
       }
     }
   }
-
-  if (majorsMap.size === 0 && cohortsMap.size === 0 && problems.length === 0) problems.push({ row: null, message: 'No data rows found below the header row.' });
-  return { mode, majors: Array.from(majorsMap.values()), cohorts: Array.from(cohortsMap.values()), curriculumLinks, problems };
+  if (majorsMap.size === 0 && cohortsMap.size === 0 && flmGroups.length === 0 && problems.length === 0) {
+    problems.push({ row: null, message: 'No data rows found below the header row.' });
+  }
+  return { mode, majors: Array.from(majorsMap.values()), cohorts: Array.from(cohortsMap.values()), curriculumLinks, flmGroups, problems };
 }

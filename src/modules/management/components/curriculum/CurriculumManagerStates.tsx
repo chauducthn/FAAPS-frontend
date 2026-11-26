@@ -1,4 +1,4 @@
-import { WarningCircle as CircleAlert, Plus, ArrowCounterClockwise as RotateCcw, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
+import { WarningCircle as CircleAlert, ArrowCounterClockwise as RotateCcw, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
 
 export function CurriculumListSkeleton() {
   return (
@@ -49,17 +49,13 @@ export function CurriculumListError({ plural, onRetry }: { plural: string; onRet
 export function CurriculumListEmpty({
   plural,
   noun,
-  createLabel,
   hasFilters,
   onClearFilters,
-  onCreate,
 }: {
   plural: string;
   noun: string;
-  createLabel: string;
   hasFilters: boolean;
   onClearFilters: () => void;
-  onCreate: () => void;
 }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
@@ -73,11 +69,11 @@ export function CurriculumListEmpty({
         <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-gray-500">
           {hasFilters
             ? 'Try a different keyword, or clear the major / status filters to see the full list.'
-            : `Create the first ${noun.toLowerCase()} to start building the academic roadmap — it takes less than a minute.`}
+            : `Use the button above to create or import the first ${noun.toLowerCase()}.`}
         </p>
       </div>
-      <div className="flex items-center gap-2">
-        {hasFilters && (
+      {hasFilters && (
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onClearFilters}
@@ -85,15 +81,8 @@ export function CurriculumListEmpty({
           >
             Clear filters
           </button>
-        )}
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#e05f14]"
-        >
-          <Plus className="size-3.5" /> {createLabel}
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

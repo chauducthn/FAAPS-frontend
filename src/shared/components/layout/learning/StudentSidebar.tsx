@@ -4,6 +4,7 @@ import {
   Robot as BotMessageSquare,
   CalendarDot as CalendarClock,
   FileText,
+  GraduationCap,
   SquaresFour as LayoutDashboard,
   ListChecks,
   MapTrifold as Map,
@@ -38,10 +39,16 @@ export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
     title: 'STUDY SETUP & PLAN',
     items: [
       {
-        label: 'Curriculum & Goals',
-        to: '/student/curriculum-goals',
+        label: 'Curriculum',
+        to: '/student/curriculum',
+        icon: GraduationCap,
+        description: 'Configure major, specialization & electives, import transcript, and view curriculum courses.',
+      },
+      {
+        label: 'Study Goals',
+        to: '/student/study-goals',
         icon: Target,
-        description: 'Configure your major, curriculum version, and graduation targets.',
+        description: 'Define your graduation timeline, GPA target, and career orientation.',
       },
       {
         label: 'Transcript & Import',

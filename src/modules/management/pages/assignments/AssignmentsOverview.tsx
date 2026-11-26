@@ -34,7 +34,7 @@ export default function AssignmentsOverview() {
         tab={s.tab}
         assignedCount={s.summary.data?.assigned}
         unassignedCount={s.summary.data?.unassigned}
-        showAutoAssign={s.waitingCohorts > 0}
+        canAutoAssign={s.waitingCohorts > 0}
         onTabChange={s.setTab}
         onAutoAssign={() => s.setPickerOpen(true)}
       />

@@ -97,17 +97,7 @@ function toBytes(file: Blob): Promise<Uint8Array> {
   });
 }
 
-export async function readFirstSheet(file: Blob): Promise<SheetRows> {
-  const bytes = await toBytes(file);
-  const entries = readEntries(bytes);
-  const sheetXml = await readText(bytes, entries, await firstSheetPath(bytes, entries));
-  if (!sheetXml) throw new XlsxReadError('The workbook has no sheet.');
-
-  const sharedXml = await readText(bytes, entries, 'xl/sharedStrings.xml');
-  const shared = sharedXml
-    ? byName(parseXml(sharedXml), 'si').map((si) => byName(si, 't').map((t) => t.textContent ?? '').join(''))
-    : [];
-
+function parseSheetXml(sheetXml: string, shared: string[]): SheetRows {
   const rows: SheetRows = [];
   for (const row of byName(parseXml(sheetXml), 'row')) {
     const r = Number(row.getAttribute('r')) - 1;
@@ -130,4 +120,51 @@ export async function readFirstSheet(file: Blob): Promise<SheetRows> {
     rows[r] = cells;
   }
   return rows;
+}
+
+export async function readFirstSheet(file: Blob): Promise<SheetRows> {
+  const bytes = await toBytes(file);
+  const entries = readEntries(bytes);
+  const sheetXml = await readText(bytes, entries, await firstSheetPath(bytes, entries));
+  if (!sheetXml) throw new XlsxReadError('The workbook has no sheet.');
+
+  const sharedXml = await readText(bytes, entries, 'xl/sharedStrings.xml');
+  const shared = sharedXml
+    ? byName(parseXml(sharedXml), 'si').map((si) => byName(si, 't').map((t) => t.textContent ?? '').join(''))
+    : [];
+
+  return parseSheetXml(sheetXml, shared);
+}
+
+/** Reads all sheets of an .xlsx workbook keyed by sheet name. */
+export async function readNamedSheets(file: Blob): Promise<Record<string, SheetRows>> {
+  const bytes = await toBytes(file);
+  const entries = readEntries(bytes);
+  const workbook = await readText(bytes, entries, 'xl/workbook.xml');
+  const rels = await readText(bytes, entries, 'xl/_rels/workbook.xml.rels');
+  const sharedXml = await readText(bytes, entries, 'xl/sharedStrings.xml');
+  const shared = sharedXml
+    ? byName(parseXml(sharedXml), 'si').map((si) => byName(si, 't').map((t) => t.textContent ?? '').join(''))
+    : [];
+
+  if (!workbook || !rels) {
+    const xml = await readText(bytes, entries, 'xl/worksheets/sheet1.xml');
+    return xml ? { Sheet1: parseSheetXml(xml, shared) } : {};
+  }
+  const relMap = new Map<string, string>();
+  for (const r of byName(parseXml(rels), 'Relationship')) {
+    const id = r.getAttribute('Id');
+    const target = r.getAttribute('Target');
+    if (id && target) relMap.set(id, target.startsWith('/') ? target.slice(1) : `xl/${target}`);
+  }
+  const result: Record<string, SheetRows> = {};
+  for (const s of byName(parseXml(workbook), 'sheet')) {
+    const name = s.getAttribute('name') || 'Sheet';
+    const relId = s.getAttribute('r:id') ?? s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id');
+    const path = relId ? relMap.get(relId) : undefined;
+    if (!path) continue;
+    const xml = await readText(bytes, entries, path);
+    if (xml) result[name] = parseSheetXml(xml, shared);
+  }
+  return result;
 }

@@ -95,7 +95,7 @@ export default function CurriculumManager({
         ) : isError ? (
           <CurriculumListError plural={copy.plural} onRetry={() => refetch()} />
         ) : s.items.length === 0 ? (
-          <CurriculumListEmpty plural={copy.plural} noun={copy.noun} createLabel={copy.create} hasFilters={s.hasFilters} onClearFilters={s.clearFilters} onCreate={openCreate} />
+          <CurriculumListEmpty plural={copy.plural} noun={copy.noun} hasFilters={s.hasFilters} onClearFilters={s.clearFilters} />
         ) : (
           <div className="relative flex h-[calc(100vh-295px)] min-h-[460px] flex-col">
             {isFetching && (

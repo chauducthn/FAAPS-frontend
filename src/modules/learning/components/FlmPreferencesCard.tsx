@@ -1,4 +1,4 @@
-// Student / Profile: FLM specialization combo (Sem 5+) and Sem 0 electives (English prep, Musical instrument).
+// Student / Profile: FLM specialization combo (Sem 5+) and Sem 0 electives (English, Physical Education, Instrument).
 
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -21,6 +21,7 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
   const [comboCode, setComboCode] = useState('');
   const [englishPrep, setEnglishPrep] = useState('');
   const [instrument, setInstrument] = useState('');
+  const [physicalEd, setPhysicalEd] = useState('');
 
   const data = prefsQuery.data;
   useEffect(() => {
@@ -28,6 +29,7 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
     setComboCode(data.comboCode ?? '');
     setEnglishPrep(data.englishPrep ?? '');
     setInstrument(data.musicalInstrument ?? '');
+    setPhysicalEd(data.physicalEducation ?? '');
   }, [data]);
 
   const selectedCombo = useMemo(
@@ -39,7 +41,8 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
     !!data &&
     (comboCode !== (data.comboCode ?? '') ||
       englishPrep !== (data.englishPrep ?? '') ||
-      instrument !== (data.musicalInstrument ?? ''));
+      instrument !== (data.musicalInstrument ?? '') ||
+      physicalEd !== (data.physicalEducation ?? ''));
 
   const save = useMutation({
     mutationFn: () =>
@@ -47,6 +50,7 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
         comboCode: comboCode || null,
         englishPrep: englishPrep || null,
         musicalInstrument: instrument || null,
+        physicalEducation: physicalEd || null,
       }),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: STUDENT_QUERY_KEYS.all });
@@ -82,11 +86,15 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
           <select
             id="flm-combo"
             value={comboCode}
-            disabled={prefsQuery.isLoading}
+            disabled={prefsQuery.isLoading || (data?.combos?.length ?? 0) === 0}
             onChange={(e) => setComboCode(e.target.value)}
             className={selectCls}
           >
-            <option value="">Not selected (keep COM* placeholders)</option>
+            <option value="">
+              {(data?.combos?.length ?? 0) === 0
+                ? 'No combos imported from FLM yet'
+                : 'Not selected (keep COM* placeholders)'}
+            </option>
             {(data?.combos ?? []).map((c) => (
               <option key={c.code} value={c.code}>
                 {c.label}
@@ -108,19 +116,21 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
           )}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor="flm-english" className="block text-xs font-semibold text-gray-700">
-              English Prep (Sem 0 · PEN)
+              English Prep (PEN)
             </label>
             <select
               id="flm-english"
               value={englishPrep}
-              disabled={prefsQuery.isLoading}
+              disabled={prefsQuery.isLoading || (data?.englishOptions?.length ?? 0) === 0}
               onChange={(e) => setEnglishPrep(e.target.value)}
               className={selectCls}
             >
-              <option value="">Default (PEN)</option>
+              <option value="">
+                {(data?.englishOptions?.length ?? 0) === 0 ? 'No PEN courses imported yet' : 'Default (PEN)'}
+              </option>
               {(data?.englishOptions ?? []).map((opt) => (
                 <option key={opt.code} value={opt.code}>
                   {opt.label}
@@ -130,21 +140,39 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
           </div>
 
           <div>
-            <label htmlFor="flm-instrument" className="block text-xs font-semibold text-gray-700">
-              Traditional Instrument (Sem 0 · TMI)
+            <label htmlFor="flm-pe" className="block text-xs font-semibold text-gray-700">
+              Physical Education (PHE)
             </label>
+            <select
+              id="flm-pe"
+              value={physicalEd}
+              disabled={prefsQuery.isLoading || (data?.physicalEducationOptions?.length ?? 0) === 0}
+              onChange={(e) => setPhysicalEd(e.target.value)}
+              className={selectCls}
+            >
+              <option value="">
+                {(data?.physicalEducationOptions?.length ?? 0) === 0 ? 'No PHE combos imported yet' : 'Not selected (PHE_COM*)'}
+              </option>
+              {(data?.physicalEducationOptions ?? []).map((opt) => (
+                <option key={opt.code} value={opt.code}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="flm-instrument" className="block text-xs font-semibold text-gray-700">Instrument (TMI)</label>
             <select
               id="flm-instrument"
               value={instrument}
-              disabled={prefsQuery.isLoading}
+              disabled={prefsQuery.isLoading || (data?.instrumentOptions?.length ?? 0) === 0}
               onChange={(e) => setInstrument(e.target.value)}
               className={selectCls}
             >
-              <option value="">Not selected (TMI_ELE)</option>
+              <option value="">
+                {(data?.instrumentOptions?.length ?? 0) === 0 ? 'No TMI electives imported yet' : 'Not selected (TMI_ELE)'}
+              </option>
               {(data?.instrumentOptions ?? []).map((opt) => (
-                <option key={opt.code} value={opt.code}>
-                  {opt.label}
-                </option>
+                <option key={opt.code} value={opt.code}>{opt.label}</option>
               ))}
             </select>
           </div>

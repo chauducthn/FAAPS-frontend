@@ -29,9 +29,11 @@ export type FlmPreferencesView = {
   comboCode: string | null;
   englishPrep: string | null;
   musicalInstrument: string | null;
+  physicalEducation: string | null;
   combos: { code: string; label: string; courses: { code: string; name: string; credits: number }[] }[];
   englishOptions: { code: string; label: string }[];
   instrumentOptions: { code: string; label: string }[];
+  physicalEducationOptions: { code: string; label: string }[];
 };
 export type ImportRow = { rowNumber: number; courseCode: string; semesterCode: string;
   finalScore: number | null; status: string; attemptNumber: number; error: string | null };
@@ -93,6 +95,7 @@ export const studentAcademicService = {
     comboCode?: string | null;
     englishPrep?: string | null;
     musicalInstrument?: string | null;
+    physicalEducation?: string | null;
   }) =>
     (
       await apiClient.put<FlmPreferencesView>('/student/profile/flm-preferences', body, {

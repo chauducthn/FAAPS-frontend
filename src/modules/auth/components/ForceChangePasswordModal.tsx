@@ -13,7 +13,6 @@ export function ForceChangePasswordModal() {
   const user = useAuth((s) => s.user);
   const setUser = useAuth((s) => s.setUser);
   const clearAuth = useAuth((s) => s.logout);
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -24,17 +23,9 @@ export function ForceChangePasswordModal() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!currentPassword) {
-      setError('Enter your current default password.');
-      return;
-    }
     const parsed = passwordSchema.safeParse(newPassword);
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message ?? 'Password does not meet complexity requirements.');
-      return;
-    }
-    if (newPassword === currentPassword) {
-      setError('New password must be different from your current password.');
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -43,7 +34,7 @@ export function ForceChangePasswordModal() {
     }
     setSubmitting(true);
     try {
-      await authService.changePassword(currentPassword, newPassword);
+      await authService.changePassword(undefined, newPassword);
       setUser({ ...user, mustChangePassword: false });
       toast.success('Password updated. Welcome to FAAPS.');
     } catch (err) {
@@ -84,21 +75,6 @@ export function ForceChangePasswordModal() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5" noValidate>
-          <div>
-            <label htmlFor="fcp-current" className="mb-1.5 block text-xs font-semibold text-gray-700">
-              Current password
-            </label>
-            <input
-              id="fcp-current"
-              type="password"
-              autoComplete="current-password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Enter your default password"
-              className={inputClass}
-            />
-          </div>
-
           <div>
             <label htmlFor="fcp-new" className="mb-1.5 block text-xs font-semibold text-gray-700">
               New password

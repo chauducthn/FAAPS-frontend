@@ -91,10 +91,10 @@ export const authService = {
     return data;
   },
 
-  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+  changePassword: async (currentPassword: string | undefined, newPassword: string): Promise<void> => {
     await apiClient.post(
       '/auth/change-password',
-      { currentPassword, newPassword },
+      currentPassword ? { currentPassword, newPassword } : { newPassword },
       { headers: await getCsrfHeaders() },
     );
   },

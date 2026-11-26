@@ -11,6 +11,7 @@ import {
   cohortCurriculumExample,
   cohortExample,
   majorCohortExample,
+  majorExample,
   parseStructureImport,
 } from '../../utils/structureImport';
 import { executeStructureImport } from '../../utils/structureImportExecutor';
@@ -24,6 +25,7 @@ export function useCohortSheetImport(
   const [problems, setProblems] = useState<{ fileName: string; problems: ImportProblem[] } | null>(null);
 
   const examples: ExampleSheet[] = [
+    { label: 'Majors only (.xlsx)', download: () => downloadBlob(majorExample(), 'majors-import-example.xlsx') },
     { label: 'Cohorts only (.xlsx)', download: () => downloadBlob(cohortExample(), 'cohorts-import-example.xlsx') },
     { label: 'Majors + Cohorts (.xlsx)', download: () => downloadBlob(majorCohortExample(), 'majors-cohorts-import-example.xlsx') },
     {
@@ -55,6 +57,7 @@ export function useCohortSheetImport(
         summary.majorsCreated > 0 ? `${summary.majorsCreated} major(s)` : '',
         summary.cohortsCreated > 0 ? `${summary.cohortsCreated} cohort(s)` : '',
         summary.coursesLinked > 0 ? `${summary.coursesLinked} curriculum course(s)` : '',
+        summary.groupsSaved > 0 ? `${summary.groupsSaved} combo/elective group(s) (${summary.groupCoursesLinked} courses)` : '',
       ].filter(Boolean);
       if (parts.length > 0) {
         toast.success(`Imported ${parts.join(', ')}.`);

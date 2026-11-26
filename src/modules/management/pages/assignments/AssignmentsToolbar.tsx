@@ -15,9 +15,9 @@ const selectClass =
 
 export function AssignmentsTabBar(props: {
   tab: AssignmentTab; assignedCount?: number; unassignedCount?: number;
-  showAutoAssign?: boolean; onTabChange: (tab: AssignmentTab) => void; onAutoAssign?: () => void;
+  canAutoAssign?: boolean; onTabChange: (tab: AssignmentTab) => void; onAutoAssign?: () => void;
 }) {
-  const { tab, assignedCount, unassignedCount, showAutoAssign, onTabChange, onAutoAssign } = props;
+  const { tab, assignedCount, unassignedCount, canAutoAssign = false, onTabChange, onAutoAssign } = props;
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div
@@ -65,12 +65,17 @@ export function AssignmentsTabBar(props: {
         })}
       </div>
 
-      {showAutoAssign && onAutoAssign && (
+      {onAutoAssign && (
         <button
           type="button"
           onClick={onAutoAssign}
-          title="Automatically distribute unassigned students across each cohort's advisor pool"
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14]"
+          disabled={!canAutoAssign}
+          title={
+            canAutoAssign
+              ? "Automatically distribute unassigned students across each cohort's advisor pool"
+              : 'No unassigned students waiting in any cohort'
+          }
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-45"
         >
           <WandSparkles className="size-4" aria-hidden />
           Auto assign
