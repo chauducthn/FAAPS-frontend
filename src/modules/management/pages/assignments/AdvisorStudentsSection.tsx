@@ -1,4 +1,4 @@
-import { RotateCcw, Search, X } from 'lucide-react';
+import { ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import { Pagination } from '../../components/Pagination';
 import { StaticTable } from '../../../../shared/components/common/table/StaticTable';
 import { buildAdvisorStudentColumns } from './advisorStudentColumns';

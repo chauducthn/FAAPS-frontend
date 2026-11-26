@@ -3,7 +3,7 @@
 // USER: căn phải, nền cam thương hiệu. ASSISTANT: căn trái, nền trắng + viền.
 
 import { useState } from 'react';
-import { BookOpenText, CircleAlert, FileWarning, Sparkles, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { BookOpenText, WarningCircle as CircleAlert, FileX as FileWarning, Sparkle as Sparkles, ThumbsDown, ThumbsUp } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { useSendAiFeedback } from '../hooks/mutations/useAiStudentMutations';
 import type { AiChatMessage, AiQuestionCategory } from '../types/ai-student';

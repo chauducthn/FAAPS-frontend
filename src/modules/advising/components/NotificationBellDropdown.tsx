@@ -2,15 +2,15 @@
 
 import {
   Bell,
-  CheckCheck,
-  ClipboardCheck,
+  Checks as CheckCheck,
+  ClipboardText as ClipboardCheck,
   Clock,
   Info,
-  MessageSquare,
-  TriangleAlert,
+  ChatCircle as MessageSquare,
+  Warning as TriangleAlert,
   UserPlus,
-  type LucideIcon,
-} from 'lucide-react';
+  type Icon as LucideIcon,
+} from '@phosphor-icons/react';
 import { ADVISOR_NOTIFICATION_POLL_MS } from '../hooks/queries/useAdvisorQueries';
 import type { NotificationType, StudentNotification } from '../types/advising';
 import { cn } from '@/shared/lib/utils';

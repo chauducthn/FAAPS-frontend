@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import type { PaginationState } from '@tanstack/react-table';
-import { CircleAlert, RotateCcw } from 'lucide-react';
+import { WarningCircle as CircleAlert, ArrowCounterClockwise as RotateCcw } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { DataTable } from '../../../shared/components/common/DataTable';
 import CourseDetailModal from '../../management/components/courses/CourseDetailModal';

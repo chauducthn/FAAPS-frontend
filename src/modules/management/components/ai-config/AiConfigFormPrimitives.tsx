@@ -1,5 +1,5 @@
 import type { ChangeEvent, InputHTMLAttributes, ReactNode } from 'react';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 export const aiFieldClass =

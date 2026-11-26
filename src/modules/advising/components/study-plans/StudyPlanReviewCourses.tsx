@@ -1,6 +1,6 @@
 // Requested courses list with prerequisite checks, validation warnings, and advisor checklist.
 
-import { Check, ShieldAlert, TriangleAlert, X } from 'lucide-react';
+import { Check, ShieldWarning as ShieldAlert, Warning as TriangleAlert, X } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { LookupCourse } from '../../types/academic-lookup';
 import type { AdvisorStudyPlanDetail } from '../../types/study-plan';

@@ -30,3 +30,28 @@
   --line: #e5e7eb;
   --line-soft: #f1f5f9;
 }
+
+.dark {
+  /* Brand */
+  --brand: #f26f21;
+  --brand-hover: #ff8133;
+  --brand-soft: rgb(242 111 33 / 0.14);
+  --brand-soft-strong: rgb(242 111 33 / 0.24);
+  --brand-ink: #ffa15c;
+  --brand-ring: rgb(242 111 33 / 0.45);
+
+  /* Surfaces */
+  --surface-page: #111010;
+  --surface-sunken: #151413;
+  --surface-hover: #22201e;
+
+  /* Ink */
+  --ink-primary: #f5f2ee;
+  --ink-secondary: #cbc4bc;
+  --ink-muted: #9c948b;
+  --ink-subtle: #6e675f;
+
+  /* Lines */
+  --line: #2a2725;
+  --line-soft: #211f1d;
+}

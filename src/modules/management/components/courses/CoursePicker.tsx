@@ -1,4 +1,4 @@
-import { ChevronDown, X } from 'lucide-react';
+import { CaretDown as ChevronDown, X } from '@phosphor-icons/react';
 import { useCoursesQuery } from '../../../academic/hooks/queries/useCoursesQuery';
 import { cn } from '@/shared/lib/utils';
 

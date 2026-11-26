@@ -3,15 +3,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  ArrowLeftRight,
+  ArrowsLeftRight as ArrowLeftRight,
   Briefcase,
-  CheckCircle2,
+  CheckCircle as CheckCircle2,
   Eye,
-  KeyRound,
-  MoreHorizontal,
-  ShieldOff,
-  Trash2,
-} from 'lucide-react';
+  Key as KeyRound,
+  DotsThree as MoreHorizontal,
+  ShieldSlash as ShieldOff,
+  Trash as Trash2,
+} from '@phosphor-icons/react';
 import { cn } from '../../../shared/lib/utils';
 import { canResetPassword, NO_PASSWORD_REASON } from '../utils/passwordReset';
 import type { AdminUserSummary } from '../types/admin';

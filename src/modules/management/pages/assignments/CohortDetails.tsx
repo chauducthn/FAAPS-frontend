@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { ChevronLeft, Settings2, Sparkles } from 'lucide-react';
+import { CaretLeft as ChevronLeft, SlidersHorizontal as Settings2, Sparkle as Sparkles } from '@phosphor-icons/react';
 import { AssignAdvisorModal } from '../../components/AssignAdvisorModal';
 import { UnassignAdvisorModal } from '../../components/UnassignAdvisorModal';
 import { AutoAssignModal } from '../../components/AutoAssignModal';

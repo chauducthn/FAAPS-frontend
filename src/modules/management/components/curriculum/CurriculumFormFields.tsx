@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { FieldErrors, UseFormRegister, UseFormRegisterReturn, UseFormSetValue } from 'react-hook-form';
-import { ChevronDown } from 'lucide-react';
+import { CaretDown as ChevronDown } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { CurriculumFormValues } from '../../../academic/validations/curriculum.schema';
 import { todayIso, type SemesterDraft } from './semesterRangeUtils';

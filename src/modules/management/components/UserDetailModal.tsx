@@ -1,5 +1,5 @@
 // User detail modal — compact, scannable read-only view of one FAAPS account.
-import { CircleAlert, GraduationCap, RotateCcw, UserRound, X } from 'lucide-react';
+import { WarningCircle as CircleAlert, GraduationCap, ArrowCounterClockwise as RotateCcw, User as UserRound, X } from '@phosphor-icons/react';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { StatusBadge } from './StatusBadge';
 import { useAdminUser } from '../hooks/queries/useAdminUsers';

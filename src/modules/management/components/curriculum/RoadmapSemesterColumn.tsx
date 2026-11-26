@@ -3,7 +3,7 @@
 // the stack of course cards, and a subtotal footer.
 // Drop target gets a strong orange glow so the drag destination is unmistakable.
 import { useRef, useState, type DragEvent } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import RoadmapCourseCard from './RoadmapCourseCard';
 import type { RoadmapCourse, RoadmapSemester } from '../../../academic/types/roadmap';
@@ -119,7 +119,7 @@ export default function RoadmapSemesterColumn({
                 active ? 'text-white hover:bg-white/20' : 'text-gray-400 hover:bg-white hover:text-[#C2410C] hover:shadow-xs focus-visible:ring-[#F26F21]/40',
               )}
             >
-              <Plus className="size-3.5" strokeWidth={2.5} />
+              <Plus className="size-3.5" />
             </button>
           )}
         </div>
@@ -145,7 +145,7 @@ export default function RoadmapSemesterColumn({
                 active ? 'scale-110 bg-[#F26F21] text-white shadow-lg' : 'bg-slate-100 text-slate-400',
               )}
             >
-              <Plus className="size-4" strokeWidth={2.5} />
+              <Plus className="size-4" />
             </span>
             <span className="text-[11px] font-bold leading-relaxed">
               {active ? 'Release to drop here' : 'No courses yet'}

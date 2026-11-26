@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { Warning as AlertTriangle } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { useAiConfigsQuery, useAiPerformanceQuery } from '../../ai/hooks/queries/useAiConfigQuery';
 import AiPerformanceChart from '../components/ai-config/AiPerformanceChart';

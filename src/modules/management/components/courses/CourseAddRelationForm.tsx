@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Loader2, Plus } from 'lucide-react';
+import { SpinnerGap as Loader2, Plus } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { CourseDetail, RelationKind } from '../../../academic/types/course';
 import { CoursePicker, courseRelationInputClass, courseRelationLabelClass } from './CoursePicker';
@@ -110,7 +110,7 @@ export function CourseAddRelationForm({
           onClick={submit}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F26F21] px-3.5 py-2 text-xs font-bold text-white shadow-[0_1px_2px_rgba(242,111,33,0.4)] transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" strokeWidth={2.5} />}
+          {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
           {isSubmitting ? 'Adding…' : 'Add relation'}
         </button>
       </div>

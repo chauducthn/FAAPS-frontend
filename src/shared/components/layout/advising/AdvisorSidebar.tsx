@@ -8,14 +8,14 @@ import { useMemo } from 'react';
 import {
   // BookOpen, // dùng lại khi bật lại mục "Academic Search"
   Bell,
-  CalendarDays,
-  ChartNoAxesCombined,
-  ClipboardCheck,
-  Inbox,
-  LayoutDashboard,
-  MessageSquareText,
-  UsersRound,
-} from 'lucide-react';
+  CalendarBlank as CalendarDays,
+  ChartLineUp as ChartNoAxesCombined,
+  ClipboardText as ClipboardCheck,
+  Tray as Inbox,
+  SquaresFour as LayoutDashboard,
+  ChatCircleText as MessageSquareText,
+  UsersThree as UsersRound,
+} from '@phosphor-icons/react';
 import {
   PortalSidebar,
   type PortalNavSection,

@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, BarChart3, ChevronDown, Download, Loader2, Mail, RefreshCw, Search, ShieldAlert, Users, Video } from 'lucide-react';
+import { ArrowUpRight, ChartBar as BarChart3, CaretDown as ChevronDown, DownloadSimple as Download, SpinnerGap as Loader2, EnvelopeSimple as Mail, ArrowsClockwise as RefreshCw, MagnifyingGlass as Search, ShieldWarning as ShieldAlert, Users, VideoCamera as Video } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { apiMessage } from '@/shared/lib/apiMessage';
 import { StaticTable, type StaticColumn } from '../../../shared/components/common/table/StaticTable';
@@ -181,7 +181,7 @@ export default function AdvisingReports() {
             </select>
           </div>
         </div>
-        <div className="flex h-[480px] flex-col">
+        <div className="flex h-[calc(100vh-310px)] min-h-[460px] flex-col">
           <StaticTable
             stickyHeader className="min-h-0 flex-1 overflow-auto"
             columns={columns} rows={filteredAdvisors}

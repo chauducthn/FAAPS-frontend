@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { RotateCcw, Search, X } from 'lucide-react';
+import { ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';
 import { useCoursesQuery } from '../../../academic/hooks/queries/useCoursesQuery';

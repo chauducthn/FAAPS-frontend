@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle as CheckCircle2 } from '@phosphor-icons/react';
 import { CTAButton } from '@/shared/components/common/CTAButton';
 import { useAuth } from '@/modules/auth/stores/useAuth';
 import type { RoleCode } from '@/modules/auth/types/auth';

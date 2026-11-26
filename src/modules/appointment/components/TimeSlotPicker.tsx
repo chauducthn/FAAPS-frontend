@@ -1,6 +1,6 @@
 // src/components/appointments/TimeSlotPicker.tsx
 import { useMemo } from 'react';
-import { Clock, Sunrise, Sun, MoonStar } from 'lucide-react';
+import { Clock, SunHorizon as Sunrise, Sun, MoonStars as MoonStar } from '@phosphor-icons/react';
 import { formatIsoTime, formatSlotRange, slotDurationMinutes } from '../../../shared/lib/appointmentDate';
 import type { AvailableSlot } from '../types/appointment';
 import { cn } from '@/shared/lib/utils';

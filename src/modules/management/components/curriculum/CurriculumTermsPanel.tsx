@@ -1,4 +1,4 @@
-import { ChevronDown, Trash2 } from 'lucide-react';
+import { CaretDown as ChevronDown, Trash as Trash2 } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { CurriculumCourseItem } from '../../../academic/types/curriculum';
 

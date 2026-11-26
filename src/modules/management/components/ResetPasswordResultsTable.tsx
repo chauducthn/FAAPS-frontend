@@ -1,4 +1,4 @@
-import { Check, Copy } from 'lucide-react';
+import { Check, Copy } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { StaticTable, type StaticColumn } from '@/shared/components/common/table/StaticTable';
 import type { PasswordResetEntry } from '../types/admin';

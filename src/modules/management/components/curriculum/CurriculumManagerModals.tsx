@@ -1,4 +1,4 @@
-import { FileSpreadsheet } from 'lucide-react';
+import { FileXls as FileSpreadsheet } from '@phosphor-icons/react';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { ExampleSheetButton, ImportCheckDialog } from '../ImportCheckDialog';
 import { Modal } from '../../../../shared/components/ui/Modal';

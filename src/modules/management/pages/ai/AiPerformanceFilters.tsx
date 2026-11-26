@@ -1,4 +1,4 @@
-import { AlertTriangle, ChevronDown, Download, RefreshCw, RotateCcw } from 'lucide-react';
+import { Warning as AlertTriangle, CaretDown as ChevronDown, DownloadSimple as Download, ArrowsClockwise as RefreshCw, ArrowCounterClockwise as RotateCcw } from '@phosphor-icons/react';
 import type { AiConfig, AiPurpose } from '../../../ai/types/ai-config';
 import { cn } from '@/shared/lib/utils';
 import { PURPOSES, daysAgo, today } from './aiPerformanceUtils';

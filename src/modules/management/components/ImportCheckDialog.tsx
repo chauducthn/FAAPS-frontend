@@ -1,7 +1,7 @@
 // Shown when an import file fails the check made before upload: lists what to fix
 // and offers the example sheets, so the admin can correct the file and upload again.
 import { useEffect, useRef, useState } from 'react';
-import { AlertTriangle, ChevronDown, Download, X } from 'lucide-react';
+import { Warning as AlertTriangle, CaretDown as ChevronDown, DownloadSimple as Download, X } from '@phosphor-icons/react';
 import { Modal } from '../../../shared/components/ui/Modal';
 import type { ImportProblem } from '../utils/importChecks';
 

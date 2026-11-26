@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Sparkles, X } from 'lucide-react';
+import { Sparkle as Sparkles, X } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { apiMessage } from '@/shared/lib/apiMessage';
 import { advisorProactiveService } from '../services/advisorProactiveService';

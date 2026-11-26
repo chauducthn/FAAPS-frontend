@@ -1,3 +1,5 @@
+import type { StudentIdentity } from '../utils/accountRules';
+
 interface CurriculumOption {
   id: string;
   majorCode: string;
@@ -5,16 +7,11 @@ interface CurriculumOption {
   name: string;
 }
 
-interface ParsedIdentity {
-  majorCode: string;
-  cohort: string;
-}
-
 interface Props {
   studentCode: string;
   curriculumId: string;
   curriculumList: CurriculumOption[];
-  identity: ParsedIdentity | null;
+  identity: StudentIdentity | null;
   fieldClass: string;
   onStudentCodeChange: (value: string) => void;
   onCurriculumChange: (value: string) => void;
@@ -60,7 +57,7 @@ export function SetRoleStudentFields({
       </label>
       {identity && (
         <p className="rounded-xl bg-orange-50 px-3 py-2 text-[12px] font-semibold text-[#9a3412] ring-1 ring-orange-200">
-          Major {identity.majorCode} · Cohort {identity.cohort}
+          {identity.campusName} ({identity.campusCode}) · {identity.groupName} ({identity.groupCode}) · Cohort {identity.cohort}
         </p>
       )}
     </div>

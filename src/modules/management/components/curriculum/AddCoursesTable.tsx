@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react';
+import { Check } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { StaticTable, type StaticColumn } from '@/shared/components/common/table/StaticTable';
 import { Pagination } from '../Pagination';
@@ -53,7 +53,7 @@ export function AddCoursesTable({
                 locked && 'border-gray-200 bg-gray-100',
               )}
             >
-              <Check className="size-3.5" strokeWidth={3.5} />
+              <Check className="size-3.5" />
               <input
                 type="checkbox"
                 checked={checked}

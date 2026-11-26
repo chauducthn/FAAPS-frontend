@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreHorizontal, Trash2 } from 'lucide-react';
+import { DotsThree as MoreHorizontal, Trash as Trash2 } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { RoadmapCourse } from '../../../academic/types/roadmap';
 

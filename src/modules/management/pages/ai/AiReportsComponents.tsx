@@ -1,4 +1,4 @@
-import { AlertTriangle, RotateCcw, Search, X } from 'lucide-react';
+import { Warning as AlertTriangle, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import type { AiReportStatus } from '../../types/admin';
 import { cn } from '@/shared/lib/utils';
 import { REPORT_TABS } from './reportConstants';

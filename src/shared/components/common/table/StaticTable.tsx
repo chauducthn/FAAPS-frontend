@@ -5,7 +5,7 @@
 // table primitives so every table in FAAPS looks the same.
 
 import type { ReactNode } from 'react';
-import { Inbox } from 'lucide-react';
+import { Tray as Inbox } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import {
   TableBody,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@phosphor-icons/react';
 import { CTAButton } from '@/shared/components/common/CTAButton';
 import { useAuth } from '@/modules/auth/stores/useAuth';
 import campus1 from '@/assets/hero/campus-1.jpg';

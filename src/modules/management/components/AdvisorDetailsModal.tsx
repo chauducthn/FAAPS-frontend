@@ -1,7 +1,7 @@
 // Compact modal showing an advisor's summary, cohorts, start date, and assigned students.
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router';
-import { AlertTriangle, X } from 'lucide-react';
+import { Warning as AlertTriangle, X } from '@phosphor-icons/react';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { LoadBadge } from './LoadBadge';
 import { StatusBadge } from './StatusBadge';

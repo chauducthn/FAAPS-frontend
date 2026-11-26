@@ -1,4 +1,4 @@
-import { CircleAlert, RotateCcw, SearchX } from 'lucide-react';
+import { WarningCircle as CircleAlert, ArrowCounterClockwise as RotateCcw, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
 
 export function CoursesListSkeleton() {
   return (

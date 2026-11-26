@@ -1,5 +1,5 @@
 import { useState, type DragEvent } from 'react';
-import { Clock, Download, FileSpreadsheet, Loader2, Upload } from 'lucide-react';
+import { Clock, DownloadSimple as Download, FileXls as FileSpreadsheet, SpinnerGap as Loader2, UploadSimple as Upload } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { cn } from '@/shared/lib/utils';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';

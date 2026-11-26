@@ -40,6 +40,7 @@ const StudentAiChat = lazy(() => import('../modules/learning/pages/AiChat'));
 const StudentAiRoadmap = lazy(() => import('../modules/learning/pages/AiRoadmap'));
 const StudentProfile = lazy(() => import('../modules/learning/pages/StudentProfile'));
 const StudentTranscript = lazy(() => import('../modules/learning/pages/StudentTranscript'));
+const StudentCurriculumGoals = lazy(() => import('../modules/learning/pages/StudentCurriculumGoals'));
 const StudentCourses = lazy(() => import('../modules/learning/pages/StudentCourses'));
 const StudentStudyPlan = lazy(() => import('../modules/learning/pages/StudentStudyPlan'));
 const StudentLearningPlan = lazy(() => import('../modules/learning/pages/StudentLearningPlan'));
@@ -122,6 +123,7 @@ export const router = createBrowserRouter([
               { path: '/student/appointments', element: suspense(<StudentBookAppointment />) },
               { path: '/student/profile', element: suspense(<StudentProfile />) },
               { path: '/student/transcript', element: suspense(<StudentTranscript />) },
+              { path: '/student/curriculum-goals', element: suspense(<StudentCurriculumGoals />) },
               { path: '/student/courses', element: suspense(<StudentCourses />) },
               { path: '/student/study-plan', element: suspense(<StudentStudyPlan />) },
               { path: '/student/learning-plan', element: suspense(<StudentLearningPlan />) },

@@ -1,4 +1,4 @@
-import { ArrowUpRight, ListTree, Loader2, X } from 'lucide-react';
+import { ArrowUpRight, TreeStructure as ListTree, SpinnerGap as Loader2, X } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { CourseDetail } from '../../../academic/types/course';
 

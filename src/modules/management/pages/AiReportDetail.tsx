@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { ChevronLeft } from 'lucide-react';
+import { CaretLeft as ChevronLeft } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { useAiReport, useResolveAiReport } from '../../ai/hooks/queries/useAdminAiReports';

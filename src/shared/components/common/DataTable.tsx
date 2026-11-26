@@ -6,7 +6,8 @@
  * markup, styling and interactions; the consumer owns the columns and data.
  */
 
-import { Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { MagnifyingGlass as Search } from '@phosphor-icons/react';
 import type { RowData } from '@tanstack/react-table';
 import { cn } from '@/shared/lib/utils';
 import { TableShell } from './table/TablePrimitives';
@@ -43,9 +44,12 @@ export function DataTable<TData extends RowData, TValue = unknown>(
     manual = false,
     totalRowCount,
     pageCount,
+    onFetchAllRows,
   } = props;
 
   const { table, internalSearch, setInternalSearch, isSearching, alignments } = useDataTable(props);
+  const [allRowsOverride, setAllRowsOverride] = useState<TData[] | null>(null);
+  const [loadingAll, setLoadingAll] = useState(false);
 
   const rows = table.getRowModel().rows;
   const columnCount = table.getAllLeafColumns().length;
@@ -58,6 +62,25 @@ export function DataTable<TData extends RowData, TValue = unknown>(
   );
   const firstRow = totalRows === 0 ? 0 : pageIndex * pageSize + 1;
   const lastRow = Math.min((pageIndex + 1) * pageSize, totalRows);
+
+  useEffect(() => {
+    if (selectedRows.length === 0) setAllRowsOverride(null);
+  }, [selectedRows.length]);
+
+  const effectiveSelected = allRowsOverride ?? selectedRows;
+  const handleSelectAll = !manual
+    ? () => table.toggleAllRowsSelected(true)
+    : onFetchAllRows
+      ? async () => {
+          setLoadingAll(true);
+          try {
+            const all = await onFetchAllRows();
+            if (all.length > 0) setAllRowsOverride(all);
+          } finally {
+            setLoadingAll(false);
+          }
+        }
+      : undefined;
 
   return (
     <div className={cn('flex w-full flex-col', className)}>
@@ -87,9 +110,15 @@ export function DataTable<TData extends RowData, TValue = unknown>(
 
       {!hideBulkBar ? (
         <DataTableBulkBar
-          selectedRows={selectedRows}
+          selectedRows={effectiveSelected}
+          totalRows={totalRows}
+          loadingAll={loadingAll}
+          onSelectAll={handleSelectAll}
           bulkActions={bulkActions}
-          onClearSelection={() => table.resetRowSelection()}
+          onClearSelection={() => {
+            setAllRowsOverride(null);
+            table.resetRowSelection();
+          }}
         />
       ) : null}
 

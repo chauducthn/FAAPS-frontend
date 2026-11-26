@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { BookOpenCheck, FileSpreadsheet, GraduationCap, Layers, Loader2, Plus } from 'lucide-react';
+import { BookOpenText as BookOpenCheck, FileXls as FileSpreadsheet, GraduationCap, Stack as Layers, SpinnerGap as Loader2, Plus } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { ExampleSheetButton, type ExampleSheet } from '../../components/ImportCheckDialog';
 
@@ -142,7 +142,7 @@ export function CoursesTopBar({
           onClick={onCreate}
           className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
         >
-          <Plus className="size-4" strokeWidth={2.25} /> Create course
+          <Plus className="size-4" /> Create course
         </button>
       </div>
     </div>

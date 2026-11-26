@@ -15,7 +15,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { BarChart3 } from 'lucide-react';
+import { ChartBar as BarChart3 } from '@phosphor-icons/react';
 import type { AiUsageByDay } from '../../../ai/types/ai-config';
 
 interface Props {

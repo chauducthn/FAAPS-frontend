@@ -1,7 +1,7 @@
 // Optional prerequisites for a new course: pick any number of active courses from the course pool dropdown.
 // Each picked course becomes its own requirement (group 1, 2, 3...), so all of them must be passed.
 import { useQuery } from '@tanstack/react-query';
-import { ChevronDown, X } from 'lucide-react';
+import { CaretDown as ChevronDown, X } from '@phosphor-icons/react';
 import { courseService } from '../../services/course.service';
 import type { CourseSummary } from '../../../academic/types/course';
 

@@ -1,4 +1,4 @@
-import { KeyRound } from 'lucide-react';
+import { Key as KeyRound } from '@phosphor-icons/react';
 import { RowActionMenu } from '../../components/RowActionMenu';
 import type { DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import type { AiConfig } from '../../../ai/types/ai-config';

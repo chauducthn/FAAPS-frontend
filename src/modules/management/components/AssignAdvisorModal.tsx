@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, ChevronDown, UserCheck } from 'lucide-react';
+import { Warning as AlertTriangle, CaretDown as ChevronDown, UserCheck } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { LoadBadge } from './LoadBadge';

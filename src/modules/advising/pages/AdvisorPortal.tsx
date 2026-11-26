@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowRight, MagnifyingGlass as Search } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { useAuth } from '../../auth/stores/useAuth';
 import { useAdviseeStudents, useAdvisorAdvisingRequests } from '../hooks/queries/useAdvisorQueries';

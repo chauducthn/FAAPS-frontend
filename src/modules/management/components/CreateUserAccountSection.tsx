@@ -1,5 +1,5 @@
 import type { FieldErrors, UseFormRegister } from 'react-hook-form';
-import { ChevronDown, GraduationCap, Loader2, UserRound, X } from 'lucide-react';
+import { CaretDown as ChevronDown, GraduationCap, SpinnerGap as Loader2, User as UserRound, X } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { STUDENT_ID_PLACEHOLDER } from '../utils/accountRules';
 import type { AdminUserRole } from '../types/admin';

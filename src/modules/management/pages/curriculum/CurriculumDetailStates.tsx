@@ -1,4 +1,4 @@
-import { ChevronRight, CircleAlert } from 'lucide-react';
+import { CaretRight as ChevronRight, WarningCircle as CircleAlert } from '@phosphor-icons/react';
 
 export function CurriculumBreadcrumb({
   label,

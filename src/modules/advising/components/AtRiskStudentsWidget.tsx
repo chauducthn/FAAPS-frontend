@@ -1,6 +1,6 @@
 // At-risk students widget for the Advisor Dashboard.
 
-import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Warning as AlertTriangle, CheckCircle as CheckCircle2 } from '@phosphor-icons/react';
 import { useAtRiskStudents } from '../hooks/queries/useAtRiskStudents';
 import { AtRiskCard, RiskSkeleton } from './AtRiskStudentCard';
 

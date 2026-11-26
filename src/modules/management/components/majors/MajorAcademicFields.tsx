@@ -1,4 +1,4 @@
-import { ChevronDown } from 'lucide-react';
+import { CaretDown as ChevronDown } from '@phosphor-icons/react';
 import type { CreateMajorDto, MajorStatus } from '../../../academic/types/major';
 
 interface Props {

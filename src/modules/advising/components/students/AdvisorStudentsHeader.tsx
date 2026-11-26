@@ -1,7 +1,7 @@
 // Hero banner, KPI cards, and quick-filter status chips for AdvisorStudents.
 
 import { Link } from 'react-router';
-import { GraduationCap, TriangleAlert, UserCheck, UsersRound } from 'lucide-react';
+import { GraduationCap, Warning as TriangleAlert, UserCheck, UsersThree as UsersRound } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AcademicStatus } from '../../types/advising';
 
@@ -46,7 +46,7 @@ export function AdvisorStudentsHeader({ stats }: { stats: AdvisorStudentsStats }
         <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="flex items-center gap-2.5 text-[26px] font-extrabold leading-tight tracking-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
-              <UsersRound className="size-7" aria-hidden strokeWidth={2.25} />
+              <UsersRound className="size-7" aria-hidden />
               My Students
             </h1>
             <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-white/95">
@@ -75,7 +75,7 @@ export function AdvisorStudentsHeader({ stats }: { stats: AdvisorStudentsStats }
                 <p className="mt-2 text-sm font-medium text-slate-600">{s.sub}</p>
               </div>
               <span className={cn('flex size-11 shrink-0 items-center justify-center rounded-xl', s.iconBox)}>
-                <s.icon className="size-5" aria-hidden strokeWidth={2.25} />
+                <s.icon className="size-5" aria-hidden />
               </span>
             </div>
           </div>

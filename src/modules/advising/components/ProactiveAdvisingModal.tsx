@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CalendarPlus, Mail, Video, X } from 'lucide-react';
+import { CalendarPlus, EnvelopeSimple as Mail, VideoCamera as Video, X } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { cn } from '@/shared/lib/utils';
 import { apiMessage } from '@/shared/lib/apiMessage';

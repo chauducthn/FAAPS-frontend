@@ -3,7 +3,7 @@
 // of this student, filtered client-side from the advisor request endpoint.
 // The file also exports the appointments list used by the "Appointments" tab.
 
-import { CalendarDays, Clock3, MessageSquareWarning } from 'lucide-react';
+import { CalendarBlank as CalendarDays, Clock as Clock3, ChatCenteredDots as MessageSquareWarning } from '@phosphor-icons/react';
 import { RequestStatusBadge } from '../RequestStatusBadge';
 import { BookingStatusBadge } from '../../../appointment/components/AppointmentBits';
 import { formatIsoDay, formatIsoTime } from '../../../../shared/lib/appointmentDate';

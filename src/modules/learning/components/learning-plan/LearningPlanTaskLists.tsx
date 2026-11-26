@@ -1,6 +1,6 @@
 // Open and completed task lists for LearningPlanTaskBoard.
 
-import { CalendarDays, CircleCheckBig, ListTodo } from 'lucide-react';
+import { CalendarBlank as CalendarDays, CheckCircle as CircleCheckBig, ListChecks as ListTodo } from '@phosphor-icons/react';
 import type { CoursePlan } from '../../../academic/services/studentAcademicService';
 import { LearningPlanTaskRow } from './LearningPlanTaskRow';
 

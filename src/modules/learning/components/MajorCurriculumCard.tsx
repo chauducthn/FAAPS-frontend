@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { GraduationCap, Info } from 'lucide-react';
+import { GraduationCap, Info } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { apiErrorMessage } from '@/shared/lib/apiError';
 import { studentAcademicService } from '@/modules/academic/services/studentAcademicService';

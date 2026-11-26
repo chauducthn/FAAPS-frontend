@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import {
   MAX_TASK_DESCRIPTION,

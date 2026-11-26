@@ -1,7 +1,7 @@
 // src/modules/management/components/curriculum/RoadmapBoard.tsx
 // The Academic Roadmap board: a legend toolbar and one horizontally scrolling row of
 // semester columns.
-import { ListTree, Star } from 'lucide-react';
+import { TreeStructure as ListTree, Star } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import RoadmapSemesterColumn from './RoadmapSemesterColumn';
 import type { RoadmapCourse, RoadmapSemester } from '../../../academic/types/roadmap';

@@ -1,6 +1,6 @@
 // Assign 1 major + 1 cohort to one or multiple advisors (without auto-assigning students).
 import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, FolderOpen } from 'lucide-react';
+import { CaretDown as ChevronDown, FolderOpen } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { useBulkAssignAdvisorCohorts, useReplaceAdvisorCohorts } from '../hooks/queries/useAdminAssignments';

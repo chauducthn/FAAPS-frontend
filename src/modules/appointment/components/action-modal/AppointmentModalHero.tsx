@@ -1,6 +1,6 @@
 // Solid orange hero header for the advisor appointment action modal.
 
-import { CalendarDays, Clock } from 'lucide-react';
+import { CalendarBlank as CalendarDays, Clock } from '@phosphor-icons/react';
 import { formatIsoDay, formatIsoTime } from '../../../../shared/lib/appointmentDate';
 import type { AdvisorAppointment } from '../../types/appointment';
 import { BookingStatusBadge } from '../AppointmentBits';

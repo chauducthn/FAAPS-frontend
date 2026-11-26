@@ -1,5 +1,5 @@
 import type { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
-import { KeyRound } from 'lucide-react';
+import { Key as KeyRound } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AiConfig } from '../../../ai/types/ai-config';
 import type { CreateAiConfigFormValues } from '../../../ai/validations/ai-config.schema';

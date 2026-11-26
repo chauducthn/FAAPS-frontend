@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Bell } from 'lucide-react';
+import { Bell } from '@phosphor-icons/react';
 import {
   useAdvisorNotifications,
   useUnreadAdvisorNotificationCount,

@@ -1,6 +1,6 @@
 // Row of summary cards at the top of the student dashboard: credits, GPA, courses, latest standing.
 
-import { Award, BookCheck, GraduationCap, Star } from 'lucide-react';
+import { Medal as Award, BookBookmark as BookCheck, GraduationCap, Star } from '@phosphor-icons/react';
 import type { Progress } from '../../academic/services/studentAcademicService';
 
 const STANDING_LABEL: Record<string, string> = {

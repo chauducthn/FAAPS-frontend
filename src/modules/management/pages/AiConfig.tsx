@@ -121,7 +121,7 @@ export default function AiConfigPage() {
           onClear={clearFilters}
         />
 
-        <div className="h-[520px]">
+        <div className="h-[calc(100vh-295px)] min-h-[460px]">
           {listQuery.isError ? (
             <AiConfigErrorState onRetry={() => listQuery.refetch()} />
           ) : !listQuery.isLoading && items.length === 0 ? (

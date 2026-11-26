@@ -1,7 +1,7 @@
 // Assigned students overview section with academic term tooltips for AdvisorPortal.
 
 import { Link } from 'react-router';
-import { ArrowRight, HelpCircle, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Question as HelpCircle, Warning as TriangleAlert } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AcademicStatus, AdviseeStudent } from '../../types/advising';
 

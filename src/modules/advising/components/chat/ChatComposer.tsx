@@ -3,7 +3,7 @@
 // message box and the send button. The resolve panel (resolution summary) lives
 // here too — it is the other writing surface of the thread.
 
-import { CircleCheckBig, Lock, Send, TriangleAlert } from 'lucide-react';
+import { CheckCircle as CircleCheckBig, Lock, PaperPlaneTilt as Send, Warning as TriangleAlert } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 interface Props {

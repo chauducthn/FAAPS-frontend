@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { ChevronDown, LogOut, UserRound } from 'lucide-react';
+import { CaretDown as ChevronDown, SignOut as LogOut, User as UserRound } from '@phosphor-icons/react';
 import { useAuth } from '../../../../modules/auth/stores/useAuth';
 import { authService } from '../../../../modules/auth/services/authService';
 

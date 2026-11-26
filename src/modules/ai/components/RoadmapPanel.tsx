@@ -10,7 +10,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Route } from 'lucide-react';
+import { Path as Route } from '@phosphor-icons/react';
 import { useStudyRoadmap } from '../hooks/queries/useAiStudentQueries';
 import { useGenerateRoadmap } from '../hooks/mutations/useAiStudentMutations';
 import { studentAcademicService } from '../../academic/services/studentAcademicService';

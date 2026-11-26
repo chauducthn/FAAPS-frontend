@@ -10,10 +10,24 @@ import { STUDENT_CODE_PATTERN } from '../../auth/validations/register.schema';
 export type AccountRole = 'STUDENT' | 'ADVISOR';
 
 /**
- * `SE173012` — two letters for the major, the cohort (01 to 22) and four digits. The same rule as the registration
- * page and the backend, so an ID the form accepts is never refused when it is saved.
+ * `SE182965` — campus (Q, D, H, S, C), academic group (E, S, A), cohort (01 to 22) and four digits.
+ * Same rule as registration and backend.
  */
 export const STUDENT_ID_PATTERN = STUDENT_CODE_PATTERN;
+
+export const FPT_CAMPUSES: Record<string, string> = {
+  Q: 'Quy Nhon',
+  D: 'Da Nang',
+  H: 'Ha Noi',
+  S: 'Ho Chi Minh',
+  C: 'Can Tho',
+};
+
+export const FPT_ACADEMIC_GROUPS: Record<string, string> = {
+  E: 'Engineering',
+  S: 'Studies & Business',
+  A: 'Arts & Languages',
+};
 
 /** `ADV001` — three digits after the `ADV` prefix. */
 export const ADVISOR_CODE_PATTERN = /^ADV\d{3}$/;
@@ -30,12 +44,12 @@ export const PHONE_ERROR_MESSAGE =
   'Please enter a valid phone number (10 digits, starting with 03, 05, 07, 08, or 09).';
 
 export const STUDENT_ID_ERROR_MESSAGE =
-  'Enter a valid Student ID: two letters for the major, the cohort from 01 to 22 and four digits (for example SE173012).';
+  'Enter a valid FPTU Student ID: campus (Q, D, H, S, C), group (E, S, A), cohort 01–22 and 4 digits (e.g. SE182965).';
 
 export const ADVISOR_CODE_ERROR_MESSAGE =
   'Enter a valid Advisor Code: ADV followed by three digits (for example ADV001).';
 
-export const STUDENT_ID_PLACEHOLDER = 'SE173012';
+export const STUDENT_ID_PLACEHOLDER = 'SE182965';
 export const ADVISOR_CODE_PLACEHOLDER = 'ADV001';
 
 /** The mail domain a role is expected to use. */
@@ -71,23 +85,32 @@ export const emailDomainErrorMessage =
   `Enter an email address on @${FPT_DOMAIN} or @${FE_DOMAIN}.`;
 
 /**
- * The academic identity carried by a Student ID.
- *
- * `SE173012` belongs to major `SE` and to cohort `K17` — the two digits after
- * the major letters are the admission year (17 → K17).
+ * Identity carried by an FPTU Student ID.
+ * `SE182965` -> campus `S` (Ho Chi Minh), group `E` (Engineering), cohort `K18`.
  */
 export interface StudentIdentity {
   code: string;
-  majorCode: string;
+  campusCode: string;
+  campusName: string;
+  groupCode: string;
+  groupName: string;
   cohort: string;
 }
 
-/** Reads the major and cohort out of a Student ID, or returns null. */
+/** Reads campus, academic group, and cohort from a Student ID, or returns null. */
 export const parseStudentId = (raw: string): StudentIdentity | null => {
   const code = raw.trim().toUpperCase();
   if (!STUDENT_ID_PATTERN.test(code)) return null;
-  // Curriculum versions are written without a leading zero (K7, K17), so "07" becomes K7.
-  return { code, majorCode: code.slice(0, 2), cohort: `K${Number(code.slice(2, 4))}` };
+  const campusCode = code.slice(0, 1);
+  const groupCode = code.slice(1, 2);
+  return {
+    code,
+    campusCode,
+    campusName: FPT_CAMPUSES[campusCode] ?? campusCode,
+    groupCode,
+    groupName: FPT_ACADEMIC_GROUPS[groupCode] ?? groupCode,
+    cohort: `K${Number(code.slice(2, 4))}`,
+  };
 };
 
 /**

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { Filter } from 'lucide-react';
+import { Funnel as Filter } from '@phosphor-icons/react';
 import { useMajorOptions } from '../hooks/queries/useAdminDashboard';
 import { MonthPicker } from './MonthPicker';
 import { formatMonthLabel, monthSpan, monthsBetween } from '../../../shared/lib/months';

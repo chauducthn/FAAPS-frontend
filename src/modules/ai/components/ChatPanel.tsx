@@ -2,7 +2,7 @@
 // Used on the student /student/ai-chat page.
 
 import { useEffect, useRef, useState } from 'react';
-import { MessageSquareText, SendHorizonal } from 'lucide-react';
+import { ChatCircleText as MessageSquareText, PaperPlaneRight as SendHorizonal } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { useAiConversations, useAiMessages } from '../hooks/queries/useAiStudentQueries';
 import { useCreateAiConversation, useSendAiMessage } from '../hooks/mutations/useAiStudentMutations';

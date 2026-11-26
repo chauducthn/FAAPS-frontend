@@ -3,7 +3,7 @@
 // Dữ liệu là JSON cấu trúc từ backend (StudyRoadmap), mỗi kỳ là một node,
 // mỗi môn là một thẻ con với tín chỉ / trạng thái / môn tiên quyết.
 
-import { BookOpen, CheckCircle2, CircleDashed, Clock3, Flag, LoaderCircle, Sparkles } from 'lucide-react';
+import { BookOpen, CheckCircle as CheckCircle2, CircleDashed, Clock as Clock3, Flag, SpinnerGap as LoaderCircle, Sparkle as Sparkles } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type {
   RoadmapCourse,

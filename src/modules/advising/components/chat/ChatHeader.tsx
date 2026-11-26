@@ -2,7 +2,7 @@
 // The header of an open advisor conversation: who is chatting, the request
 // description, the resolution summary and the status actions.
 
-import { CircleCheckBig, Lock } from 'lucide-react';
+import { CheckCircle as CircleCheckBig, Lock } from '@phosphor-icons/react';
 import { RequestStatusBadge } from '../RequestStatusBadge';
 import { formatStamp, initialsOf, typeLabelOf } from './format';
 

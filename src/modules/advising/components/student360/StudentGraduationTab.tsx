@@ -7,7 +7,7 @@
 // khi không có dữ liệu sẽ hiện Empty State.
 
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, Briefcase, CheckCircle2, GraduationCap, Info } from 'lucide-react';
+import { WarningCircle as AlertCircle, Briefcase, CheckCircle as CheckCircle2, GraduationCap, Info } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { advisorService, type GraduationCheck } from '../../services/advisorService';
 import { ProgressBar } from './shared';

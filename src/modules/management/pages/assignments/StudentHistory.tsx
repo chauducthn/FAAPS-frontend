@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router';
-import { ChevronLeft } from 'lucide-react';
+import { CaretLeft as ChevronLeft } from '@phosphor-icons/react';
 import { StatusBadge } from '../../components/StatusBadge';
 import { useBackTarget } from '../../../../shared/lib/backLink';
 import { useStudentHistory } from '../../hooks/queries/useAdminAssignments';

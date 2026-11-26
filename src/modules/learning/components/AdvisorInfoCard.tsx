@@ -4,13 +4,13 @@
 
 import { Link } from 'react-router';
 import {
-  CalendarClock,
-  Mail,
-  MessageSquareText,
+  CalendarDot as CalendarClock,
+  EnvelopeSimple as Mail,
+  ChatCircleText as MessageSquareText,
   Phone,
-  UserRound,
+  User as UserRound,
   Users,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AdvisorInfo } from '@/modules/advising/types/advising';
 

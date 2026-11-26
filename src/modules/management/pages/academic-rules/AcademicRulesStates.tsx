@@ -1,4 +1,4 @@
-import { CircleAlert, Plus, RotateCcw, SearchX } from 'lucide-react';
+import { WarningCircle as CircleAlert, Plus, ArrowCounterClockwise as RotateCcw, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
 import { RuleFormModal } from '../../components/academic-rules';
 import { RuleStatusBadge } from '../../components/academic-rules/RuleTable';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
@@ -67,7 +67,7 @@ export function AcademicRulesEmptyState({
           onClick={onCreate}
           className="inline-flex items-center gap-1.5 rounded-xl bg-[#F37021] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#D9601A]"
         >
-          <Plus className="size-3.5" strokeWidth={2.5} /> Create rule
+          <Plus className="size-3.5" /> Create rule
         </button>
       </div>
     </div>

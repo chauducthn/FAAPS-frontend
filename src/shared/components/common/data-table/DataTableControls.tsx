@@ -1,7 +1,7 @@
 // Small reusable controls for DataTable: Checkbox, SortIcon, and PageJumpInput.
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, ChevronsUpDown } from 'lucide-react';
+import { ArrowDown, ArrowUp, CaretUpDown as ChevronsUpDown } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 export interface CheckboxProps {

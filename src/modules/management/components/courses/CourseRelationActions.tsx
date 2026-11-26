@@ -3,7 +3,7 @@
 // The cell has three states: idle (edit and remove), editing (save and
 // cancel) and removing (confirm or keep).
 
-import { Check, Pencil, Trash2, X } from 'lucide-react';
+import { Check, PencilSimple as Pencil, Trash as Trash2, X } from '@phosphor-icons/react';
 import type { StaticColumn } from '@/shared/components/common/table/StaticTable';
 import type { CourseRelation } from '../../../academic/types/course';
 import type { RelationColumnHandlers } from './CourseRelationColumns';
@@ -53,7 +53,7 @@ export function createRelationActionsColumn(
               aria-label="Save relation"
               className="rounded-lg p-1.5 text-green-600 transition-colors hover:bg-green-50 disabled:opacity-40"
             >
-              <Check className="size-3.5" strokeWidth={2.5} />
+              <Check className="size-3.5" />
             </button>
             <button
               type="button"

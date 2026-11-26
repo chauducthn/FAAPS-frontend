@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { dateOfBirthSchema, passwordContainsPersonalInfo, passwordSchema, phoneSchema, studentCodeSchema } from './register.schema';
 
 describe('Student ID', () => {
-  it.each(['SE190001', 'ss010293', 'AI220999', ' se170001 '])('accepts %s', (value) => {
+  it.each(['SE182965', 'ss209938', 'HE220999', 'QA180123', ' de170001 ', 'CE190001'])('accepts %s', (value) => {
     expect(studentCodeSchema.safeParse(value).success).toBe(true);
   });
 
-  it.each(['SE000001', 'SE230001', 'SE99001', 'S1190001', 'SE19000', 'SEA90001', '12345678'])('rejects %s', (value) => {
+  it.each(['SE000001', 'SE230001', 'SE99001', 'S1190001', 'SE19000', 'SEA90001', 'AI220999', 'GD180123', '12345678'])('rejects %s', (value) => {
     expect(studentCodeSchema.safeParse(value).success).toBe(false);
   });
 });

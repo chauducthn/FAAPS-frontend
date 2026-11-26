@@ -2,14 +2,14 @@
 
 import {
   Bell,
-  ClipboardCheck,
+  ClipboardText as ClipboardCheck,
   Clock,
   Info,
-  MessageSquare,
-  TriangleAlert,
+  ChatCircle as MessageSquare,
+  Warning as TriangleAlert,
   UserPlus,
-  type LucideIcon,
-} from 'lucide-react';
+  type Icon as LucideIcon,
+} from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { relativeTime } from './AdvisorNotificationBell';
 import type { NotificationType, StudentNotification } from '../types/advising';

@@ -1,7 +1,7 @@
 // Card and loading skeleton for AtRiskStudentsWidget.
 
 import { useState } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AtRiskStudent, RiskLevel, RiskReason } from '../types/at-risk';
 

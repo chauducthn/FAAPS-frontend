@@ -1,5 +1,5 @@
 // Import XLSX — Preview & Confirm modal.
-import { AlertTriangle, CheckCircle2, FileSpreadsheet, Upload, X } from 'lucide-react';
+import { Warning as AlertTriangle, CheckCircle as CheckCircle2, FileXls as FileSpreadsheet, UploadSimple as Upload, X } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
 import { cn } from '@/shared/lib/utils';

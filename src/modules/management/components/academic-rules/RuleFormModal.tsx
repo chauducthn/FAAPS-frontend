@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, ShieldCheck } from 'lucide-react';
+import { SpinnerGap as Loader2, ShieldCheck } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { createAcademicRuleSchema, type CreateAcademicRuleFormValues } from '../../../academic/validations/academic-rule.schema';
 import type { AcademicRule, AcademicRuleType } from '../../../academic/types/academic-rule';

@@ -1,7 +1,7 @@
 // Row markup for the advising request list.
 
 import type { RefObject } from 'react';
-import { CheckCircle2, Hourglass, Loader2, MoreHorizontal, XCircle } from 'lucide-react';
+import { CheckCircle as CheckCircle2, Hourglass, SpinnerGap as Loader2, DotsThree as MoreHorizontal, XCircle } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { TableCell, TableRow } from '../../../shared/components/common/table/TablePrimitives';
 import { RequestStatusBadge } from './RequestStatusBadge';

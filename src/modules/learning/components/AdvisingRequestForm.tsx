@@ -4,7 +4,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { Send } from 'lucide-react';
+import { PaperPlaneTilt as Send } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { studentAcademicService } from '../../academic/services/studentAcademicService';
 import { apiMessage } from '../../../shared/lib/apiMessage';

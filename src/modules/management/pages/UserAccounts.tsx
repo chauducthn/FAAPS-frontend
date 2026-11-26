@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { NO_PASSWORD_REASON } from '../components/UserRowMenu';
 import { canResetPassword } from '../utils/passwordReset';
 import { DataTable } from '../../../shared/components/common/DataTable';
+import { adminService } from '../services/adminService';
 import { createUserAccountColumns } from './users/userAccountColumns';
 import { UserAccountsHeader } from './users/UserAccountsHeader';
 import { UserAccountsErrorState, UserAccountsFilterBar } from './users/UserAccountsFilterBar';
@@ -108,7 +109,7 @@ export default function UserAccounts() {
               </div>
             )}
             <DataTable
-              className="h-[520px]"
+              className="h-[calc(100vh-295px)] min-h-[460px]"
               manual
               columns={columns}
               data={s.items}
@@ -118,6 +119,18 @@ export default function UserAccounts() {
               getRowId={(row) => row.id}
               isLoading={usersQuery.isLoading}
               totalRowCount={s.total}
+              onFetchAllRows={async () => {
+                const res = await adminService.getUsers({
+                  page: 0,
+                  size: Math.min(s.total || 500, 500),
+                  search: s.search.trim() || undefined,
+                  role: s.role || undefined,
+                  status: s.status || undefined,
+                  majorId: s.majorId || undefined,
+                  curriculumVersionId: s.cohortId || undefined,
+                });
+                return res.items.filter((row) => canResetPassword(row));
+              }}
               isRowSelectable={(row) => canResetPassword(row)}
               rowSelectDisabledReason={() => NO_PASSWORD_REASON}
               pagination={s.pagination}

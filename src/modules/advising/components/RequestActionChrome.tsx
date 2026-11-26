@@ -1,6 +1,6 @@
 // Hero header and action footer for RequestActionModal.
 
-import { CalendarDays, CheckCircle2, User, XCircle } from 'lucide-react';
+import { CalendarBlank as CalendarDays, CheckCircle as CheckCircle2, User, XCircle } from '@phosphor-icons/react';
 import { RequestStatusBadge } from './RequestStatusBadge';
 import { REQUEST_TYPE_LABELS } from './RequestTypeLabel';
 import type { AdvisingRequest } from '../types/advising';

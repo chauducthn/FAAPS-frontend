@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { MoreHorizontal } from 'lucide-react';
+import { DotsThree as MoreHorizontal } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 export interface RowAction {

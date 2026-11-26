@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
-import { ArrowLeft, Bell, CheckCheck } from 'lucide-react';
+import { ArrowLeft, Bell, Checks as CheckCheck } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { Pagination } from '@/modules/management/components/Pagination';
 import { useAdvisorNotificationList } from '../hooks/queries/useAdvisorQueries';

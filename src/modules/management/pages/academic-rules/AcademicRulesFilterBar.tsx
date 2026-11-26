@@ -1,4 +1,4 @@
-import { ChevronDown, RotateCcw, Search, X } from 'lucide-react';
+import { CaretDown as ChevronDown, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import type { AcademicRuleStatus } from '../../../academic/types/academic-rule';
 import { POLICY_TYPES } from '../../../academic/validations/academic-rule.schema';
 

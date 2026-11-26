@@ -107,7 +107,7 @@ export default function CurriculumManager({
         ) : s.items.length === 0 ? (
           <CurriculumListEmpty plural={copy.plural} noun={copy.noun} createLabel={copy.create} hasFilters={s.hasFilters} onClearFilters={s.clearFilters} onCreate={openCreate} />
         ) : (
-          <div className="relative flex h-[520px] flex-col">
+          <div className="relative flex h-[calc(100vh-295px)] min-h-[460px] flex-col">
             {isFetching && (
               <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
                 <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />

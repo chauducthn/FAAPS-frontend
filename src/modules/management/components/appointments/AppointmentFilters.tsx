@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { RotateCcw, Search, User, X } from 'lucide-react';
+import { ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, User, X } from '@phosphor-icons/react';
 import { APPOINTMENT_STATUSES, STATUS_META } from '../AppointmentBits';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import type { AppointmentStatus, AssignmentAdvisor } from '../../types/admin';

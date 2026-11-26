@@ -1,4 +1,4 @@
-import { UserRound } from 'lucide-react';
+import { User as UserRound } from '@phosphor-icons/react';
 
 interface ProfileHeroProps {
   fullName?: string | null;
@@ -35,7 +35,7 @@ export function ProfileHero({ fullName, subtitle, isLoading, action }: ProfileHe
             aria-hidden
             className="flex size-16 shrink-0 items-center justify-center rounded-2xl bg-white/20 text-xl font-extrabold text-white ring-1 ring-inset ring-white/40"
           >
-            {initials || <UserRound className="size-7" strokeWidth={2.25} />}
+            {initials || <UserRound className="size-7" />}
           </span>
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-extrabold leading-tight tracking-tight text-white sm:text-[26px]">

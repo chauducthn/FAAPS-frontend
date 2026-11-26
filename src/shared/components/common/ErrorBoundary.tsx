@@ -6,7 +6,7 @@
 // - `RouteErrorElement`: errorElement của react-router cho lỗi ở tầng route.
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { CircleAlert, RotateCcw } from 'lucide-react';
+import { WarningCircle as CircleAlert, ArrowCounterClockwise as RotateCcw } from '@phosphor-icons/react';
 
 type Props = { children: ReactNode };
 type State = { error: Error | null };

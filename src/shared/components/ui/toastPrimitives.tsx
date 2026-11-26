@@ -3,13 +3,13 @@ import { Toast as ToastPrimitive } from "@base-ui/react/toast"
 import { cn } from "cn"
 import { Button } from "@/shared/components/ui/button"
 import {
-  XIcon,
-  CircleCheckIcon,
-  InfoIcon,
-  TriangleAlertIcon,
-  OctagonXIcon,
-  Loader2Icon,
-} from "lucide-react"
+  X as XIcon,
+  CheckCircle as CircleCheckIcon,
+  Info as InfoIcon,
+  Warning as TriangleAlertIcon,
+  XCircle as OctagonXIcon,
+  SpinnerGap as Loader2Icon,
+} from "@phosphor-icons/react"
 
 export function ToastProvider({ ...props }: ToastPrimitive.Provider.Props) {
   return <ToastPrimitive.Provider {...props} />

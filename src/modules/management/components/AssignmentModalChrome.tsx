@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { X, type LucideIcon } from 'lucide-react';
+import { X, type Icon as LucideIcon } from '@phosphor-icons/react';
 
 export const assignmentSelectClass =
   'h-10 w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-9 text-sm text-gray-900 shadow-2xs transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-60';

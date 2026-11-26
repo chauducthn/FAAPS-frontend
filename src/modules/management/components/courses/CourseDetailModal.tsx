@@ -1,5 +1,5 @@
 // Course detail plus prerequisite / replacement relations (add, edit, remove).
-import { BookOpenText, ExternalLink, GraduationCap, Link2, ScrollText, Target, X } from 'lucide-react';
+import { BookOpenText, ArrowSquareOut as ExternalLink, GraduationCap, Link as Link2, Scroll as ScrollText, Target, X } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { StatusBadge } from '../StatusBadge';
 import type { CourseDetail } from '../../../academic/types/course';

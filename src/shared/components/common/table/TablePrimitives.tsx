@@ -31,10 +31,10 @@ export function TableShell({
         className={cn(
           'w-full border-collapse text-left',
           minWidth && 'min-w-[720px]',
-          '[&_tbody_tr]:border-b [&_tbody_tr]:border-gray-100',
-          '[&_tbody_tr]:transition-colors [&_tbody_tr]:hover:bg-gray-50/80',
-          '[&_thead_tr]:border-b [&_thead_tr]:border-gray-200/80 [&_thead_tr]:bg-gray-50/95',
-          stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10 [&_thead_th]:bg-gray-50/95',
+          '[&_tbody_tr]:border-b [&_tbody_tr]:border-gray-100 dark:[&_tbody_tr]:border-[#211f1d]',
+          '[&_tbody_tr]:transition-colors [&_tbody_tr]:hover:bg-gray-50/80 dark:[&_tbody_tr]:hover:bg-[#22201e]',
+          '[&_thead_tr]:border-b [&_thead_tr]:border-gray-200/80 [&_thead_tr]:bg-gray-50/95 dark:[&_thead_tr]:border-[#2a2725] dark:[&_thead_tr]:bg-[#151413]',
+          stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10 [&_thead_th]:bg-gray-50/95 dark:[&_thead_th]:bg-[#151413]',
         )}
         style={minWidth ? { minWidth } : undefined}
       >

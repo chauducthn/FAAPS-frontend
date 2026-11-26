@@ -1,7 +1,7 @@
 // Pagination footer and floating bulk-action bar for DataTable.
 
 import type { ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { CaretLeft as ChevronLeft, CaretRight as ChevronRight, X } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { PageJumpInput } from './DataTableControls';
 
@@ -113,17 +113,24 @@ export function DataTablePagination({
 
 interface DataTableBulkBarProps<TData> {
   selectedRows: TData[];
+  totalRows?: number;
+  loadingAll?: boolean;
+  onSelectAll?: () => void;
   bulkActions?: (selectedRows: TData[]) => ReactNode;
   onClearSelection: () => void;
 }
 
 export function DataTableBulkBar<TData>({
   selectedRows,
+  totalRows,
+  loadingAll = false,
+  onSelectAll,
   bulkActions,
   onClearSelection,
 }: DataTableBulkBarProps<TData>) {
   const selectedCount = selectedRows.length;
   if (selectedCount === 0) return null;
+  const canSelectAll = !!onSelectAll && !!totalRows && totalRows > selectedCount;
 
   return (
     <div
@@ -134,10 +141,20 @@ export function DataTableBulkBar<TData>({
         'animate-in fade-in duration-150',
       )}
     >
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-md bg-[var(--brand)] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
           {selectedCount} row{selectedCount === 1 ? '' : 's'} selected
         </span>
+        {canSelectAll && (
+          <button
+            type="button"
+            disabled={loadingAll}
+            onClick={onSelectAll}
+            className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70 disabled:opacity-50"
+          >
+            {loadingAll ? 'Selecting…' : `Select all ${totalRows}`}
+          </button>
+        )}
         <button
           type="button"
           onClick={onClearSelection}

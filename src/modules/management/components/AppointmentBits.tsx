@@ -1,12 +1,12 @@
 import {
-  Activity,
-  CalendarDays,
-  CheckCircle2,
+  Pulse as Activity,
+  CalendarBlank as CalendarDays,
+  CheckCircle as CheckCircle2,
   Clock,
-  UserX,
+  UserMinus as UserX,
   XCircle,
-  type LucideIcon,
-} from 'lucide-react';
+  type Icon as LucideIcon,
+} from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AppointmentStatus } from '../types/admin';
 import { initialsOf } from './UserInitials';

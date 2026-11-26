@@ -130,7 +130,7 @@ export default function AcademicRulesPage() {
           onClear={clearFilters}
         />
 
-        <div className="h-[520px]">
+        <div className="h-[calc(100vh-295px)] min-h-[460px]">
           {isError ? (
             <AcademicRulesErrorState onRetry={() => refetch()} />
           ) : !isLoading && items.length === 0 ? (

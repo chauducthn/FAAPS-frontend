@@ -1,17 +1,16 @@
-// src/components/layout/learning/StudentSidebar.tsx
-// Menu điều hướng riêng cho Sinh viên.
-
+// Student portal navigation sidebar organized around Study Setup/Plan and AI-assisted Advising.
 import {
-  BookOpenCheck,
-  BotMessageSquare,
-  CalendarClock,
+  BookOpenText as BookOpenCheck,
+  Robot as BotMessageSquare,
+  CalendarDot as CalendarClock,
   FileText,
-  LayoutDashboard,
+  SquaresFour as LayoutDashboard,
   ListChecks,
-  Map,
-  MessageSquareText,
-  Route,
-} from 'lucide-react';
+  MapTrifold as Map,
+  ChatCircleText as MessageSquareText,
+  Path as Route,
+  Target,
+} from '@phosphor-icons/react';
 import {
   PortalSidebar,
   type PortalNavSection,
@@ -22,21 +21,22 @@ export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
     items: [{ label: 'Home', to: '/student', icon: LayoutDashboard, end: true }],
   },
   {
-    title: 'ACADEMICS',
+    title: 'STUDY SETUP & PLAN',
     items: [
-      { label: 'Chat AI', to: '/student/ai-chat', icon: BotMessageSquare },
-      { label: 'AI Roadmap', to: '/student/ai-roadmap', icon: Route },
-      { label: 'Transcript', to: '/student/transcript', icon: FileText },
-      { label: 'Courses & Curriculum', to: '/student/courses', icon: BookOpenCheck },
-      { label: 'Learning Plan', to: '/student/learning-plan', icon: ListChecks },
+      { label: 'Curriculum & Goals', to: '/student/curriculum-goals', icon: Target },
+      { label: 'Transcript & Import', to: '/student/transcript', icon: FileText },
+      { label: 'AI Study Roadmap', to: '/student/ai-roadmap', icon: Route },
       { label: 'Study Plan Board', to: '/student/study-plan', icon: Map },
+      { label: 'Courses', to: '/student/courses', icon: BookOpenCheck },
+      { label: 'Learning Tasks', to: '/student/learning-plan', icon: ListChecks },
     ],
   },
   {
-    title: 'ADVISING',
+    title: 'AI & ADVISING',
     items: [
+      { label: 'AI Advisor Chat', to: '/student/ai-chat', icon: BotMessageSquare },
+      { label: 'Book Appointment', to: '/student/appointments', icon: CalendarClock },
       { label: 'Advising Requests', to: '/student/advising-requests', icon: MessageSquareText },
-      { label: 'Appointments', to: '/student/appointments', icon: CalendarClock },
     ],
   },
 ];

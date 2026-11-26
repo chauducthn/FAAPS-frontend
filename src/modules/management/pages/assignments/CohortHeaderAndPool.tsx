@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ChevronDown, RotateCcw, Search, X } from 'lucide-react';
+import { CaretDown as ChevronDown, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import { LoadBadge } from '../../components/LoadBadge';
 import { UserInitials } from '../../components/UserInitials';
 import { backState } from '../../../../shared/lib/backLink';

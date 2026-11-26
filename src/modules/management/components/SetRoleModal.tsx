@@ -1,6 +1,6 @@
 // Change the role (and matching email when needed) of one account.
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, CheckCircle2, ChevronDown, GraduationCap, Loader2, UserRound, X } from 'lucide-react';
+import { Warning as AlertTriangle, CheckCircle as CheckCircle2, CaretDown as ChevronDown, GraduationCap, SpinnerGap as Loader2, User as UserRound, X } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
@@ -51,7 +51,7 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
   const curriculumList = useMemo(() => curriculums.data?.items ?? [], [curriculums.data]);
   const identity = useMemo(() => parseStudentId(studentCode), [studentCode]);
   const visibleCurriculums = useMemo(
-    () => (identity ? curriculumList.filter((c) => c.majorCode === identity.majorCode && c.version === identity.cohort) : curriculumList),
+    () => (identity ? curriculumList.filter((c) => c.version === identity.cohort) : curriculumList),
     [curriculumList, identity],
   );
 
@@ -61,10 +61,9 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
   const emailTaken = emailChanged && emailAvailable === false;
   const studentCodeInvalid = target === 'STUDENT' && !STUDENT_ID_PATTERN.test(studentCode.trim().toUpperCase());
   const selectedCurriculum = curriculumList.find((item) => item.id === curriculumId);
-  const prefixMismatch =
-    target === 'STUDENT' && !!identity && !!selectedCurriculum
-    && (selectedCurriculum.majorCode !== identity.majorCode || selectedCurriculum.version !== identity.cohort);
-  const blocked = sameRole || !emailValidDomain || emailTaken || checkingEmail || studentCodeInvalid || prefixMismatch;
+  const cohortMismatch =
+    target === 'STUDENT' && !!identity && !!selectedCurriculum && selectedCurriculum.version !== identity.cohort;
+  const blocked = sameRole || !emailValidDomain || emailTaken || checkingEmail || studentCodeInvalid || cohortMismatch;
 
   const handleTargetChange = (nextRole: AdminUserRole) => {
     setTarget(nextRole);
@@ -78,9 +77,8 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
     const curriculum = target === 'STUDENT' ? curriculumList.find((item) => item.id === curriculumId) : undefined;
     if (target === 'STUDENT' && studentCodeInvalid) return setError(STUDENT_ID_ERROR_MESSAGE);
     if (target === 'STUDENT' && !curriculum) return setError('Select the curriculum the student follows.');
-    if (target === 'STUDENT' && identity && curriculum
-        && (curriculum.majorCode !== identity.majorCode || curriculum.version !== identity.cohort)) {
-      return setError(`Student ID must match ${curriculum.majorCode} ${curriculum.version}.`);
+    if (target === 'STUDENT' && identity && curriculum && curriculum.version !== identity.cohort) {
+      return setError(`Student ID cohort must match ${curriculum.version}.`);
     }
     setError(null);
     try {

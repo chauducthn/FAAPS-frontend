@@ -1,4 +1,4 @@
-import { ArrowLeftRight, CheckCircle2, KeyRound, ShieldOff, Trash2 } from 'lucide-react';
+import { ArrowsLeftRight as ArrowLeftRight, CheckCircle as CheckCircle2, Key as KeyRound, ShieldSlash as ShieldOff, Trash as Trash2 } from '@phosphor-icons/react';
 import type { AdminUserSummary } from '../../types/admin';
 
 interface Props {

@@ -1,6 +1,6 @@
 // Quick modal to update an advisor's maximum advisee limit.
 import { useEffect, useState } from 'react';
-import { AlertTriangle, SlidersHorizontal } from 'lucide-react';
+import { Warning as AlertTriangle, SlidersHorizontal } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { LoadBadge } from './LoadBadge';

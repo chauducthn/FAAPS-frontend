@@ -1,7 +1,7 @@
 // Cancel and reschedule modals for StudentAppointments.
 
 import { useState } from 'react';
-import { CalendarDays, Clock, User } from 'lucide-react';
+import { CalendarBlank as CalendarDays, Clock, User } from '@phosphor-icons/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { formatIsoDay, formatIsoTime, toDateKey } from '../../../shared/lib/appointmentDate';
 import { DateSelector } from '../../appointment/components/DateSelector';

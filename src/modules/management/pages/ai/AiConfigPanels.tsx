@@ -1,4 +1,4 @@
-import { CircleAlert, Plus, RotateCcw, SearchX } from 'lucide-react';
+import { WarningCircle as CircleAlert, Plus, ArrowCounterClockwise as RotateCcw, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
 import type { AiPreset } from '../../../ai/types/ai-config';
 
 export function AiConfigErrorState({ onRetry }: { onRetry: () => void }) {
@@ -63,7 +63,7 @@ export function AiConfigEmptyState({
           onClick={onCreate}
           className="inline-flex items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#e05f14]"
         >
-          <Plus className="size-3.5" strokeWidth={2.5} /> New configuration
+          <Plus className="size-3.5" /> New configuration
         </button>
       </div>
     </div>

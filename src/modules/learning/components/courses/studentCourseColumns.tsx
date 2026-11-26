@@ -1,6 +1,6 @@
 // DataTable columns, detail adapter, and skeleton for StudentCourses.
 
-import { Eye } from 'lucide-react';
+import { Eye } from '@phosphor-icons/react';
 import type { DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import type {
   Course as StudentCourse,

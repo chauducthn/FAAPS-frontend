@@ -1,4 +1,4 @@
-import { GraduationCap, ShieldCheck, UserCheck, type LucideIcon } from 'lucide-react';
+import { GraduationCap, ShieldCheck, UserCheck, type Icon as LucideIcon } from '@phosphor-icons/react';
 import type { RoleCode } from '@/modules/auth/types/auth';
 
 export interface RoleShowcaseItem {

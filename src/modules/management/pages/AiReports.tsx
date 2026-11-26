@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, Flag, XCircle } from 'lucide-react';
+import { Warning as AlertTriangle, CheckCircle as CheckCircle2, Flag, XCircle } from '@phosphor-icons/react';
 import { Pagination } from '../components/Pagination';
 import { useAiReports } from '../../ai/hooks/queries/useAdminAiReports';
 import { useDebounce } from '@/shared/hooks/useDebounce';
@@ -95,7 +95,7 @@ export default function AiReports() {
           }}
         />
 
-        <div className="flex h-[520px] flex-col">
+        <div className="flex h-[calc(100vh-295px)] min-h-[460px] flex-col">
           <div className="min-h-0 flex-1 overflow-auto">
             <AiReportsTable
               items={items}

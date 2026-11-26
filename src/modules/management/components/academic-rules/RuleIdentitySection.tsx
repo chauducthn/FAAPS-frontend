@@ -1,5 +1,5 @@
 import type { FieldErrors, UseFormRegister } from 'react-hook-form';
-import { ChevronDown, Lock, ShieldCheck, X } from 'lucide-react';
+import { CaretDown as ChevronDown, Lock, ShieldCheck, X } from '@phosphor-icons/react';
 import {
   POLICY_TYPES,
   type CreateAcademicRuleFormValues,

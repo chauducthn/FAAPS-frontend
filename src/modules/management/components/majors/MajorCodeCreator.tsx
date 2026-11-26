@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 const MAJOR_CODE_PATTERN = /^[A-Z][A-Z0-9]{1,5}$/;

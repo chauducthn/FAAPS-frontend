@@ -4,14 +4,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
-  ClipboardCheck,
+  ClipboardText as ClipboardCheck,
   Clock,
   Info,
-  MessageSquare,
-  TriangleAlert,
+  ChatCircle as MessageSquare,
+  Warning as TriangleAlert,
   UserPlus,
-  type LucideIcon,
-} from 'lucide-react';
+  type Icon as LucideIcon,
+} from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { Pagination } from '@/modules/management/components/Pagination';
 import { useStudentNotifications } from '../hooks/queries/useStudentQueries';

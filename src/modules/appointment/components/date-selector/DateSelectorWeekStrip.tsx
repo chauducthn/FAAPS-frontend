@@ -1,6 +1,6 @@
 // Seven-day week strip with live slot availability indicators and legend.
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CaretLeft as ChevronLeft, CaretRight as ChevronRight } from '@phosphor-icons/react';
 import { formatColumnDay, isToday, toDateKey } from '../../../../shared/lib/appointmentDate';
 import { cn } from '@/shared/lib/utils';
 import { WEEKDAY_SHORT } from './dateSelectorUtils';

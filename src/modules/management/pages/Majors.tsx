@@ -151,7 +151,7 @@ export default function MajorsPage() {
           onBulkStatus={(status) => void handleBulkStatus(status)}
           onDeleteSelected={() => setIsBulkDeleteOpen(true)}
         />
-        <div className="h-[520px]">
+        <div className="h-[calc(100vh-295px)] min-h-[460px]">
           {isLoading && (
             <div className="space-y-3 px-6 py-10" aria-label="Loading majors">
               {[0, 1, 2, 3].map((i) => (

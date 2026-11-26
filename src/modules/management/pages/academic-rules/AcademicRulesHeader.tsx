@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Archive, BookOpenCheck, CheckCircle2, FileWarning, Loader2, Plus, ShieldCheck } from 'lucide-react';
+import { Archive, BookOpenText as BookOpenCheck, CheckCircle as CheckCircle2, FileX as FileWarning, SpinnerGap as Loader2, Plus, ShieldCheck } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AcademicRuleStatus } from '../../../academic/types/academic-rule';
 
@@ -141,7 +141,7 @@ export function AcademicRulesTopBar({
           onClick={onCreate}
           className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
         >
-          <Plus className="size-4" strokeWidth={2.25} /> Create rule
+          <Plus className="size-4" /> Create rule
         </button>
       </div>
     </div>

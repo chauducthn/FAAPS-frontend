@@ -1,6 +1,6 @@
 // Header and quick-jump buttons (Today, Tomorrow, Next available) for DateSelector.
 
-import { CalendarDays, Zap } from 'lucide-react';
+import { CalendarBlank as CalendarDays, Lightning as Zap } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 interface DateSelectorHeaderProps {

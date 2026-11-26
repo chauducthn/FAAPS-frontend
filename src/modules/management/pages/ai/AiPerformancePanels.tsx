@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Activity, CircleAlert, Clock, RotateCcw, TrendingUp, Zap } from 'lucide-react';
+import { Pulse as Activity, WarningCircle as CircleAlert, Clock, ArrowCounterClockwise as RotateCcw, TrendUp as TrendingUp, Lightning as Zap } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { PerformanceTotals } from './aiPerformanceUtils';
 export { AiPerformanceSummaryTable } from './AiPerformanceSummaryTable';

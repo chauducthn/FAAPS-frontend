@@ -1,4 +1,4 @@
-import { CheckCircle2, ChevronDown, CircleOff, RotateCcw, Search, Trash2, X } from 'lucide-react';
+import { CheckCircle as CheckCircle2, CaretDown as ChevronDown, Prohibit as CircleOff, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, Trash as Trash2, X } from '@phosphor-icons/react';
 import type { CurriculumKind } from '../../../academic/hooks/queries/useCurriculumsQuery';
 import type { CurriculumBulkAction } from '../../utils/curriculumBulk';
 

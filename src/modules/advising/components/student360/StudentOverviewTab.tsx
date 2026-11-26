@@ -5,7 +5,7 @@
 // Mọi thuộc tính đều được đọc an toàn (optional chaining + fallback) để API
 // trả payload thiếu `progress` / `semesters` không làm tab (và cả app) trắng.
 
-import { CalendarDays, Mail, Phone, UserRound } from 'lucide-react';
+import { CalendarBlank as CalendarDays, EnvelopeSimple as Mail, Phone, User as UserRound } from '@phosphor-icons/react';
 import type { AdvisorStudentDetail } from '../../services/advisorService';
 import { ProgressBar } from './shared';
 

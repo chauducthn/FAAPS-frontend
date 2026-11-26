@@ -1,4 +1,4 @@
-import { ChevronDown, CircleAlert, RotateCcw, Search, X } from 'lucide-react';
+import { CaretDown as ChevronDown, WarningCircle as CircleAlert, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import type { AdminUserRole, AdminUserStatus } from '../../types/admin';
 import { USER_ROLE_LABEL, USER_STATUSES } from './userAccountColumns';
 

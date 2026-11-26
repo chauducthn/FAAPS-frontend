@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';
 import { useAttendanceConfigMutations } from '../../hooks/queries/useAttendance';

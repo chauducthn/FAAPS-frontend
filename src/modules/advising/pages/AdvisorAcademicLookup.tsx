@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, GraduationCap, Search } from 'lucide-react';
+import { BookOpen, GraduationCap, MagnifyingGlass as Search } from '@phosphor-icons/react';
 import { academicLookupService } from '../services/academicLookupService';
 import type { LookupCourse, LookupCurriculum } from '../types/academic-lookup';
 import { cn } from '@/shared/lib/utils';

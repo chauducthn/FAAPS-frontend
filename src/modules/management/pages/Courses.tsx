@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { CheckCircle2, CircleOff, Trash2 } from 'lucide-react';
+import { CheckCircle as CheckCircle2, Prohibit as CircleOff, Trash as Trash2 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { DataTable } from '../../../shared/components/common/DataTable';
+import { courseService } from '../services/course.service';
 import type { CourseDetail } from '../../academic/types/course';
 import type { CreateCourseFormValues } from '../../academic/validations/course.schema';
 import { toCourseBody } from './courses/courseHelpers';
@@ -120,7 +121,7 @@ export default function CoursesPage() {
           onClear={s.clearFilters}
         />
 
-        <div className="h-[520px]">
+        <div className="h-[calc(100vh-295px)] min-h-[460px]">
           {query.isLoading ? (
             <CoursesListSkeleton />
           ) : query.isError ? (
@@ -142,6 +143,13 @@ export default function CoursesPage() {
                 manual columns={columns} data={visibleItems} searchKey="name" searchValue={s.search}
                 searchPlaceholder="Search by code or name..." emptyText={s.hasFilters ? 'No courses match your filters.' : 'No courses yet.'}
                 getRowId={(row) => row.id} isLoading={false} totalRowCount={totalItems}
+                onFetchAllRows={async () =>
+                  (await courseService.list({
+                    page: 0, size: Math.min(totalItems || 500, 500),
+                    search: s.search.trim() || undefined, status: s.status === 'ALL' ? undefined : s.status,
+                    categoryId: s.categoryId || undefined,
+                  })).items
+                }
                 pagination={s.pagination} onPaginationChange={s.setPagination} sorting={s.sorting} onSortingChange={s.setSorting}
                 onSearchChange={s.resetPage(s.setSearch)} showSearch={false}
                 bulkActions={(selectedRows) => (

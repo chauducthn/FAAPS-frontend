@@ -1,5 +1,5 @@
 import type { FieldErrors, UseFormRegister, UseFormSetValue } from 'react-hook-form';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { CreateAcademicRuleFormValues } from '../../../academic/validations/academic-rule.schema';
 import type { AcademicRule } from '../../../academic/types/academic-rule';

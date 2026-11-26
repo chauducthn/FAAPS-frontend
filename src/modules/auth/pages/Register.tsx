@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@phosphor-icons/react';
 import { Logo } from '@/shared/components/common/Logo';
 import { apiErrorMessage } from '@/shared/lib/apiError';
 import { useAuth } from '@/modules/auth/stores/useAuth';

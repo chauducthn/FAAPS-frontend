@@ -1,6 +1,6 @@
 // Form section for generating a curriculum study roadmap.
 
-import { Route, Sparkles } from 'lucide-react';
+import { Path as Route, Sparkle as Sparkles } from '@phosphor-icons/react';
 import type { Semester } from '../../academic/services/studentAcademicService';
 import type { RoadmapOrientation } from '../types/ai-student';
 

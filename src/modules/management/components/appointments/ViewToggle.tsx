@@ -1,4 +1,4 @@
-import { CalendarRange, LayoutList } from 'lucide-react';
+import { CalendarDots as CalendarRange, ListDashes as LayoutList } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 export type AppointmentViewMode = 'table' | 'timeline';

@@ -1,4 +1,4 @@
-import { ChevronDown, RotateCcw, Search, UserX, Users, X } from 'lucide-react';
+import { CaretDown as ChevronDown, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, UserMinus as UserX, Users, X } from '@phosphor-icons/react';
 import type { SummaryCohort } from '../../types/admin';
 import { cn } from '@/shared/lib/utils';
 

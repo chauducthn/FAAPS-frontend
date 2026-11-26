@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react';
+import { Check } from '@phosphor-icons/react';
 import type { Feature } from './content';
 
 export function FeatureCard({ icon: Icon, category, title, description, highlights }: Feature) {

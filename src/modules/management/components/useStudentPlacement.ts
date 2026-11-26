@@ -55,7 +55,6 @@ export function useStudentPlacement({
   }, [open]);
 
   const identity = useMemo(() => parseStudentId(studentCode), [studentCode]);
-  const major = identity ? majorList.find((m) => m.code === identity.majorCode) : undefined;
 
   const majorOptions = useMemo(() => {
     const map = new Map<string, string>();
@@ -80,20 +79,24 @@ export function useStudentPlacement({
   );
 
   const selectedCurriculum = curriculumList.find((c) => c.id === curriculumId);
-  const prefixMismatch =
-    role === 'STUDENT' && !!identity && !!selectedCurriculum
-    && (selectedCurriculum.majorCode !== identity.majorCode || selectedCurriculum.version !== identity.cohort);
-  const missingCohortCombo =
+  const cohortMismatch =
+    role === 'STUDENT' && !!identity && !!selectedCurriculum && selectedCurriculum.version !== identity.cohort;
+  const missingCohort =
     role === 'STUDENT' && !!identity && curriculumList.length > 0
-    && !curriculumList.some((c) => c.majorCode === identity.majorCode && c.version === identity.cohort);
+    && !curriculumList.some((c) => c.version === identity.cohort);
 
-  // When Student ID is typed, auto-narrow Major & Cohort and select matching curriculum.
+  // When Student ID is typed, auto-narrow Cohort (Major is chosen independently from campus/group).
   useEffect(() => {
     if (role !== 'STUDENT' || !identity) return;
-    setSelectedMajor(identity.majorCode);
     setSelectedCohort(identity.cohort);
-    const match = curriculumList.find((c) => c.majorCode === identity.majorCode && c.version === identity.cohort);
-    setValue('curriculumId', match ? match.id : '', { shouldValidate: true });
+    const cohortMatches = curriculumList.filter(
+      (c) => (!selectedMajor || c.majorCode === selectedMajor) && c.version === identity.cohort,
+    );
+    if (cohortMatches.length === 1) {
+      setValue('curriculumId', cohortMatches[0].id, { shouldValidate: true });
+    } else if (selectedCurriculum && selectedCurriculum.version !== identity.cohort) {
+      setValue('curriculumId', '', { shouldValidate: true });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [identity?.code, role, curriculumList]);
 
@@ -153,15 +156,14 @@ export function useStudentPlacement({
 
   return {
     identity,
-    major,
     selectedMajor,
     selectedCohort,
     majorOptions,
     cohortOptions,
     visibleCurriculums,
     selectedCurriculum,
-    prefixMismatch,
-    missingCohortCombo,
+    cohortMismatch,
+    missingCohort,
     graduationConflict,
     graduationOptions,
     onMajorChange,

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { Download, FolderOpen, GraduationCap, UserRound } from 'lucide-react';
+import { DownloadSimple as Download, FolderOpen, GraduationCap, User as UserRound } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import {
   NewStudentsChart,

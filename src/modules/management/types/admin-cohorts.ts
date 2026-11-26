@@ -69,8 +69,11 @@ export interface CohortAssignResult {
 export interface AutoAllocation {
   advisorId: string;
   assigned: number;
+  atRiskAssigned?: number;
   totalBefore: number;
   totalAfter: number;
+  maxAdvisees?: number | null;
+  utilizationPct?: number;
   overLimitBy: number;
   warning: boolean;
 }
@@ -78,6 +81,26 @@ export interface AutoAllocation {
 export interface CohortAutoAssignResponse {
   cohortId: string;
   assigned: number;
+  unassignedRemaining?: number;
+  atRiskAssigned?: number;
+  totalTarget?: number;
+  allowOverLimit?: boolean;
   allocation: AutoAllocation[];
   warning: boolean;
+}
+
+export interface SmartBatchAssignResult {
+  cohortsProcessed: number;
+  poolsConfigured: number;
+  advisorsAddedToPools: number;
+  assigned: number;
+  atRiskAssigned: number;
+  unassignedRemaining: number;
+  skippedNoPool: number;
+}
+
+export interface UnassignAllResult {
+  unassignedStudents: number;
+  clearedPools: number;
+  cancelledSessions: number;
 }

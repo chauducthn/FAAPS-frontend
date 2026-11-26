@@ -1,4 +1,4 @@
-import { Bell, UserPlus } from 'lucide-react';
+import { Bell, UserPlus } from '@phosphor-icons/react';
 import { UserInitials } from '../../components/UserInitials';
 import type { UnassignedStudent } from '../../types/admin';
 import type { DataTableColumnDef } from '../../../../shared/components/common/DataTable';

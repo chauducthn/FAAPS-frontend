@@ -1,19 +1,19 @@
-import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 import {
-  CircleCheckIcon,
-  InfoIcon,
-  TriangleAlertIcon,
-  OctagonXIcon,
-  Loader2Icon,
-} from "lucide-react";
+  CheckCircle as CircleCheckIcon,
+  Info as InfoIcon,
+  Warning as TriangleAlertIcon,
+  XCircle as OctagonXIcon,
+  SpinnerGap as Loader2Icon,
+} from "@phosphor-icons/react";
+import { useTheme } from "@/shared/stores/useTheme";
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
+  const theme = useTheme((s) => s.theme);
 
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme={theme}
       position="top-right"
       duration={4000}
       visibleToasts={4}
@@ -50,15 +50,15 @@ const Toaster = ({ ...props }: ToasterProps) => {
           closeButton:
             "!absolute !right-1.5 !top-1.5 !left-auto !h-6 !w-6 !translate-x-0 !translate-y-0 !transform-none inline-flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#F26F21]/30",
           success:
-            "!bg-emerald-50/70 !text-emerald-950 border-emerald-200/80 [&_[data-title]]:text-emerald-900",
+            "!bg-emerald-50/70 !text-emerald-950 border-emerald-200/80 [&_[data-title]]:text-emerald-900 dark:!bg-emerald-950/90 dark:!text-emerald-100 dark:border-emerald-800/70 dark:[&_[data-title]]:text-emerald-100",
           error:
-            "!bg-red-50/70 !text-red-950 border-red-200/80 [&_[data-title]]:text-red-900",
+            "!bg-red-50/70 !text-red-950 border-red-200/80 [&_[data-title]]:text-red-900 dark:!bg-red-950/90 dark:!text-red-100 dark:border-red-800/70 dark:[&_[data-title]]:text-red-100",
           info:
-            "!bg-sky-50/70 !text-sky-950 border-sky-200/80 [&_[data-title]]:text-sky-900",
+            "!bg-sky-50/70 !text-sky-950 border-sky-200/80 [&_[data-title]]:text-sky-900 dark:!bg-sky-950/90 dark:!text-sky-100 dark:border-sky-800/70 dark:[&_[data-title]]:text-sky-100",
           warning:
-            "!bg-amber-50/70 !text-amber-950 border-amber-200/80 [&_[data-title]]:text-amber-900",
+            "!bg-amber-50/70 !text-amber-950 border-amber-200/80 [&_[data-title]]:text-amber-900 dark:!bg-amber-950/90 dark:!text-amber-100 dark:border-amber-800/70 dark:[&_[data-title]]:text-amber-100",
           loading:
-            "!bg-[#fff7ed] !text-[#151c27] border-[#F26F21]/30 [&_[data-title]]:text-[#151c27]",
+            "!bg-[#fff7ed] !text-[#151c27] border-[#F26F21]/30 [&_[data-title]]:text-[#151c27] dark:!bg-[#1f1610] dark:!text-orange-100 dark:border-[#F26F21]/40 dark:[&_[data-title]]:text-orange-100",
           content: "flex-1 min-w-0",
         },
       }}

@@ -1,7 +1,7 @@
 // src/components/learning/StudentProfileCard.tsx
 // Card hồ sơ học tập của sinh viên hiện tại.
 
-import { BookOpen, GraduationCap, Hash, Layers, Star, Wallet } from 'lucide-react';
+import { BookOpen, GraduationCap, Hash, Stack as Layers, Star, Wallet } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AcademicStatus, StudentProfile } from '../../advising/types/advising';
 

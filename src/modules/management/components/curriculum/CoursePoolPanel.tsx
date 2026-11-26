@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Plus, Search, X } from 'lucide-react';
+import { CaretDown as ChevronDown, Plus, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { useCoursesQuery } from '../../../academic/hooks/queries/useCoursesQuery';

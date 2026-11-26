@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertTriangle, Database, Layers, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
+import { Warning as AlertTriangle, Database, Stack as Layers, ArrowsClockwise as RefreshCw, ShieldCheck, Trash as Trash2 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { toastBadRequest } from '@/shared/lib/apiError';
 import { databaseService, type DatabaseResetScope } from '../services/database.service';

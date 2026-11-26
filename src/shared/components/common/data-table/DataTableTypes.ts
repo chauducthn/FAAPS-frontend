@@ -93,6 +93,8 @@ export interface DataTableProps<TData extends RowData, TValue = unknown> {
   totalRowCount?: number;
   /** Total number of pages, when the server knows it. */
   pageCount?: number;
+  /** Optional loader to select every row matching the current filters across all pages (server-side mode). */
+  onFetchAllRows?: () => Promise<TData[]>;
   /** Controlled pagination state. */
   pagination?: PaginationState;
   /** Receives the next pagination state. */

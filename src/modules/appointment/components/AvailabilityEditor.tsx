@@ -1,7 +1,7 @@
 // Weekly availability editor with day-by-day cards, overlap validation,
 // quick templates (Mon-Fri), copy-to-weekdays, and dirty tracking.
 
-import { CalendarCheck2, Eraser, RotateCcw, Save } from 'lucide-react';
+import { CalendarCheck as CalendarCheck2, Eraser, ArrowCounterClockwise as RotateCcw, FloppyDisk as Save } from '@phosphor-icons/react';
 import type { AvailabilitySlot } from '../types/appointment';
 import { AvailabilityDayCard } from './availability/AvailabilityDayCard';
 import { WEEKDAYS } from './availability/availabilityUtils';

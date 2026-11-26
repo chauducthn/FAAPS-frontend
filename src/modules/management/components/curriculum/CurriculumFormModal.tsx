@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { GraduationCap, Loader2, X } from 'lucide-react';
+import { GraduationCap, SpinnerGap as Loader2, X } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { toastBadRequest } from '@/shared/lib/apiError';
 import { useMajorsQuery } from '../../../academic/hooks/queries/useMajorsQuery';

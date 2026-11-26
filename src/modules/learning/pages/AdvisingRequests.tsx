@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { MessageSquareText } from 'lucide-react';
+import { ChatCircleText as MessageSquareText } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { AdvisingRequestDetailModal } from '../components/AdvisingRequestDetailModal';
 import { AdvisingRequestForm } from '../components/AdvisingRequestForm';

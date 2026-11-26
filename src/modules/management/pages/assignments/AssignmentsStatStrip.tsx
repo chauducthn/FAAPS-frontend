@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Bell, UserCheck, UserX, Users, WandSparkles } from 'lucide-react';
+import { Bell, UserCheck, UserMinus as UserX, Users, MagicWand as WandSparkles } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AssignmentTab } from './AssignmentsToolbar';
 

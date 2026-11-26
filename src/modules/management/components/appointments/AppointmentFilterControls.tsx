@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { CalendarRange, ChevronDown } from 'lucide-react';
+import { CalendarDots as CalendarRange, CaretDown as ChevronDown } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { STATUS_META } from '../AppointmentBits';
 import type { AppointmentStatus } from '../../types/admin';

@@ -2,7 +2,7 @@
 
 import { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { FileSpreadsheet, ScanText, Upload } from 'lucide-react';
+import { FileXls as FileSpreadsheet, Scan as ScanText, UploadSimple as Upload } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { cn } from '@/shared/lib/utils';
 import { apiMessage } from '../../../shared/lib/apiMessage';
@@ -122,13 +122,18 @@ export function TranscriptImport() {
 
       <div className="space-y-4 p-5">
         {mode === 'excel' ? (
-          <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#555f6f]">
-            <span>Columns:</span>
-            {COLUMNS.map((column) => (
-              <code key={column} className="rounded bg-[#f7f8fa] px-1.5 py-0.5 font-mono text-[11px] text-[#151c27]">
-                {column}
-              </code>
-            ))}
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-1.5 text-[12px] text-[#555f6f]">
+              <span>Columns:</span>
+              {COLUMNS.map((column) => (
+                <code key={column} className="rounded bg-[#f7f8fa] px-1.5 py-0.5 font-mono text-[11px] text-[#151c27]">
+                  {column}
+                </code>
+              ))}
+            </div>
+            <p className="rounded-lg border border-orange-100 bg-orange-50/60 px-3 py-2 text-xs text-[#9a3412]">
+              Tip: Use the <strong>FAAPS · FAP Transcript Exporter</strong> Chrome extension on your FAP Grade Report page to download a ready-to-import <code>.xlsx</code> file in one click.
+            </p>
           </div>
         ) : (
           <p className="text-[12px] text-[#555f6f]">

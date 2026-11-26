@@ -4,14 +4,14 @@
 // search box and the Validate / Save / Export / Reset actions.
 
 import {
-  BookOpenCheck,
-  Download,
+  BookOpenText as BookOpenCheck,
+  DownloadSimple as Download,
   GraduationCap,
-  Loader2,
-  RotateCcw,
-  Save,
+  SpinnerGap as Loader2,
+  ArrowCounterClockwise as RotateCcw,
+  FloppyDisk as Save,
   ShieldCheck,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 
 interface HeroProps {
   majorCode: string;
@@ -39,7 +39,7 @@ export function StudyPlanHero({
       <div className="relative flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2.5 text-[26px] font-extrabold leading-tight tracking-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
-            <GraduationCap className="size-7" aria-hidden strokeWidth={2.25} />
+            <GraduationCap className="size-7" aria-hidden />
             Study Plan
           </h1>
           <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-white/95">

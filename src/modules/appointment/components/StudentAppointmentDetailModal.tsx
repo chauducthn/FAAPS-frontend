@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, User } from 'lucide-react';
+import { CalendarBlank as CalendarDays, Clock, User } from '@phosphor-icons/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { formatIsoDay, formatIsoTime } from '@/shared/lib/appointmentDate';
 import { useStudentAppointmentDetail } from '../hooks/queries/useAppointmentQueries';

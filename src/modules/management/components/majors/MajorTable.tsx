@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from 'lucide-react';
+import { PencilSimple as Pencil, Trash as Trash2 } from '@phosphor-icons/react';
 import { DataTable, type DataTableColumnDef } from '@/shared/components/common/DataTable';
 
 export interface MajorItem {
@@ -98,7 +98,7 @@ function createMajorColumns(
             aria-label={`Edit ${row.original.code}`}
             className="p-1.5 rounded-md text-gray-400 hover:text-[var(--brand)] hover:bg-[var(--brand-soft)] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]"
           >
-            <Pencil className="size-4" strokeWidth={2} />
+            <Pencil className="size-4" />
           </button>
           <button
             onClick={() => onDeleteMajor(row.original)}
@@ -106,7 +106,7 @@ function createMajorColumns(
             aria-label={`Delete ${row.original.code}`}
             className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
           >
-            <Trash2 className="size-4" strokeWidth={2} />
+            <Trash2 className="size-4" />
           </button>
         </div>
       ),

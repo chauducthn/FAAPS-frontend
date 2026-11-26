@@ -1,4 +1,4 @@
-import { GraduationCap, UserRound } from 'lucide-react';
+import { GraduationCap, User as UserRound } from '@phosphor-icons/react';
 import type { SortingState } from '@tanstack/react-table';
 import { StatusBadge } from '../../components/StatusBadge';
 import { UserInitials } from '../../components/UserInitials';

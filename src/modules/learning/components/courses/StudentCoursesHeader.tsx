@@ -1,6 +1,6 @@
 // Hero header and search/category filter bar for StudentCourses.
 
-import { BookOpenCheck, RotateCcw, Search } from 'lucide-react';
+import { BookOpenText as BookOpenCheck, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search } from '@phosphor-icons/react';
 
 const selectClass =
   'appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-3.5 pr-9 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20';

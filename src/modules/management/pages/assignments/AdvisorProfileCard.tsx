@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { AlertTriangle, Pencil } from 'lucide-react';
+import { Warning as AlertTriangle, PencilSimple as Pencil } from '@phosphor-icons/react';
 import { LoadBadge } from '../../components/LoadBadge';
 import { StatusBadge } from '../../components/StatusBadge';
 import { UserInitials } from '../../components/UserInitials';

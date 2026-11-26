@@ -1,7 +1,7 @@
 // Single three-dot action menu for each advisor row.
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Eye, FolderPlus, MoreHorizontal, SlidersHorizontal } from 'lucide-react';
+import { Eye, FolderPlus, DotsThree as MoreHorizontal, SlidersHorizontal } from '@phosphor-icons/react';
 
 interface AdvisorRowMenuProps {
   advisorName: string;

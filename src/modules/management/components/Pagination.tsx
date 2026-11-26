@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CaretLeft as ChevronLeft, CaretRight as ChevronRight } from '@phosphor-icons/react';
 
 interface PaginationProps {
   page: number; // zero-based

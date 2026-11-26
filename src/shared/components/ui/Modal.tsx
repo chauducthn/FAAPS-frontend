@@ -27,13 +27,13 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#151c27]/50" onClick={onClose} aria-hidden="true" />
+      <div className="absolute inset-0 bg-[#151c27]/50 dark:bg-black/70" onClick={onClose} aria-hidden="true" />
       <div
         role="dialog"
         aria-modal="true"
         aria-label={title}
         className={cn(
-          'relative flex max-h-[90vh] w-full max-w-[708px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5',
+          'relative flex max-h-[90vh] w-full max-w-[708px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 dark:ring-white/10',
           className,
         )}
       >

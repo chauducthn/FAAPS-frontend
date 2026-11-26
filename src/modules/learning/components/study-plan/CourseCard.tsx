@@ -4,7 +4,7 @@
 // semester picker (the select is the accessible alternative to drag & drop).
 
 import { useState } from 'react';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldWarning as ShieldAlert } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { BOARD_POOL } from '../../services/studentStudyPlanService';
 import type { ViewItem } from './types';

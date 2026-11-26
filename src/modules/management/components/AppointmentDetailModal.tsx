@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Briefcase, CalendarDays, CheckCircle2, FileText, Loader2, MapPin, User, UserX, XCircle } from 'lucide-react';
+import { Briefcase, CalendarBlank as CalendarDays, CheckCircle as CheckCircle2, FileText, SpinnerGap as Loader2, MapPin, User, UserMinus as UserX, XCircle } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { apiErrorMessage } from '../../../shared/lib/apiError';

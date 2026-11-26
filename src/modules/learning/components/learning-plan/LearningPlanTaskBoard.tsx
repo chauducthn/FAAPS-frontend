@@ -1,6 +1,6 @@
 // Learning tasks panel for the selected course in StudentLearningPlan.
 
-import { BookOpenCheck, ListChecks, Plus } from 'lucide-react';
+import { BookOpenText as BookOpenCheck, ListChecks, Plus } from '@phosphor-icons/react';
 import type { CoursePlan, CurriculumCourse } from '../../../academic/services/studentAcademicService';
 import { LearningPlanTaskLists } from './LearningPlanTaskLists';
 

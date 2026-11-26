@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router';
-import { ChevronLeft } from 'lucide-react';
+import { CaretLeft as ChevronLeft } from '@phosphor-icons/react';
 import { AssignAdvisorModal } from '../../components/AssignAdvisorModal';
 import { UnassignAdvisorModal } from '../../components/UnassignAdvisorModal';
 import { CohortAssignModal } from '../../components/CohortAssignModal';

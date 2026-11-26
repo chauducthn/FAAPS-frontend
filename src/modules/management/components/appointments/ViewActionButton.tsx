@@ -1,4 +1,4 @@
-import { Eye } from 'lucide-react';
+import { Eye } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 /**

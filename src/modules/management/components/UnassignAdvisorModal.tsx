@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, UserMinus } from 'lucide-react';
+import { Warning as AlertTriangle, UserMinus } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { usePreviewUnassign, useUnassignStudents } from '../hooks/queries/useAdminAssignments';

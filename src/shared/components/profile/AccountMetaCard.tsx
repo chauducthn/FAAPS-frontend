@@ -1,4 +1,4 @@
-import { CalendarDays, Clock, Shield, UserCheck } from 'lucide-react';
+import { CalendarBlank as CalendarDays, Clock, Shield, UserCheck } from '@phosphor-icons/react';
 import type { UserProfileDto } from '@/shared/services/profileService';
 
 interface AccountMetaCardProps {

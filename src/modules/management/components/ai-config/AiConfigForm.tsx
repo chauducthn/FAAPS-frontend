@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Cpu, Loader2, X } from 'lucide-react';
+import { Cpu, SpinnerGap as Loader2, X } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
 import { createAiConfigSchema, type CreateAiConfigFormValues } from '../../../ai/validations/ai-config.schema';

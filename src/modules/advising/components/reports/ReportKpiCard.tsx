@@ -4,7 +4,7 @@
 //
 // Read-only: khong hover, khong click. Chi la so lieu de doc.
 
-import type { LucideIcon } from 'lucide-react';
+import type { Icon as LucideIcon } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 export interface ReportKpi {
@@ -43,7 +43,7 @@ export function ReportKpiCard({ kpi, loading }: Props) {
           <p className="mt-2 text-sm font-medium text-slate-600">{kpi.sub}</p>
         </div>
         <span className={cn('flex size-11 shrink-0 items-center justify-center rounded-xl', kpi.iconBox)}>
-          <kpi.icon className="size-5" aria-hidden strokeWidth={2.25} />
+          <kpi.icon className="size-5" aria-hidden />
         </span>
       </div>
     </div>

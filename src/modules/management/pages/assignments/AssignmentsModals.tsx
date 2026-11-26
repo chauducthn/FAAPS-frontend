@@ -5,6 +5,7 @@ import { CohortAssignModal } from '../../components/CohortAssignModal';
 import { CohortPoolModal } from '../../components/CohortPoolModal';
 import { AdvisoryLimitModal, type AdvisoryLimitTarget } from '../../components/AdvisoryLimitModal';
 import { AdvisorDetailsModal } from '../../components/AdvisorDetailsModal';
+import { UnassignAllModal, type UnassignAllTarget } from '../../components/UnassignAllModal';
 import type { AssignmentAdvisor, CohortPoolAdvisor, SummaryCohort } from '../../types/admin';
 
 export interface AssignCohortModalState {
@@ -35,6 +36,9 @@ export function AssignmentsModals({
   onCloseLimit,
   detailAdvisorId,
   onCloseDetail,
+  unassignAllTarget,
+  onCloseUnassignAll,
+  onDoneUnassignAll,
   cohorts,
   advisors,
   autoPool,
@@ -61,6 +65,9 @@ export function AssignmentsModals({
   onCloseLimit: () => void;
   detailAdvisorId: string | null;
   onCloseDetail: () => void;
+  unassignAllTarget: UnassignAllTarget | null;
+  onCloseUnassignAll: () => void;
+  onDoneUnassignAll: () => void;
   cohorts: SummaryCohort[];
   advisors: AssignmentAdvisor[];
   autoPool: CohortPoolAdvisor[];
@@ -72,6 +79,9 @@ export function AssignmentsModals({
     requiredCohorts.length > 0 && poolAdvisorsByCohort.size > 0
       ? advisors.filter((a) => requiredCohorts.every((cId) => poolAdvisorsByCohort.get(cId)?.has(a.id)))
       : advisors;
+  const assignedAdvisorIds = new Set<string>();
+  poolAdvisorsByCohort.forEach((set) => set.forEach((id) => assignedAdvisorIds.add(id)));
+  const idleAdvisors = advisors.filter((a) => !assignedAdvisorIds.has(a.id));
   return (
     <>
       <CohortAssignModal
@@ -89,6 +99,7 @@ export function AssignmentsModals({
         open={pickerOpen}
         cohorts={cohorts}
         poolCountByCohort={poolCountByCohort}
+        idleAdvisorCount={idleAdvisors.length}
         onClose={onClosePicker}
         onPick={onPickCohort}
         onConfigurePool={onConfigureCohortPool}
@@ -97,6 +108,8 @@ export function AssignmentsModals({
         open={!!autoFor}
         cohort={autoFor}
         pool={autoPool}
+        advisors={advisors}
+        idleAdvisors={idleAdvisors}
         onClose={onCloseAuto}
         onBack={onBackFromAuto}
         onConfigurePool={onConfigurePoolFromAuto}
@@ -117,6 +130,7 @@ export function AssignmentsModals({
       />
       <AdvisoryLimitModal target={limitTarget} onClose={onCloseLimit} />
       <AdvisorDetailsModal advisorId={detailAdvisorId} onClose={onCloseDetail} />
+      <UnassignAllModal target={unassignAllTarget} onClose={onCloseUnassignAll} onDone={onDoneUnassignAll} />
     </>
   );
 }

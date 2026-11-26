@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Check, Plus, Sparkles, Zap } from 'lucide-react';
+import { Check, Plus, Sparkle as Sparkles, Lightning as Zap } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 export { AiConfigFilterBar } from './AiConfigFilterBar';
@@ -118,7 +118,7 @@ export function AiConfigTopBar({
           onClick={onCreate}
           className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
         >
-          <Plus className="size-4" strokeWidth={2.25} /> New configuration
+          <Plus className="size-4" /> New configuration
         </button>
       </div>
     </div>

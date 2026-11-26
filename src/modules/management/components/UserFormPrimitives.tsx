@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { AlertTriangle } from 'lucide-react';
+import { Warning as AlertTriangle } from '@phosphor-icons/react';
 import { userLabelClass } from './createUserSchema';
 
 export function UserFormSection({

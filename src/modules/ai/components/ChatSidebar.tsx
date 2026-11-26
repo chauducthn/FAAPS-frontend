@@ -1,6 +1,6 @@
 // Conversation list sidebar for the student AI chat panel.
 
-import { MessageSquarePlus, MessageSquareText } from 'lucide-react';
+import { ChatCircleDots as MessageSquarePlus, ChatCircleText as MessageSquareText } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 export interface ChatSidebarConversation {

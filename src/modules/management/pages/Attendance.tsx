@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { AlertTriangle, FileSpreadsheet, ShieldCheck, SlidersHorizontal, Upload } from 'lucide-react';
+import { Warning as AlertTriangle, FileXls as FileSpreadsheet, ShieldCheck, SlidersHorizontal, UploadSimple as Upload } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { AttendanceConfigTab } from '../components/attendance/AttendanceConfigTab';
 import { AttendanceImportTab } from '../components/attendance/AttendanceImportTab';

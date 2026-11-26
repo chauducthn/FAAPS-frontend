@@ -1,0 +1,132 @@
+/*
+ * Dark mode overrides for soft semantic badges, alert banners, tinted cards,
+ * and semantic hover states when `.dark` is active on `<html>`.
+ */
+
+/* Soft Semantic Surfaces */
+.dark :is(
+  .bg-orange-50, .bg-orange-50\/15, .bg-orange-50\/30, .bg-orange-50\/40,
+  .bg-orange-50\/50, .bg-orange-50\/60, .bg-orange-50\/70, .bg-orange-50\/80,
+  .bg-\[\#FFF4ED\], .bg-\[\#FFF7ED\], .bg-\[\#fff3ea\], .bg-\[\#fff7ed\],
+  .bg-\[\#fff7ed\]\/60, .bg-\[\#fff7f0\], .bg-\[\#fff4ec\]
+) {
+  background-color: rgb(242 111 33 / 0.14);
+}
+.dark :is(.bg-orange-100, .bg-orange-100\/70, .bg-orange-200, .bg-\[\#ffedd5\]) {
+  background-color: rgb(242 111 33 / 0.22);
+}
+.dark :is(
+  .bg-emerald-50, .bg-emerald-50\/40, .bg-emerald-50\/50, .bg-emerald-50\/60,
+  .bg-emerald-50\/70, .bg-green-50, .bg-\[\#ecfdf5\]
+) {
+  background-color: rgb(16 185 129 / 0.14);
+}
+.dark :is(.bg-emerald-100, .bg-emerald-100\/70, .bg-emerald-200, .bg-green-100, .bg-\[\#d1fae5\]) {
+  background-color: rgb(16 185 129 / 0.22);
+}
+.dark :is(
+  .bg-amber-50, .bg-amber-50\/40, .bg-amber-50\/70, .bg-amber-50\/80,
+  .bg-yellow-50, .bg-\[\#fffbeb\]
+) {
+  background-color: rgb(245 158 11 / 0.14);
+}
+.dark .bg-amber-100 { background-color: rgb(245 158 11 / 0.22); }
+.dark :is(
+  .bg-red-50, .bg-red-50\/30, .bg-red-50\/40, .bg-red-50\/50,
+  .bg-red-50\/60, .bg-red-50\/70, .bg-rose-50, .bg-\[\#fef2f2\]
+) {
+  background-color: rgb(239 68 68 / 0.14);
+}
+.dark :is(.bg-red-100, .bg-red-200, .bg-rose-100, .bg-\[\#fee2e2\]) {
+  background-color: rgb(239 68 68 / 0.22);
+}
+.dark :is(
+  .bg-blue-50, .bg-blue-50\/40, .bg-blue-50\/60, .bg-sky-50, .bg-sky-50\/70
+) {
+  background-color: rgb(59 130 246 / 0.14);
+}
+.dark :is(.bg-blue-100, .bg-blue-200, .bg-sky-100, .bg-\[\#dbeafe\]) {
+  background-color: rgb(59 130 246 / 0.22);
+}
+.dark :is(
+  .bg-indigo-50, .bg-indigo-50\/40, .bg-purple-50, .bg-purple-50\/60, .bg-violet-50,
+  .bg-\[\#eef2ff\], .bg-\[\#eef2ff\]\/40, .bg-\[\#eef2ff\]\/70
+) {
+  background-color: rgb(99 102 241 / 0.16);
+}
+.dark :is(.bg-purple-100, .bg-violet-100, .bg-\[\#e0e7ff\], .bg-\[\#ede9fe\]) {
+  background-color: rgb(99 102 241 / 0.24);
+}
+
+/* Soft Semantic Hover & Group-Hover States */
+.dark :is(
+  .hover\:bg-orange-50, .hover\:bg-orange-50\/30, .hover\:bg-orange-50\/40, .hover\:bg-orange-50\/50,
+  .hover\:bg-orange-100, .hover\:bg-orange-100\/70, .hover\:bg-orange-100\/80,
+  .hover\:bg-\[\#fff3ea\], .hover\:bg-\[\#fff7ed\], .hover\:bg-\[\#fff7ed\]\/60, .hover\:bg-\[\#fff7f0\]
+):hover {
+  background-color: rgb(242 111 33 / 0.24);
+}
+.dark .group:hover .group-hover\:bg-\[\#fff3ea\] { background-color: rgb(242 111 33 / 0.22); }
+.dark :is(.hover\:bg-emerald-50, .hover\:bg-emerald-100, .hover\:bg-green-50):hover {
+  background-color: rgb(16 185 129 / 0.24);
+}
+.dark .hover\:bg-amber-100:hover { background-color: rgb(245 158 11 / 0.24); }
+.dark :is(.hover\:bg-red-50, .hover\:bg-red-100):hover { background-color: rgb(239 68 68 / 0.24); }
+.dark :is(.hover\:bg-purple-50, .hover\:bg-purple-100):hover { background-color: rgb(99 102 241 / 0.26); }
+.dark .disabled\:hover\:bg-purple-50:disabled:hover { background-color: rgb(99 102 241 / 0.16); }
+.dark .hover\:text-\[\#9a3412\]:hover { color: #ffa15c; }
+
+/* Soft Semantic Borders */
+.dark :is(
+  .border-orange-200, .border-orange-200\/70, .border-orange-200\/80,
+  .border-orange-100, .border-\[\#fed7aa\]
+) {
+  border-color: rgb(242 111 33 / 0.34);
+}
+.dark :is(.border-emerald-200, .border-emerald-200\/80, .border-green-200) {
+  border-color: rgb(16 185 129 / 0.34);
+}
+.dark :is(.border-amber-200, .border-amber-200\/80, .border-yellow-200) {
+  border-color: rgb(245 158 11 / 0.34);
+}
+.dark :is(.border-red-200, .border-red-200\/80, .border-red-200\/90, .border-rose-200, .border-red-300) {
+  border-color: rgb(239 68 68 / 0.34);
+}
+.dark :is(.border-blue-200, .border-sky-200, .border-sky-200\/80) {
+  border-color: rgb(59 130 246 / 0.34);
+}
+.dark :is(.border-indigo-200, .border-indigo-200\/80, .border-purple-200) {
+  border-color: rgb(99 102 241 / 0.34);
+}
+
+/* Readable Semantic Text */
+.dark :is(
+  .text-orange-700, .text-orange-800, .text-orange-900,
+  .text-\[\#7C2D12\], .text-\[\#7c2d12\], .text-\[\#8A5A3C\],
+  .text-\[\#9A3412\], .text-\[\#9a3412\], .text-\[\#9a4a12\],
+  .text-\[\#C2410C\], .text-\[\#c2410c\], .text-\[\#c2570b\]
+) {
+  color: #ffa15c;
+}
+.dark :is(
+  .text-emerald-700, .text-emerald-800, .text-emerald-900,
+  .text-green-700, .text-green-800, .text-\[\#047857\], .text-\[\#065f46\]
+) {
+  color: #6ee7b7;
+}
+.dark :is(.text-amber-700, .text-amber-800, .text-amber-900, .text-\[\#b45309\]) { color: #fcd34d; }
+.dark :is(.text-red-700, .text-red-800, .text-red-900, .text-\[\#991b1b\], .text-\[\#b91c1c\]) {
+  color: #fca5a5;
+}
+.dark :is(
+  .text-blue-700, .text-blue-800, .text-sky-700, .text-sky-800,
+  .text-\[\#1D4ED8\], .text-\[\#1d4ed8\], .text-\[\#1e40af\]
+) {
+  color: #93c5fd;
+}
+.dark :is(
+  .text-indigo-700, .text-indigo-800, .text-purple-700, .text-purple-800,
+  .text-\[\#3730a3\], .text-\[\#4338ca\], .text-\[\#5b21b6\], .text-\[\#6d28d9\]
+) {
+  color: #c4b5fd;
+}

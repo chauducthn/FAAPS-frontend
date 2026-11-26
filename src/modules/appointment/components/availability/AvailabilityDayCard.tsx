@@ -1,6 +1,6 @@
 // Single weekday card for configuring availability slots.
 
-import { Copy, Plus, Trash2 } from 'lucide-react';
+import { Copy, Plus, Trash as Trash2 } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AvailabilitySlot, IsoWeekday } from '../../types/appointment';
 import {

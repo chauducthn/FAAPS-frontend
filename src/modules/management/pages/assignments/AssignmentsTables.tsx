@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { FolderPlus, X } from 'lucide-react';
+import { FolderPlus, UserMinus, X } from '@phosphor-icons/react';
 import { LoadBadge } from '../../components/LoadBadge';
 import { UserInitials } from '../../components/UserInitials';
 import { Pagination } from '../../components/Pagination';
@@ -25,8 +25,10 @@ export function AdvisorsTableSection(props: {
   selectedIds: Set<string>;
   onToggleOne: (id: string) => void;
   onToggleAll: (ids: string[], allSelected: boolean) => void;
+  onSelectAllAdvisors: (ids: string[]) => void;
   onClearSelection: () => void;
   onBulkAssignCohorts: (advisors: { id: string; name: string }[]) => void;
+  onBulkUnassignAdvisors: (advisors: { id: string; name: string }[]) => void;
   onRetry: () => void;
   onAssignCohort: (advisor: AdvisorRowItem) => void;
   onEditLimit: (advisor: AdvisorRowItem) => void;
@@ -111,25 +113,43 @@ export function AdvisorsTableSection(props: {
   ];
 
   return (
-    <div className="flex h-[520px] flex-col">
+    <div className="flex h-[calc(100vh-295px)] min-h-[460px] flex-col">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {selectedIds.size > 0 && (
           <div role="region" aria-label="Advisor bulk actions" className="flex shrink-0 flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
                 {selectedIds.size} advisor{selectedIds.size === 1 ? '' : 's'} selected
               </span>
+              {selectedIds.size < advisorList.length && (
+                <button
+                  type="button"
+                  onClick={() => props.onSelectAllAdvisors(advisorList.map((a) => a.id))}
+                  className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70"
+                >
+                  Select all {advisorList.length}
+                </button>
+              )}
               <button type="button" onClick={props.onClearSelection} className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-600 hover:bg-orange-100/80 hover:text-gray-900">
                 <X className="size-3.5" aria-hidden /> Clear
               </button>
             </div>
-            <button
-              type="button"
-              onClick={() => props.onBulkAssignCohorts(selectedAdvisors)}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#e05f14]"
-            >
-              <FolderPlus className="size-3.5" aria-hidden /> Assign cohort
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => props.onBulkUnassignAdvisors(selectedAdvisors)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-[13px] font-semibold text-red-700 transition-colors hover:bg-red-50"
+              >
+                <UserMinus className="size-3.5" aria-hidden /> Unassign
+              </button>
+              <button
+                type="button"
+                onClick={() => props.onBulkAssignCohorts(selectedAdvisors)}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#e05f14]"
+              >
+                <FolderPlus className="size-3.5" aria-hidden /> Assign cohort
+              </button>
+            </div>
           </div>
         )}
         <StaticTable

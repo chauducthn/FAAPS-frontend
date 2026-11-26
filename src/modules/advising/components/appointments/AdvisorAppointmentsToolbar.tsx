@@ -1,15 +1,15 @@
 // Toolbar switcher for calendar navigation and list period tabs in AdvisorAppointments.
 
 import {
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  CircleCheckBig,
-  Clock3,
-  LayoutList,
-  RefreshCw,
+  CalendarBlank as CalendarDays,
+  CaretLeft as ChevronLeft,
+  CaretRight as ChevronRight,
+  CheckCircle as CircleCheckBig,
+  Clock as Clock3,
+  ListDashes as LayoutList,
+  ArrowsClockwise as RefreshCw,
   SlidersHorizontal,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import { shiftWeek, weekLabel } from '../../../appointment/components/WeeklyCalendar';
 import { cn } from '@/shared/lib/utils';
 

@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@phosphor-icons/react';
 import { ChangePasswordCard } from '@/shared/components/profile/ChangePasswordCard';
 import { PersonalInfoForm } from '@/shared/components/profile/PersonalInfoForm';
 import { ProfileHero } from '@/shared/components/profile/ProfileHero';

@@ -1,16 +1,16 @@
 import {
-  AlertTriangle,
+  Warning as AlertTriangle,
   BookOpen,
-  Bot,
+  Robot as Bot,
   CalendarCheck,
   GraduationCap,
-  Layers,
-  LineChart,
-  MessageSquare,
+  Stack as Layers,
+  ChartLine as LineChart,
+  ChatCircle as MessageSquare,
   ShieldCheck,
-  Sparkles,
-  type LucideIcon,
-} from 'lucide-react';
+  Sparkle as Sparkles,
+  type Icon as LucideIcon,
+} from '@phosphor-icons/react';
 import type { RoleCode } from '@/modules/auth/types/auth';
 
 export {

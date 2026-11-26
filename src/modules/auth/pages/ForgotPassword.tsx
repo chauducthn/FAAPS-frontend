@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle, ArrowLeft, CheckCircle2, Mail } from 'lucide-react';
+import { WarningCircle as AlertCircle, ArrowLeft, CheckCircle as CheckCircle2, EnvelopeSimple as Mail } from '@phosphor-icons/react';
 import { Logo } from '@/shared/components/common/Logo';
 import { readApiMessage } from '@/shared/lib/apiMessage';
 import { authService } from '../services/authService';

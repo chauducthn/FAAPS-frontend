@@ -1,6 +1,6 @@
 // Courses catalog table view for AdvisorAcademicLookup.
 
-import { BookMarked, Layers } from 'lucide-react';
+import { BookBookmark as BookMarked, Stack as Layers } from '@phosphor-icons/react';
 import { Pagination } from '../../../management/components/Pagination';
 import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
 import type { LookupCourse } from '../../types/academic-lookup';

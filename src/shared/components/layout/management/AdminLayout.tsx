@@ -1,18 +1,18 @@
 import {
-  Activity,
-  BarChart3,
+  Pulse as Activity,
+  ChartBar as BarChart3,
   Book,
   Briefcase,
   CalendarCheck,
-  ClipboardCheck,
+  ClipboardText as ClipboardCheck,
   Cpu,
   Database,
   Flag,
   GraduationCap,
-  LayoutDashboard,
+  SquaresFour as LayoutDashboard,
   Shield,
   Users,
-} from 'lucide-react';
+} from '@phosphor-icons/react';
 import PortalLayout, { type PortalNavSection } from '../portal/PortalLayout';
 import { NotificationBell } from './NotificationBell';
 

@@ -1,6 +1,6 @@
 // Shared formatting helpers and plan list section for AdvisorStudyPlans.
 
-import { BookOpenCheck, Clock3 } from 'lucide-react';
+import { BookOpenText as BookOpenCheck, Clock as Clock3 } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { StudyPlanSummary } from '../../types/study-plan';
 

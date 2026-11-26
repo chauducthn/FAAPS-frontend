@@ -1,6 +1,6 @@
 // Step 2 of the password reset: the results.
 import { useEffect, useMemo, useState } from 'react';
-import { Check, Copy, Download, TriangleAlert, X } from 'lucide-react';
+import { Check, Copy, DownloadSimple as Download, Warning as TriangleAlert, X } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { buildResetCsv, copyToClipboard, downloadResetCsv } from '../utils/passwordReset';

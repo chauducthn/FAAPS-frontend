@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { KeyRound, ShieldCheck } from 'lucide-react';
+import { Key as KeyRound, ShieldCheck } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { apiMessage } from '@/shared/lib/apiMessage';
 import { profileService } from '@/shared/services/profileService';

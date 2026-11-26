@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { CaretDown as ChevronDown } from '@phosphor-icons/react';
 import { Controller, type Control, type FieldErrors, type UseFormRegister } from 'react-hook-form';
 import { cn } from '@/shared/lib/utils';
 import { CREDIT_OPTIONS, type CreateCourseFormValues } from '../../../academic/validations/course.schema';

@@ -12,6 +12,7 @@ import {
 } from '../../hooks/queries/useAdminAssignments';
 import type { SummaryCohort, UnassignedStudent } from '../../types/admin';
 import type { AdvisoryLimitTarget } from '../../components/AdvisoryLimitModal';
+import type { UnassignAllTarget } from '../../components/UnassignAllModal';
 import { ASSIGNMENT_TABS, type AssignmentTab } from './AssignmentsToolbar';
 import type { AdvisorRowItem } from './AssignmentsTables';
 
@@ -41,6 +42,7 @@ export function useAssignmentsOverviewState() {
   const [poolFor, setPoolFor] = useState<SummaryCohort | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [bulkAssignStudents, setBulkAssignStudents] = useState<{ id: string; name: string; cohortId?: string }[] | null>(null);
+  const [unassignAllTarget, setUnassignAllTarget] = useState<UnassignAllTarget | null>(null);
 
   const summary = useAssignmentSummary();
   const advisors = useAssignmentAdvisors();
@@ -130,6 +132,7 @@ export function useAssignmentsOverviewState() {
     limitTarget, setLimitTarget, detailAdvisorId, setDetailAdvisorId,
     autoFor, setAutoFor, poolFor, setPoolFor,
     pickerOpen, setPickerOpen, bulkAssignStudents, setBulkAssignStudents,
+    unassignAllTarget, setUnassignAllTarget,
     summary, advisors, advisorRows, autoAssign, unassigned, autoPool,
     cohorts, waitingCohorts, majors, advisorCohortOptions, advisorList, poolCountByCohort, poolAdvisorsByCohort,
     loadOf, unassignedRows, hasFilter, setTab, runAutoAssign,

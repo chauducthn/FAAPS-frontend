@@ -3,13 +3,13 @@ import type { ReactNode } from 'react';
 import {
   Archive,
   ArrowUpRight,
-  BookOpenCheck,
-  CalendarDays,
-  Layers,
-  Loader2,
-  Pencil,
-  Upload,
-} from 'lucide-react';
+  BookOpenText as BookOpenCheck,
+  CalendarBlank as CalendarDays,
+  Stack as Layers,
+  SpinnerGap as Loader2,
+  PencilSimple as Pencil,
+  UploadSimple as Upload,
+} from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { StatusBadge } from '../StatusBadge';
 import { ExampleSheetButton } from '../ImportCheckDialog';

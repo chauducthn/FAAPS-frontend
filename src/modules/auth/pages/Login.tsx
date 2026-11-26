@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { Logo } from '@/shared/components/common/Logo';
-import { AlertCircle, ArrowLeft, Info, X } from 'lucide-react';
+import { WarningCircle as AlertCircle, ArrowLeft, Info, X } from '@phosphor-icons/react';
 import { loginNoticeFromParam } from '@/shared/lib/authErrors';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

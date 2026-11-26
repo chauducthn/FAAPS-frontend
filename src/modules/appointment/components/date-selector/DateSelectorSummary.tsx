@@ -1,6 +1,6 @@
 // Selected date summary bar and previous/next day stepper buttons.
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CaretLeft as ChevronLeft, CaretRight as ChevronRight } from '@phosphor-icons/react';
 import { formatColumnDay } from '../../../../shared/lib/appointmentDate';
 import { relativeLabel } from './dateSelectorUtils';
 

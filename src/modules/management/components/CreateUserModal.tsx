@@ -3,7 +3,7 @@ import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertTriangle } from 'lucide-react';
+import { Warning as AlertTriangle } from '@phosphor-icons/react';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
 import { useCurriculumsQuery, useSemesterOptions } from '../../academic/hooks/queries/useCurriculumsQuery';
@@ -91,13 +91,13 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
 
   const submit = handleSubmit(async (v) => {
     const isStudent = v.role === 'STUDENT';
-    if (isStudent && placement.missingCohortCombo && placement.identity) {
-      setError('studentCode', { message: `No active Major + Cohort matches ${placement.identity.majorCode}${placement.identity.cohort.slice(1)}` });
+    if (isStudent && placement.missingCohort && placement.identity) {
+      setError('studentCode', { message: `No active curriculum matches cohort ${placement.identity.cohort}` });
       return;
     }
-    if (isStudent && placement.prefixMismatch && placement.identity && placement.selectedCurriculum) {
+    if (isStudent && placement.cohortMismatch && placement.identity && placement.selectedCurriculum) {
       setError('curriculumId', {
-        message: `Student ID "${placement.identity.majorCode}${placement.identity.cohort.slice(1)}" must match ${placement.selectedCurriculum.majorCode} ${placement.selectedCurriculum.version}`,
+        message: `Student ID cohort "${placement.identity.cohort}" must match ${placement.selectedCurriculum.version}`,
       });
       return;
     }
@@ -122,7 +122,7 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
                 expectedGraduationSemesterId: v.expectedGraduationSemesterId || undefined,
                 currentSemester: Number(v.currentSemester),
               }
-            : { maxAdvisees: Number(v.maxAdvisees) }),
+            : { maxAdvisees: Number(v.maxAdvisees), curriculumVersionId: v.curriculumId || undefined }),
         });
       }
       onCreated(v.fullName.trim());
@@ -165,7 +165,6 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
             semesterList={semesterList}
             graduationOptions={placement.graduationOptions}
             identity={placement.identity}
-            major={placement.major}
             graduationConflict={placement.graduationConflict}
           />
           {errors.root?.message && (
@@ -178,7 +177,7 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
         <CreateUserModalFooter
           isEdit={isEdit}
           isSubmitting={isSubmitting}
-          blocked={emailRoleConflict || placement.graduationConflict || placement.prefixMismatch || placement.missingCohortCombo}
+          blocked={emailRoleConflict || placement.graduationConflict || placement.cohortMismatch || placement.missingCohort}
           onClose={onClose}
         />
       </form>

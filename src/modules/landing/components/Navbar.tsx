@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ArrowRight, Menu, X } from 'lucide-react';
+import { ArrowRight, List as Menu, X } from '@phosphor-icons/react';
 import { Logo } from '@/shared/components/common/Logo';
 import { CTAButton } from '@/shared/components/common/CTAButton';
+import { ThemeToggle } from '@/shared/components/common/ThemeToggle';
 import { useAuth } from '@/modules/auth/stores/useAuth';
 import { getPortalLabel, getPortalPath, NAV_LINKS } from './content';
 
@@ -32,6 +33,7 @@ export function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeToggle />
           {isAuthenticated && user ? (
             <CTAButton to={portalPath}>
               {portalLabel}
@@ -45,15 +47,18 @@ export function Navbar() {
           )}
         </div>
 
-        <button
-          type="button"
-          className="rounded-md p-2 text-ink-secondary hover:bg-surface-hover md:hidden"
-          aria-label={open ? 'Close menu' : 'Open menu'}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-        >
-          {open ? <X className="size-6" aria-hidden /> : <Menu className="size-6" aria-hidden />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="rounded-md p-2 text-ink-secondary hover:bg-surface-hover"
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+          >
+            {open ? <X className="size-6" aria-hidden /> : <Menu className="size-6" aria-hidden />}
+          </button>
+        </div>
       </div>
 
       {open && (

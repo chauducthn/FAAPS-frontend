@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from '@phosphor-icons/react';
 import { CTAButton } from '@/shared/components/common/CTAButton';
 import { useAuth } from '@/modules/auth/stores/useAuth';
 import { getPortalLabel, getPortalPath } from './content';

@@ -1,6 +1,6 @@
 // Loading / empty / error state rows for the advising request list.
 
-import { Inbox, SearchX } from 'lucide-react';
+import { Tray as Inbox, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 export function RequestTableState({

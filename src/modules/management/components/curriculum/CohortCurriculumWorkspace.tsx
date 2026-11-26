@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from '@phosphor-icons/react';
 import { StatusBadge } from '../StatusBadge';
 import { useCurriculum, useCurriculumCourses } from '../../../academic/hooks/queries/useCurriculumsQuery';
 import { useCurriculumMutations } from '../../../academic/hooks/mutations/useCurriculumMutations';

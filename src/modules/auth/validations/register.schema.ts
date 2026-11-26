@@ -3,9 +3,9 @@ import { z } from 'zod';
 /** Youngest age at which someone can be a university student here. Keep in sync with the backend. */
 export const MIN_STUDENT_AGE = 17;
 
-/** Two letters (major), cohort 01-22, then four digits: SE190001. Keep in sync with the backend. */
-export const STUDENT_CODE_PATTERN = /^[A-Z]{2}(0[1-9]|1\d|2[0-2])\d{4}$/;
-export const STUDENT_CODE_MESSAGE = 'Use 2 letters, a cohort from 01 to 22 and 4 digits, for example SE190001';
+/** Campus (Q/D/H/S/C), academic group (E/S/A), cohort 01-22, then four digits: SE182965. Keep in sync with the backend. */
+export const STUDENT_CODE_PATTERN = /^[QDHSC][ESA](0[1-9]|1\d|2[0-2])\d{4}$/;
+export const STUDENT_CODE_MESSAGE = 'Use campus (Q, D, H, S, C), group (E, S, A), cohort 01-22 and 4 digits, for example SE182965';
 
 /** Vietnamese mobile number: a leading 0, then 3/5/7/8/9, then 8 digits. No country code or spaces. */
 export const PHONE_PATTERN = /^0[35789]\d{8}$/;

@@ -4,7 +4,7 @@
 //
 // Ve "empty": khac voi "error", rong la ket qua dung — khong phai loi.
 
-import { BarChart3, TriangleAlert } from 'lucide-react';
+import { ChartBar as BarChart3, Warning as TriangleAlert } from '@phosphor-icons/react';
 
 /** Skeleton giu dung chieu cao cua bieu do (300px) de layout khong nhay khi data ve. */
 export function ChartSkeleton() {

@@ -1,7 +1,7 @@
 // One course card of the Academic Roadmap board.
 // Clicking the course name or a "Requires [code]" chip opens the CourseDetailModal.
 import { useRef, useState } from 'react';
-import { GripVertical, Layers, Star } from 'lucide-react';
+import { DotsSixVertical as GripVertical, Stack as Layers, Star } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { RoadmapCourse } from '../../../academic/types/roadmap';
 import { RoadmapCourseActionsMenu } from './RoadmapCourseActionsMenu';

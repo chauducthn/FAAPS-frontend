@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router';
-import { BookOpen, FolderOpen, GraduationCap } from 'lucide-react';
+import { BookOpen, FolderOpen, GraduationCap } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { useCurriculum } from '../../academic/hooks/queries/useCurriculumsQuery';
 import type { CurriculumItem } from '../../academic/types/curriculum';

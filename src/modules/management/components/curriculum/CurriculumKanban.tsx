@@ -2,7 +2,7 @@
 // The roadmap board of the curriculum detail page: the Kanban of semester columns
 // with the drag & drop wiring, plus the loading / error / empty states of the board.
 
-import { CircleAlert, Layers, RotateCcw } from 'lucide-react';
+import { WarningCircle as CircleAlert, Stack as Layers, ArrowCounterClockwise as RotateCcw } from '@phosphor-icons/react';
 import RoadmapBoard from './RoadmapBoard';
 import type { RoadmapCourse, RoadmapSemester } from '../../../academic/types/roadmap';
 

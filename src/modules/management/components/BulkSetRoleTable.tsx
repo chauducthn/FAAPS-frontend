@@ -1,4 +1,4 @@
-import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Warning as AlertTriangle, CheckCircle as CheckCircle2 } from '@phosphor-icons/react';
 import { emailMatchesRole, STUDENT_ID_PATTERN } from '../utils/accountRules';
 import { TableBody, TableCell, TableHead, TableRow, TableShell } from '../../../shared/components/common/table/TablePrimitives';
 import { cn } from '@/shared/lib/utils';

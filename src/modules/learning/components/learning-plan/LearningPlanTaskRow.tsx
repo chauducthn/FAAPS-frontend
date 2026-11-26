@@ -1,5 +1,5 @@
 // One row of the learning-plan task list: checkbox, content, deadline, resource link and row actions.
-import { CalendarDays, Check, ExternalLink, Pencil, Trash2 } from 'lucide-react';
+import { CalendarBlank as CalendarDays, Check, ArrowSquareOut as ExternalLink, PencilSimple as Pencil, Trash as Trash2 } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { CoursePlan } from '../../../academic/services/studentAcademicService';
 
@@ -45,7 +45,7 @@ export function LearningPlanTaskRow({ task, today, disabled, onToggle, onEdit, o
             : 'border-[#d0d5dd] bg-white hover:border-[#F26F21]',
         )}
       >
-        {task.completed && <Check className="size-3.5" strokeWidth={3} />}
+        {task.completed && <Check className="size-3.5" />}
       </button>
 
       <div className="min-w-0 flex-1">

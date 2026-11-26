@@ -335,7 +335,8 @@ describe('UserAccounts modals', () => {
         expect(screen.getByLabelText('Enrollment semester')).toHaveValue('sem-fa2023');
         expect(screen.getByLabelText('Expected graduation semester')).toHaveValue('sem-fa2027');
       });
-      expect(screen.getByText(/Major Software Engineering/)).toBeInTheDocument();
+      expect(screen.getByText(/Ho Chi Minh \(S\)/)).toBeInTheDocument();
+      expect(screen.getByText(/Engineering \(E\)/)).toBeInTheDocument();
       expect(screen.getByText(/Cohort K17/)).toBeInTheDocument();
     });
 
@@ -348,7 +349,7 @@ describe('UserAccounts modals', () => {
       await user.type(await screen.findByLabelText('Student ID'), code);
       await user.click(screen.getAllByRole('button', { name: /^create user$/i }).at(-1)!);
 
-      expect(await screen.findByText(/Enter a valid Student ID/)).toBeInTheDocument();
+      expect(await screen.findByText(/Enter a valid FPTU Student ID/)).toBeInTheDocument();
       expect(createUser).not.toHaveBeenCalled();
     });
 

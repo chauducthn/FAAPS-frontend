@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
-import { Search } from 'lucide-react';
+import { MagnifyingGlass as Search } from '@phosphor-icons/react';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
 import { useAiReports } from '../hooks/queries/useAdminDashboard';
 import { useDebounce } from '@/shared/hooks/useDebounce';

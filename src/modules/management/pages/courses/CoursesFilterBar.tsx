@@ -1,4 +1,4 @@
-import { ChevronDown, RotateCcw, Search, X } from 'lucide-react';
+import { CaretDown as ChevronDown, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import { CREDIT_OPTIONS } from '../../../academic/validations/course.schema';
 import type { CourseCategory } from '../../../academic/types/course';
 

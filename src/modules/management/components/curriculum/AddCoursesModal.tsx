@@ -1,6 +1,6 @@
 // Check-box picker that attaches several courses to one semester of a curriculum.
 import { useEffect, useState } from 'react';
-import { BookPlus, Loader2, Lock, Search, X } from 'lucide-react';
+import { BookmarkSimple as BookPlus, SpinnerGap as Loader2, Lock, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { useCoursesQuery } from '../../../academic/hooks/queries/useCoursesQuery';

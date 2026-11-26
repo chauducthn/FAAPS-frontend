@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { BookOpenText, Loader2, X } from 'lucide-react';
+import { BookOpenText, SpinnerGap as Loader2, X } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { createCourseSchema, type CreateCourseFormValues } from '../../../academic/validations/course.schema';
 import type { CourseCategory, CourseDetail } from '../../../academic/types/course';

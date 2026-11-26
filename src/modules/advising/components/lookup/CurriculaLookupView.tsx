@@ -1,6 +1,6 @@
 // Curricula cards view for AdvisorAcademicLookup.
 
-import { ChevronRight, GraduationCap } from 'lucide-react';
+import { CaretRight as ChevronRight, GraduationCap } from '@phosphor-icons/react';
 import type { LookupCurriculum } from '../../types/academic-lookup';
 import { cn } from '@/shared/lib/utils';
 

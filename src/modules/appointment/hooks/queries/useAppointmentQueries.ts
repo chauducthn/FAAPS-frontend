@@ -31,6 +31,13 @@ export const useAdvisorAppointmentDetail = (id: string | null) =>
     enabled: !!id,
   });
 
+export const useStudentAdvisors = () =>
+  useQuery({
+    queryKey: [...APPOINTMENT_QUERY_KEYS.all, 'student-advisors'] as const,
+    queryFn: appointmentService.getStudentAdvisors,
+    staleTime: 60_000,
+  });
+
 /**
  * Free slots for one day. Disabled until a date is chosen.
  * The advisor is optional: without it the backend falls back to the student's assigned advisor.

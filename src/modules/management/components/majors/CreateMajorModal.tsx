@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, GraduationCap, Loader2, Plus, X } from 'lucide-react';
+import { CaretDown as ChevronDown, GraduationCap, SpinnerGap as Loader2, Plus, X } from '@phosphor-icons/react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
 import type { CreateMajorDto } from '../../../academic/types/major';

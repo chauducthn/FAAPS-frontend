@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Mail, Save } from 'lucide-react';
+import { EnvelopeSimple as Mail, FloppyDisk as Save } from '@phosphor-icons/react';
 import { isValidOptionalPhone } from '@/shared/validation/identity';
 
 export interface PersonalInfoValues {

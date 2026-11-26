@@ -4,12 +4,12 @@ import { Link } from 'react-router';
 import {
   ArrowRight,
   BookOpen,
-  CalendarDays,
-  CircleCheckBig,
+  CalendarBlank as CalendarDays,
+  CheckCircle as CircleCheckBig,
   Hourglass,
-  Inbox,
-  UsersRound,
-} from 'lucide-react';
+  Tray as Inbox,
+  UsersThree as UsersRound,
+} from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 
 function greeting() {
@@ -123,7 +123,7 @@ export function AdvisorPortalHeader({
                 <p className="mt-2 text-sm font-medium text-slate-600">{s.sub}</p>
               </div>
               <span className={cn('flex size-11 shrink-0 items-center justify-center rounded-xl', s.iconBox)}>
-                <s.icon className="size-5" aria-hidden strokeWidth={2.25} />
+                <s.icon className="size-5" aria-hidden />
               </span>
             </div>
           </div>
@@ -149,7 +149,7 @@ export function AdvisorQuickLinks({ totalStudents, atRiskCount }: { totalStudent
           className="group flex min-h-[80px] items-center gap-3.5 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.06),0_8px_24px_-14px_rgba(15,23,42,0.22)] transition-all hover:-translate-y-[1px] hover:border-[#F26F21]/50 hover:shadow-[0_2px_4px_rgba(15,23,42,0.06),0_14px_32px_-12px_rgba(242,111,33,0.35)]"
         >
           <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.7)]">
-            <l.icon className="size-5" aria-hidden strokeWidth={2.25} />
+            <l.icon className="size-5" aria-hidden />
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-[15px] font-extrabold text-slate-900 group-hover:text-[#c2410c]">

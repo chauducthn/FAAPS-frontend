@@ -1,4 +1,4 @@
-import { BadgeCheck, Briefcase, CalendarDays, Mail, Phone, UsersRound } from 'lucide-react';
+import { SealCheck as BadgeCheck, Briefcase, CalendarBlank as CalendarDays, EnvelopeSimple as Mail, Phone, UsersThree as UsersRound } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AdvisorProfile as AdvisorProfileData } from '../services/advisorService';
 

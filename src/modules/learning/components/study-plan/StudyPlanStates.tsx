@@ -1,6 +1,6 @@
 // Loading, error, validation banner states, and XLSX export helper for StudentStudyPlan.
 
-import { CircleAlert, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { WarningCircle as CircleAlert, ShieldWarning as ShieldAlert, ShieldCheck } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { BOARD_POOL, type BoardData, type BoardIssue } from '../../services/studentStudyPlanService';
 import { buildStudyPlanXlsx, downloadBlob, type XlsxRow } from '../../utils/studyPlanXlsx';

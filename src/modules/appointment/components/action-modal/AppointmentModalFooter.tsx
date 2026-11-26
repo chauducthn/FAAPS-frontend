@@ -1,6 +1,6 @@
 // Footer action buttons for the advisor appointment action modal.
 
-import { CheckCircle2, UserX, XCircle } from 'lucide-react';
+import { CheckCircle as CheckCircle2, UserMinus as UserX, XCircle } from '@phosphor-icons/react';
 import {
   APPOINTMENT_RESULT_UPDATE_ENABLED,
   FEATURE_PENDING_TOOLTIP,

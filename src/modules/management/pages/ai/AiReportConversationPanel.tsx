@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from '@phosphor-icons/react';
 import { formatDateTime } from '../../components/AiReportBits';
 import type { AiReportDetail } from '../../types/admin';
 import { cn } from '@/shared/lib/utils';

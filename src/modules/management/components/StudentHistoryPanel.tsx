@@ -1,5 +1,5 @@
 // Inline student assignment history panel rendered inside AdvisorDetailsModal.
-import { ChevronLeft } from 'lucide-react';
+import { CaretLeft as ChevronLeft } from '@phosphor-icons/react';
 import { useStudentHistory } from '../hooks/queries/useAdminAssignments';
 import { StaticTable, type StaticColumn } from '../../../shared/components/common/table/StaticTable';
 import type { AssignmentHistoryRecord } from '../types/admin-assignments';

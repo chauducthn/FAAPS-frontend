@@ -1,5 +1,11 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { assignmentService, notificationService, type PageParams } from '../../../advising/services/assignmentService';
+import { assignmentService, type PageParams } from '../../../advising/services/assignmentService';
+export {
+  useAdminNotifications,
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useUnreadNotificationCount,
+} from './useAdminNotifications';
 
 const KEY = ['admin', 'assignments'] as const;
 
@@ -100,14 +106,33 @@ export const useAssignCohort = () => {
 
 export const usePreviewAutoAssign = () =>
   useMutation({
-    mutationFn: (input: { cohortId: string; advisorIds?: string[] }) => assignmentService.previewAutoAssign(input.cohortId, input.advisorIds),
+    mutationFn: (input: { cohortId: string; advisorIds?: string[]; allowOverLimit?: boolean }) =>
+      assignmentService.previewAutoAssign(input.cohortId, input.advisorIds, input.allowOverLimit),
   });
 
 export const useConfirmAutoAssign = () => {
   const invalidate = useInvalidate();
   return useMutation({
-    mutationFn: (input: { cohortId: string; advisorIds?: string[]; notes?: string }) =>
-      assignmentService.confirmAutoAssign(input.cohortId, input.advisorIds, input.notes),
+    mutationFn: (input: { cohortId: string; advisorIds?: string[]; notes?: string; allowOverLimit?: boolean }) =>
+      assignmentService.confirmAutoAssign(input.cohortId, input.advisorIds, input.notes, input.allowOverLimit),
+    onSuccess: invalidate,
+  });
+};
+
+export const useSmartAutoAssignAll = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (input: { cohortIds?: string[]; autoConfigurePools?: boolean; allowOverLimit?: boolean; notes?: string }) =>
+      assignmentService.smartAutoAssignAll(input),
+    onSuccess: invalidate,
+  });
+};
+
+export const useUnassignAll = () => {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: (input: { advisorIds?: string[]; clearPools?: boolean; notes?: string }) =>
+      assignmentService.unassignAll(input),
     onSuccess: invalidate,
   });
 };
@@ -151,38 +176,5 @@ export const useUpdateAdvisorLimit = () => {
   return useMutation({
     mutationFn: (input: { advisorId: string; maxAdvisees: number }) => assignmentService.updateLimit(input.advisorId, input.maxAdvisees),
     onSuccess: invalidate,
-  });
-};
-
-// ---- notifications (paged list, unread badge, mark read). Live updates arrive over the WebSocket.
-const NOTIFICATIONS = ['admin', 'notifications'] as const;
-
-export const useAdminNotifications = (page = 0, size = 20) =>
-  useQuery({
-    queryKey: [...NOTIFICATIONS, 'list', page, size],
-    queryFn: () => notificationService.list({ page, size }),
-    placeholderData: keepPreviousData,
-  });
-
-/** Lightweight unread count for the bell badge. */
-export const useUnreadNotificationCount = () =>
-  useQuery({
-    queryKey: [...NOTIFICATIONS, 'unread-count'],
-    queryFn: notificationService.unreadCount,
-  });
-
-export const useMarkNotificationRead = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => notificationService.markRead(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: NOTIFICATIONS }),
-  });
-};
-
-export const useMarkAllNotificationsRead = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () => notificationService.markAllRead(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: NOTIFICATIONS }),
   });
 };

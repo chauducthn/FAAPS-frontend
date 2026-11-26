@@ -8,7 +8,7 @@
 // The list scrolls when it grows, so the dialog never grows past the screen.
 
 import { useEffect, useMemo, useState } from 'react';
-import { KeyRound, ShieldAlert } from 'lucide-react';
+import { Key as KeyRound, ShieldWarning as ShieldAlert } from '@phosphor-icons/react';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
 
@@ -56,8 +56,8 @@ export function ResetPasswordConfirmDialog({ open, users, onConfirm, onCancel, i
           <div className="min-w-0">
             <h2 className="text-[15px] font-bold leading-snug text-[#111827]">{heading}</h2>
             <p className="mt-1.5 text-[13px] leading-relaxed text-gray-600">
-              Each account gets a new random password. Share it with the account holder over a secure channel — they will
-              be asked to change it after signing in.
+              Each account will be reset to the default password (<span className="font-mono font-semibold text-gray-900">FPTUniversity@2026</span>).
+              The user will be required to change it immediately on their first sign-in after the reset.
             </p>
           </div>
         </div>

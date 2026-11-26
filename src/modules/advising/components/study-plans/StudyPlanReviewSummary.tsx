@@ -1,6 +1,6 @@
 // Student snapshot and registration context cards for StudyPlanReviewModal.
 
-import { CalendarDays, GraduationCap } from 'lucide-react';
+import { CalendarBlank as CalendarDays, GraduationCap } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AdvisorStudentDetail } from '../../services/advisorService';
 import type { AdvisorStudyPlanDetail } from '../../types/study-plan';

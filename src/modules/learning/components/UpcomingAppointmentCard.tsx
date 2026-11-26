@@ -1,7 +1,7 @@
 // The next appointment of the student on the dashboard.
 
 import { Link } from 'react-router';
-import { CalendarClock } from 'lucide-react';
+import { CalendarDot as CalendarClock } from '@phosphor-icons/react';
 import { BookingStatusBadge } from '../../appointment/components/AppointmentBits';
 import type { BookedAppointment } from '../../appointment/types/appointment';
 

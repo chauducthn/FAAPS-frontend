@@ -1,6 +1,6 @@
 // Scrollable details and inline form body for the advisor appointment action modal.
 
-import { Clock, FileText, MessageSquareWarning, User } from 'lucide-react';
+import { Clock, FileText, ChatCenteredDots as MessageSquareWarning, User } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AdvisorAppointment } from '../../types/appointment';
 import { APPOINTMENT_RESULT_UPDATE_ENABLED, type ActionMode } from './types';

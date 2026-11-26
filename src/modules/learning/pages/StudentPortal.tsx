@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { BotMessageSquare, CalendarClock, MessageSquareText, Route } from 'lucide-react';
+import { Robot as BotMessageSquare, CalendarDot as CalendarClock, ChatCircleText as MessageSquareText, Path as Route } from '@phosphor-icons/react';
 import { useAuth } from '../../auth/stores/useAuth';
 import { useIdentityProfile } from '@/shared/hooks/useIdentityProfile';
 import {

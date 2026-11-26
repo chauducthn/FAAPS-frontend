@@ -4,7 +4,7 @@
 //
 // Columns: Rule Name | Policy Type | Condition/Grade | Status | Actions
 import { useMemo } from 'react';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck } from '@phosphor-icons/react';
 import { DataTable, type DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import { RowActionMenu } from '../RowActionMenu';
 import type { PaginationState } from '@tanstack/react-table';

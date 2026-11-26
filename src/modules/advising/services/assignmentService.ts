@@ -17,6 +17,8 @@ import type {
   CohortAssignResult,
   CohortAutoAssignResponse,
   CohortPoolAdvisor,
+  SmartBatchAssignResult,
+  UnassignAllResult,
   UnassignedStudent,
 } from '../../management/types/admin';
 
@@ -104,11 +106,26 @@ export const assignmentService = {
     post<CohortAssignResult>(`${BASE}/cohorts/${cohortId}/assign`, { advisorId, notes: notes || undefined }),
 
   // ---- auto assign across the cohort's advisor pool
-  previewAutoAssign: (cohortId: string, advisorIds?: string[]) =>
-    post<CohortAutoAssignResponse>(`${BASE}/auto-assign/cohort/preview`, { cohortId, advisorIds }),
+  previewAutoAssign: (cohortId: string, advisorIds?: string[], allowOverLimit = false) =>
+    post<CohortAutoAssignResponse>(`${BASE}/auto-assign/cohort/preview`, { cohortId, advisorIds, allowOverLimit }),
 
-  confirmAutoAssign: (cohortId: string, advisorIds?: string[], notes?: string) =>
-    post<CohortAutoAssignResponse>(`${BASE}/auto-assign/cohort/confirm`, { cohortId, advisorIds, notes: notes || undefined }),
+  confirmAutoAssign: (cohortId: string, advisorIds?: string[], notes?: string, allowOverLimit = false) =>
+    post<CohortAutoAssignResponse>(`${BASE}/auto-assign/cohort/confirm`, {
+      cohortId,
+      advisorIds,
+      notes: notes || undefined,
+      allowOverLimit,
+    }),
+
+  smartAutoAssignAll: (input: {
+    cohortIds?: string[];
+    autoConfigurePools?: boolean;
+    allowOverLimit?: boolean;
+    notes?: string;
+  }) => post<SmartBatchAssignResult>(`${BASE}/auto-assign/smart-all`, input),
+
+  unassignAll: (input: { advisorIds?: string[]; clearPools?: boolean; notes?: string }) =>
+    post<UnassignAllResult>(`${BASE}/unassign-all`, input),
 
   /** Assign selected students through each cohort's configured advisor pool. */
   autoAssignStudents: async (students: Pick<UnassignedStudent, 'id' | 'cohortId'>[]): Promise<AutoAssignResult> => {

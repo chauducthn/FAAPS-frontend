@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Download, Loader2, RefreshCw } from 'lucide-react';
+import { DownloadSimple as Download, SpinnerGap as Loader2, ArrowsClockwise as RefreshCw } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { buildCsv, csvFilename, downloadCsv, type CsvValue } from '@/shared/lib/csv';
 import { AppointmentDetailModal } from '../components/AppointmentDetailModal';
@@ -168,7 +168,7 @@ export default function Appointments() {
 
         {view === 'table' ? (
           <DataTable
-            className="h-[520px]"
+            className="h-[calc(100vh-295px)] min-h-[460px]"
             manual
             columns={columns}
             data={items}
@@ -182,7 +182,7 @@ export default function Appointments() {
             onPaginationChange={setPagination}
           />
         ) : (
-          <div className="h-[520px] overflow-y-auto p-4 sm:p-5">
+          <div className="h-[calc(100vh-295px)] min-h-[460px] overflow-y-auto p-4 sm:p-5">
             <AppointmentTimeline items={items} isLoading={list.isLoading} onOpen={setOpenId} />
           </div>
         )}

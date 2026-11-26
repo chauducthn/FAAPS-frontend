@@ -9,7 +9,7 @@
 //        -> { high: number, medium: number, low: number, total: number }
 
 import { Link } from 'react-router';
-import { ArrowRight, TriangleAlert } from 'lucide-react';
+import { ArrowRight, Warning as TriangleAlert } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { useAtRiskCounts } from '../hooks/queries/useAtRiskCounts';
 import type { AtRiskCounts } from '../types/at-risk';

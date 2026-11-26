@@ -5,7 +5,7 @@
 
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { CalendarDays, GraduationCap, History, LayoutGrid, ScrollText } from 'lucide-react';
+import { CalendarBlank as CalendarDays, GraduationCap, ClockCounterClockwise as History, GridFour as LayoutGrid, Scroll as ScrollText } from '@phosphor-icons/react';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
 import type { AdvisorStudentDetail } from '../services/advisorService';

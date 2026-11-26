@@ -4,12 +4,12 @@ import { useMemo } from 'react';
 import { Link } from 'react-router';
 import {
   ArrowRight,
-  Download,
+  DownloadSimple as Download,
   GraduationCap,
-  TriangleAlert,
+  Warning as TriangleAlert,
   UserCheck,
-  UsersRound,
-} from 'lucide-react';
+  UsersThree as UsersRound,
+} from '@phosphor-icons/react';
 import {
   useAdvisorGpaTrend,
   useAdvisorReportOverview,

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { MessagesSquare } from 'lucide-react';
+import { ChatsCircle as MessagesSquare } from '@phosphor-icons/react';
 import { apiMessage } from '../../../shared/lib/apiMessage';
 import { advisorConversationService } from '../services/advisorConversationService';
 import ChatComposer, { ChatResolvePanel } from '../components/chat/ChatComposer';

@@ -1,6 +1,6 @@
 import { Modal } from '../../../shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
-import { AlertTriangle } from 'lucide-react';
+import { Warning as AlertTriangle } from '@phosphor-icons/react';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -24,7 +24,7 @@ export function ConfirmDialog({ open, title, message, confirmLabel, destructive,
               destructive ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-[#F26F21]'
             )}
           >
-            <AlertTriangle className="size-5" strokeWidth={2} />
+            <AlertTriangle className="size-5" />
           </div>
           <div className="min-w-0 pt-0.5">
             <h2 className="text-[15px] font-bold text-[#111827] leading-snug">{title}</h2>

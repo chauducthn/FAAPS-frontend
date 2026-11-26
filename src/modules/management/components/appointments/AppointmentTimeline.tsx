@@ -1,4 +1,4 @@
-import { CalendarDays, MapPin } from 'lucide-react';
+import { CalendarBlank as CalendarDays, MapPin } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import {
   AppointmentAvatar,

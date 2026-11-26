@@ -1,6 +1,6 @@
 // Bulk role-change modal with auto-suggested emails, live uniqueness checks, and inline edits.
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowLeftRight, ChevronDown, Loader2, X } from 'lucide-react';
+import { ArrowsLeftRight as ArrowLeftRight, CaretDown as ChevronDown, SpinnerGap as Loader2, X } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { apiErrorMessage } from '../../../shared/lib/apiError';

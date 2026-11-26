@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { X } from 'lucide-react';
+import { X } from '@phosphor-icons/react';
 import { Pagination } from '../../components/Pagination';
 import { UserInitials } from '../../components/UserInitials';
 import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';

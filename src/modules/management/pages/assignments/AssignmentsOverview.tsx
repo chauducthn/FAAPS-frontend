@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { AlertCircle, UserPlus, WandSparkles } from 'lucide-react';
+import { WarningCircle as AlertCircle, UserPlus, MagicWand as WandSparkles } from '@phosphor-icons/react';
 import { DataTable } from '../../../../shared/components/common/DataTable';
+import { assignmentService } from '../../../advising/services/assignmentService';
 import { AssignmentsFilterBar, AssignmentsTabBar } from './AssignmentsToolbar';
 import { AssignmentsStatStrip } from './AssignmentsStatStrip';
 import { AdvisorsTableSection } from './AssignmentsTables';
@@ -86,7 +87,7 @@ export default function AssignmentsOverview() {
 
         {s.tab === 'unassigned' ? (
           <DataTable
-            className="h-[520px]"
+            className="h-[calc(100vh-295px)] min-h-[460px]"
             manual
             columns={unassignedColumns}
             data={s.unassignedRows}
@@ -96,6 +97,16 @@ export default function AssignmentsOverview() {
             getRowId={(row) => row.id}
             isLoading={s.unassigned.isLoading}
             totalRowCount={s.unassigned.data?.totalElements ?? 0}
+            onFetchAllRows={async () => {
+              const res = await assignmentService.getUnassigned({
+                search: s.search.trim() || undefined,
+                cohortId: s.cohortFilter || undefined,
+                hasPendingRequest: s.pendingOnly ? true : undefined,
+                page: 0,
+                size: Math.min(s.unassigned.data?.totalElements ?? 500, 500),
+              });
+              return s.majorFilter && !s.cohortFilter ? res.items.filter((x) => x.majorCode === s.majorFilter) : res.items;
+            }}
             pagination={{ pageIndex: s.page, pageSize: OVERVIEW_PAGE_SIZE }}
             onPaginationChange={(next) => s.setPage(next.pageIndex)}
             bulkActions={(selectedRows) => (
@@ -129,29 +140,20 @@ export default function AssignmentsOverview() {
             hasFilter={s.hasFilter}
             loadOf={s.loadOf}
             selectedIds={s.selectedAdvisorIds}
-            onToggleOne={(id) =>
-              s.setSelectedAdvisorIds((cur) => {
-                const next = new Set(cur);
-                if (next.has(id)) next.delete(id);
-                else next.add(id);
-                return next;
-              })
-            }
-            onToggleAll={(ids, allSelected) =>
-              s.setSelectedAdvisorIds((cur) => {
-                const next = new Set(cur);
-                ids.forEach((id) => (allSelected ? next.delete(id) : next.add(id)));
-                return next;
-              })
-            }
+            onToggleOne={(id) => s.setSelectedAdvisorIds((cur) => (cur.has(id) ? new Set([...cur].filter((x) => x !== id)) : new Set([...cur, id])))}
+            onToggleAll={(ids, allSelected) => s.setSelectedAdvisorIds((cur) => (allSelected ? new Set([...cur].filter((x) => !ids.includes(x))) : new Set([...cur, ...ids])))}
+            onSelectAllAdvisors={(ids) => s.setSelectedAdvisorIds(new Set(ids))}
             onClearSelection={() => s.setSelectedAdvisorIds(new Set())}
             onBulkAssignCohorts={(bulkAdvisors) => s.setAssignCohortFor({ bulkAdvisors })}
+            onBulkUnassignAdvisors={(selected) =>
+              s.setUnassignAllTarget({
+                advisorIds: selected.map((a) => a.id),
+                label: `${selected.length} selected advisor${selected.length === 1 ? '' : 's'}`,
+              })
+            }
             onRetry={() => s.advisorRows.refetch()}
             onAssignCohort={(advisor) =>
-              s.setAssignCohortFor({
-                advisorId: advisor.id,
-                initialCohortIds: advisor.chips.filter((c) => c.inPool).map((c) => c.key),
-              })
+              s.setAssignCohortFor({ advisorId: advisor.id, initialCohortIds: advisor.chips.filter((c) => c.inPool).map((c) => c.key) })
             }
             onEditLimit={(advisor) =>
               s.setLimitTarget({ id: advisor.id, name: advisor.name, activeStudents: s.loadOf(advisor.id), limit: advisor.limit })
@@ -183,6 +185,9 @@ export default function AssignmentsOverview() {
         onCloseLimit={() => s.setLimitTarget(null)}
         detailAdvisorId={s.detailAdvisorId}
         onCloseDetail={() => s.setDetailAdvisorId(null)}
+        unassignAllTarget={s.unassignAllTarget}
+        onCloseUnassignAll={() => s.setUnassignAllTarget(null)}
+        onDoneUnassignAll={() => s.setSelectedAdvisorIds(new Set())}
         cohorts={s.cohorts}
         advisors={s.advisors.data ?? []}
         autoPool={s.autoPool.data ?? []}

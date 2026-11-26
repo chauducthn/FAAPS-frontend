@@ -1,7 +1,7 @@
 // Table body rendering: loading skeletons, empty state, and selectable data rows.
 
 import { flexRender, type Row, type RowData } from '@tanstack/react-table';
-import { Inbox, SearchX } from 'lucide-react';
+import { Tray as Inbox, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { TableBody, TableCell, TableEmpty, TableRow } from '../table/TablePrimitives';
 import { Checkbox } from './DataTableControls';

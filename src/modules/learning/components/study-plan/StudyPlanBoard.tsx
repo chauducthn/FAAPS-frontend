@@ -1,6 +1,6 @@
 // Board of the student's study plan: legend header + horizontally scrolling semester columns.
 
-import { CalendarDays, FileSpreadsheet } from 'lucide-react';
+import { CalendarBlank as CalendarDays, FileXls as FileSpreadsheet } from '@phosphor-icons/react';
 import { StudyPlanColumnView } from './StudyPlanColumnView';
 import type { StudyPlanColumn } from './types';
 

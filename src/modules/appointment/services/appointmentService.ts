@@ -29,6 +29,14 @@ export const appointmentService = {
     await post<void>('/advisor/availability', body);
   },
 
+  /** Student only: active advisors available for proactive booking (assigned advisor first). */
+  getStudentAdvisors: async (): Promise<{ id: string; fullName: string; email: string; assigned: boolean }[]> => {
+    const { data } = await apiClient.get<{ id: string; fullName: string; email: string; assigned: boolean }[]>(
+      '/student/appointments/advisors',
+    );
+    return data ?? [];
+  },
+
   /** Student only: slots that are still free on the given date. */
   getAvailableSlots: async (date: string, advisorId?: string): Promise<AvailableSlot[]> => {
     const { data } = await apiClient.get<AvailableSlot[]>('/appointments/available-slots', {

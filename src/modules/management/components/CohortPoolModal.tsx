@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Settings2 } from 'lucide-react';
+import { SlidersHorizontal as Settings2 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { useReplaceCohortPool } from '../hooks/queries/useAdminAssignments';

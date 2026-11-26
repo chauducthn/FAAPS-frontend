@@ -2,7 +2,7 @@
 // The inbox column of the advisor conversation workspace: the conversation list
 // with its search box and the status filter tabs.
 
-import { Search } from 'lucide-react';
+import { MagnifyingGlass as Search } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { RequestStatusBadge } from '../RequestStatusBadge';
 import { formatDay, initialsOf, typeLabelOf } from './format';
