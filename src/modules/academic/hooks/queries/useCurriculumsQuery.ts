@@ -25,6 +25,16 @@ export const useCurriculumsQuery = (kind: CurriculumKind, params?: CurriculumFil
     placeholderData: keepPreviousData,
   });
 
+export const useCurriculumVersionOptions = (kind: CurriculumKind) =>
+  useQuery({
+    queryKey: [...CURRICULUM_QUERY_KEYS.all, 'versions', kind] as const,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const res = await serviceFor(kind).list({ page: 0, size: 100 });
+      return Array.from(new Set((res.items ?? []).map((i) => i.version))).sort();
+    },
+  });
+
 export const useCurriculum = (id: string | null) =>
   useQuery({
     queryKey: CURRICULUM_QUERY_KEYS.detail(id ?? ''),

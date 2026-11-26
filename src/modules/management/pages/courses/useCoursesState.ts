@@ -6,7 +6,6 @@ import { courseService } from '../../services/course.service';
 import type { ExampleSheet } from '../../components/ImportCheckDialog';
 import {
   checkCourseImport,
-  courseSyllabusExample,
   courseTableExample,
   type ImportProblem,
 } from '../../utils/importChecks';
@@ -92,8 +91,7 @@ export function useCoursesState() {
   };
 
   const examples: ExampleSheet[] = [
-    { label: 'Table layout (.xlsx)', download: () => downloadBlob(courseTableExample(categories), 'course-import-example.xlsx') },
-    { label: 'Syllabus layout (.xlsx)', download: () => downloadBlob(courseSyllabusExample(categories), 'course-syllabus-import-example.xlsx') },
+    { label: 'Course template (.xlsx)', download: () => downloadBlob(courseTableExample(categories), 'course-import-example.xlsx') },
   ];
 
   const handlePickFile = async (file: File | undefined) => {

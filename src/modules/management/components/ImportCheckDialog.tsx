@@ -1,6 +1,7 @@
 // Shown when an import file fails the check made before upload: lists what to fix
 // and offers the example sheets, so the admin can correct the file and upload again.
-import { AlertTriangle, Download, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { AlertTriangle, ChevronDown, Download, X } from 'lucide-react';
 import { Modal } from '../../../shared/components/ui/Modal';
 import type { ImportProblem } from '../utils/importChecks';
 
@@ -21,9 +22,28 @@ const MAX_SHOWN = 50;
 
 /** "Example sheet" next to an Import button: one example downloads straight away, several open a small menu. */
 export function ExampleSheetButton({ examples, className }: { examples: ExampleSheet[]; className?: string }) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
   const base =
     className ??
     'inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-700 shadow-xs transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#9a3412]';
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (event: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [open]);
+
   if (examples.length === 1) {
     return (
       <button type="button" onClick={examples[0].download} className={base}>
@@ -32,27 +52,36 @@ export function ExampleSheetButton({ examples, className }: { examples: ExampleS
     );
   }
   return (
-    <details className="relative">
-      <summary className={`${base} list-none [&::-webkit-details-marker]:hidden`}>
-        <Download className="size-3.5" /> Example sheet
-      </summary>
-      <div className="absolute right-0 z-20 mt-1 w-56 rounded-xl border border-gray-200 bg-white p-1 shadow-lg" role="menu">
-        {examples.map((e) => (
-          <button
-            key={e.label}
-            type="button"
-            role="menuitem"
-            onClick={(event) => {
-              e.download();
-              (event.currentTarget.closest('details') as HTMLDetailsElement | null)?.removeAttribute('open');
-            }}
-            className="block w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#9a3412]"
-          >
-            {e.label}
-          </button>
-        ))}
-      </div>
-    </details>
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+        className={base}
+      >
+        <Download className="size-3.5 text-gray-500" aria-hidden /> Example sheet
+        <ChevronDown className={`size-3.5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
+      </button>
+      {open && (
+        <div className="absolute right-0 z-20 mt-1 w-60 rounded-xl border border-gray-200 bg-white p-1 shadow-lg" role="menu">
+          {examples.map((e) => (
+            <button
+              key={e.label}
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                e.download();
+                setOpen(false);
+              }}
+              className="block w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#9a3412]"
+            >
+              {e.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

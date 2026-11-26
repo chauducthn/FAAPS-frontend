@@ -10,6 +10,7 @@ import {
   KeyRound,
   MoreHorizontal,
   ShieldOff,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '../../../shared/lib/utils';
 import { canResetPassword, NO_PASSWORD_REASON } from '../utils/passwordReset';
@@ -26,6 +27,7 @@ type Props = {
   onRole: () => void;
   onResetPassword: () => void;
   onAssignments?: () => void;
+  onDelete?: () => void;
 };
 
 export function UserRowMenu({
@@ -36,6 +38,7 @@ export function UserRowMenu({
   onRole,
   onResetPassword,
   onAssignments,
+  onDelete,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top?: number; bottom?: number; right: number } | null>(null);
@@ -161,6 +164,21 @@ export function UserRowMenu({
                   {suspended ? 'Activate account' : 'Suspend account'}
                 </button>
               </>
+            )}
+            {onDelete && (
+              <button
+                role="menuitem"
+                disabled={isSelf}
+                title={isSelf ? 'You cannot delete your own account' : undefined}
+                className={cn(
+                  item,
+                  'text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent',
+                )}
+                onClick={() => action(onDelete)}
+              >
+                <Trash2 className="size-4" aria-hidden />
+                Delete account
+              </button>
             )}
           </div>,
           document.body,

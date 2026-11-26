@@ -8,10 +8,12 @@ import {
   useAdminUsers,
   useChangeUserStatus,
   useCohortOptions,
+  useDeleteUsers,
   useResetPasswords,
   useRoleCount,
   useStatusCount,
 } from '../../hooks/queries/useAdminUsers';
+import { apiErrorMessage } from '../../../../shared/lib/apiError';
 import { useMajorOptions } from '../../hooks/queries/useAdminDashboard';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { useAuth } from '../../../auth/stores/useAuth';
@@ -34,6 +36,7 @@ export function useUserAccountsState() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [confirm, setConfirm] = useState<{ ids: string[]; status: 'ACTIVE' | 'SUSPENDED'; label: string } | null>(null);
+  const [deleteTargets, setDeleteTargets] = useState<{ ids: string[]; label: string } | null>(null);
   const [roleChange, setRoleChange] = useState<AdminUserSummary | null>(null);
   const [bulkRoleTargets, setBulkRoleTargets] = useState<AdminUserSummary[] | null>(null);
   const [creating, setCreating] = useState(false);
@@ -43,6 +46,7 @@ export function useUserAccountsState() {
   const [isExporting, setIsExporting] = useState(false);
 
   const changeStatus = useChangeUserStatus();
+  const deleteUsers = useDeleteUsers();
   const resetPasswords = useResetPasswords();
   const majors = useMajorOptions();
   const cohortOptionsQuery = useCohortOptions();
@@ -117,6 +121,28 @@ export function useUserAccountsState() {
     }
   };
 
+  const askDelete = (rows: AdminUserSummary[]) => {
+    const ids = me ? rows.map((u) => u.id).filter((id) => id !== me.id) : rows.map((u) => u.id);
+    if (ids.length === 0) {
+      toast.error('You cannot delete your own account.');
+      return;
+    }
+    const label = ids.length === 1 ? rows.find((u) => u.id === ids[0])?.fullName ?? '1 account' : `${ids.length} selected accounts`;
+    setDeleteTargets({ ids, label });
+  };
+
+  const runDelete = async () => {
+    if (!deleteTargets) return;
+    try {
+      const result = await deleteUsers.mutateAsync(deleteTargets.ids);
+      toast.success(`${result.deleted} account${result.deleted === 1 ? '' : 's'} deleted.`);
+    } catch (error) {
+      toast.error(apiErrorMessage(error));
+    } finally {
+      setDeleteTargets(null);
+    }
+  };
+
   const runConfirm = async () => {
     if (!confirm) return;
     try {
@@ -154,10 +180,10 @@ export function useUserAccountsState() {
   return {
     me, role, setRole, status, setStatus, majorId, setMajorId, cohortId, setCohortId,
     search, setSearch, pagination, setPagination, sorting, setSorting,
-    detailId, setDetailId, confirm, setConfirm, roleChange, setRoleChange, bulkRoleTargets, setBulkRoleTargets,
+    detailId, setDetailId, confirm, setConfirm, deleteTargets, setDeleteTargets, roleChange, setRoleChange, bulkRoleTargets, setBulkRoleTargets,
     creating, setCreating, resetTargets, setResetTargets, resetResults, setResetResults,
-    resetError, setResetError, isExporting, changeStatus, resetPasswords, majors, cohortOptions,
+    resetError, setResetError, isExporting, changeStatus, deleteUsers, resetPasswords, majors, cohortOptions,
     studentCount, advisorCount, activeCount, suspendedCount, usersQuery, items, total, hasFilters,
-    clearFilters, resetPage, askBulk, askReset, runReset, runConfirm, runExportCsv,
+    clearFilters, resetPage, askBulk, askDelete, askReset, runReset, runConfirm, runDelete, runExportCsv,
   };
 }

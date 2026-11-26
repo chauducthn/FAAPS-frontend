@@ -30,6 +30,10 @@ export function UserAccountsModals({
   changeStatusPending,
   onConfirmStatus,
   onCancelStatus,
+  deleteTargets,
+  deletePending,
+  onConfirmDelete,
+  onCancelDelete,
 }: {
   detailId: string | null;
   onCloseDetail: () => void;
@@ -53,6 +57,10 @@ export function UserAccountsModals({
   changeStatusPending: boolean;
   onConfirmStatus: () => Promise<void>;
   onCancelStatus: () => void;
+  deleteTargets: { ids: string[]; label: string } | null;
+  deletePending: boolean;
+  onConfirmDelete: () => Promise<void>;
+  onCancelDelete: () => void;
 }) {
   return (
     <>
@@ -106,6 +114,17 @@ export function UserAccountsModals({
         isLoading={changeStatusPending}
         onConfirm={onConfirmStatus}
         onCancel={onCancelStatus}
+      />
+
+      <ConfirmDialog
+        open={!!deleteTargets}
+        title={deleteTargets && deleteTargets.ids.length > 1 ? 'Delete accounts?' : 'Delete account?'}
+        message={`Permanently delete ${deleteTargets?.label ?? ''}? Accounts with existing academic or advising records cannot be deleted.`}
+        confirmLabel="Delete"
+        destructive
+        isLoading={deletePending}
+        onConfirm={onConfirmDelete}
+        onCancel={onCancelDelete}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import { CircleAlert, Plus, RotateCcw, SearchX } from 'lucide-react';
+import { CircleAlert, RotateCcw, SearchX } from 'lucide-react';
 
 export function CoursesListSkeleton() {
   return (
@@ -49,11 +49,9 @@ export function CoursesErrorState({ onRetry }: { onRetry: () => void }) {
 export function CoursesEmptyState({
   hasFilters,
   onClear,
-  onCreate,
 }: {
   hasFilters: boolean;
   onClear: () => void;
-  onCreate: () => void;
 }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
@@ -67,11 +65,11 @@ export function CoursesEmptyState({
         <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-gray-500">
           {hasFilters
             ? 'Try a different keyword, or clear the category / status filters to see the full catalogue.'
-            : 'Create the first course to start building the catalogue — it takes less than a minute.'}
+            : 'Use Create course or Import Excel above to start building the catalogue.'}
         </p>
       </div>
-      <div className="flex items-center gap-2">
-        {hasFilters && (
+      {hasFilters && (
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={onClear}
@@ -79,15 +77,8 @@ export function CoursesEmptyState({
           >
             Clear filters
           </button>
-        )}
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#e05f14]"
-        >
-          <Plus className="size-3.5" strokeWidth={2.5} /> Create course
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

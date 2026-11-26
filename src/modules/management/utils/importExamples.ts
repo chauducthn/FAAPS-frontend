@@ -1,16 +1,17 @@
 import { buildXlsx, type XlsxRow } from '../../learning/utils/studyPlanXlsx';
 import type { CourseCategory } from '../../academic/types/course';
 
-const exampleCategory = (categories: CourseCategory[]) => categories[0]?.code ?? 'SE';
+const exampleCategory = (categories: CourseCategory[]) => categories[0]?.code ?? 'CORE';
 
 export function courseTableExample(categories: CourseCategory[]): Blob {
   const cat = exampleCategory(categories);
   const rows: XlsxRow[] = [
-    ['Course code', 'Course name', 'Credits', 'Category', 'Prerequisites'],
-    ['ABC101', 'Introduction to Programming', 3, cat, ''],
-    ['ABC102', 'Object-Oriented Programming', 3, cat, 'ABC101'],
+    ['Course code', 'Course name', 'Credits', 'Category', 'Status', 'Material link', 'Prerequisites'],
+    ['PRF192', 'Programming Fundamentals', 3, cat, 'ACTIVE', 'https://flm.fpt.edu.vn/syllabus/PRF192', ''],
+    ['CSD201', 'Data Structures and Algorithms', 3, cat, 'ACTIVE', '', 'PRF192'],
+    ['SSL101c', 'Academic Skills for University Success', 3, cat, 'INACTIVE', '', ''],
   ];
-  return buildXlsx(rows, { sheetName: 'Courses', widths: [14, 36, 10, 14, 22] });
+  return buildXlsx(rows, { sheetName: 'Courses', widths: [14, 36, 10, 14, 12, 38, 22] });
 }
 
 export function courseSyllabusExample(categories: CourseCategory[]): Blob {

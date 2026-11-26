@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
-import { BookOpenCheck, CircleOff, FileSpreadsheet, GraduationCap, Layers, Plus } from 'lucide-react';
+import { useRef, type ReactNode } from 'react';
+import { BookOpenCheck, CircleOff, FileSpreadsheet, GraduationCap, Layers, Loader2, Plus } from 'lucide-react';
 import type { CurriculumKind } from '../../../academic/hooks/queries/useCurriculumsQuery';
 import { cn } from '@/shared/lib/utils';
+import { ExampleSheetButton, type ExampleSheet } from '../ImportCheckDialog';
 
 function StatItem({
   icon,
@@ -67,12 +68,15 @@ export function CurriculumManagerTopBar({
   creditsOnPage,
   activeStatus,
   disableImport,
+  isImportingCohort,
   onSelectStatus,
   onClearAll,
   onOpenImport,
+  cohortExamples,
+  onImportCohortFile,
   onOpenCreate,
 }: {
-  kind: CurriculumKind;
+  kind?: CurriculumKind;
   plural: string;
   createLabel: string;
   totalElements: number | undefined;
@@ -82,11 +86,15 @@ export function CurriculumManagerTopBar({
   creditsOnPage: number;
   activeStatus: string;
   disableImport: boolean;
+  isImportingCohort?: boolean;
   onSelectStatus: (status: string) => void;
   onClearAll: () => void;
   onOpenImport: () => void;
+  cohortExamples?: ExampleSheet[];
+  onImportCohortFile?: (file: File | undefined) => void;
   onOpenCreate: () => void;
 }) {
+  const fileRef = useRef<HTMLInputElement>(null);
   return (
     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
       <div className="grid flex-1 grid-cols-2 gap-2.5 lg:grid-cols-4">
@@ -125,6 +133,33 @@ export function CurriculumManagerTopBar({
       </div>
 
       <div className="flex shrink-0 items-center justify-end gap-2">
+        {kind === 'cohort' && cohortExamples && onImportCohortFile && (
+          <>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".xlsx"
+              className="hidden"
+              onChange={(e) => {
+                onImportCohortFile(e.target.files?.[0]);
+                e.target.value = '';
+              }}
+            />
+            <ExampleSheetButton
+              examples={cohortExamples}
+              className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+            />
+            <button
+              type="button"
+              disabled={isImportingCohort}
+              onClick={() => fileRef.current?.click()}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:opacity-50"
+            >
+              {isImportingCohort ? <Loader2 className="size-3.5 animate-spin text-gray-500" /> : <FileSpreadsheet className="size-3.5 text-gray-500" aria-hidden />}
+              {isImportingCohort ? 'Importing…' : 'Import Excel'}
+            </button>
+          </>
+        )}
         {kind === 'curriculum' && (
           <button
             type="button"

@@ -1,22 +1,57 @@
 import { useSearchParams } from 'react-router';
-import { FolderOpen, GraduationCap } from 'lucide-react';
+import { BookOpen, FolderOpen, GraduationCap } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { useCurriculum } from '../../academic/hooks/queries/useCurriculumsQuery';
+import type { CurriculumItem } from '../../academic/types/curriculum';
 import CurriculumManager from '../components/curriculum/CurriculumManager';
+import { CohortCurriculumWorkspace } from '../components/curriculum/CohortCurriculumWorkspace';
 import MajorsPage from './Majors';
 
-type StructureTab = 'majors' | 'cohorts';
-
-const TABS: { key: StructureTab; label: string; icon: typeof GraduationCap }[] = [
-  { key: 'majors', label: 'Majors', icon: GraduationCap },
-  { key: 'cohorts', label: 'Cohorts', icon: FolderOpen },
-];
+type StructureTab = 'majors' | 'cohorts' | 'curriculum';
 
 export default function CohortsPage() {
   const [params, setParams] = useSearchParams();
-  const activeTab: StructureTab = params.get('tab') === 'cohorts' ? 'cohorts' : 'majors';
+  const cohortId = params.get('cohortId') ?? '';
+  const rawTab = params.get('tab');
+  const activeTab: StructureTab =
+    rawTab === 'curriculum' && cohortId
+      ? 'curriculum'
+      : rawTab === 'cohorts'
+        ? 'cohorts'
+        : 'majors';
+
+  const selectedCohort = useCurriculum(cohortId || null);
+  const curriculumLabel = selectedCohort.data
+    ? `Curriculum · ${selectedCohort.data.majorCode} ${selectedCohort.data.version}`
+    : 'Curriculum';
+
+  const tabs: { key: StructureTab; label: string; icon: typeof GraduationCap; disabled?: boolean; title?: string }[] = [
+    { key: 'majors', label: 'Majors', icon: GraduationCap },
+    { key: 'cohorts', label: 'Cohorts', icon: FolderOpen },
+    {
+      key: 'curriculum',
+      label: curriculumLabel,
+      icon: BookOpen,
+      disabled: !cohortId,
+      title: !cohortId ? 'Select a cohort via Manage courses or double-click a cohort row' : undefined,
+    },
+  ];
 
   const handleSelect = (tab: StructureTab) => {
-    setParams(tab === 'majors' ? {} : { tab }, { replace: true });
+    if (tab === 'curriculum') {
+      if (!cohortId) return;
+      setParams({ tab: 'curriculum', cohortId }, { replace: true });
+      return;
+    }
+    if (tab === 'cohorts') {
+      setParams(cohortId ? { tab: 'cohorts', cohortId } : { tab: 'cohorts' }, { replace: true });
+      return;
+    }
+    setParams(cohortId ? { cohortId } : {}, { replace: true });
+  };
+
+  const handleOpenCohort = (item: CurriculumItem) => {
+    setParams({ tab: 'curriculum', cohortId: item.id }, { replace: true });
   };
 
   return (
@@ -26,7 +61,7 @@ export default function CohortsPage() {
         aria-label="Academic structure sections"
         className="inline-flex items-center gap-1 rounded-xl border border-gray-200/80 bg-white p-1 shadow-2xs"
       >
-        {TABS.map(({ key, label, icon: Icon }) => {
+        {tabs.map(({ key, label, icon: Icon, disabled, title }) => {
           const active = activeTab === key;
           return (
             <button
@@ -34,12 +69,16 @@ export default function CohortsPage() {
               type="button"
               role="tab"
               aria-selected={active}
+              disabled={disabled}
+              title={title}
               onClick={() => handleSelect(key)}
               className={cn(
                 'inline-flex h-8.5 items-center gap-2 rounded-lg px-3.5 text-[13px] font-semibold transition-colors',
                 active
                   ? 'bg-[#F26F21] text-white shadow-2xs'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+                  : disabled
+                    ? 'cursor-not-allowed text-gray-300'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
               )}
             >
               <Icon className="size-4" aria-hidden />
@@ -49,7 +88,16 @@ export default function CohortsPage() {
         })}
       </div>
 
-      {activeTab === 'cohorts' ? <CurriculumManager kind="cohort" /> : <MajorsPage />}
+      {activeTab === 'curriculum' && cohortId ? (
+        <CohortCurriculumWorkspace
+          cohortId={cohortId}
+          onBackToCohorts={() => setParams({ tab: 'cohorts', cohortId }, { replace: true })}
+        />
+      ) : activeTab === 'cohorts' ? (
+        <CurriculumManager kind="cohort" onOpenCohort={handleOpenCohort} />
+      ) : (
+        <MajorsPage />
+      )}
     </div>
   );
 }

@@ -2,32 +2,42 @@
 import { useNavigate } from 'react-router';
 import { Pagination } from '../Pagination';
 import CurriculumTable from './CurriculumTable';
+import type { CurriculumItem } from '../../../academic/types/curriculum';
 import type { CurriculumKind } from '../../../academic/hooks/queries/useCurriculumsQuery';
 import { CurriculumManagerTopBar } from './CurriculumManagerKpis';
 import { CurriculumManagerFilters } from './CurriculumManagerFilters';
 import { CurriculumListEmpty, CurriculumListError, CurriculumListSkeleton } from './CurriculumManagerStates';
 import { CurriculumManagerModals } from './CurriculumManagerModals';
 import { CURRICULUM_PAGE_SIZE, useCurriculumManagerState } from './useCurriculumManagerState';
+import { useCohortSheetImport } from './useCohortSheetImport';
+import { ImportCheckDialog } from '../ImportCheckDialog';
 
 const COPY = {
   cohort: {
     noun: 'Cohort' as const,
     create: 'Create cohort',
-    search: 'Search by cohort, name, or major...',
+    search: 'Search by cohort (e.g. SE18), major, or semester...',
     plural: 'cohorts',
   },
   curriculum: {
     noun: 'Curriculum' as const,
     create: 'Create curriculum',
-    search: 'Search by name, cohort, or major...',
+    search: 'Search by name, cohort (e.g. SE18), major, or semester...',
     plural: 'curriculums',
   },
 };
 
-export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
+export default function CurriculumManager({
+  kind,
+  onOpenCohort,
+}: {
+  kind: CurriculumKind;
+  onOpenCohort?: (item: CurriculumItem) => void;
+}) {
   const copy = COPY[kind];
   const navigate = useNavigate();
   const s = useCurriculumManagerState(kind);
+  const cohortImport = useCohortSheetImport(s.majors, s.semesters);
   const { data, isLoading, isError, refetch, isFetching } = s.query;
   const { create, update, remove, updateStatus, isCreating, isUpdating, isRemoving, isPreviewingImport, isConfirmingImport } = s.mutations;
 
@@ -52,12 +62,15 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
         creditsOnPage={s.items.reduce((sum, i) => sum + i.totalCredits, 0)}
         activeStatus={s.status}
         disableImport={s.items.length === 0}
+        isImportingCohort={cohortImport.isImporting}
         onSelectStatus={s.setStatus}
         onClearAll={s.clearFilters}
         onOpenImport={() => {
           s.setImportTargetId(s.selectedItems.length === 1 ? s.selectedItems[0].id : s.items[0]?.id ?? '');
           s.setImportChooserOpen(true);
         }}
+        cohortExamples={cohortImport.examples}
+        onImportCohortFile={(file) => void cohortImport.handleImportFile(file)}
         onOpenCreate={openCreate}
       />
 
@@ -67,13 +80,19 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
           searchPlaceholder={copy.search}
           search={s.search}
           majorId={s.majorId}
+          version={s.version}
+          startSemesterId={s.startSemesterId}
           status={s.status}
           current={s.current}
           majors={s.majors}
+          versions={s.versionOptions}
+          semesters={s.semesters}
           hasFilters={s.hasFilters}
           selectedCount={s.selectedItems.length}
           onSearchChange={s.setSearch}
           onMajorChange={s.setMajorId}
+          onVersionChange={s.setVersion}
+          onStartSemesterChange={s.setStartSemesterId}
           onStatusChange={s.setStatus}
           onCurrentChange={s.setCurrent}
           onClearFilters={s.clearFilters}
@@ -97,15 +116,15 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
             <CurriculumTable
               kind={kind}
               data={s.items}
-              onOpen={(item) => navigate(`/admin/curriculum/${item.id}`)}
+              onOpen={(item) => (onOpenCohort ? onOpenCohort(item) : navigate(`/admin/curriculum/${item.id}`))}
               onEdit={(item) => {
                 s.setEditing(item);
                 s.setFormOpen(true);
               }}
-              onImportFor={(item) => {
+              onImportFor={kind === 'curriculum' ? (item) => {
                 s.setImportTargetId(item.id);
                 s.setImportChooserOpen(true);
-              }}
+              } : undefined}
               onToggleStatus={(item) => updateStatus({ id: item.id, status: item.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' }).catch(() => undefined)}
               onDelete={s.setDeleting}
               selectedIds={s.selectedIds}
@@ -164,6 +183,14 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
         }}
         onConfirmImport={() => void s.handleConfirmImport()}
         onCloseImportProblems={() => s.setImportProblems(null)}
+      />
+
+      <ImportCheckDialog
+        open={!!cohortImport.problems}
+        fileName={cohortImport.problems?.fileName ?? ''}
+        problems={cohortImport.problems?.problems ?? []}
+        examples={cohortImport.examples}
+        onClose={cohortImport.clearProblems}
       />
 
       <style>{`@keyframes slide { 0% { transform: translateX(-100%);} 100% { transform: translateX(300%);} }`}</style>

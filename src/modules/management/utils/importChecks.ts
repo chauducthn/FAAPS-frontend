@@ -4,7 +4,7 @@
 // credits are one of CREDIT_OPTIONS (0, 2, 3 or 10).
 import { readFirstSheet, XlsxReadError, type SheetRows } from '../../../shared/lib/xlsxRead';
 import type { CourseCategory } from '../../academic/types/course';
-import { CREDIT_OPTIONS, CREDIT_OPTIONS_MESSAGE } from '../../academic/validations/course.schema';
+import { COURSE_CODE_PATTERN, CREDIT_OPTIONS, CREDIT_OPTIONS_MESSAGE } from '../../academic/validations/course.schema';
 
 export { courseTableExample, courseSyllabusExample, curriculumExample } from './importExamples';
 
@@ -30,6 +30,8 @@ const CODE_KEYS = ['subject code', 'subjectcode', 'course code', 'code', 'mã m�
 const NAME_KEYS = ['course name english', 'course name', 'name', 'syllabus name', 'tên môn', 'tên học phần'];
 const CREDIT_KEYS = ['nocredit', 'no credit', 'nocredits', 'no credits', 'credits', 'credit', 'tín chỉ', 'số tín chỉ'];
 const CATEGORY_KEYS = ['category', 'category code', 'course category', 'khối kiến thức', 'department', 'chuyên ngành'];
+const STATUS_KEYS = ['status', 'course status', 'active', 'trạng thái'];
+const LINK_KEYS = ['material link', 'materiallink', 'material_link', 'materials', 'link', 'tài liệu'];
 
 const findCol = (header: string[], keys: string[]) => {
   const cleaned = header.map(cleanKey);
@@ -64,6 +66,8 @@ interface CourseFields {
   name: string;
   credits: string;
   category: string;
+  status?: string;
+  materialLink?: string;
 }
 
 function checkCourseRows(rows: CourseFields[], categories: CourseCategory[]): ImportProblem[] {
@@ -73,14 +77,16 @@ function checkCourseRows(rows: CourseFields[], categories: CourseCategory[]): Im
   for (const r of rows) {
     const add = (message: string) => problems.push({ row: r.row, message });
     if (!r.code) add('Course code is required.');
-    else if (!/^[A-Za-z0-9_-]{2,20}$/.test(r.code)) add(`Course code "${r.code}" must be 2-20 letters, digits, dash or underscore.`);
-    else if (seen.has(r.code.toUpperCase())) add(`Course code ${r.code.toUpperCase()} appears more than once in the file.`);
+    else if (!COURSE_CODE_PATTERN.test(r.code)) add(`Course code "${r.code}" has an invalid format (e.g. CSD201, SSL101c, PEN, PHE_COM*1).`);
+    else if (seen.has(r.code.toUpperCase())) add(`Course code ${r.code} appears more than once in the file.`);
     else seen.add(r.code.toUpperCase());
     if (!r.name) add('Course name is required.');
     const credits = Number(r.credits);
     if (r.credits === '' || Number.isNaN(credits)) add('Credits must be a number.');
     else if (!isAllowedCredits(credits)) add(`${CREDIT_OPTIONS_MESSAGE} (found ${r.credits}).`);
     if (r.category && known.size > 0 && !known.has(r.category.toUpperCase())) add(`Category "${r.category}" does not exist.`);
+    if (r.status && !['ACTIVE', 'INACTIVE'].includes(r.status.toUpperCase())) add(`Status must be ACTIVE or INACTIVE (found "${r.status}").`);
+    if (r.materialLink && !/^https?:\/\/\S+\.\S+$/i.test(r.materialLink)) add(`Material link must be a valid http(s) URL (found "${r.materialLink}").`);
   }
   return problems;
 }
@@ -132,9 +138,15 @@ export async function checkCourseImport(file: File, categories: CourseCategory[]
 
   if (headerRow >= 0) {
     const header = sheet[headerRow];
-    const [codeCol, nameCol, creditCol, catCol] = [CODE_KEYS, NAME_KEYS, CREDIT_KEYS, CATEGORY_KEYS].map((k) => findCol(header, k));
+    const [codeCol, nameCol, creditCol, catCol, statusCol, linkCol] = [
+      CODE_KEYS, NAME_KEYS, CREDIT_KEYS, CATEGORY_KEYS, STATUS_KEYS, LINK_KEYS,
+    ].map((k) => findCol(header, k));
     for (let r = headerRow + 1; r < sheet.length; r++) {
-      const fields = { row: r + 1, code: cell(sheet, r, codeCol), name: cell(sheet, r, nameCol), credits: cell(sheet, r, creditCol), category: cell(sheet, r, catCol) };
+      const fields = {
+        row: r + 1, code: cell(sheet, r, codeCol), name: cell(sheet, r, nameCol),
+        credits: cell(sheet, r, creditCol), category: cell(sheet, r, catCol),
+        status: cell(sheet, r, statusCol), materialLink: cell(sheet, r, linkCol),
+      };
       if (fields.code || fields.name) courses.push(fields);
     }
   } else {

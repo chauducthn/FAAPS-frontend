@@ -90,14 +90,19 @@ export default function CurriculumTable({
         {data.map((item) => {
           const active = item.status === 'ACTIVE';
           const actions: RowAction[] = [
-            { label: isCohort ? 'View curriculum' : 'Open roadmap', onSelect: () => onOpen(item) },
+            { label: isCohort ? 'Manage courses' : 'Open roadmap', onSelect: () => onOpen(item) },
             ...(onImportFor && !isCohort ? [{ label: 'Import Excel', onSelect: () => onImportFor(item) }] : []),
             { label: 'Edit details', onSelect: () => onEdit(item) },
-            { label: active ? 'Archive (deactivate)' : 'Publish (activate)', onSelect: () => onToggleStatus(item) },
+            { label: active ? 'Deactivate' : 'Activate', onSelect: () => onToggleStatus(item) },
             { label: 'Delete', onSelect: () => onDelete(item), danger: true },
           ];
           return (
-            <TableRow key={item.id} selected={selectedIds?.has(item.id)}>
+            <TableRow
+              key={item.id}
+              selected={selectedIds?.has(item.id)}
+              onDoubleClick={isCohort ? () => onOpen(item) : undefined}
+              className={isCohort ? 'cursor-pointer' : undefined}
+            >
               {canSelect && (
                 <TableCell className="w-11">
                   <input
@@ -109,7 +114,7 @@ export default function CurriculumTable({
                   />
                 </TableCell>
               )}
-              {isCohort ? <CohortCells item={item} /> : <CurriculumCells item={item} onOpen={onOpen} />}
+              {isCohort ? <CohortCells item={item} onOpen={onOpen} /> : <CurriculumCells item={item} onOpen={onOpen} />}
               <TableCell align="center">
                 <span className="text-[13px] font-semibold tabular-nums text-gray-800">
                   {item.courseCount}
@@ -117,7 +122,9 @@ export default function CurriculumTable({
               </TableCell>
               <TableCell align="center">
                 <span className="font-mono text-[13px] font-semibold tabular-nums text-gray-900">
-                  {item.totalCredits}
+                  {item.majorTotalCredits && item.majorTotalCredits > 0
+                    ? `${item.totalCredits} / ${item.majorTotalCredits}`
+                    : item.totalCredits}
                 </span>
               </TableCell>
               <TableCell>

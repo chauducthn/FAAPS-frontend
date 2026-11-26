@@ -23,21 +23,36 @@ function MajorBadge({ item }: { item: CurriculumItem }) {
   );
 }
 
-export function CohortCells({ item }: { item: CurriculumItem }) {
+export function CohortCells({
+  item,
+  onOpen,
+}: {
+  item: CurriculumItem;
+  onOpen: (item: CurriculumItem) => void;
+}) {
   return (
     <>
       <TableCell>
-        <span className="font-mono text-[13px] font-semibold text-gray-800">
+        <button
+          type="button"
+          onClick={() => onOpen(item)}
+          className="font-mono text-[13px] font-semibold text-gray-800 transition-colors hover:text-[#F26F21]"
+        >
           {item.version}
-        </span>
+        </button>
       </TableCell>
       <TableCell>
         <MajorBadge item={item} />
       </TableCell>
       <TableCell className="max-w-[260px]">
-        <span className="block truncate text-[13px] font-semibold text-gray-900" title={item.majorName}>
+        <button
+          type="button"
+          onClick={() => onOpen(item)}
+          className="block max-w-full truncate text-left text-[13px] font-semibold text-gray-900 transition-colors hover:text-[#F26F21]"
+          title={item.majorName}
+        >
           {item.majorName}
-        </span>
+        </button>
       </TableCell>
       <TableCell>
         <span className="font-mono text-[13px] font-medium text-gray-700">

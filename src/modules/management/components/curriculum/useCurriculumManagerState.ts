@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { CURRICULUM_QUERY_KEYS, useCurriculumsQuery, type CurriculumKind } from '../../../academic/hooks/queries/useCurriculumsQuery';
+import { CURRICULUM_QUERY_KEYS, useCurriculumsQuery, useCurriculumVersionOptions, useSemesterOptions, type CurriculumKind } from '../../../academic/hooks/queries/useCurriculumsQuery';
 import { useCurriculumMutations } from '../../../academic/hooks/mutations/useCurriculumMutations';
 import { useMajorsQuery } from '../../../academic/hooks/queries/useMajorsQuery';
 import { curriculumService } from '../../services/curriculum.service';
@@ -17,6 +17,8 @@ export function useCurriculumManagerState(kind: CurriculumKind) {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [majorId, setMajorId] = useState('');
+  const [version, setVersion] = useState('');
+  const [startSemesterId, setStartSemesterId] = useState('');
   const [status, setStatus] = useState('');
   const [current, setCurrent] = useState('');
   const [page, setPage] = useState(0);
@@ -37,17 +39,26 @@ export function useCurriculumManagerState(kind: CurriculumKind) {
     () => ({
       search: debounced || undefined,
       majorId: majorId || undefined,
+      version: version || undefined,
+      startSemesterId: startSemesterId || undefined,
       status: (status || undefined) as CurriculumStatus | undefined,
       isCurrent: current === '' ? undefined : current === 'true',
       page,
       size: CURRICULUM_PAGE_SIZE,
     }),
-    [debounced, majorId, status, current, page],
+    [debounced, majorId, version, startSemesterId, status, current, page],
   );
 
   const query = useCurriculumsQuery(kind, params);
+  const versionOptionsQuery = useCurriculumVersionOptions(kind);
   const majors = useMajorsQuery({ page: 0, size: 100 });
+  const semesters = useSemesterOptions(true);
   const mutations = useCurriculumMutations(kind);
+
+  const versionOptions = useMemo(
+    () => versionOptionsQuery.data ?? Array.from(new Set((query.data?.items ?? []).map((i) => i.version))).sort(),
+    [versionOptionsQuery.data, query.data],
+  );
 
   const resetPage = <T,>(setter: (v: T) => void) => (v: T) => {
     setter(v);
@@ -55,10 +66,12 @@ export function useCurriculumManagerState(kind: CurriculumKind) {
     setSelectedIds(new Set());
   };
 
-  const hasFilters = search.trim() !== '' || majorId !== '' || status !== '' || current !== '';
+  const hasFilters = search.trim() !== '' || majorId !== '' || version !== '' || startSemesterId !== '' || status !== '' || current !== '';
   const clearFilters = () => {
     setSearch('');
     setMajorId('');
+    setVersion('');
+    setStartSemesterId('');
     setStatus('');
     setCurrent('');
     setPage(0);
@@ -125,11 +138,15 @@ export function useCurriculumManagerState(kind: CurriculumKind) {
   return {
     query,
     majors: majors.data?.items ?? [],
+    semesters: semesters.data ?? [],
+    versionOptions,
     mutations,
     items,
     selectedItems,
     search,
     majorId,
+    version,
+    startSemesterId,
     status,
     current,
     page,
@@ -147,6 +164,8 @@ export function useCurriculumManagerState(kind: CurriculumKind) {
     hasFilters,
     setSearch: resetPage(setSearch),
     setMajorId: resetPage(setMajorId),
+    setVersion: resetPage(setVersion),
+    setStartSemesterId: resetPage(setStartSemesterId),
     setStatus: resetPage(setStatus),
     setCurrent: resetPage(setCurrent),
     setSelectedIds,

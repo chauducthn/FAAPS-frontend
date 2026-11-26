@@ -9,8 +9,8 @@ interface LogoProps {
 
 export function Logo({ className, to = '/' }: LogoProps) {
   return (
-    <Link to={to} className={cn('flex items-center gap-2', className)} aria-label="FAAPS - Home">
-      <img src={logo} alt="FAAPS" className="h-9 w-auto" />
+    <Link to={to} className={cn('inline-flex items-center', className)} aria-label="FAAPS - Home">
+      <img src={logo} alt="FAAPS" className="h-9 w-auto object-contain" />
     </Link>
   );
 }

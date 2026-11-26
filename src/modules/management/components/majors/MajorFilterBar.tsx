@@ -1,16 +1,22 @@
-import { ChevronDown, RotateCcw, Search, Trash2, X } from 'lucide-react';
+import { CheckCircle2, ChevronDown, CircleOff, FileEdit, RotateCcw, Search, Trash2, X } from 'lucide-react';
+import type { MajorStatus } from '../../../academic/types/major';
 
 interface MajorFilterBarProps {
   search: string;
   onSearchChange: (value: string) => void;
-  selectedCohort: string;
-  cohortOptions: string[];
-  onCohortChange: (value: string) => void;
+  selectedCode: string;
+  codeOptions: string[];
+  onCodeChange: (value: string) => void;
+  selectedDuration: string;
+  durationOptions: number[];
+  onDurationChange: (value: string) => void;
   selectedStatus: string;
   onStatusChange: (value: string) => void;
   onClearContext: () => void;
   selectedCount: number;
+  isUpdatingStatus?: boolean;
   onClearSelection: () => void;
+  onBulkStatus: (status: MajorStatus) => void;
   onDeleteSelected: () => void;
 }
 
@@ -20,18 +26,26 @@ const selectClass =
 export default function MajorFilterBar({
   search,
   onSearchChange,
-  selectedCohort,
-  cohortOptions,
-  onCohortChange,
+  selectedCode,
+  codeOptions,
+  onCodeChange,
+  selectedDuration,
+  durationOptions,
+  onDurationChange,
   selectedStatus,
   onStatusChange,
   onClearContext,
   selectedCount,
+  isUpdatingStatus,
   onClearSelection,
+  onBulkStatus,
   onDeleteSelected,
 }: MajorFilterBarProps) {
-  const hasFilters = search !== '' || selectedCohort !== 'ALL' || selectedStatus !== 'ALL';
-  const cohorts = Array.from(new Set([...(selectedCohort !== 'ALL' ? [selectedCohort] : []), ...cohortOptions])).sort();
+  const hasFilters = search !== '' || selectedCode !== 'ALL' || selectedDuration !== 'ALL' || selectedStatus !== 'ALL';
+  const codes = Array.from(new Set([...(selectedCode !== 'ALL' ? [selectedCode] : []), ...codeOptions])).sort();
+  const durations = Array.from(
+    new Set([...(selectedDuration !== 'ALL' ? [Number(selectedDuration)] : []), ...durationOptions]),
+  ).sort((a, b) => a - b);
 
   return (
     <>
@@ -40,7 +54,7 @@ export default function MajorFilterBar({
           <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
           <input
             type="search"
-            placeholder="Search by major code or name..."
+            placeholder="Search by code, major name, credits, or duration..."
             aria-label="Search majors"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -58,16 +72,31 @@ export default function MajorFilterBar({
           )}
         </div>
 
+        <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[132px]">
+          <select
+            value={selectedCode}
+            onChange={(e) => onCodeChange(e.target.value)}
+            className={selectClass}
+            aria-label="Filter by major code"
+          >
+            <option value="ALL">All codes</option>
+            {codes.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        </div>
+
         <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[144px]">
           <select
-            value={selectedCohort}
-            onChange={(e) => onCohortChange(e.target.value)}
+            value={selectedDuration}
+            onChange={(e) => onDurationChange(e.target.value)}
             className={selectClass}
-            aria-label="Filter by cohort"
+            aria-label="Filter by duration"
           >
-            <option value="ALL">All cohorts</option>
-            {cohorts.map((c) => (
-              <option key={c} value={c}>{c}</option>
+            <option value="ALL">All durations</option>
+            {durations.map((d) => (
+              <option key={d} value={String(d)}>{d} {d === 1 ? 'year' : 'years'}</option>
             ))}
           </select>
           <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
@@ -116,13 +145,40 @@ export default function MajorFilterBar({
               <X className="size-3.5" aria-hidden /> Clear
             </button>
           </div>
-          <button
-            type="button"
-            onClick={onDeleteSelected}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"
-          >
-            <Trash2 className="size-3.5" /> Delete selected
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={isUpdatingStatus}
+              onClick={() => onBulkStatus('ACTIVE')}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
+            >
+              <CheckCircle2 className="size-3.5" /> Set active
+            </button>
+            <button
+              type="button"
+              disabled={isUpdatingStatus}
+              onClick={() => onBulkStatus('DRAFT')}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-[13px] font-medium text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
+            >
+              <FileEdit className="size-3.5" /> Set draft
+            </button>
+            <button
+              type="button"
+              disabled={isUpdatingStatus}
+              onClick={() => onBulkStatus('INACTIVE')}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-700 ring-1 ring-gray-200 transition-colors hover:bg-gray-50 disabled:opacity-50"
+            >
+              <CircleOff className="size-3.5" /> Set inactive
+            </button>
+            <button
+              type="button"
+              disabled={isUpdatingStatus}
+              onClick={onDeleteSelected}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+            >
+              <Trash2 className="size-3.5" /> Delete selected
+            </button>
+          </div>
         </div>
       )}
     </>

@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react';
-import { CheckCircle2, CircleOff, FileEdit, GraduationCap, Plus } from 'lucide-react';
+import { useRef, type ReactNode } from 'react';
+import { CheckCircle2, CircleOff, FileEdit, FileSpreadsheet, GraduationCap, Loader2, Plus } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { ExampleSheetButton, type ExampleSheet } from '../ImportCheckDialog';
 
 function StatTile({
   icon,
@@ -56,7 +57,10 @@ export function MajorsTopBar({
   draftCount,
   inactiveCount,
   selectedStatus,
+  isImporting,
+  examples,
   onSelectStatus,
+  onImportFile,
   onCreate,
 }: {
   totalItems?: number;
@@ -64,9 +68,13 @@ export function MajorsTopBar({
   draftCount: number;
   inactiveCount: number;
   selectedStatus: string;
+  isImporting?: boolean;
+  examples: ExampleSheet[];
   onSelectStatus: (status: string) => void;
+  onImportFile: (file: File | undefined) => void;
   onCreate: () => void;
 }) {
+  const fileRef = useRef<HTMLInputElement>(null);
   return (
     <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
       <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-4">
@@ -104,7 +112,30 @@ export function MajorsTopBar({
         />
       </div>
 
-      <div className="flex shrink-0 items-center justify-end">
+      <div className="flex shrink-0 items-center justify-end gap-2">
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".xlsx"
+          className="hidden"
+          onChange={(e) => {
+            onImportFile(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+        />
+        <ExampleSheetButton
+          examples={examples}
+          className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+        />
+        <button
+          type="button"
+          disabled={isImporting}
+          onClick={() => fileRef.current?.click()}
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:opacity-50"
+        >
+          {isImporting ? <Loader2 className="size-3.5 animate-spin text-gray-500" /> : <FileSpreadsheet className="size-3.5 text-gray-500" aria-hidden />}
+          {isImporting ? 'Importing…' : 'Import Excel'}
+        </button>
         <button
           type="button"
           onClick={onCreate}

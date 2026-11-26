@@ -19,6 +19,8 @@ export default function AssignmentsOverview() {
 
   return (
     <div className="w-full min-w-0 space-y-4">
+      <AssignmentsTabBar tab={s.tab} unassignedCount={s.summary.data?.unassigned} onTabChange={s.setTab} />
+
       <AssignmentsStatStrip
         total={s.summary.data?.total}
         assigned={s.summary.data?.assigned}
@@ -52,8 +54,6 @@ export default function AssignmentsOverview() {
       )}
 
       <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
-        <AssignmentsTabBar tab={s.tab} unassignedCount={s.summary.data?.unassigned} onTabChange={s.setTab} />
-
         <AssignmentsFilterBar
           tab={s.tab}
           search={s.search}

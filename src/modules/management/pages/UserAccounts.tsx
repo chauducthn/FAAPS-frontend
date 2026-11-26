@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowLeftRight, CheckCircle2, KeyRound, ShieldOff } from 'lucide-react';
+import { ArrowLeftRight, CheckCircle2, KeyRound, ShieldOff, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { NO_PASSWORD_REASON } from '../components/UserRowMenu';
 import { canResetPassword } from '../utils/passwordReset';
@@ -30,6 +30,7 @@ export default function UserAccounts() {
             status: user.status === 'SUSPENDED' ? 'ACTIVE' : 'SUSPENDED',
             label: user.fullName,
           }),
+        onDelete: (user) => s.askDelete([user]),
       }),
     [navigate, s.me?.id],
   );
@@ -77,7 +78,6 @@ export default function UserAccounts() {
           }}
           onCohortChange={(val) => {
             s.resetPage(s.setCohortId)(val);
-            s.setMajorId('');
           }}
           onClear={s.clearFilters}
         />
@@ -136,9 +136,16 @@ export default function UserAccounts() {
                   <button
                     type="button"
                     onClick={() => s.askBulk(selectedRows, 'SUSPENDED')}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-[13px] font-medium text-amber-700 transition-colors hover:bg-amber-100"
                   >
                     <ShieldOff className="size-3.5" aria-hidden /> Suspend
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => s.askDelete(selectedRows)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"
+                  >
+                    <Trash2 className="size-3.5" aria-hidden /> Delete
                   </button>
                 </>
               )}
@@ -176,6 +183,10 @@ export default function UserAccounts() {
         changeStatusPending={s.changeStatus.isPending}
         onConfirmStatus={s.runConfirm}
         onCancelStatus={() => s.setConfirm(null)}
+        deleteTargets={s.deleteTargets}
+        deletePending={s.deleteUsers.isPending}
+        onConfirmDelete={s.runDelete}
+        onCancelDelete={() => s.setDeleteTargets(null)}
       />
 
       <style>{`@keyframes slide { 0% { transform: translateX(-100%);} 100% { transform: translateX(300%);} }`}</style>

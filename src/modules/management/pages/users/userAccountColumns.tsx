@@ -29,6 +29,7 @@ export function createUserAccountColumns(handlers: {
   onResetPassword: (user: AdminUserSummary) => void;
   onAssignments: (path: string, state: ReturnType<typeof backState>) => void;
   onToggle: (user: AdminUserSummary) => void;
+  onDelete: (user: AdminUserSummary) => void;
 }): DataTableColumnDef<AdminUserSummary>[] {
   return [
     {
@@ -130,6 +131,7 @@ export function createUserAccountColumns(handlers: {
                 )
               }
               onToggle={() => handlers.onToggle(user)}
+              onDelete={() => handlers.onDelete(user)}
             />
           </div>
         );

@@ -3,17 +3,19 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/shared/lib/utils';
 
 const ctaVariants = cva(
-  'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2',
+  'inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2',
   {
     variants: {
       variant: {
-        primary: 'bg-orange-600 text-white shadow-sm hover:bg-orange-700',
-        outline: 'border border-gray-300 bg-white text-gray-800 hover:bg-gray-50',
-        light: 'bg-white text-orange-700 shadow-sm hover:bg-orange-50',
+        primary: 'bg-brand text-white shadow-sm hover:bg-brand-hover',
+        outline: 'border border-line bg-white text-ink-primary hover:bg-surface-hover',
+        light: 'bg-white text-brand-ink shadow-sm hover:bg-brand-soft',
+        outlineLight: 'border border-white/35 bg-transparent text-white hover:bg-white/10',
       },
       size: {
         sm: 'px-4 py-2 text-sm',
-        lg: 'px-8 py-3 text-base',
+        md: 'px-5 py-2.5 text-sm',
+        lg: 'px-6 py-3 text-base',
       },
     },
     defaultVariants: { variant: 'primary', size: 'sm' },

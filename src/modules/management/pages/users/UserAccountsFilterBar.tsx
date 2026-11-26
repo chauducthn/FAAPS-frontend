@@ -105,7 +105,7 @@ export function UserAccountsFilterBar({
         >
           <option value="">All majors</option>
           {majors.map((m) => (
-            <option key={m.id} value={m.id}>{m.code}</option>
+            <option key={m.id} value={m.id}>{m.code} — {m.name}</option>
           ))}
         </select>
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />

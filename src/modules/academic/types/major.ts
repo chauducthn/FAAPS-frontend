@@ -14,6 +14,8 @@ export interface Major {
 }
 
 export interface MajorFilterParams {
+  code?: string;
+  durationYears?: number;
   cohort?: string;
   search?: string;
   status?: MajorStatus | 'ALL';

@@ -321,7 +321,7 @@ describe('Courses', () => {
 
   it('creates a course with status, material link and prerequisites, without syllabus fields', async () => {
     const user = userEvent.setup();
-    createCourse.mockResolvedValue({ ...COURSES[0], id: 'new', code: 'ABC101', name: 'New course' });
+    createCourse.mockResolvedValue({ ...COURSES[0], id: 'new', code: 'SE1803', name: 'New course' });
     renderPage();
     await screen.findByText('SE101');
 
@@ -330,17 +330,18 @@ describe('Courses', () => {
     expect(screen.queryByLabelText('Description')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Objectives')).not.toBeInTheDocument();
 
-    await user.type(screen.getByLabelText('Course code'), 'ABC101');
+    await user.type(screen.getByLabelText('Course code'), 'SSL101c');
     await user.type(screen.getByLabelText('Course name'), 'New course');
     // Credits start empty and are picked from the list.
     expect((within(dialog).getByLabelText('Credits') as HTMLSelectElement).value).toBe('');
     expect(within(dialog).getAllByRole('option').map((o) => o.textContent)).toEqual(expect.arrayContaining(['0', '2', '3', '10']));
     await user.selectOptions(within(dialog).getByLabelText('Credits'), '3');
     await user.selectOptions(screen.getByLabelText('Category'), 'cat1');
-    await user.click(within(dialog).getByText('○ Inactive'));
+    await user.click(within(dialog).getByText('Inactive'));
 
-    await user.type(screen.getByLabelText('Search prerequisite course'), 'SE1');
-    await user.click(await screen.findByRole('option', { name: /SE101/ }));
+    const prereqSelect = screen.getByLabelText('Select prerequisite course');
+    await waitFor(() => expect(within(prereqSelect).getByRole('option', { name: /SE101/ })).toBeInTheDocument());
+    await user.selectOptions(prereqSelect, 'c1');
     expect(screen.getByRole('list', { name: 'Selected prerequisites' })).toHaveTextContent('SE101');
 
     await user.type(screen.getByLabelText('Material link'), 'not a link');
@@ -348,12 +349,12 @@ describe('Courses', () => {
     await user.clear(screen.getByLabelText('Material link'));
     await user.type(screen.getByLabelText('Material link'), 'https://drive.google.com/abc');
 
-    await user.click(screen.getByRole('button', { name: 'Create course' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Create course' }));
 
     await waitFor(() => expect(createCourse).toHaveBeenCalled());
     const body = createCourse.mock.calls[0][0];
     expect(body).toEqual({
-      code: 'ABC101', name: 'New course', credits: 3, categoryId: 'cat1', status: 'INACTIVE',
+      code: 'SSL101c', name: 'New course', credits: 3, categoryId: 'cat1', status: 'INACTIVE',
       materialLink: 'https://drive.google.com/abc',
       prerequisites: [{ prerequisiteCourseId: 'c1', groupNo: 1, type: 'PREREQUISITE' }],
     });
@@ -366,7 +367,7 @@ describe('Courses', () => {
 
     await user.click(screen.getByRole('button', { name: /Create Course/i }));
     const dialog = await screen.findByRole('dialog', { name: 'Create course' });
-    await user.type(screen.getByLabelText('Course code'), 'ABC101');
+    await user.type(screen.getByLabelText('Course code'), 'SSL101c');
     await user.type(screen.getByLabelText('Course name'), 'New course');
     await user.selectOptions(screen.getByLabelText('Category'), 'cat1');
     await user.click(within(dialog).getByLabelText('Credits'));

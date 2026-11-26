@@ -2,7 +2,6 @@ import {
   Activity,
   BarChart3,
   Book,
-  BookOpen,
   Briefcase,
   CalendarCheck,
   ClipboardCheck,
@@ -46,13 +45,13 @@ export const ADMIN_NAV_SECTIONS: PortalNavSection[] = [
     ],
   },
   {
-    title: 'Academic Data',
+    title: 'Academic Structure',
     items: [
       {
-        label: 'Curriculum',
-        description: 'Manage curriculum versions and semester roadmaps.',
-        to: '/admin/curriculum',
-        icon: BookOpen,
+        label: 'Majors & Cohorts',
+        description: 'Configure academic majors first, then manage student intake cohorts.',
+        to: '/admin/majors',
+        icon: GraduationCap,
       },
       {
         label: 'Courses',
@@ -65,17 +64,6 @@ export const ADMIN_NAV_SECTIONS: PortalNavSection[] = [
         description: 'Configure attendance thresholds and import attendance records.',
         to: '/admin/attendance',
         icon: ClipboardCheck,
-      },
-    ],
-  },
-  {
-    title: 'Academic Structure',
-    items: [
-      {
-        label: 'Majors & Cohorts',
-        description: 'Configure academic majors first, then manage student intake cohorts.',
-        to: '/admin/majors',
-        icon: GraduationCap,
       },
     ],
   },

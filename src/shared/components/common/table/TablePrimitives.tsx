@@ -79,13 +79,14 @@ export function TableRow({
   children,
   selected = false,
   className,
+  ...rest
 }: {
   children: ReactNode;
   selected?: boolean;
   className?: string;
-}) {
+} & React.HTMLAttributes<HTMLTableRowElement>) {
   return (
-    <tr className={cn(selected && 'bg-[var(--brand-soft)]', className)}>{children}</tr>
+    <tr className={cn(selected && 'bg-[var(--brand-soft)]', className)} {...rest}>{children}</tr>
   );
 }
 

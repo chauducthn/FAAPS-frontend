@@ -47,7 +47,7 @@ export default function CourseFormModal({
     handleSubmit,
     reset,
     watch,
-    formState: { errors, isValid },
+    formState: { errors, isValid, isSubmitted },
   } = useForm<CreateCourseFormValues>({
     resolver: zodResolver(createCourseSchema),
     defaultValues: EMPTY_DEFAULTS,
@@ -71,24 +71,27 @@ export default function CourseFormModal({
   }, [open, initial, reset]);
 
   const status = watch('status');
-  const code = watch('code');
+  const code = watch('code') ?? '';
+  const showCodeError = isSubmitted || code.trim().length >= 6;
+  const codeError = showCodeError ? errors.code?.message : undefined;
+  const canSubmit = !isLoading && !isLoadingInitial && isValid;
 
   return (
-    <Modal open={open} onClose={onClose} title={isCreate ? 'Create course' : 'Edit course'} className="max-w-2xl">
+    <Modal open={open} onClose={onClose} title={isCreate ? 'Create course' : 'Edit course'} className="max-w-xl">
       <form noValidate onSubmit={handleSubmit(onSubmit)} className="flex min-h-0 flex-col">
-        <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-[var(--brand-soft)] px-6 py-5">
-          <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
-              <BookOpenText className="size-5" />
+        <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
+          <div className="flex items-center gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
+              <BookOpenText className="size-4.5" />
             </span>
             <div>
-              <h2 className="text-base font-extrabold tracking-tight text-gray-900">
+              <h2 className="text-[15px] font-semibold text-gray-900">
                 {isCreate ? 'Create course' : `Edit ${initial?.code ?? 'course'}`}
               </h2>
-              <p className="mt-0.5 text-xs leading-relaxed text-gray-500">
+              <p className="text-[13px] text-gray-500">
                 {isCreate
-                  ? 'Add a new course to the master catalogue — it becomes pickable in every curriculum.'
-                  : 'Update the catalogue entry — roadmaps referencing this course update automatically.'}
+                  ? 'Configure course code, credits, category, and optional prerequisites.'
+                  : 'Update course details — curriculums referencing this course sync automatically.'}
               </p>
             </div>
           </div>
@@ -97,13 +100,13 @@ export default function CourseFormModal({
           </button>
         </div>
 
-        <div className="space-y-5 overflow-y-auto px-6 py-6 text-[13px]">
+        <div className="space-y-4 overflow-y-auto px-6 py-5 text-[13px]">
           {isLoadingInitial ? (
             <div className="space-y-3" aria-label="Loading course">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-12 animate-pulse rounded-xl bg-gray-100" style={{ animationDelay: `${i * 80}ms` }} />
+                <div key={i} className="h-10 animate-pulse rounded-lg bg-gray-100" style={{ animationDelay: `${i * 80}ms` }} />
               ))}
-              <p className="text-center text-[11px] font-medium text-gray-400">Loading course…</p>
+              <p className="text-center text-xs font-medium text-gray-400">Loading course…</p>
             </div>
           ) : (
             <CourseFormFields
@@ -111,6 +114,7 @@ export default function CourseFormModal({
               categories={categories}
               status={status ?? 'ACTIVE'}
               code={code}
+              codeError={codeError}
               register={register}
               control={control}
               errors={errors}
@@ -118,17 +122,17 @@ export default function CourseFormModal({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/60 px-6 py-4">
-          <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900">
+        <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/70 px-6 py-3.5">
+          <button type="button" onClick={onClose} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-50">
             Cancel
           </button>
           <button
             type="submit"
-            disabled={isLoading || isLoadingInitial || !isValid}
-            title={!isValid ? 'Fill in Code, Credits, Category and Name to continue' : undefined}
-            className="inline-flex min-w-36 items-center justify-center gap-2 rounded-xl bg-[#F26F21] px-5 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={!canSubmit}
+            title={!canSubmit ? 'Fill in a valid Course code, Credits, Category and Name to continue' : undefined}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#F26F21] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55"
           >
-            {isLoading && <Loader2 className="size-3.5 animate-spin" />}
+            {isLoading && <Loader2 className="size-4 animate-spin" />}
             {isLoadingInitial ? 'Loading…' : isLoading ? 'Saving…' : isCreate ? 'Create course' : 'Save changes'}
           </button>
         </div>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminService } from '../../services/adminService';
+import { apiClient } from '../../../../shared/lib/apiClient';
+import { getCsrfHeaders } from '../../../../shared/lib/csrf';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';
 import type {
   AdminUserRole,
@@ -114,4 +116,20 @@ export const useResetPasswords = () => {
   };
 
   return { run, isPending, error, setError };
+};
+
+export const useDeleteUsers = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: string[]): Promise<{ deleted: number }> => {
+      const headers = await getCsrfHeaders();
+      if (ids.length === 1) {
+        const { data } = await apiClient.delete<{ deleted: number }>(`/admin/users/${ids[0]}`, { headers });
+        return data;
+      }
+      const { data } = await apiClient.post<{ deleted: number }>('/admin/users/bulk-delete', { userIds: ids }, { headers });
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
+  });
 };

@@ -71,4 +71,9 @@ export const majorService = {
     const { data } = await apiClient.post<{ deletedCount: number }>('/admin/majors/bulk-delete', { ids });
     return data.deletedCount;
   },
+
+  bulkUpdateStatus: async (ids: string[], status: Major['status']): Promise<number> => {
+    const { data } = await apiClient.post<{ updatedCount: number }>('/admin/majors/bulk-status', { ids, status });
+    return data.updatedCount;
+  },
 };

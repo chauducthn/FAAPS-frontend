@@ -46,14 +46,25 @@ const columns: StaticColumn<CourseImportRow>[] = [
     key: 'credits',
     header: 'Credits',
     align: 'center',
-    render: (row) =>
-      row.errors.length > 0 ? (
-        <span className="text-[var(--ink-muted)]">{row.credits}</span>
-      ) : (
-        <span className="rounded-md bg-[var(--brand-soft)] px-2 py-0.5 font-bold tabular-nums text-[var(--brand-ink)]">
-          {row.credits}
-        </span>
-      ),
+    render: (row) => (
+      <span className={row.errors.length > 0 ? 'text-[var(--ink-muted)]' : 'rounded-md bg-[var(--brand-soft)] px-2 py-0.5 font-bold tabular-nums text-[var(--brand-ink)]'}>
+        {row.credits}
+      </span>
+    ),
+  },
+  {
+    key: 'courseStatus',
+    header: 'Status',
+    render: (row) => (
+      <span className={cn('text-xs font-semibold', (row.courseStatus ?? 'ACTIVE') === 'INACTIVE' ? 'text-gray-500' : 'text-emerald-700')}>
+        {(row.courseStatus ?? 'ACTIVE') === 'INACTIVE' ? 'Inactive' : 'Active'}
+      </span>
+    ),
+  },
+  {
+    key: 'prerequisites',
+    header: 'Prerequisites',
+    render: (row) => <span className="font-mono text-xs text-gray-600">{row.prerequisites || '—'}</span>,
   },
   {
     key: 'result',

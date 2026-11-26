@@ -13,7 +13,8 @@ vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), warning: v
 vi.mock('@/shared/hooks/useDebounce', () => ({ useDebounce: (value: string) => value }));
 vi.mock('../../../academic/hooks/queries/useCurriculumsQuery', () => ({
   CURRICULUM_QUERY_KEYS: { all: ['admin', 'curriculums'] },
-  useSemesterOptions: () => ({ data: [] }),
+  useSemesterOptions: () => ({ data: [{ id: 'sem-1', code: 'FA2026', startDate: '2026-09-07' }] }),
+  useCurriculumVersionOptions: () => ({ data: ['K18', 'K19'] }),
   useCurriculumsQuery: (_kind: string, params: unknown) => {
     mocks.list(params);
     return { data: { items: [{ id: 'cur-1', majorCode: 'SE', majorName: 'Software Engineering', version: 'K19', name: 'SE K19', status: 'INACTIVE', isCurrent: true, courseCount: 5, totalCredits: 15, effectiveFromSemesterCode: 'FA2026' }], totalElements: 1, totalPages: 1 }, isLoading: false, isError: false, isFetching: false, refetch: vi.fn() };
@@ -25,6 +26,7 @@ vi.mock('../../../academic/hooks/mutations/useCurriculumMutations', () => ({
     isCreating: false, isUpdating: false, isRemoving: false, isPreviewingImport: false, isConfirmingImport: false }),
 }));
 vi.mock('../../services/curriculum.service', () => ({ curriculumService: { updateStatus: mocks.updateStatus, remove: mocks.remove } }));
+vi.mock('../../services/cohort.service', () => ({ cohortService: { create: vi.fn() } }));
 vi.mock('../../utils/importChecks', () => ({ checkCurriculumImport: async () => ({ rowCount: 1, problems: [] }), curriculumExample: () => new Blob() }));
 vi.mock('../../../learning/utils/studyPlanXlsx', () => ({ downloadBlob: vi.fn() }));
 
@@ -42,6 +44,10 @@ describe('Curriculum list controls', () => {
   it('filters current versions and updates selected curricula after confirmation', async () => {
     const user = userEvent.setup();
     renderManager();
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Cohort filter' }), 'K19');
+    expect(mocks.list).toHaveBeenLastCalledWith(expect.objectContaining({ version: 'K19', page: 0 }));
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Start semester filter' }), 'sem-1');
+    expect(mocks.list).toHaveBeenLastCalledWith(expect.objectContaining({ startSemesterId: 'sem-1', page: 0 }));
     await user.selectOptions(screen.getByRole('combobox', { name: 'Current version filter' }), 'true');
     expect(mocks.list).toHaveBeenLastCalledWith(expect.objectContaining({ isCurrent: true, page: 0 }));
     await user.click(screen.getByRole('checkbox', { name: 'Select SE K19' }));

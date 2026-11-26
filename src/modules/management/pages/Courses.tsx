@@ -85,7 +85,7 @@ export default function CoursesPage() {
         }}
       />
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
         <CoursesFilterBar
           search={s.search}
           status={s.status}
@@ -109,10 +109,6 @@ export default function CoursesPage() {
             <CoursesEmptyState
               hasFilters={s.hasFilters}
               onClear={s.clearFilters}
-              onCreate={() => {
-                s.setEditing(null);
-                s.setFormOpen(true);
-              }}
             />
           ) : (
             <div className="relative h-full">

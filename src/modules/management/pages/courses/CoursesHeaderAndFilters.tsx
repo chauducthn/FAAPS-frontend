@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { BookOpenCheck, GraduationCap, Layers, Loader2, Plus, Upload } from 'lucide-react';
+import { BookOpenCheck, FileSpreadsheet, GraduationCap, Layers, Loader2, Plus } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { ExampleSheetButton, type ExampleSheet } from '../../components/ImportCheckDialog';
 
@@ -118,10 +118,13 @@ export function CoursesTopBar({
       </div>
 
       <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-        <ExampleSheetButton examples={examples} />
-        <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50">
-          {importing && !importOpen ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-          {importing && !importOpen ? 'Reading…' : 'Import XLSX'}
+        <ExampleSheetButton
+          examples={examples}
+          className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+        />
+        <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50">
+          {importing && !importOpen ? <Loader2 className="size-3.5 animate-spin text-gray-500" /> : <FileSpreadsheet className="size-3.5 text-gray-500" aria-hidden />}
+          {importing && !importOpen ? 'Reading…' : 'Import Excel'}
           <input
             type="file"
             accept=".xlsx,.xls"
@@ -139,7 +142,7 @@ export function CoursesTopBar({
           onClick={onCreate}
           className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
         >
-          <Plus className="size-4" strokeWidth={2.25} /> Create Course
+          <Plus className="size-4" strokeWidth={2.25} /> Create course
         </button>
       </div>
     </div>

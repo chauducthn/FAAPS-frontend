@@ -21,8 +21,8 @@ export interface CurriculumItem {
   isCurrent: boolean;
   status: CurriculumStatus;
   courseCount: number;
-  /** Tổng số tín chỉ của curriculum (backend trả kèm trong CurriculumItem). */
   totalCredits: number;
+  majorTotalCredits?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -53,6 +53,9 @@ export interface CurriculumPage {
 export interface CurriculumFilterParams {
   search?: string;
   majorId?: string;
+  majorCode?: string;
+  version?: string;
+  startSemesterId?: string;
   status?: CurriculumStatus;
   /** Chỉ lấy version đang là hiện hành của major (backend hỗ trợ tham số này). */
   isCurrent?: boolean;

@@ -21,7 +21,7 @@ export default function CurriculumDetailPage() {
 
   if (curriculum.isLoading) return <DetailSkeleton />;
   if (curriculum.isError || !curriculum.data) {
-    return <CurriculumErrorState onBack={() => navigate('/admin/curriculum')} />;
+    return <CurriculumErrorState onBack={() => navigate('/admin/majors?tab=cohorts')} />;
   }
 
   const data = curriculum.data;
@@ -31,7 +31,7 @@ export default function CurriculumDetailPage() {
     <div className="w-full space-y-5">
       <CurriculumBreadcrumb
         label={`${data.majorCode} ${data.version}`}
-        onBack={() => navigate('/admin/curriculum')}
+        onBack={() => navigate('/admin/majors?tab=cohorts')}
       />
 
       <CurriculumHeader

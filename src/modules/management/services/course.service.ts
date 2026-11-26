@@ -124,6 +124,7 @@ export const courseService = {
       code: item.code, name: item.name, credits: item.credits, categoryId: item.categoryId,
       description: item.description, prerequisites: item.prerequisites,
       objectives: item.objectives, learningOutcomes: item.learningOutcomes,
+      status: item.courseStatus ?? 'ACTIVE', materialLink: item.materialLink ?? null,
     }));
     return (await apiClient.post<{ importedCount: number }>('/admin/courses/import/confirm', { items: valid })).data.importedCount;
   },

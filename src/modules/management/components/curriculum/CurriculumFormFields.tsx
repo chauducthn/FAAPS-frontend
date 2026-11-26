@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import type { FieldErrors, UseFormRegister, UseFormRegisterReturn, UseFormSetValue } from 'react-hook-form';
-import { ChevronDown, Plus } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import type { CurriculumFormValues } from '../../../academic/validations/curriculum.schema';
-import { MIN_END_TERM_GAP, SemesterCreator, semesterOrdinal } from './SemesterCreator';
+import { todayIso, type SemesterDraft } from './semesterRangeUtils';
+import { SemesterPickerField } from './SemesterPickerField';
 
 const inputClass = (hasError?: boolean) =>
   cn(
@@ -18,35 +19,30 @@ interface Props {
   status: 'ACTIVE' | 'INACTIVE';
   majorId: string;
   displayName: string;
-  startSemesterId: string;
-  endSemesterId: string;
+  startDraft: SemesterDraft;
+  endDraft: SemesterDraft;
+  startError?: string;
+  endError?: string;
   isCurrentDisabled: boolean;
   majorList: { id: string; code: string; name: string }[];
-  semesterList: { id: string; code: string }[];
-  isLoadingSemesters: boolean;
+  semesterList: { id: string; code: string; startDate?: string | null }[];
   register: UseFormRegister<CurriculumFormValues>;
   setValue: UseFormSetValue<CurriculumFormValues>;
   errors: FieldErrors<CurriculumFormValues>;
+  onStartDraftChange: (next: SemesterDraft) => void;
+  onEndDraftChange: (next: SemesterDraft) => void;
   onManualNameEdit: () => void;
 }
 
 export function CurriculumFormFields(props: Props) {
-  const { noun, status, majorId, displayName, startSemesterId, endSemesterId, isCurrentDisabled, majorList, semesterList } = props;
-  const { isLoadingSemesters, register, setValue, errors, onManualNameEdit } = props;
-  const [semesterTarget, setSemesterTarget] = useState<'start' | 'end' | null>(null);
+  const { noun, status, majorId, displayName, startDraft, endDraft, startError, endError } = props;
+  const { isCurrentDisabled, majorList, semesterList, register, setValue, errors } = props;
+  const { onStartDraftChange, onEndDraftChange, onManualNameEdit } = props;
   const nameField = register('name');
   const selectedMajor = majorList.find((m) => m.id === majorId);
-  const startSem = semesterList.find((s) => s.id === startSemesterId);
-  const startOrd = startSem ? semesterOrdinal(startSem.code) : null;
-  const endSemesterOptions = semesterList
-    .filter((s) => {
-      if (startOrd === null) return true;
-      const ord = semesterOrdinal(s.code);
-      return ord === null || ord - startOrd >= MIN_END_TERM_GAP;
-    })
-    .map((s) => ({ value: s.id, label: s.code }));
   const cohortCodeOptions = Array.from(new Set(majorList.map((m) => m.code))).map((c) => ({ value: c, label: c }));
   const majorsForSelectedCode = selectedMajor ? majorList.filter((m) => m.code === selectedMajor.code) : [];
+
   const handleCohortCodeChange = (code: string) => {
     const match = majorList.find((m) => m.code === code);
     setValue('majorId', match ? match.id : '', { shouldValidate: true });
@@ -91,30 +87,26 @@ export function CurriculumFormFields(props: Props) {
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Start semester" required error={errors.effectiveFromSemesterId?.message} action={<NewSemesterToggle active={semesterTarget === 'start'} onClick={() => setSemesterTarget((v) => (v === 'start' ? null : 'start'))} />}>
-          <SelectBox reg={register('effectiveFromSemesterId')} label="Start semester" empty="Select a semester…" hasValue={!!startSemesterId} hasError={!!errors.effectiveFromSemesterId} options={semesterList.map((s) => ({ value: s.id, label: s.code }))} />
+        <Field label="Start semester" required error={startError}>
+          <SemesterPickerField
+            label="Start semester"
+            draft={startDraft}
+            semesters={semesterList}
+            hasError={!!startError}
+            onChange={onStartDraftChange}
+          />
         </Field>
-        <Field label="End semester" required error={errors.effectiveToSemesterId?.message} action={<NewSemesterToggle active={semesterTarget === 'end'} onClick={() => setSemesterTarget((v) => (v === 'end' ? null : 'end'))} />}>
-          <SelectBox reg={register('effectiveToSemesterId')} label="End semester" empty="Select end semester…" hasValue={!!endSemesterId} hasError={!!errors.effectiveToSemesterId} options={endSemesterOptions} />
+        <Field label="End semester" required error={endError}>
+          <SemesterPickerField
+            label="End semester"
+            draft={endDraft}
+            semesters={semesterList}
+            minEndDate={todayIso()}
+            hasError={!!endError}
+            onChange={onEndDraftChange}
+          />
         </Field>
       </div>
-
-      <SemesterCreator
-        target={semesterTarget}
-        startSemesterCode={startSem?.code}
-        existingSemesters={semesterList}
-        onClose={() => setSemesterTarget(null)}
-        onCreated={({ startId, endId }) => {
-          if (startId) setValue('effectiveFromSemesterId', startId, { shouldValidate: true });
-          if (endId) setValue('effectiveToSemesterId', endId, { shouldValidate: true });
-        }}
-      />
-
-      {!isLoadingSemesters && semesterList.length === 0 && !semesterTarget && (
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          No semesters available yet. Click <strong>New semester</strong> above to create one.
-        </p>
-      )}
 
       <div className="grid items-start gap-4 sm:grid-cols-2">
         <Field label="Status" error={errors.status?.message}>
@@ -155,15 +147,6 @@ export function CurriculumFormFields(props: Props) {
   );
 }
 
-function NewSemesterToggle({ active, onClick }: { active: boolean; onClick: () => void }) {
-  return (
-    <button type="button" onClick={onClick} className="inline-flex items-center gap-1 text-xs font-medium text-[#C2410C] transition-colors hover:text-[#F26F21] hover:underline">
-      <Plus className="size-3.5" aria-hidden />
-      {active ? 'Hide' : 'New semester'}
-    </button>
-  );
-}
-
 function SelectBox({ reg, value, onChange, label, empty, hasValue, hasError, disabled, options }: {
   reg?: UseFormRegisterReturn; value?: string; onChange?: (v: string) => void;
   label: string; empty: string; hasValue: boolean; hasError: boolean; disabled?: boolean;
@@ -180,18 +163,14 @@ function SelectBox({ reg, value, onChange, label, empty, hasValue, hasError, dis
   );
 }
 
-function Field({ label, required, optional, error, action, children }: {
-  label: string; required?: boolean; optional?: boolean; error?: string; action?: ReactNode; children: ReactNode;
+function Field({ label, required, error, children }: {
+  label: string; required?: boolean; error?: string; children: ReactNode;
 }) {
   return (
     <div>
-      <div className="mb-1.5 flex items-center justify-between gap-2">
-        <label className="block text-[13px] font-medium text-gray-700">
-          {label}{required && <span className="ml-0.5 text-[#F26F21]">*</span>}
-          {optional && <span className="ml-1 text-xs font-normal text-gray-400">(optional)</span>}
-        </label>
-        {action}
-      </div>
+      <label className="mb-1.5 block text-[13px] font-medium text-gray-700">
+        {label}{required && <span className="ml-0.5 text-[#F26F21]">*</span>}
+      </label>
       {children}
       {error && <p className="mt-1 text-xs font-medium text-red-600">{error}</p>}
     </div>

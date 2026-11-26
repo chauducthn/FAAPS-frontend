@@ -4,6 +4,7 @@ import { Modal } from '@/shared/components/ui/Modal';
 import { cn } from '@/shared/lib/utils';
 import type { CreateMajorDto } from '../../../academic/types/major';
 import { MajorAcademicFields } from './MajorAcademicFields';
+import { MajorCodeCreator } from './MajorCodeCreator';
 
 interface CreateMajorModalProps {
   isOpen: boolean;
@@ -15,7 +16,6 @@ interface CreateMajorModalProps {
 }
 
 const MAJOR_CODE_PATTERN = /^[SHDQCAI][A-Z]$/;
-const NEW_CODE_VALUE = '__NEW__';
 
 const EMPTY: CreateMajorDto = {
   code: '', name: '', description: '', totalCredits: 144, durationYears: 3.5, cohort: '', status: 'ACTIVE',
@@ -34,31 +34,25 @@ const labelClass = 'mb-1.5 block text-[13px] font-medium text-gray-700';
 export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialData, existingCodes = [], isSaving = false }: CreateMajorModalProps) {
   const [formData, setFormData] = useState<CreateMajorDto>(EMPTY);
   const [creatingCode, setCreatingCode] = useState(false);
+  const [customCodes, setCustomCodes] = useState<string[]>([]);
   const editing = Boolean(initialData);
-  const codeOptions = Array.from(new Set([...existingCodes, ...(initialData?.code ? [initialData.code] : [])])).sort();
+  const codeOptions = Array.from(
+    new Set([...existingCodes, ...customCodes, ...(initialData?.code ? [initialData.code] : [])]),
+  ).sort();
 
   useEffect(() => {
     if (!isOpen) return;
     setFormData(initialData ?? EMPTY);
-    setCreatingCode(existingCodes.length === 0 && !initialData?.code);
-  }, [isOpen, initialData, existingCodes.length]);
+    setCreatingCode(false);
+    setCustomCodes([]);
+  }, [isOpen, initialData]);
 
   const set = <K extends keyof CreateMajorDto>(key: K, value: CreateMajorDto[K]) =>
     setFormData((prev) => ({ ...prev, [key]: value }));
 
   const cleanCode = formData.code.trim().toUpperCase();
-  const codeInvalid = cleanCode.length > 0 && !MAJOR_CODE_PATTERN.test(cleanCode);
   const isValid = MAJOR_CODE_PATTERN.test(cleanCode)
     && formData.name.trim() !== '' && formData.totalCredits > 0 && formData.durationYears > 0;
-
-  const handleCodeSelect = (value: string) => {
-    if (value === NEW_CODE_VALUE) {
-      setCreatingCode(true);
-      set('code', '');
-      return;
-    }
-    set('code', value);
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,35 +103,28 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
                 <label htmlFor="major-code" className="block text-[13px] font-medium text-gray-700">
                   Major code <span className="text-[#F26F21]">*</span>
                 </label>
-                {codeOptions.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setCreatingCode((prev) => !prev);
-                      if (!creatingCode) set('code', '');
-                    }}
-                    className="inline-flex items-center gap-0.5 text-xs font-medium text-[#C2410C] transition-colors hover:text-[#F26F21] hover:underline"
-                  >
-                    {!creatingCode && <Plus className="size-3" aria-hidden />}
-                    {creatingCode ? 'Select existing' : 'New code'}
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setCreatingCode((prev) => !prev)}
+                  className="inline-flex items-center gap-0.5 text-xs font-medium text-[#C2410C] transition-colors hover:text-[#F26F21] hover:underline"
+                >
+                  <Plus className="size-3.5" aria-hidden />
+                  {creatingCode ? 'Hide' : 'New code'}
+                </button>
               </div>
-              {creatingCode ? (
-                <input id="major-code" type="text" maxLength={2} placeholder="e.g. SE" value={formData.code} onChange={(e) => set('code', e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase())} className={cn(fieldClass(codeInvalid), 'uppercase placeholder:normal-case')} required />
-              ) : (
-                <div className="relative">
-                  <select id="major-code" value={formData.code} onChange={(e) => handleCodeSelect(e.target.value)} className={cn(fieldClass(false), 'appearance-none pr-9', !formData.code && 'text-gray-400')} required>
-                    <option value="">Select code…</option>
-                    {codeOptions.map((c) => <option key={c} value={c} className="text-gray-900">{c}</option>)}
-                    <option value={NEW_CODE_VALUE} className="font-medium text-[#C2410C]">+ Create new major code…</option>
-                  </select>
-                  <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
-                </div>
-              )}
-              {creatingCode && codeInvalid && (
-                <p className="mt-1 text-xs font-medium text-red-600">2 letters starting with S, H, D, Q, C, A, or I.</p>
-              )}
+              <div className="relative">
+                <select
+                  id="major-code"
+                  value={formData.code}
+                  onChange={(e) => set('code', e.target.value)}
+                  className={cn(fieldClass(false), 'appearance-none pr-9', !formData.code && 'text-gray-400')}
+                  required
+                >
+                  <option value="">Select code…</option>
+                  {codeOptions.map((c) => <option key={c} value={c} className="text-gray-900">{c}</option>)}
+                </select>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+              </div>
             </div>
 
             <div className="sm:col-span-2">
@@ -155,6 +142,16 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
               />
             </div>
           </div>
+
+          <MajorCodeCreator
+            open={creatingCode}
+            existingCodes={codeOptions}
+            onClose={() => setCreatingCode(false)}
+            onAdd={(code) => {
+              setCustomCodes((prev) => (prev.includes(code) ? prev : [...prev, code]));
+              set('code', code);
+            }}
+          />
 
           <MajorAcademicFields
             formData={formData}

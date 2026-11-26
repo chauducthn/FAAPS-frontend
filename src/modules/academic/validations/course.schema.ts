@@ -9,12 +9,15 @@ const idRef = z.string().min(1, 'Select a valid option');
 export const CREDIT_OPTIONS = [0, 2, 3, 10] as const;
 export const CREDIT_OPTIONS_MESSAGE = 'Credits must be 0, 2, 3 or 10';
 
+export const COURSE_CODE_PATTERN = /^([A-Z]{3}\d{3}[a-z]?|[A-Z]{2,6}([_-][A-Z0-9]+)*(\*\d+)?)$/;
+
 export const createCourseSchema = z.object({
   code: z
     .string()
-    .min(2, 'Course code is required')
-    .max(50)
-    .regex(/^[A-Z0-9_-]+$/i, 'Use letters, numbers, dash, underscore only'),
+    .trim()
+    .min(1, 'Course code is required')
+    .max(20, 'Course code must be at most 20 characters')
+    .regex(COURSE_CODE_PATTERN, 'Invalid course code (e.g. CSD201, SSL101c, PEN, PHE_COM*1, TMI_ELE)'),
   name: z.string().min(3, 'Course name is required').max(255),
   // Picked from CREDIT_OPTIONS; an empty pick reaches here as NaN.
   credits: z

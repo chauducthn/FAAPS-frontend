@@ -7,8 +7,9 @@ import { useMajorsQuery, MAJOR_QUERY_KEYS } from '../../academic/hooks/queries/u
 import MajorTable, { MajorItem } from '@/modules/management/components/majors/MajorTable';
 import MajorFilterBar from '@/modules/management/components/majors/MajorFilterBar';
 import { MajorsTopBar } from '@/modules/management/components/majors/MajorsTopBar';
-import CreateMajorModal from '@/modules/management/components/majors/CreateMajorModal';
-import { ConfirmDialog } from '@/modules/management/components/ConfirmDialog';
+import { MajorsDialogs } from '@/modules/management/components/majors/MajorsDialogs';
+import { useMajorImport } from '@/modules/management/components/majors/useMajorImport';
+import { useDebounce } from '@/shared/hooks/useDebounce';
 
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : 'Please try again.';
 
@@ -16,7 +17,8 @@ export default function MajorsPage() {
   const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
-  const [selectedCohort, setSelectedCohort] = useState('ALL');
+  const [selectedCode, setSelectedCode] = useState('ALL');
+  const [selectedDuration, setSelectedDuration] = useState('ALL');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
   const [page, setPage] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,31 +27,34 @@ export default function MajorsPage() {
   const [deletingMajor, setDeletingMajor] = useState<MajorItem | null>(null);
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const debouncedSearch = useDebounce(search, 300);
 
   const { data: result, isLoading, isError } = useMajorsQuery({
-    search: search || undefined, status: selectedStatus as MajorStatus | 'ALL', cohort: selectedCohort, page, size: 20,
+    search: debouncedSearch || undefined,
+    code: selectedCode === 'ALL' ? undefined : selectedCode,
+    durationYears: selectedDuration === 'ALL' ? undefined : Number(selectedDuration),
+    status: selectedStatus as MajorStatus | 'ALL', page, size: 20,
   });
   const { data: allMajors } = useMajorsQuery({ page: 0, size: 100 });
-
   const data: MajorItem[] = useMemo(
     () => (result?.items ?? []).map((m) => ({ id: m.id, code: m.code, name: m.name, totalCredits: m.totalCredits, durationYears: m.durationYears, cohort: m.cohort, status: m.status })),
     [result],
   );
-  const cohortOptions = useMemo(() => {
-    const source = allMajors?.items ?? result?.items ?? [];
-    return Array.from(new Set(source.map((m) => m.cohort).filter(Boolean))).sort();
-  }, [allMajors, result]);
+  const sourceMajors = allMajors?.items ?? result?.items ?? [];
+  const codeOptions = useMemo(() => Array.from(new Set(sourceMajors.map((m) => m.code))).sort(), [sourceMajors]);
+  const durationOptions = useMemo(() => Array.from(new Set(sourceMajors.map((m) => Number(m.durationYears)).filter((d) => d > 0))).sort((a, b) => a - b), [sourceMajors]);
 
   const applyFilter = <T,>(setter: (v: T) => void) => (v: T) => {
     setter(v);
-    setPage(0);
-    setSelectedIds([]);
+    setPage(0); setSelectedIds([]);
   };
 
   const refresh = async () => {
     setSelectedIds([]);
     await queryClient.invalidateQueries({ queryKey: MAJOR_QUERY_KEYS.all });
   };
+  const majorImport = useMajorImport(refresh);
 
   const handleDeleteSelected = async () => {
     if (!selectedIds.length) return;
@@ -95,12 +100,21 @@ export default function MajorsPage() {
     } catch (error) { toast.error(`Could not load major: ${errorMessage(error)}`); }
   };
 
+  const handleBulkStatus = async (status: MajorStatus) => {
+    if (!selectedIds.length) return;
+    setIsUpdatingStatus(true);
+    try {
+      const updated = await majorService.bulkUpdateStatus(selectedIds, status);
+      toast.success(`Updated ${updated} major${updated === 1 ? '' : 's'} to ${status.toLowerCase()}.`);
+      await refresh();
+    } catch (error) { toast.error(`Could not update status: ${errorMessage(error)}`); }
+    finally { setIsUpdatingStatus(false); }
+  };
+
   const clearFilters = () => {
-    setSearch('');
-    setSelectedCohort('ALL');
-    setSelectedStatus('ALL');
-    setPage(0);
-    setSelectedIds([]);
+    setSearch(''); setSelectedCode('ALL');
+    setSelectedDuration('ALL'); setSelectedStatus('ALL');
+    setPage(0); setSelectedIds([]);
   };
 
   return (
@@ -111,7 +125,10 @@ export default function MajorsPage() {
         draftCount={data.filter((m) => m.status === 'DRAFT').length}
         inactiveCount={data.filter((m) => m.status === 'INACTIVE').length}
         selectedStatus={selectedStatus}
+        isImporting={majorImport.isImporting}
+        examples={majorImport.examples}
         onSelectStatus={applyFilter(setSelectedStatus)}
+        onImportFile={(file) => void majorImport.handleImportFile(file)}
         onCreate={() => { setEditingMajor(null); setIsModalOpen(true); }}
       />
 
@@ -119,14 +136,19 @@ export default function MajorsPage() {
         <MajorFilterBar
           search={search}
           onSearchChange={applyFilter(setSearch)}
-          selectedCohort={selectedCohort}
-          cohortOptions={cohortOptions}
-          onCohortChange={applyFilter(setSelectedCohort)}
+          selectedCode={selectedCode}
+          codeOptions={codeOptions}
+          onCodeChange={applyFilter(setSelectedCode)}
+          selectedDuration={selectedDuration}
+          durationOptions={durationOptions}
+          onDurationChange={applyFilter(setSelectedDuration)}
           selectedStatus={selectedStatus}
           onStatusChange={applyFilter(setSelectedStatus)}
           onClearContext={clearFilters}
           selectedCount={selectedIds.length}
+          isUpdatingStatus={isUpdatingStatus}
           onClearSelection={() => setSelectedIds([])}
+          onBulkStatus={(status) => void handleBulkStatus(status)}
           onDeleteSelected={() => setIsBulkDeleteOpen(true)}
         />
         <div className="h-[520px]">
@@ -163,35 +185,14 @@ export default function MajorsPage() {
         </div>
       </section>
 
-      <CreateMajorModal
-        isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setEditingMajor(null); }}
-        onSubmit={handleSubmit}
-        existingCodes={Array.from(new Set((allMajors?.items ?? result?.items ?? []).map((m) => m.code))).sort()}
-        initialData={editingMajor ? { code: editingMajor.code, name: editingMajor.name, description: editingMajor.description, totalCredits: editingMajor.totalCredits, durationYears: editingMajor.durationYears, cohort: editingMajor.cohort, status: editingMajor.status } : undefined}
-        isSaving={isSaving}
-      />
-
-      <ConfirmDialog
-        open={!!deletingMajor}
-        title="Delete major?"
-        message={deletingMajor ? `Delete ${deletingMajor.code} - ${deletingMajor.name}? Majors referenced by a curriculum or cohort cannot be deleted.` : ''}
-        confirmLabel="Delete major"
-        destructive
-        isLoading={isDeleting}
-        onCancel={() => { if (!isDeleting) setDeletingMajor(null); }}
-        onConfirm={handleDeleteSingle}
-      />
-
-      <ConfirmDialog
-        open={isBulkDeleteOpen}
-        title="Delete selected majors?"
-        message={`Delete ${selectedIds.length} selected major${selectedIds.length === 1 ? '' : 's'}? Majors referenced by a curriculum or cohort cannot be deleted.`}
-        confirmLabel={`Delete ${selectedIds.length} major${selectedIds.length === 1 ? '' : 's'}`}
-        destructive
-        isLoading={isDeleting}
-        onCancel={() => { if (!isDeleting) setIsBulkDeleteOpen(false); }}
-        onConfirm={handleDeleteSelected}
+      <MajorsDialogs
+        isModalOpen={isModalOpen} editingMajor={editingMajor} codeOptions={codeOptions} isSaving={isSaving}
+        deletingMajor={deletingMajor} isBulkDeleteOpen={isBulkDeleteOpen} selectedCount={selectedIds.length}
+        isDeleting={isDeleting} importProblems={majorImport.importProblems}
+        onCloseModal={() => { setIsModalOpen(false); setEditingMajor(null); }} onSubmitMajor={handleSubmit}
+        onCancelDeleteSingle={() => { if (!isDeleting) setDeletingMajor(null); }} onConfirmDeleteSingle={handleDeleteSingle}
+        onCancelBulkDelete={() => { if (!isDeleting) setIsBulkDeleteOpen(false); }} onConfirmBulkDelete={handleDeleteSelected}
+        examples={majorImport.examples} onCloseImportProblems={majorImport.clearImportProblems}
       />
     </div>
   );

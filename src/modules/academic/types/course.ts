@@ -98,6 +98,6 @@ export interface UpdateCourseRelationDto {
 export interface CourseImportRow {
   rowNumber: number; code: string; name: string; credits: number; categoryId: string;
   categoryName: string; description: string; prerequisites: string; objectives: string;
-  learningOutcomes: string; status: string; errors: string[];
+  learningOutcomes: string; courseStatus?: string; materialLink?: string | null; status: string; errors: string[];
 }
 export interface CourseImportPreview { totalRows: number; validRows: number; errorRows: number; items: CourseImportRow[] }

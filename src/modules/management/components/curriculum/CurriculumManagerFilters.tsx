@@ -16,13 +16,19 @@ interface Props {
   searchPlaceholder: string;
   search: string;
   majorId: string;
+  version: string;
+  startSemesterId: string;
   status: string;
   current: string;
   majors: MajorOption[];
+  versions: string[];
+  semesters: { id: string; code: string }[];
   hasFilters: boolean;
   selectedCount: number;
   onSearchChange: (v: string) => void;
   onMajorChange: (v: string) => void;
+  onVersionChange: (v: string) => void;
+  onStartSemesterChange: (v: string) => void;
   onStatusChange: (v: string) => void;
   onCurrentChange: (v: string) => void;
   onClearFilters: () => void;
@@ -35,13 +41,19 @@ export function CurriculumManagerFilters({
   searchPlaceholder,
   search,
   majorId,
+  version,
+  startSemesterId,
   status,
   current,
   majors,
+  versions,
+  semesters,
   hasFilters,
   selectedCount,
   onSearchChange,
   onMajorChange,
+  onVersionChange,
+  onStartSemesterChange,
   onStatusChange,
   onCurrentChange,
   onClearFilters,
@@ -50,8 +62,8 @@ export function CurriculumManagerFilters({
 }: Props) {
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3 lg:flex-nowrap">
-        <div className="relative min-w-0 flex-1 basis-full lg:basis-auto">
+      <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3">
+        <div className="relative min-w-[220px] flex-1">
           <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
           <input
             type="search"
@@ -73,17 +85,37 @@ export function CurriculumManagerFilters({
           )}
         </div>
 
-        <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[168px]">
+        <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[196px]">
           <select value={majorId} onChange={(e) => onMajorChange(e.target.value)} aria-label="Major filter" className={selectClass}>
             <option value="">All majors</option>
             {majors.map((m) => (
-              <option key={m.id} value={m.id}>{m.code}</option>
+              <option key={m.id} value={m.id}>{m.code} — {m.name}</option>
             ))}
           </select>
           <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
         </div>
 
-        <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[132px]">
+        <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[126px]">
+          <select value={version} onChange={(e) => onVersionChange(e.target.value)} aria-label="Cohort filter" className={selectClass}>
+            <option value="">All cohorts</option>
+            {versions.map((v) => (
+              <option key={v} value={v}>{v}</option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        </div>
+
+        <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[144px]">
+          <select value={startSemesterId} onChange={(e) => onStartSemesterChange(e.target.value)} aria-label="Start semester filter" className={selectClass}>
+            <option value="">All start terms</option>
+            {semesters.map((s) => (
+              <option key={s.id} value={s.id}>{s.code}</option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        </div>
+
+        <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[126px]">
           <select value={status} onChange={(e) => onStatusChange(e.target.value)} aria-label="Status filter" className={selectClass}>
             <option value="">All statuses</option>
             <option value="ACTIVE">Active</option>
@@ -92,16 +124,14 @@ export function CurriculumManagerFilters({
           <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
         </div>
 
-        {kind === 'curriculum' && (
-          <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[144px]">
-            <select value={current} onChange={(e) => onCurrentChange(e.target.value)} aria-label="Current version filter" className={selectClass}>
-              <option value="">All versions</option>
-              <option value="true">Current only</option>
-              <option value="false">Previous only</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-          </div>
-        )}
+        <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[136px]">
+          <select value={current} onChange={(e) => onCurrentChange(e.target.value)} aria-label="Current version filter" className={selectClass}>
+            <option value="">All versions</option>
+            <option value="true">Current only</option>
+            <option value="false">Previous only</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        </div>
 
         <button
           type="button"
