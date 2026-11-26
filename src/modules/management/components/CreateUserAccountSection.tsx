@@ -44,17 +44,20 @@ export function CreateUserModalHeader({
 
 export function CreateUserAccountSection({
   role,
+  email,
   emailError,
   register,
   errors,
   onChangeRole,
 }: {
   role: AdminUserRole;
+  email: string;
   emailError: string | undefined;
   register: UseFormRegister<CreateUserValues>;
   errors: FieldErrors<CreateUserValues>;
   onChangeRole: (next: AdminUserRole) => void;
 }) {
+  const advisorIdentifier = role === 'ADVISOR' && email.includes('@') ? email.trim().split('@')[0] : '';
   return (
     <UserFormSection>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -127,6 +130,20 @@ export function CreateUserAccountSection({
           />
         </UserFormField>
       </div>
+
+      {role === 'ADVISOR' && (
+        <UserFormField label="Advisor identifier">
+          <input
+            type="text"
+            readOnly
+            disabled
+            value={advisorIdentifier}
+            placeholder="Extracted automatically from email before @"
+            aria-label="Advisor identifier"
+            className={userFieldClass(false)}
+          />
+        </UserFormField>
+      )}
     </UserFormSection>
   );
 }

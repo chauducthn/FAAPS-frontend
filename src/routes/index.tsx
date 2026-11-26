@@ -18,7 +18,6 @@ const AdminDashboard = lazy(() => import('../modules/management/pages/Dashboard'
 const AdminProfile = lazy(() => import('../modules/management/pages/AdminProfile'));
 const AdvisingReports = lazy(() => import('../modules/management/pages/AdvisingReports'));
 const UserAccounts = lazy(() => import('../modules/management/pages/UserAccounts'));
-const MajorsPage = lazy(() => import('../modules/management/pages/Majors'));
 const Appointments = lazy(() => import('../modules/management/pages/Appointments'));
 const AiReports = lazy(() => import('../modules/management/pages/AiReports'));
 const AiReportDetail = lazy(() => import('../modules/management/pages/AiReportDetail'));
@@ -82,8 +81,8 @@ export const router = createBrowserRouter([
           { path: '/admin', element: suspense(<AdminDashboard />) },
           { path: '/admin/profile', element: suspense(<AdminProfile />) },
           { path: '/admin/users', element: suspense(<UserAccounts />) },
-          { path: '/admin/majors', element: suspense(<MajorsPage />) },
-          { path: '/admin/cohorts', element: suspense(<CohortsPage />) },
+          { path: '/admin/majors', element: suspense(<CohortsPage />) },
+          { path: '/admin/cohorts', element: <Navigate to="/admin/majors?tab=cohorts" replace /> },
           { path: '/admin/curriculum', element: suspense(<CurriculumPage />) },
           { path: '/admin/curriculum/:id', element: suspense(<CurriculumDetailPage />) },
           { path: '/admin/courses', element: suspense(<CoursesPage />) },

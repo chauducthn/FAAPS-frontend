@@ -10,7 +10,7 @@ import {
   exportPerformanceCsv,
   today,
 } from './ai/aiPerformanceUtils';
-import { AiPerformanceFilters, AiPerformanceHeader } from './ai/AiPerformanceFilters';
+import { AiPerformanceFilters } from './ai/AiPerformanceFilters';
 import {
   AiPerformanceErrorState,
   AiPerformanceKpiStrip,
@@ -35,10 +35,10 @@ export default function AiPerformancePage() {
     [purpose, configId, startDate, endDate],
   );
 
-  const { data, isLoading, isFetching, isError, refetch } = useAiPerformanceQuery(params);
-
   const rangeError =
     startDate && endDate && startDate > endDate ? 'Start date must not be after end date.' : null;
+
+  const { data, isLoading, isFetching, isError, refetch } = useAiPerformanceQuery(params, !rangeError);
 
   const totals = useMemo(() => computePerformanceTotals(data), [data]);
   const daily = data?.byDay ?? [];
@@ -84,14 +84,7 @@ export default function AiPerformancePage() {
   };
 
   return (
-    <div className="w-full space-y-5">
-      <AiPerformanceHeader
-        isFetching={isFetching}
-        isLoading={isLoading}
-        onRefresh={() => refetch()}
-        onExport={handleExport}
-      />
-
+    <div className="w-full space-y-4">
       <AiPerformanceFilters
         purpose={purpose}
         startDate={startDate}
@@ -100,12 +93,16 @@ export default function AiPerformancePage() {
         configs={configsQuery.data?.items ?? []}
         hasFilters={hasFilters}
         rangeError={rangeError}
+        isFetching={isFetching}
+        isLoading={isLoading}
         onPurposeChange={setPurpose}
         onStartDateChange={setStartDate}
         onEndDateChange={setEndDate}
         onConfigChange={setConfigId}
         onApplyPreset={applyPreset}
         onReset={resetFilters}
+        onRefresh={() => refetch()}
+        onExport={handleExport}
       />
 
       {isError && !isLoading ? (

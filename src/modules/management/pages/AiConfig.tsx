@@ -8,7 +8,7 @@ import { useAiConfigMutations } from '../../ai/hooks/mutations/useAiConfigMutati
 import type { AiConfig, AiPreset } from '../../ai/types/ai-config';
 import type { CreateAiConfigFormValues } from '../../ai/validations/ai-config.schema';
 import { createAiConfigColumns } from './ai/aiConfigColumns';
-import { AiConfigFilterBar, AiConfigHeader, AiConfigKpiStrip } from './ai/AiConfigHeader';
+import { AiConfigFilterBar, AiConfigTopBar } from './ai/AiConfigHeader';
 import { AiConfigEmptyState, AiConfigErrorState, PresetsPanel } from './ai/AiConfigPanels';
 
 const PAGE_SIZE = 10;
@@ -48,11 +48,11 @@ export default function AiConfigPage() {
 
   const stats = useMemo(
     () => ({
-      total: totalItems,
+      total: listQuery.data?.totalItems,
       active: items.filter((c) => c.isActive).length,
-      chat: items.filter((c) => c.purpose === 'CHAT' && c.isActive).length,
+      chat: items.filter((c) => c.purpose === 'CHAT').length,
     }),
-    [items, totalItems],
+    [items, listQuery.data?.totalItems],
   );
 
   const resetPage = <T,>(setter: (value: T) => void) => (value: T) => {
@@ -69,80 +69,78 @@ export default function AiConfigPage() {
     setPagination((p) => ({ ...p, pageIndex: 0 }));
   };
 
-  const openCreate = (preset?: AiPreset) => {
-    setSelected(null);
-    setSelectedPreset(preset ?? null);
-    setFormMode('create');
-    setFormOpen(true);
-  };
-  const openView = (cfg: AiConfig) => {
+  const openForm = (mode: FormMode, cfg: AiConfig | null = null, preset: AiPreset | null = null) => {
     setSelected(cfg);
-    setSelectedPreset(null);
-    setFormMode('view');
+    setSelectedPreset(preset);
+    setFormMode(mode);
     setFormOpen(true);
   };
-  const openEdit = (cfg: AiConfig) => {
-    setSelected(cfg);
-    setSelectedPreset(null);
-    setFormMode('edit');
-    setFormOpen(true);
-  };
+  const openCreate = (preset?: AiPreset) => openForm('create', null, preset ?? null);
 
   const columns = useMemo(
-    () => createAiConfigColumns({ onView: openView, onEdit: openEdit, onDelete: setDeleting }),
+    () => createAiConfigColumns({
+      onView: (cfg) => openForm('view', cfg),
+      onEdit: (cfg) => openForm('edit', cfg),
+      onDelete: setDeleting,
+    }),
     [],
   );
 
   return (
-    <div className="w-full space-y-5">
-      <AiConfigHeader onCreate={() => openCreate()} />
-      <AiConfigKpiStrip
+    <div className="w-full space-y-4">
+      <AiConfigTopBar
         total={stats.total}
         active={stats.active}
         chat={stats.chat}
         shownCount={items.length}
         isFetching={listQuery.isFetching}
-      />
-      <AiConfigFilterBar
-        search={search}
-        provider={provider}
-        purpose={purpose}
         status={status}
-        hasFilters={hasFilters}
-        onSearchChange={resetPage(setSearch)}
-        onProviderChange={resetPage(setProvider)}
-        onPurposeChange={resetPage(setPurpose)}
-        onStatusChange={resetPage(setStatus)}
-        onClear={clearFilters}
+        purpose={purpose}
+        onClearAll={() => {
+          setStatus('ALL');
+          setPurpose('ALL');
+          setPagination((p) => ({ ...p, pageIndex: 0 }));
+        }}
+        onToggleActive={() => resetPage(setStatus)(status === 'ACTIVE' ? 'ALL' : 'ACTIVE')}
+        onToggleChat={() => resetPage(setPurpose)(purpose === 'CHAT' ? 'ALL' : 'CHAT')}
+        onCreate={() => openCreate()}
       />
 
       <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-        {listQuery.isError ? (
-          <AiConfigErrorState onRetry={() => listQuery.refetch()} />
-        ) : !listQuery.isLoading && items.length === 0 ? (
-          <AiConfigEmptyState hasFilters={hasFilters} onClear={clearFilters} onCreate={() => openCreate()} />
-        ) : (
-          <div className="relative p-4 sm:p-5">
-            {listQuery.isFetching && !listQuery.isLoading && (
-              <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
-                <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
-              </div>
-            )}
-            <DataTable
-              manual
-              columns={columns}
-              data={items}
-              searchKey="name"
-              showSearch={false}
-              getRowId={(row) => row.id}
-              isLoading={listQuery.isLoading}
-              totalRowCount={totalItems}
-              pagination={pagination}
-              onPaginationChange={setPagination}
-              emptyText={hasFilters ? 'No configurations match your filters.' : 'No configurations yet.'}
-            />
-          </div>
-        )}
+        <AiConfigFilterBar
+          search={search}
+          provider={provider}
+          purpose={purpose}
+          status={status}
+          hasFilters={hasFilters}
+          onSearchChange={resetPage(setSearch)}
+          onProviderChange={resetPage(setProvider)}
+          onPurposeChange={resetPage(setPurpose)}
+          onStatusChange={resetPage(setStatus)}
+          onClear={clearFilters}
+        />
+
+        <div className="h-[520px]">
+          {listQuery.isError ? (
+            <AiConfigErrorState onRetry={() => listQuery.refetch()} />
+          ) : !listQuery.isLoading && items.length === 0 ? (
+            <AiConfigEmptyState hasFilters={hasFilters} onClear={clearFilters} onCreate={() => openCreate()} />
+          ) : (
+            <div className="relative h-full">
+              {listQuery.isFetching && !listQuery.isLoading && (
+                <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
+                  <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
+                </div>
+              )}
+              <DataTable
+                className="h-full" manual columns={columns} data={items} searchKey="name" showSearch={false}
+                getRowId={(row) => row.id} isLoading={listQuery.isLoading} totalRowCount={totalItems}
+                pagination={pagination} onPaginationChange={setPagination}
+                emptyText={hasFilters ? 'No configurations match your filters.' : 'No configurations yet.'}
+              />
+            </div>
+          )}
+        </div>
       </div>
       <style>{`@keyframes slide { 0% { transform: translateX(-100%);} 100% { transform: translateX(300%);} }`}</style>
 

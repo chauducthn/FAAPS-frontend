@@ -117,8 +117,9 @@ export function useCurriculumManagerState(kind: CurriculumKind) {
     setSelectedIds(new Set(result.failed.map((item) => item.id)));
     setBulkSaving(false);
     setBulkAction(null);
-    if (result.succeeded.length) toast.success(`${result.succeeded.length} curriculum${result.succeeded.length === 1 ? '' : 's'} updated`);
-    if (result.failed.length) toast.error(`${result.failed.length} curriculum${result.failed.length === 1 ? '' : 's'} could not be changed. They remain selected for retry.`);
+    const noun = kind === 'cohort' ? 'cohort' : 'curriculum';
+    if (result.succeeded.length) toast.success(`${result.succeeded.length} ${noun}${result.succeeded.length === 1 ? '' : 's'} updated`);
+    if (result.failed.length) toast.error(`${result.failed.length} ${noun}${result.failed.length === 1 ? '' : 's'} could not be changed. They remain selected for retry.`);
   };
 
   return {

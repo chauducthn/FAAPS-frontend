@@ -27,20 +27,19 @@ interface Props {
 }
 
 const STATUS_STYLE: Record<string, string> = {
-  ACTIVE: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',
-  INACTIVE: 'bg-gray-100 text-gray-600 ring-1 ring-gray-200',
-  DRAFT: 'bg-orange-50 text-[#B45309] ring-1 ring-orange-200',
+  ACTIVE: 'text-emerald-700',
+  INACTIVE: 'text-gray-500',
+  DRAFT: 'text-amber-700',
 };
 
 export function RuleStatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em]',
+        'inline-flex items-center text-xs font-semibold uppercase tracking-[0.02em]',
         STATUS_STYLE[status] ?? STATUS_STYLE.INACTIVE,
       )}
     >
-      <span className="size-1.5 rounded-full bg-current" aria-hidden />
       {status}
     </span>
   );
@@ -99,7 +98,7 @@ export default function RuleTable({
         header: 'Policy type',
         enableSorting: false,
         cell: ({ row }) => (
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-2.5 py-1 font-mono text-[11px] font-bold text-gray-700">
+          <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-gray-700">
             <ShieldCheck className="size-3.5 text-[#F37021]" aria-hidden />
             {row.original.policyType}
           </span>
@@ -113,15 +112,15 @@ export default function RuleTable({
         cell: ({ row }) => {
           const grade = formatGrade(row.original.grade);
           return (
-            <div className="flex min-w-0 flex-col gap-1">
+            <div className="flex min-w-0 flex-col gap-0.5">
               <code
                 title={JSON.stringify(row.original.condition, null, 2)}
-                className="block max-w-[240px] truncate rounded-md bg-orange-50 px-2 py-1 font-mono text-[11px] font-medium text-[#9A3412] ring-1 ring-orange-100"
+                className="block max-w-[240px] truncate font-mono text-xs font-medium text-[#9A3412]"
               >
                 {summarizeCondition(row.original.condition)}
               </code>
               {grade && (
-                <span className="inline-flex w-fit items-center rounded-md bg-[#F37021] px-2 py-0.5 text-[11px] font-bold tabular-nums text-white">
+                <span className="text-xs font-semibold tabular-nums text-[#C2410C]">
                   Grade {grade}
                 </span>
               )}
@@ -171,13 +170,14 @@ export default function RuleTable({
   );
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       {isFetching && !isLoading && (
         <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden rounded-full bg-orange-100">
           <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F37021]" />
         </div>
       )}
       <DataTable
+        className="h-full"
         manual
         columns={columns}
         data={data}

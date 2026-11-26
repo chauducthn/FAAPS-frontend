@@ -37,13 +37,7 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
   const majors = useMajorOptions();
 
   const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    setError,
-    clearErrors,
+    register, handleSubmit, reset, watch, setValue, setError, clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<CreateUserValues>({
     resolver: zodResolver(createUserSchema),
@@ -52,21 +46,16 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
 
   useEffect(() => {
     if (!open) return;
-    if (user) {
-      reset({
-        ...emptyCreateUserValues(user.role),
-        role: user.role,
-        fullName: user.fullName,
-        email: user.email,
-        studentCode: user.role === 'STUDENT' ? user.userId : '',
-      });
-      return;
-    }
-    reset(emptyCreateUserValues(defaultRole));
+    reset(
+      user
+        ? { ...emptyCreateUserValues(user.role), role: user.role, fullName: user.fullName, email: user.email, studentCode: user.role === 'STUDENT' ? user.userId : '' }
+        : emptyCreateUserValues(defaultRole),
+    );
   }, [open, defaultRole, user, reset]);
 
   const role = watch('role');
   const studentCode = watch('studentCode');
+  const curriculumId = watch('curriculumId');
   const email = watch('email');
   const enrollmentSemesterId = watch('enrollmentSemesterId');
   const expectedGraduationSemesterId = watch('expectedGraduationSemesterId');
@@ -77,6 +66,15 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
 
   const identity = useMemo(() => parseStudentId(studentCode), [studentCode]);
   const major = identity ? majorList.find((m) => m.code === identity.majorCode) : undefined;
+  const visibleCurriculums = useMemo(
+    () => (identity ? curriculumList.filter((c) => c.majorCode === identity.majorCode && c.version === identity.cohort) : curriculumList),
+    [curriculumList, identity],
+  );
+  const selectedCurriculum = curriculumList.find((c) => c.id === curriculumId);
+  const prefixMismatch =
+    role === 'STUDENT' && !!identity && !!selectedCurriculum
+    && (selectedCurriculum.majorCode !== identity.majorCode || selectedCurriculum.version !== identity.cohort);
+  const missingCohortCombo = role === 'STUDENT' && !!identity && curriculumList.length > 0 && visibleCurriculums.length === 0;
 
   useEffect(() => {
     if (role !== 'STUDENT' || !identity) return;
@@ -112,6 +110,16 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
 
   const submit = handleSubmit(async (v) => {
     const isStudent = v.role === 'STUDENT';
+    if (isStudent && missingCohortCombo && identity) {
+      setError('studentCode', { message: `No active Major + Cohort matches ${identity.majorCode}${identity.cohort.slice(1)}` });
+      return;
+    }
+    if (isStudent && prefixMismatch && identity && selectedCurriculum) {
+      setError('curriculumId', {
+        message: `Student ID "${identity.majorCode}${identity.cohort.slice(1)}" must match ${selectedCurriculum.majorCode} ${selectedCurriculum.version}`,
+      });
+      return;
+    }
     if (isStudent && graduationConflict) {
       setError('expectedGraduationSemesterId', { message: 'The graduation semester must come after the enrollment semester' });
       return;
@@ -161,12 +169,12 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
       <form noValidate onSubmit={submit} className="flex min-h-0 flex-col">
         <CreateUserModalHeader isEdit={isEdit} role={role} onClose={onClose} />
         <div className="space-y-5 overflow-y-auto px-6 py-5">
-          <CreateUserAccountSection role={role} emailError={emailError} register={register} errors={errors} onChangeRole={changeRole} />
+          <CreateUserAccountSection role={role} email={email} emailError={emailError} register={register} errors={errors} onChangeRole={changeRole} />
           <CreateUserProfileSection
             role={role}
             register={register}
             errors={errors}
-            curriculumList={curriculumList}
+            curriculumList={visibleCurriculums}
             semesterList={semesterList}
             graduationOptions={graduationOptions}
             identity={identity}
@@ -180,7 +188,7 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
             </p>
           )}
         </div>
-        <CreateUserModalFooter isEdit={isEdit} isSubmitting={isSubmitting} blocked={emailRoleConflict || graduationConflict} onClose={onClose} />
+        <CreateUserModalFooter isEdit={isEdit} isSubmitting={isSubmitting} blocked={emailRoleConflict || graduationConflict || prefixMismatch || missingCohortCombo} onClose={onClose} />
       </form>
     </Modal>
   );

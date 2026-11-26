@@ -77,9 +77,7 @@ export function CurriculumManagerFilters({
           <select value={majorId} onChange={(e) => onMajorChange(e.target.value)} aria-label="Major filter" className={selectClass}>
             <option value="">All majors</option>
             {majors.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.code} — {m.name}
-              </option>
+              <option key={m.id} value={m.id}>{m.code}</option>
             ))}
           </select>
           <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
@@ -115,11 +113,11 @@ export function CurriculumManagerFilters({
         </button>
       </div>
 
-      {kind === 'curriculum' && selectedCount > 0 && (
+      {selectedCount > 0 && (
         <div
           className="flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5"
           role="toolbar"
-          aria-label="Curriculum bulk actions"
+          aria-label={`${kind === 'cohort' ? 'Cohort' : 'Curriculum'} bulk actions`}
         >
           <div className="flex items-center gap-2">
             <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">

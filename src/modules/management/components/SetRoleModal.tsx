@@ -7,12 +7,8 @@ import { apiErrorMessage } from '../../../shared/lib/apiError';
 import { useCurriculumsQuery } from '../../academic/hooks/queries/useCurriculumsQuery';
 import { useChangeUserRole } from '../hooks/queries/useAdminUsers';
 import {
-  STUDENT_ID_ERROR_MESSAGE,
-  STUDENT_ID_PATTERN,
-  emailMatchesRole,
-  emailRoleErrorMessage,
-  parseStudentId,
-  suggestRoleEmail,
+  STUDENT_ID_ERROR_MESSAGE, STUDENT_ID_PATTERN,
+  emailMatchesRole, emailRoleErrorMessage, parseStudentId, suggestRoleEmail,
 } from '../utils/accountRules';
 import type { AdminUserRole, AdminUserSummary } from '../types/admin';
 import { userFieldClass, userLabelClass } from './createUserSchema';
@@ -49,21 +45,26 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
   const emailValidDomain = trimmedEmail.length > 0 && emailMatchesRole(trimmedEmail, target);
   const emailChanged = user ? trimmedEmail !== user.email.trim().toLowerCase() : false;
   const { available: emailAvailable, checking: checkingEmail } = useSingleEmailAvailability(
-    open,
-    user?.id,
-    trimmedEmail,
-    emailChanged && emailValidDomain,
+    open, user?.id, trimmedEmail, emailChanged && emailValidDomain,
   );
 
   const curriculumList = useMemo(() => curriculums.data?.items ?? [], [curriculums.data]);
   const identity = useMemo(() => parseStudentId(studentCode), [studentCode]);
+  const visibleCurriculums = useMemo(
+    () => (identity ? curriculumList.filter((c) => c.majorCode === identity.majorCode && c.version === identity.cohort) : curriculumList),
+    [curriculumList, identity],
+  );
 
   if (!user) return null;
 
   const sameRole = target === user.role;
   const emailTaken = emailChanged && emailAvailable === false;
   const studentCodeInvalid = target === 'STUDENT' && !STUDENT_ID_PATTERN.test(studentCode.trim().toUpperCase());
-  const blocked = sameRole || !emailValidDomain || emailTaken || checkingEmail || studentCodeInvalid;
+  const selectedCurriculum = curriculumList.find((item) => item.id === curriculumId);
+  const prefixMismatch =
+    target === 'STUDENT' && !!identity && !!selectedCurriculum
+    && (selectedCurriculum.majorCode !== identity.majorCode || selectedCurriculum.version !== identity.cohort);
+  const blocked = sameRole || !emailValidDomain || emailTaken || checkingEmail || studentCodeInvalid || prefixMismatch;
 
   const handleTargetChange = (nextRole: AdminUserRole) => {
     setTarget(nextRole);
@@ -77,6 +78,10 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
     const curriculum = target === 'STUDENT' ? curriculumList.find((item) => item.id === curriculumId) : undefined;
     if (target === 'STUDENT' && studentCodeInvalid) return setError(STUDENT_ID_ERROR_MESSAGE);
     if (target === 'STUDENT' && !curriculum) return setError('Select the curriculum the student follows.');
+    if (target === 'STUDENT' && identity && curriculum
+        && (curriculum.majorCode !== identity.majorCode || curriculum.version !== identity.cohort)) {
+      return setError(`Student ID must match ${curriculum.majorCode} ${curriculum.version}.`);
+    }
     setError(null);
     try {
       await changeRole.mutateAsync({
@@ -84,11 +89,7 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
         role: target,
         email: emailChanged ? trimmedEmail : undefined,
         ...(target === 'STUDENT' && curriculum
-          ? {
-              studentCode: studentCode.trim().toUpperCase(),
-              curriculumVersionId: curriculum.id,
-              enrollmentSemesterId: curriculum.effectiveFromSemesterId,
-            }
+          ? { studentCode: studentCode.trim().toUpperCase(), curriculumVersionId: curriculum.id, enrollmentSemesterId: curriculum.effectiveFromSemesterId }
           : {}),
       });
       toast.success(`${user.fullName} is now ${target === 'STUDENT' ? 'a Student' : 'an Advisor'}.`);
@@ -169,7 +170,7 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
           <SetRoleStudentFields
             studentCode={studentCode}
             curriculumId={curriculumId}
-            curriculumList={curriculumList}
+            curriculumList={visibleCurriculums}
             identity={identity}
             fieldClass={userFieldClass(false)}
             onStudentCodeChange={setStudentCode}

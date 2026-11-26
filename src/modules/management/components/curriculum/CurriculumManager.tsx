@@ -88,7 +88,7 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
         ) : s.items.length === 0 ? (
           <CurriculumListEmpty plural={copy.plural} noun={copy.noun} createLabel={copy.create} hasFilters={s.hasFilters} onClearFilters={s.clearFilters} onCreate={openCreate} />
         ) : (
-          <div className="relative flex min-h-[520px] flex-col justify-between">
+          <div className="relative flex h-[520px] flex-col">
             {isFetching && (
               <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
                 <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
@@ -108,9 +108,9 @@ export default function CurriculumManager({ kind }: { kind: CurriculumKind }) {
               }}
               onToggleStatus={(item) => updateStatus({ id: item.id, status: item.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE' }).catch(() => undefined)}
               onDelete={s.setDeleting}
-              selectedIds={kind === 'curriculum' ? s.selectedIds : undefined}
-              onSelect={kind === 'curriculum' ? s.selectOne : undefined}
-              onSelectPage={kind === 'curriculum' ? s.selectPage : undefined}
+              selectedIds={s.selectedIds}
+              onSelect={s.selectOne}
+              onSelectPage={s.selectPage}
             />
             <Pagination page={s.page} pageSize={CURRICULUM_PAGE_SIZE} total={data?.totalElements ?? 0} noun={copy.plural} onChange={s.changePage} />
           </div>

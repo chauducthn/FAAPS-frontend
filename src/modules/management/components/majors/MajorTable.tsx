@@ -5,6 +5,8 @@ export interface MajorItem {
   id: string;
   code: string;
   name: string;
+  totalCredits: number;
+  durationYears: number;
   cohort: string;
   status: 'ACTIVE' | 'INACTIVE' | 'DRAFT';
 }
@@ -21,10 +23,10 @@ interface MajorTableProps {
   totalPages: number;
   onPageChange: (page: number) => void;
 }
-const statusPill = (status: MajorItem['status']) => {
-  if (status === 'ACTIVE') return 'bg-emerald-50 text-emerald-700';
-  if (status === 'DRAFT') return 'bg-amber-50 text-amber-700';
-  return 'bg-gray-100 text-gray-600';
+const statusTone = (status: MajorItem['status']) => {
+  if (status === 'ACTIVE') return 'text-emerald-700';
+  if (status === 'DRAFT') return 'text-amber-700';
+  return 'text-gray-500';
 };
 function createMajorColumns(
   onEditMajor: (item: MajorItem) => void,
@@ -48,19 +50,33 @@ function createMajorColumns(
       ),
     },
     {
-      accessorKey: 'cohort',
-      header: 'Cohort',
+      accessorKey: 'totalCredits',
+      header: 'Credits',
+      meta: { align: 'center' },
       cell: ({ row }) => (
-        <span className="text-[var(--ink-muted)] whitespace-nowrap">{row.original.cohort}</span>
+        <span className="font-semibold text-[var(--ink-primary)] tabular-nums whitespace-nowrap">
+          {row.original.totalCredits}
+        </span>
       ),
+    },
+    {
+      accessorKey: 'durationYears',
+      header: 'Duration',
+      meta: { align: 'center' },
+      cell: ({ row }) => {
+        const years = Number(row.original.durationYears);
+        return (
+          <span className="text-[var(--ink-secondary)] tabular-nums whitespace-nowrap">
+            {years} {years === 1 ? 'year' : 'years'}
+          </span>
+        );
+      },
     },
     {
       accessorKey: 'status',
       header: 'Status',
       cell: ({ row }) => (
-        <span
-          className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold leading-none ${statusPill(row.original.status)}`}
-        >
+        <span className={`inline-flex items-center text-xs font-semibold ${statusTone(row.original.status)}`}>
           {row.original.status === 'ACTIVE'
             ? 'Active'
             : row.original.status === 'DRAFT'
@@ -139,6 +155,7 @@ export default function MajorTable({
 
   return (
     <DataTable
+      className="h-full"
       manual
       columns={createMajorColumns(onEditMajor, onDeleteMajor)}
       data={data}
@@ -153,6 +170,7 @@ export default function MajorTable({
         if (next.pageIndex !== page) onPageChange(next.pageIndex);
       }}
       showPageSizeSelect={false}
+      hideBulkBar
       selectedRowIds={selectedIds}
       onSelectedRowIdsChange={handleSelectionChange}
     />

@@ -100,6 +100,7 @@ export function AiReportsTable({
 
   return (
     <StaticTable
+      stickyHeader
       columns={columns}
       rows={items}
       rowKey={(item) => item.id}

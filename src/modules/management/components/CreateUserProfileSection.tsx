@@ -55,7 +55,9 @@ export function CreateUserProfileSection({
         <div className="flex flex-wrap items-center gap-2">
           <DerivedChip icon={<GraduationCap className="size-3.5" />} label={`Major ${major?.name ?? identity.majorCode}`} />
           <DerivedChip icon={<Sparkles className="size-3.5" />} label={`Cohort ${identity.cohort}`} />
-          {!major && <DerivedChip tone="warn" label="No matching major" />}
+          {curriculumList.length === 0 && (
+            <DerivedChip tone="warn" label={`No active ${identity.majorCode} ${identity.cohort}`} />
+          )}
         </div>
       )}
 

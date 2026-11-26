@@ -86,7 +86,7 @@ export default function AssignmentsOverview() {
 
         {s.tab === 'unassigned' ? (
           <DataTable
-            className="flex min-h-[540px] flex-col justify-between"
+            className="h-[520px]"
             manual
             columns={unassignedColumns}
             data={s.unassignedRows}

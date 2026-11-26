@@ -92,7 +92,7 @@ export default function UserAccounts() {
               </div>
             )}
             <DataTable
-              className="flex min-h-[540px] flex-col justify-between"
+              className="h-[520px]"
               manual
               columns={columns}
               data={s.items}

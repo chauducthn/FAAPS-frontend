@@ -38,18 +38,18 @@ export default function CurriculumTable({
   onSelectPage,
 }: Props) {
   const isCohort = kind === 'cohort';
-  const canSelect = !isCohort && !!selectedIds && !!onSelect && !!onSelectPage;
+  const canSelect = !!selectedIds && !!onSelect && !!onSelectPage;
   const selectedOnPage = data.filter((item) => selectedIds?.has(item.id)).length;
 
   return (
-    <TableShell minWidth="820px">
+    <TableShell stickyHeader minWidth="820px" className="min-h-0 flex-1 overflow-auto">
       <thead>
         <tr>
           {canSelect && (
             <TableHead className="w-11">
               <input
                 type="checkbox"
-                aria-label="Select all curriculums on this page"
+                aria-label={`Select all ${isCohort ? 'cohorts' : 'curriculums'} on this page`}
                 checked={data.length > 0 && selectedOnPage === data.length}
                 ref={(node) => {
                   if (node) node.indeterminate = selectedOnPage > 0 && selectedOnPage < data.length;
@@ -63,8 +63,9 @@ export default function CurriculumTable({
             <>
               <TableHead>Cohort</TableHead>
               <TableHead>Major</TableHead>
-              <TableHead>Name</TableHead>
+              <TableHead>Major name</TableHead>
               <TableHead>Start</TableHead>
+              <TableHead>End</TableHead>
             </>
           ) : (
             <>
@@ -76,7 +77,12 @@ export default function CurriculumTable({
           <TableHead align="center">Courses</TableHead>
           <TableHead align="center">Credits</TableHead>
           <TableHead>Status</TableHead>
-          {!isCohort && <TableHead>Start</TableHead>}
+          {!isCohort && (
+            <>
+              <TableHead>Start</TableHead>
+              <TableHead>End</TableHead>
+            </>
+          )}
           <TableHead align="right">Actions</TableHead>
         </tr>
       </thead>
@@ -105,7 +111,7 @@ export default function CurriculumTable({
               )}
               {isCohort ? <CohortCells item={item} /> : <CurriculumCells item={item} onOpen={onOpen} />}
               <TableCell align="center">
-                <span className="inline-flex min-w-8 items-center justify-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-gray-800">
+                <span className="text-[13px] font-semibold tabular-nums text-gray-800">
                   {item.courseCount}
                 </span>
               </TableCell>
@@ -113,17 +119,23 @@ export default function CurriculumTable({
                 <span className="font-mono text-[13px] font-semibold tabular-nums text-gray-900">
                   {item.totalCredits}
                 </span>
-                <span className="ml-1 text-xs text-gray-400">cr</span>
               </TableCell>
               <TableCell>
                 <StatusBadge status={item.status} />
               </TableCell>
               {!isCohort && (
-                <TableCell>
-                  <span className="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-xs font-medium text-gray-700">
-                    {item.effectiveFromSemesterCode}
-                  </span>
-                </TableCell>
+                <>
+                  <TableCell>
+                    <span className="font-mono text-[13px] font-medium text-gray-700">
+                      {item.effectiveFromSemesterCode}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className={item.effectiveToSemesterCode ? 'font-mono text-[13px] font-medium text-gray-700' : 'text-xs text-gray-400'}>
+                      {item.effectiveToSemesterCode ?? '—'}
+                    </span>
+                  </TableCell>
+                </>
               )}
               <TableCell align="right">
                 <RowActionMenu label={`Actions for ${item.majorCode} ${item.version}`} actions={actions} />

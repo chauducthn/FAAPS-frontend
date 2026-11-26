@@ -252,4 +252,30 @@ describe('Appointments', () => {
     await user.click(screen.getByRole('button', { name: /^Table$/i }));
     expect(screen.getByRole('table')).toBeInTheDocument();
   });
+
+  it('toggles status filter when clicking KPI stat tiles and keeps date popover right-aligned', async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText('Nguyen Van A');
+
+    // Click the Completed stat tile in the top strip (first match outside the table).
+    const completedTiles = screen.getAllByText('Completed');
+    await user.click(completedTiles[0]);
+    await waitFor(() => {
+      expect(getAppointments.mock.calls.at(-1)?.[0]).toMatchObject({ status: 'COMPLETED', page: 0 });
+    });
+
+    // Clicking again toggles it off.
+    await user.click(completedTiles[0]);
+    await waitFor(() => {
+      expect(getAppointments.mock.calls.at(-1)?.[0]?.status).toBeUndefined();
+    });
+
+    // Date popover uses sm:right-0 so it does not clip inside the overflow-hidden card.
+    await user.click(screen.getByLabelText('Filter by date range'));
+    const startInput = screen.getByLabelText('Filter by start date');
+    const popover = startInput.closest('div.absolute');
+    expect(popover?.className).toContain('sm:right-0');
+  });
 });

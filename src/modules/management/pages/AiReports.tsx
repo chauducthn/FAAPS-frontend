@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle2, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Flag, XCircle } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
 import { useAiReports } from '../../ai/hooks/queries/useAdminAiReports';
 import { useDebounce } from '@/shared/hooks/useDebounce';
@@ -20,7 +20,8 @@ export default function AiReports() {
     page,
     size: REPORT_PAGE_SIZE,
   });
-  // Cheap one-row queries just to read the totals for the header.
+
+  // Cheap one-row queries just to read the totals for the top stat strip.
   const pending = useAiReports({ status: 'PENDING', page: 0, size: 1 });
   const resolved = useAiReports({ status: 'RESOLVED', page: 0, size: 1 });
   const dismissed = useAiReports({ status: 'DISMISSED', page: 0, size: 1 });
@@ -32,86 +33,87 @@ export default function AiReports() {
   const items = list.data?.items ?? [];
   const hasFilters = !!search || status !== 'PENDING';
 
-  return (
-    <div className="flex w-full flex-col gap-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="text-xs text-[#555f6f]">AI / Reported AI Responses</p>
-          <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">Reported AI Responses</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm text-[#555f6f]">
-            {total ?? '–'} reports
-            <span className="rounded-full bg-[#fef2f2] px-2 py-0.5 text-[11px] font-bold uppercase text-[#b91c1c]">
-              {pending.data?.totalElements ?? '–'} pending
-            </span>
-            <span className="rounded-full bg-[#ecfdf5] px-2 py-0.5 text-[11px] font-bold uppercase text-[#047857]">
-              {resolved.data?.totalElements ?? '–'} resolved
-            </span>
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold uppercase text-[#555f6f]">
-              {dismissed.data?.totalElements ?? '–'} dismissed
-            </span>
-          </p>
-        </div>
-      </div>
+  const selectStatus = (next: AiReportStatus | '') => {
+    setStatus(next);
+    setPage(0);
+  };
 
-      <div className="grid gap-4 sm:grid-cols-3">
+  return (
+    <div className="flex w-full flex-col gap-4">
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <StatusCard
+          label="Total reports"
+          value={total}
+          icon={Flag}
+          tone="slate"
+          active={status === ''}
+          onClick={() => selectStatus('')}
+        />
         <StatusCard
           label="Pending"
           value={pending.data?.totalElements}
           icon={AlertTriangle}
           tone="red"
-          hint="Requires review and action"
+          hint="needs review"
+          active={status === 'PENDING'}
+          onClick={() => selectStatus(status === 'PENDING' ? '' : 'PENDING')}
         />
         <StatusCard
           label="Resolved"
           value={resolved.data?.totalElements}
           icon={CheckCircle2}
           tone="green"
-          hint="Root cause resolved"
+          hint="root cause fixed"
+          active={status === 'RESOLVED'}
+          onClick={() => selectStatus(status === 'RESOLVED' ? '' : 'RESOLVED')}
         />
         <StatusCard
           label="Dismissed"
           value={dismissed.data?.totalElements}
           icon={XCircle}
           tone="gray"
-          hint="Closed without changes"
+          hint="closed"
+          active={status === 'DISMISSED'}
+          onClick={() => selectStatus(status === 'DISMISSED' ? '' : 'DISMISSED')}
         />
       </div>
 
-      <AiReportsFilterBar
-        search={search}
-        status={status}
-        hasFilters={hasFilters}
-        onSearchChange={(val) => {
-          setSearch(val);
-          setPage(0);
-        }}
-        onStatusChange={(val) => {
-          setStatus(val);
-          setPage(0);
-        }}
-        onClear={() => {
-          setSearch('');
-          setStatus('PENDING');
-          setPage(0);
-        }}
-      />
+      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+        <AiReportsFilterBar
+          search={search}
+          status={status}
+          hasFilters={hasFilters}
+          onSearchChange={(val) => {
+            setSearch(val);
+            setPage(0);
+          }}
+          onStatusChange={selectStatus}
+          onClear={() => {
+            setSearch('');
+            setStatus('PENDING');
+            setPage(0);
+          }}
+        />
 
-      <section className="rounded-xl bg-white shadow-sm">
-        <AiReportsTable
-          items={items}
-          isLoading={list.isLoading}
-          isError={list.isError}
-          hasData={!!list.data}
-          debouncedSearch={debouncedSearch}
-          onRetry={() => list.refetch()}
-        />
-        <Pagination
-          page={page}
-          pageSize={REPORT_PAGE_SIZE}
-          total={list.data?.totalElements ?? 0}
-          noun="reports"
-          onChange={setPage}
-        />
+        <div className="flex h-[520px] flex-col">
+          <div className="min-h-0 flex-1 overflow-auto">
+            <AiReportsTable
+              items={items}
+              isLoading={list.isLoading}
+              isError={list.isError}
+              hasData={!!list.data}
+              debouncedSearch={debouncedSearch}
+              onRetry={() => list.refetch()}
+            />
+          </div>
+          <Pagination
+            page={page}
+            pageSize={REPORT_PAGE_SIZE}
+            total={list.data?.totalElements ?? 0}
+            noun="reports"
+            onChange={setPage}
+          />
+        </div>
       </section>
     </div>
   );

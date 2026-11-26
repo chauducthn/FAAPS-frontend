@@ -8,7 +8,6 @@ import {
   ClipboardCheck,
   Cpu,
   Flag,
-  FolderOpen,
   GraduationCap,
   LayoutDashboard,
   Shield,
@@ -73,16 +72,10 @@ export const ADMIN_NAV_SECTIONS: PortalNavSection[] = [
     title: 'Academic Structure',
     items: [
       {
-        label: 'Majors',
-        description: 'Configure academic majors and degree credit requirements.',
+        label: 'Majors & Cohorts',
+        description: 'Configure academic majors first, then manage student intake cohorts.',
         to: '/admin/majors',
         icon: GraduationCap,
-      },
-      {
-        label: 'Cohorts',
-        description: 'Manage student intake cohorts and active curriculum mappings.',
-        to: '/admin/cohorts',
-        icon: FolderOpen,
       },
     ],
   },

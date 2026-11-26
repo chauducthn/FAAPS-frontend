@@ -31,10 +31,10 @@ export function TableShell({
         className={cn(
           'w-full border-collapse text-left',
           minWidth && 'min-w-[720px]',
-          '[&_tbody_tr]:border-b [&_tbody_tr]:border-[var(--line-soft)]',
-          '[&_tbody_tr]:transition-colors [&_tbody_tr]:hover:bg-[var(--surface-hover)]',
-          '[&_thead_tr]:bg-[var(--surface-sunken)]',
-          stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10',
+          '[&_tbody_tr]:border-b [&_tbody_tr]:border-gray-100',
+          '[&_tbody_tr]:transition-colors [&_tbody_tr]:hover:bg-gray-50/80',
+          '[&_thead_tr]:border-b [&_thead_tr]:border-gray-200/80 [&_thead_tr]:bg-gray-50/95',
+          stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10 [&_thead_th]:bg-gray-50/95',
         )}
         style={minWidth ? { minWidth } : undefined}
       >
@@ -59,7 +59,7 @@ export function TableHead({
     <th
       scope="col"
       className={cn(
-        'px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--ink-muted)]',
+        'whitespace-nowrap px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-gray-500',
         align === 'center' && 'text-center',
         align === 'right' && 'text-right',
         className,
@@ -72,7 +72,7 @@ export function TableHead({
 }
 
 export function TableBody({ children, className }: { children: ReactNode; className?: string }) {
-  return <tbody className={cn('text-[13px] text-[var(--ink-secondary)]', className)}>{children}</tbody>;
+  return <tbody className={cn('text-[13px] leading-5 text-gray-700', className)}>{children}</tbody>;
 }
 
 export function TableRow({
@@ -102,7 +102,7 @@ export function TableCell({
   return (
     <td
       className={cn(
-        'px-4 py-3 text-[13px] text-[var(--ink-secondary)]',
+        'px-4 py-2.5 align-middle text-[13px] leading-5 text-gray-700',
         align === 'center' && 'text-center',
         align === 'right' && 'text-right tabular-nums',
         className,

@@ -28,6 +28,7 @@ export interface DataTableProps<TData extends RowData, TValue = unknown> {
   filters?: ReactNode;
   /** Buttons rendered inside the floating bulk-action bar. */
   bulkActions?: (selectedRows: TData[]) => ReactNode;
+  hideBulkBar?: boolean;
   /**
    * Column filters owned by the parent (e.g. the dropdowns rendered in
    * `filters`). Merged with the internal search filter.

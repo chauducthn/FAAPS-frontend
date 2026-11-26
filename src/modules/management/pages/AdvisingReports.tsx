@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Download, Mail, ShieldAlert, Users, Video } from 'lucide-react';
+import { BarChart3, ChevronDown, Download, Loader2, Mail, ShieldAlert, Users, Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiMessage } from '@/shared/lib/apiMessage';
 import { StaticTable, type StaticColumn } from '../../../shared/components/common/table/StaticTable';
-import { cn } from '@/shared/lib/utils';
 import {
   advisingReportService,
   type AdvisorEffectivenessRow,
@@ -12,8 +11,7 @@ import {
 
 const advisorEffectivenessColumns: StaticColumn<AdvisorEffectivenessRow>[] = [
   {
-    key: 'advisor',
-    header: 'Advisor',
+    key: 'advisor', header: 'Advisor',
     render: (row) => (
       <span className="font-semibold text-[var(--ink-primary)]">
         {row.fullName}
@@ -21,53 +19,70 @@ const advisorEffectivenessColumns: StaticColumn<AdvisorEffectivenessRow>[] = [
       </span>
     ),
   },
-  {
-    key: 'assignedStudents',
-    header: 'Assigned Students',
-    align: 'right',
-    render: (row) => <span>{row.assignedStudents}</span>,
-  },
-  {
-    key: 'completedSessions',
-    header: 'Completed Sessions',
-    align: 'right',
-    render: (row) => (
-      <span className="font-semibold text-emerald-700">{row.completedSessions}</span>
-    ),
-  },
-  {
-    key: 'emailOutreaches',
-    header: 'Email Outreaches',
-    align: 'right',
-    render: (row) => <span>{row.emailOutreaches}</span>,
-  },
-  {
-    key: 'pendingRequests',
-    header: 'Pending Requests',
-    align: 'right',
-    render: (row) => <span>{row.pendingRequests}</span>,
-  },
+  { key: 'assignedStudents', header: 'Assigned Students', align: 'right', render: (r) => <span className="tabular-nums">{r.assignedStudents}</span> },
+  { key: 'completedSessions', header: 'Completed Sessions', align: 'right', render: (r) => <span className="font-semibold tabular-nums text-emerald-700">{r.completedSessions}</span> },
+  { key: 'emailOutreaches', header: 'Email Outreaches', align: 'right', render: (r) => <span className="tabular-nums">{r.emailOutreaches}</span> },
+  { key: 'pendingRequests', header: 'Pending Requests', align: 'right', render: (r) => <span className="tabular-nums">{r.pendingRequests}</span> },
 ];
+
+function ReportStatTile({
+  icon,
+  label,
+  value,
+  meta,
+  tone,
+  loading,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+  meta: string;
+  tone: 'orange' | 'emerald' | 'blue' | 'amber';
+  loading: boolean;
+}) {
+  const iconTone = {
+    orange: 'bg-orange-50 text-[#C2410C]',
+    emerald: 'bg-emerald-50 text-emerald-700',
+    blue: 'bg-blue-50 text-blue-600',
+    amber: 'bg-amber-50 text-amber-700',
+  }[tone];
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl border border-gray-200/80 bg-white px-3.5 py-2.5 text-left">
+      <span className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${iconTone}`}>
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
+        {loading ? (
+          <div className="mt-1 h-5 w-16 animate-pulse rounded bg-gray-100" />
+        ) : (
+          <div className="mt-0.5 flex items-baseline gap-1.5">
+            <span className="text-lg font-bold leading-none tabular-nums text-gray-900">{value}</span>
+            <span className="truncate text-xs text-gray-400">{meta}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function AdvisingReports() {
   const [semesterId, setSemesterId] = useState<string>('');
+  const [isExporting, setIsExporting] = useState(false);
 
-  const semestersQuery = useQuery({
-    queryKey: ['admin', 'semesters'],
-    queryFn: advisingReportService.getSemesters,
-  });
-
+  const semestersQuery = useQuery({ queryKey: ['admin', 'semesters'], queryFn: advisingReportService.getSemesters });
   const overviewQuery = useQuery({
     queryKey: ['admin', 'advising-reports', 'overview', semesterId],
     queryFn: () => advisingReportService.getOverview(semesterId || undefined),
   });
-
   const advisorsQuery = useQuery({
     queryKey: ['admin', 'advising-reports', 'by-advisor', semesterId],
     queryFn: () => advisingReportService.getByAdvisor(semesterId || undefined),
   });
 
   const handleExport = async () => {
+    setIsExporting(true);
     try {
       const blob = await advisingReportService.exportCsv(semesterId || undefined);
       const url = URL.createObjectURL(blob);
@@ -78,110 +93,104 @@ export default function AdvisingReports() {
       URL.revokeObjectURL(url);
     } catch (error) {
       toast.error(apiMessage(error));
+    } finally {
+      setIsExporting(false);
     }
   };
 
   const overview = overviewQuery.data;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">School Advising Reports</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Monitor advising outreach, at-risk coverage, and advisor effectiveness by semester.
-          </p>
+    <div className="flex w-full flex-col gap-4">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="grid flex-1 grid-cols-2 gap-2.5 lg:grid-cols-4">
+          <ReportStatTile
+            icon={<ShieldAlert className="size-4" />}
+            label="At-risk coverage"
+            value={overview ? `${overview.coverageRate}%` : '—'}
+            meta={overview ? `${overview.contactedAtRisk}/${overview.atRiskStudents} contacted` : ''}
+            tone="orange"
+            loading={overviewQuery.isLoading}
+          />
+          <ReportStatTile
+            icon={<BarChart3 className="size-4" />}
+            label="Total sessions"
+            value={overview ? String(overview.totalSessions) : '—'}
+            meta={overview ? `${overview.completedSessions} done · ${overview.noShowSessions} no-show` : ''}
+            tone="emerald"
+            loading={overviewQuery.isLoading}
+          />
+          <ReportStatTile
+            icon={<Video className="size-4" />}
+            label="Online / offline"
+            value={overview ? `${overview.onlineSessions} / ${overview.offlineSessions}` : '—'}
+            meta="virtual vs in-person"
+            tone="blue"
+            loading={overviewQuery.isLoading}
+          />
+          <ReportStatTile
+            icon={<Mail className="size-4" />}
+            label="Email advising"
+            value={overview ? String(overview.emailSessions) : '—'}
+            meta={overview ? `${overview.totalStudents} tracked` : ''}
+            tone="amber"
+            loading={overviewQuery.isLoading}
+          />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          <select
-            aria-label="Filter by semester"
-            value={semesterId}
-            onChange={(event) => setSemesterId(event.target.value)}
-            className={cn(
-                'h-10 rounded-lg border border-slate-200 bg-white',
-                'px-3 text-sm font-medium text-slate-800 outline-none',
-                'focus:border-[var(--brand)]'
-              )}
-          >
-            <option value="">All Semesters</option>
-            {(semestersQuery.data ?? []).map((sem) => (
-              <option key={sem.id} value={sem.id}>
-                {sem.code} — {sem.name}
-              </option>
-            ))}
-          </select>
+        <div className="flex shrink-0 items-center justify-end gap-2">
+          <div className="relative w-[196px]">
+            <select
+              aria-label="Filter by semester"
+              value={semesterId}
+              onChange={(event) => setSemesterId(event.target.value)}
+              className="h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-[13px] font-medium text-gray-700 transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+            >
+              <option value="">All semesters</option>
+              {(semestersQuery.data ?? []).map((sem) => (
+                <option key={sem.id} value={sem.id}>
+                  {sem.code} — {sem.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+          </div>
 
           <button
             type="button"
             onClick={handleExport}
-            className={cn(
-                'inline-flex h-10 items-center gap-2 rounded-lg',
-                'bg-[var(--brand)] px-4 text-sm font-bold text-white',
-                'hover:bg-[var(--brand-hover)]'
-              )}
+            disabled={isExporting || overviewQuery.isLoading}
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55"
           >
-            <Download className="size-4" />
-            Export CSV
+            {isExporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+            {isExporting ? 'Exporting…' : 'Export CSV'}
           </button>
         </div>
       </div>
 
-      {overview && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-xs font-semibold uppercase text-slate-500">
-              At-Risk Coverage <ShieldAlert className="size-4 text-[var(--brand)]" />
-            </div>
-            <p className="mt-2 text-2xl font-extrabold text-slate-900">{overview.coverageRate}%</p>
-            <p className="mt-1 text-xs text-slate-500">
-              {overview.contactedAtRisk} / {overview.atRiskStudents} at-risk students contacted
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-xs font-semibold uppercase text-slate-500">
-              Total Sessions <BarChart3 className="size-4 text-emerald-600" />
-            </div>
-            <p className="mt-2 text-2xl font-extrabold text-slate-900">{overview.totalSessions}</p>
-            <p className="mt-1 text-xs text-slate-500">
-              {overview.completedSessions} completed · {overview.noShowSessions} no-show
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-xs font-semibold uppercase text-slate-500">
-              Online / Offline <Video className="size-4 text-blue-600" />
-            </div>
-            <p className="mt-2 text-2xl font-extrabold text-slate-900">
-              {overview.onlineSessions} / {overview.offlineSessions}
-            </p>
-            <p className="mt-1 text-xs text-slate-500">Virtual vs in-person advising</p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <div className="flex items-center justify-between text-xs font-semibold uppercase text-slate-500">
-              Email Advising <Mail className="size-4 text-amber-600" />
-            </div>
-            <p className="mt-2 text-2xl font-extrabold text-slate-900">{overview.emailSessions}</p>
-            <p className="mt-1 text-xs text-slate-500">Total students tracked: {overview.totalStudents}</p>
-          </div>
+      {overviewQuery.isError && (
+        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
+          Could not load advising overview metrics.
+          <button type="button" onClick={() => overviewQuery.refetch()} className="font-semibold hover:underline">
+            Retry
+          </button>
         </div>
       )}
 
-      <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-        <div className="flex items-center gap-2 border-b border-slate-100 px-6 py-4">
-          <Users className="size-4 text-[var(--brand)]" />
-          <h2 className="text-base font-bold text-slate-900">Advisor Effectiveness Breakdown</h2>
+      <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+        <div className="flex items-center gap-2 border-b border-gray-100 px-4 py-3">
+          <Users className="size-4 text-[#F26F21]" />
+          <h2 className="text-[13px] font-bold text-gray-900">Advisor effectiveness breakdown</h2>
         </div>
-        <StaticTable
-          columns={advisorEffectivenessColumns}
-          rows={advisorsQuery.data ?? []}
-          rowKey={(row) => row.advisorId}
-          loading={advisorsQuery.isLoading}
-          error={advisorsQuery.isError ? 'Could not load the advisor breakdown.' : undefined}
-          emptyTitle="No advisor activity recorded for this semester yet."
-        />
+        <div className="flex h-[520px] flex-col">
+          <StaticTable
+            stickyHeader className="min-h-0 flex-1 overflow-auto"
+            columns={advisorEffectivenessColumns} rows={advisorsQuery.data ?? []}
+            rowKey={(row) => row.advisorId} loading={advisorsQuery.isLoading}
+            error={advisorsQuery.isError ? 'Could not load the advisor breakdown.' : undefined}
+            emptyTitle="No advisor activity recorded for this semester yet."
+          />
+        </div>
       </section>
     </div>
   );

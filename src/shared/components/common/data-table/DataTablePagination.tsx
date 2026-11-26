@@ -41,22 +41,22 @@ export function DataTablePagination({
   onNextPage,
 }: DataTablePaginationProps) {
   return (
-    <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-      <p className="text-[13px] text-slate-500">
+    <div className="flex shrink-0 flex-col gap-2.5 border-t border-gray-100 bg-gray-50/50 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-[13px] text-gray-500">
         {totalRows === 0 ? 'No rows' : `Showing ${firstRow}–${lastRow} of ${totalRows} rows`}
       </p>
 
       <div className="flex flex-wrap items-center gap-3">
         {showPageSizeSelect && (
-          <label className="flex items-center gap-2 text-[13px] text-slate-500">
+          <label className="flex items-center gap-2 text-[13px] text-gray-500">
             Rows per page
             <select
               value={pageSize}
               onChange={(event) => onPageSizeChange(Number(event.target.value))}
               aria-label="Rows per page"
               className={cn(
-                'h-8 rounded-md border border-slate-200 bg-white px-2 text-[13px] font-medium text-[var(--ink-primary)]',
-                'outline-none focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand-ring)]',
+                'h-8 rounded-lg border border-gray-200 bg-white px-2 text-xs font-medium text-gray-800',
+                'outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/30',
               )}
             >
               {pageSizes.map((size) => (
@@ -68,7 +68,7 @@ export function DataTablePagination({
           </label>
         )}
 
-        <span className="text-[13px] font-semibold text-slate-700">
+        <span className="text-xs font-semibold text-gray-600 tabular-nums">
           Page {pageIndex + 1} of {totalPages}
         </span>
 
@@ -82,13 +82,13 @@ export function DataTablePagination({
             onClick={onPreviousPage}
             disabled={!canPreviousPage}
             className={cn(
-              'inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-[13px] font-medium text-slate-600',
-              'transition-colors hover:bg-slate-100 hover:text-slate-900',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
+              'inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-gray-600',
+              'transition-colors hover:bg-gray-100 hover:text-gray-900',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/30',
               'disabled:pointer-events-none disabled:opacity-40',
             )}
           >
-            <ChevronLeft className="size-4" aria-hidden />
+            <ChevronLeft className="size-3.5" aria-hidden />
             Previous
           </button>
           <button
@@ -96,14 +96,14 @@ export function DataTablePagination({
             onClick={onNextPage}
             disabled={!canNextPage}
             className={cn(
-              'inline-flex h-8 items-center gap-1 rounded-md px-2.5 text-[13px] font-medium text-slate-600',
-              'transition-colors hover:bg-slate-100 hover:text-slate-900',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
+              'inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-gray-600',
+              'transition-colors hover:bg-gray-100 hover:text-gray-900',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/30',
               'disabled:pointer-events-none disabled:opacity-40',
             )}
           >
             Next
-            <ChevronRight className="size-4" aria-hidden />
+            <ChevronRight className="size-3.5" aria-hidden />
           </button>
         </div>
       </div>

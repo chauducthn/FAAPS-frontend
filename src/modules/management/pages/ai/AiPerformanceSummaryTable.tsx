@@ -22,7 +22,7 @@ export function AiPerformanceSummaryTable({
       key: 'purpose',
       header: 'Purpose',
       render: (row) => (
-        <span className="rounded bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-500">
+        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
           {row.purpose}
         </span>
       ),

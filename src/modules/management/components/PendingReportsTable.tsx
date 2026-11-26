@@ -73,7 +73,7 @@ function createPendingReportColumns(): DataTableColumnDef<AiReportSummary>[] {
       header: 'Status',
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="rounded-full bg-[#fef2f2] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em] text-[#b91c1c]">
+        <span className="text-xs font-semibold uppercase tracking-[0.02em] text-red-600">
           {row.original.status}
         </span>
       ),

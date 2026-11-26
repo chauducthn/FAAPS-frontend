@@ -6,21 +6,20 @@ interface LoadBadgeProps {
   className?: string;
 }
 
-/** "12 / 30" with a warning colour when the advisor is at or over the advisory limit. */
+/** "12/30" with a warning colour when the advisor is near, at, or over the advisory limit. */
 export function LoadBadge({ count, limit, className }: LoadBadgeProps) {
   const over = limit !== null && count > limit;
-  const full = limit !== null && count === limit;
+  const nearOrFull = limit !== null && limit > 0 && count / limit >= 0.8;
   return (
     <span
       className={cn(
-        'whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold',
-        over ? 'bg-[#fef2f2] text-[#b91c1c]' : full ? 'bg-[#fffbeb] text-[#b45309]' : 'bg-[#f1f5f9] text-[#334155]',
-        className
+        'whitespace-nowrap text-[13px] font-semibold tabular-nums',
+        over ? 'text-red-600' : nearOrFull ? 'text-amber-700' : 'text-gray-700',
+        className,
       )}
-      title={over ? `Over the limit by ${count - (limit as number)}` : full ? 'At the limit' : undefined}
+      title={over ? `Over the limit by ${count - (limit as number)}` : nearOrFull ? 'Near or at the limit' : undefined}
     >
-      {count} / {limit ?? 'no limit'}
-      {over ? ' · over limit' : ''}
+      {count}/{limit ?? 'no limit'}
     </span>
   );
 }

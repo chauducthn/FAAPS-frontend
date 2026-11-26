@@ -12,7 +12,7 @@ export function createUnassignedColumns(
       header: 'Student ID',
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 font-mono text-xs font-medium text-gray-700">
+        <span className="font-mono text-[13px] font-medium text-gray-700">
           {row.original.studentCode}
         </span>
       ),
@@ -27,7 +27,7 @@ export function createUnassignedColumns(
           <div className="flex min-w-0 items-center gap-2">
             <span className="truncate font-semibold text-gray-900">{row.original.fullName}</span>
             {row.original.hasPendingRequest && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-semibold text-[#C2410C] ring-1 ring-inset ring-orange-200/80">
+              <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[#C2410C]">
                 <Bell className="size-3" aria-hidden />
                 Requested
               </span>
@@ -47,7 +47,7 @@ export function createUnassignedColumns(
       header: 'Cohort',
       enableSorting: false,
       cell: ({ row }) => (
-        <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+        <span className="text-[13px] font-medium text-gray-700">
           {row.original.cohort}
         </span>
       ),

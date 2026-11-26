@@ -11,14 +11,14 @@ export type AdminStatus =
   | 'FAILED';
 
 const STYLES: Record<AdminStatus, string> = {
-  ACTIVE: 'bg-[#ecfdf5] text-[#047857]',
-  CONFIRMED: 'bg-[#ecfdf5] text-[#047857]',
-  PREVIEWED: 'bg-[#fff7ed] text-[#9a3412]',
-  PENDING: 'bg-[#fff7ed] text-[#9a3412]',
-  SUSPENDED: 'bg-[#fef2f2] text-[#b91c1c]',
-  FAILED: 'bg-[#fef2f2] text-[#b91c1c]',
-  LOCKED: 'bg-[#fef2f2] text-[#b91c1c]',
-  INACTIVE: 'bg-gray-100 text-[#555f6f]',
+  ACTIVE: 'text-emerald-700',
+  CONFIRMED: 'text-emerald-700',
+  PREVIEWED: 'text-amber-700',
+  PENDING: 'text-amber-700',
+  SUSPENDED: 'text-red-600',
+  FAILED: 'text-red-600',
+  LOCKED: 'text-red-600',
+  INACTIVE: 'text-gray-500',
 };
 
 interface Props {
@@ -31,7 +31,7 @@ export function StatusBadge({ status }: Props) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em]',
+        'inline-flex items-center text-xs font-semibold uppercase tracking-[0.02em]',
         tone,
       )}
     >

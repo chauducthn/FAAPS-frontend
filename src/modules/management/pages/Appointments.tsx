@@ -63,18 +63,36 @@ export default function Appointments() {
   const metrics = useMemo(() => buildAppointmentMetrics(summary.data), [summary.data]);
 
   return (
-    <div className="w-full space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-[22px] font-semibold tracking-[-0.01em] text-[#151c27]">
-            Appointments Oversight
-          </h1>
-          <p className="mt-1 text-[13px] text-[#555f6f]">
-            Track advising sessions across every cohort, advisor and outcome.
-          </p>
-        </div>
+    <div className="w-full space-y-4">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        {summary.isError ? (
+          <div className="flex flex-1 items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
+            Could not load appointment totals.
+            <button type="button" onClick={() => summary.refetch()} className="font-semibold hover:underline">
+              Retry
+            </button>
+          </div>
+        ) : (
+          <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
+            {metrics.map((metric) => {
+              const isActive = metric.key === 'total' ? status === '' : status === metric.key;
+              return (
+                <KpiCard
+                  key={metric.key}
+                  metric={metric}
+                  active={isActive}
+                  onClick={() => {
+                    const next: AppointmentStatus | '' =
+                      metric.key === 'total' ? '' : status === metric.key ? '' : metric.key;
+                    resetPage(setStatus)(next);
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center justify-end gap-2">
           <ViewToggle value={view} onChange={setView} />
           <button
             type="button"
@@ -84,31 +102,16 @@ export default function Appointments() {
             }}
             disabled={refreshing}
             aria-label="Refresh appointments"
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[#e5e7eb] bg-white px-3 text-[13px] font-semibold text-[#555f6f] transition-colors hover:bg-[#f7f8fa] hover:text-[#151c27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021]/40 disabled:opacity-60"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:opacity-60"
           >
             <RefreshCw className={refreshing ? 'size-3.5 animate-spin' : 'size-3.5'} aria-hidden />
             <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
-      </header>
-
-      {summary.isError ? (
-        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-          Could not load appointment totals.
-          <button type="button" onClick={() => summary.refetch()} className="font-semibold hover:underline">
-            Retry
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
-          {metrics.map((metric) => (
-            <KpiCard key={metric.key} metric={metric} />
-          ))}
-        </div>
-      )}
+      </div>
 
       {list.isError && !list.data && (
-        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
           Could not load appointments.{' '}
           <button type="button" onClick={() => list.refetch()} className="font-semibold hover:underline">
             Retry
@@ -116,25 +119,26 @@ export default function Appointments() {
         </div>
       )}
 
-      <AppointmentFilters
-        search={search}
-        status={status}
-        advisorId={advisorId}
-        advisors={advisors}
-        fromDate={fromDate}
-        toDate={toDate}
-        hasFilters={hasFilters}
-        onSearchChange={resetPage(setSearch)}
-        onStatusChange={resetPage(setStatus)}
-        onAdvisorChange={resetPage(setAdvisorId)}
-        onFromDateChange={resetPage(setFromDate)}
-        onToDateChange={resetPage(setToDate)}
-        onClear={clearFilters}
-      />
+      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+        <AppointmentFilters
+          search={search}
+          status={status}
+          advisorId={advisorId}
+          advisors={advisors}
+          fromDate={fromDate}
+          toDate={toDate}
+          hasFilters={hasFilters}
+          onSearchChange={resetPage(setSearch)}
+          onStatusChange={resetPage(setStatus)}
+          onAdvisorChange={resetPage(setAdvisorId)}
+          onFromDateChange={resetPage(setFromDate)}
+          onToDateChange={resetPage(setToDate)}
+          onClear={clearFilters}
+        />
 
-      {view === 'table' ? (
-        <section className="rounded-2xl border border-[#e5e7eb] bg-white p-4 shadow-[0_1px_2px_rgba(20,32,51,0.04)] sm:p-5">
+        {view === 'table' ? (
           <DataTable
+            className="h-[520px]"
             manual
             columns={columns}
             data={items}
@@ -147,12 +151,12 @@ export default function Appointments() {
             pagination={pagination}
             onPaginationChange={setPagination}
           />
-        </section>
-      ) : (
-        <section className="rounded-2xl border border-[#e5e7eb] bg-white p-4 shadow-[0_1px_2px_rgba(20,32,51,0.04)] sm:p-5">
-          <AppointmentTimeline items={items} isLoading={list.isLoading} onOpen={setOpenId} />
-        </section>
-      )}
+        ) : (
+          <div className="h-[520px] overflow-y-auto p-4 sm:p-5">
+            <AppointmentTimeline items={items} isLoading={list.isLoading} onOpen={setOpenId} />
+          </div>
+        )}
+      </section>
 
       <AppointmentDetailModal appointmentId={openId} onClose={() => setOpenId(null)} />
     </div>

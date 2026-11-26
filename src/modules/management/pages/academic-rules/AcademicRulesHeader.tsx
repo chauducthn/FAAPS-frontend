@@ -1,76 +1,62 @@
 import type { ReactNode } from 'react';
-import {
-  Archive,
-  FileWarning,
-  Plus,
-  RotateCcw,
-  ScrollText,
-  Search,
-  ShieldCheck,
-} from 'lucide-react';
+import { Archive, FileWarning, Plus, ShieldCheck } from 'lucide-react';
+import { cn } from '@/shared/lib/utils';
 import type { AcademicRuleStatus } from '../../../academic/types/academic-rule';
-import { POLICY_TYPES } from '../../../academic/validations/academic-rule.schema';
 
-const selectClass =
-  'appearance-none rounded-xl border border-gray-200 bg-white py-2.5 pl-3.5 pr-9 text-xs font-semibold text-gray-700 shadow-xs transition-colors hover:border-gray-300 focus:border-[#F37021] focus:outline-none focus:ring-2 focus:ring-[#F37021]/20';
+export { AcademicRulesFilterBar } from './AcademicRulesFilterBar';
 
-function Kpi({
+function StatTile({
   icon,
   label,
   value,
-  hint,
-  tone = 'gray',
+  meta,
+  tone,
+  active,
+  onClick,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
-  hint: string;
-  tone?: 'gray' | 'green' | 'orange';
+  meta?: string;
+  tone: 'slate' | 'emerald' | 'amber';
+  active?: boolean;
+  onClick?: () => void;
 }) {
-  const tones = {
-    gray: 'bg-gray-100 text-gray-600',
-    green: 'bg-emerald-100 text-emerald-700',
-    orange: 'bg-orange-100 text-[#B45309]',
-  } as const;
-  return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-200/80 bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-      <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${tones[tone]}`}>{icon}</span>
-      <div className="min-w-0">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">{label}</p>
-        <p className="text-lg font-extrabold tabular-nums leading-tight text-gray-900">
-          {value} <span className="text-[11px] font-medium text-gray-400">{hint}</span>
-        </p>
-      </div>
-    </div>
-  );
-}
+  const iconTone: Record<typeof tone, string> = {
+    slate: 'bg-gray-100 text-gray-700',
+    emerald: 'bg-emerald-50 text-emerald-700',
+    amber: 'bg-amber-50 text-amber-700',
+  };
+  const activeTone: Record<typeof tone, string> = {
+    slate: 'border-gray-400 bg-gray-50/70',
+    emerald: 'border-emerald-400/70 bg-emerald-50/40',
+    amber: 'border-amber-400/70 bg-amber-50/40',
+  };
 
-export function AcademicRulesHeader({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4">
-      <div className="flex items-center gap-3">
-        <span className="flex size-11 items-center justify-center rounded-2xl bg-[#F37021] text-white">
-          <ScrollText className="size-5" />
-        </span>
-        <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-gray-900">Academic Rules</h1>
-          <p className="mt-0.5 max-w-[560px] text-xs leading-relaxed text-gray-500">
-            System-wide policies the platform enforces for students — GPA warnings, credit caps, attendance gates
-          </p>
+    <div
+      onClick={onClick}
+      className={cn(
+        'flex items-center gap-3 rounded-xl border bg-white px-3.5 py-2.5 text-left transition-colors',
+        onClick && 'cursor-pointer',
+        active ? activeTone[tone] : 'border-gray-200/80 hover:border-gray-300',
+      )}
+    >
+      <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg', iconTone[tone])}>
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
+        <div className="mt-0.5 flex items-baseline gap-1.5">
+          <span className="text-lg font-bold leading-none tabular-nums text-gray-900">{value}</span>
+          {meta && <span className="truncate text-xs text-gray-400">{meta}</span>}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onCreate}
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F37021] px-4 py-2.5 text-xs font-bold text-white transition-colors hover:bg-[#D9601A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F37021]/50"
-      >
-        <Plus className="size-4" strokeWidth={2.5} /> Create Rule
-      </button>
     </div>
   );
 }
 
-export function AcademicRulesKpiStrip({
+export function AcademicRulesTopBar({
   totalItems,
   isFetching,
   pageIndex,
@@ -78,121 +64,61 @@ export function AcademicRulesKpiStrip({
   activeCount,
   shownCount,
   draftCount,
+  selectedStatus,
+  onSelectStatus,
+  onCreate,
 }: {
-  totalItems: number;
+  totalItems?: number;
   isFetching: boolean;
   pageIndex: number;
   totalPages: number;
   activeCount: number;
   shownCount: number;
   draftCount: number;
+  selectedStatus: 'ALL' | AcademicRuleStatus;
+  onSelectStatus: (status: 'ALL' | AcademicRuleStatus) => void;
+  onCreate: () => void;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <Kpi
-        icon={<ShieldCheck className="size-4" />}
-        label="Total rules"
-        value={String(totalItems || '—')}
-        hint={isFetching ? 'Refreshing…' : `Page ${pageIndex + 1} of ${Math.max(1, totalPages)}`}
-      />
-      <Kpi
-        icon={<FileWarning className="size-4" />}
-        label="Published (Active)"
-        value={String(activeCount)}
-        hint={`${shownCount} shown`}
-        tone="green"
-      />
-      <Kpi
-        icon={<Archive className="size-4" />}
-        label="Drafts on this page"
-        value={String(draftCount)}
-        hint="Ready to publish"
-        tone="orange"
-      />
-    </div>
-  );
-}
+    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      <div className="grid flex-1 grid-cols-1 gap-2.5 sm:grid-cols-3">
+        <StatTile
+          icon={<ShieldCheck className="size-4" />}
+          label="Total rules"
+          value={totalItems !== undefined ? String(totalItems) : '—'}
+          meta={isFetching ? 'Refreshing…' : `Page ${pageIndex + 1} / ${Math.max(1, totalPages)}`}
+          tone="slate"
+          active={selectedStatus === 'ALL'}
+          onClick={() => onSelectStatus('ALL')}
+        />
+        <StatTile
+          icon={<FileWarning className="size-4" />}
+          label="Active on page"
+          value={String(activeCount)}
+          meta={`${shownCount} shown`}
+          tone="emerald"
+          active={selectedStatus === 'ACTIVE'}
+          onClick={() => onSelectStatus(selectedStatus === 'ACTIVE' ? 'ALL' : 'ACTIVE')}
+        />
+        <StatTile
+          icon={<Archive className="size-4" />}
+          label="Drafts on page"
+          value={String(draftCount)}
+          meta="ready to publish"
+          tone="amber"
+          active={selectedStatus === 'DRAFT'}
+          onClick={() => onSelectStatus(selectedStatus === 'DRAFT' ? 'ALL' : 'DRAFT')}
+        />
+      </div>
 
-export function AcademicRulesFilterBar({
-  search,
-  policyType,
-  status,
-  hasFilters,
-  onSearchChange,
-  onPolicyTypeChange,
-  onStatusChange,
-  onClear,
-}: {
-  search: string;
-  policyType: string;
-  status: 'ALL' | AcademicRuleStatus;
-  hasFilters: boolean;
-  onSearchChange: (value: string) => void;
-  onPolicyTypeChange: (value: string) => void;
-  onStatusChange: (value: 'ALL' | AcademicRuleStatus) => void;
-  onClear: () => void;
-}) {
-  return (
-    <div className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-      <div className="flex flex-col items-stretch gap-3 lg:flex-row lg:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-gray-400" aria-hidden />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search by rule name, policy type, description…"
-            aria-label="Search academic rules"
-            role="searchbox"
-            className="w-full rounded-xl border border-gray-200 bg-gray-50/50 py-2.5 pl-10 pr-9 text-xs font-medium text-gray-900 placeholder:text-gray-400 focus:border-[#F37021] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#F37021]/20"
-          />
-          {search && (
-            <button
-              type="button"
-              onClick={() => onSearchChange('')}
-              aria-label="Clear search"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-md px-1.5 py-0.5 text-[11px] font-bold text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-            >
-              ✕
-            </button>
-          )}
-        </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <select
-            value={policyType}
-            onChange={(e) => onPolicyTypeChange(e.target.value)}
-            aria-label="Filter by policy type"
-            className={selectClass}
-          >
-            <option value="ALL">Type: All</option>
-            {POLICY_TYPES.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-          <select
-            value={status}
-            onChange={(e) => onStatusChange(e.target.value as 'ALL' | AcademicRuleStatus)}
-            aria-label="Filter by status"
-            className={selectClass}
-          >
-            <option value="ALL">Status: All</option>
-            <option value="DRAFT">● Draft</option>
-            <option value="ACTIVE">● Active</option>
-            <option value="INACTIVE">○ Inactive</option>
-          </select>
-          {hasFilters && (
-            <button
-              type="button"
-              onClick={onClear}
-              aria-label="Clear filters"
-              className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-gray-300 px-3.5 py-2.5 text-xs font-bold text-gray-500 transition-colors hover:border-[#F37021] hover:text-[#D9601A]"
-            >
-              <RotateCcw className="size-3.5" /> Reset
-            </button>
-          )}
-        </div>
+      <div className="flex shrink-0 items-center justify-end">
+        <button
+          type="button"
+          onClick={onCreate}
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+        >
+          <Plus className="size-4" strokeWidth={2.25} /> Create rule
+        </button>
       </div>
     </div>
   );

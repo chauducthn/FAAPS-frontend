@@ -12,8 +12,7 @@ import type {
 import type { CreateAcademicRuleFormValues } from '../../academic/validations/academic-rule.schema';
 import {
   AcademicRulesFilterBar,
-  AcademicRulesHeader,
-  AcademicRulesKpiStrip,
+  AcademicRulesTopBar,
 } from './academic-rules/AcademicRulesHeader';
 import {
   AcademicRulesEmptyState,
@@ -105,59 +104,62 @@ export default function AcademicRulesPage() {
   };
 
   return (
-    <div className="w-full space-y-5">
-      <AcademicRulesHeader onCreate={openCreate} />
-
-      <AcademicRulesKpiStrip
-        totalItems={totalItems}
+    <div className="w-full space-y-4">
+      <AcademicRulesTopBar
+        totalItems={data?.totalItems}
         isFetching={isFetching}
         pageIndex={pagination.pageIndex}
         totalPages={data?.totalPages ?? 1}
         activeCount={items.filter((r) => r.status === 'ACTIVE').length}
         shownCount={items.length}
         draftCount={items.filter((r) => r.status === 'DRAFT').length}
-      />
-
-      <AcademicRulesFilterBar
-        search={search}
-        policyType={policyType}
-        status={status}
-        hasFilters={hasFilters}
-        onSearchChange={resetPage(setSearch)}
-        onPolicyTypeChange={resetPage(setPolicyType)}
-        onStatusChange={resetPage(setStatus)}
-        onClear={clearFilters}
+        selectedStatus={status}
+        onSelectStatus={resetPage(setStatus)}
+        onCreate={openCreate}
       />
 
       <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-        {isError ? (
-          <AcademicRulesErrorState onRetry={() => refetch()} />
-        ) : !isLoading && items.length === 0 ? (
-          <AcademicRulesEmptyState hasFilters={hasFilters} onClear={clearFilters} onCreate={openCreate} />
-        ) : (
-          <div className="p-4 sm:p-5">
-            <RuleTable
-              data={items}
-              isLoading={isLoading}
-              isFetching={isFetching}
-              totalRowCount={totalItems}
-              pagination={pagination}
-              onPaginationChange={setPagination}
-              onView={openView}
-              onEdit={openEdit}
-              onPublish={(r) => guard(() => publish(r.id))}
-              onArchive={(r) => guard(() => archive(r.id))}
-              onReopen={(r) => guard(() => reopen(r.id))}
-              onDelete={(r) => {
-                if (r.status === 'ACTIVE') {
-                  toast.error(`${r.ruleName} is ACTIVE — archive it before deleting.`);
-                  return;
-                }
-                setDeleting(r);
-              }}
-            />
-          </div>
-        )}
+        <AcademicRulesFilterBar
+          search={search}
+          policyType={policyType}
+          status={status}
+          hasFilters={hasFilters}
+          onSearchChange={resetPage(setSearch)}
+          onPolicyTypeChange={resetPage(setPolicyType)}
+          onStatusChange={resetPage(setStatus)}
+          onClear={clearFilters}
+        />
+
+        <div className="h-[520px]">
+          {isError ? (
+            <AcademicRulesErrorState onRetry={() => refetch()} />
+          ) : !isLoading && items.length === 0 ? (
+            <AcademicRulesEmptyState hasFilters={hasFilters} onClear={clearFilters} onCreate={openCreate} />
+          ) : (
+            <div className="h-full">
+              <RuleTable
+                data={items}
+                isLoading={isLoading}
+                isFetching={isFetching}
+                totalRowCount={totalItems}
+                pagination={pagination}
+                onPaginationChange={setPagination}
+                onView={openView}
+                onEdit={openEdit}
+                onPublish={(r) => guard(() => publish(r.id))}
+                onArchive={(r) => guard(() => archive(r.id))}
+                onReopen={(r) => guard(() => reopen(r.id))}
+                onDelete={(r) => {
+                  if (r.status === 'ACTIVE') {
+                    toast.error(`${r.ruleName} is ACTIVE — archive it before deleting.`);
+                    return;
+                  }
+                  setDeleting(r);
+                }}
+              />
+            </div>
+          )}
+        </div>
       </div>
 
       <AcademicRulesModals

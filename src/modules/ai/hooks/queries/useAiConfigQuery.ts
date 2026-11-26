@@ -36,9 +36,10 @@ export const useAiPresetsQuery = () =>
     staleTime: 1000 * 60 * 30,
   });
 
-export const useAiPerformanceQuery = (params?: AiPerformanceFilterParams) =>
+export const useAiPerformanceQuery = (params?: AiPerformanceFilterParams, enabled = true) =>
   useQuery({
     queryKey: AI_CONFIG_QUERY_KEYS.performance(params),
     queryFn: () => aiConfigService.getPerformance(params ?? {}),
     placeholderData: keepPreviousData,
+    enabled,
   });

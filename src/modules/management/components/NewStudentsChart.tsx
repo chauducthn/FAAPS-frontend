@@ -70,7 +70,7 @@ export function NewStudentsChart({
               <option value="">All majors</option>
               {(majors.data ?? []).map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.code} - {m.name}
+                  {m.code}
                 </option>
               ))}
             </select>

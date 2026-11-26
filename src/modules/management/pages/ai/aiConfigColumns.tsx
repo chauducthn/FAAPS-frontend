@@ -33,7 +33,7 @@ export function createAiConfigColumns(handlers: {
       header: 'Model',
       enableSorting: false,
       cell: ({ row }) => (
-        <code className="inline-block max-w-[180px] truncate rounded-lg bg-gray-900 px-2.5 py-1 font-mono text-[11px] font-bold text-white">
+        <code className="inline-block max-w-[180px] truncate font-mono text-[13px] font-semibold text-gray-900">
           {row.original.modelName}
         </code>
       ),
@@ -43,7 +43,7 @@ export function createAiConfigColumns(handlers: {
       header: 'Temp',
       meta: { align: 'center' },
       cell: ({ row }) => (
-        <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-gray-100 px-2.5 py-1 font-mono text-[12px] font-bold tabular-nums text-gray-800">
+        <span className="font-mono text-[13px] font-semibold tabular-nums text-gray-700">
           {row.original.temperature.toFixed(2)}
         </span>
       ),
@@ -53,7 +53,7 @@ export function createAiConfigColumns(handlers: {
       header: 'Max tokens',
       meta: { align: 'right' },
       cell: ({ row }) => (
-        <span className="font-mono text-[12px] font-bold tabular-nums text-[#9a3412]">
+        <span className="font-mono text-[13px] font-semibold tabular-nums text-[#C2410C]">
           {row.original.maxTokens.toLocaleString('en-US')}
         </span>
       ),
@@ -63,7 +63,7 @@ export function createAiConfigColumns(handlers: {
       header: 'Timeout',
       meta: { align: 'center' },
       cell: ({ row }) => (
-        <span className="text-[12px] font-semibold tabular-nums text-gray-600">{row.original.timeoutSeconds}s</span>
+        <span className="text-[13px] font-medium tabular-nums text-gray-600">{row.original.timeoutSeconds}s</span>
       ),
     },
     {
@@ -73,8 +73,8 @@ export function createAiConfigColumns(handlers: {
       cell: ({ row }) => (
         <span
           className={cn(
-            'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em]',
-            row.original.isActive ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-gray-100 text-[#555f6f]',
+            'inline-flex items-center text-xs font-semibold uppercase tracking-[0.02em]',
+            row.original.isActive ? 'text-emerald-700' : 'text-gray-500',
           )}
         >
           {row.original.isActive ? 'Active' : 'Inactive'}

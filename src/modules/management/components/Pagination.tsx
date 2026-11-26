@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationProps {
   page: number; // zero-based
@@ -29,11 +30,11 @@ export function Pagination({ page, pageSize, total, noun, onChange, bare }: Pagi
     <div
       className={
         bare
-          ? 'flex flex-col items-center justify-between gap-3 sm:flex-row'
-          : 'flex flex-col items-center justify-between gap-3 border-t border-[var(--line)] bg-[var(--surface-page)]/60 px-4 py-3 sm:flex-row'
+          ? 'flex shrink-0 flex-col items-center justify-between gap-2.5 sm:flex-row'
+          : 'flex shrink-0 flex-col items-center justify-between gap-2.5 border-t border-gray-100 bg-gray-50/50 px-4 py-2.5 sm:flex-row'
       }
     >
-      <p className="text-[13px] text-[var(--ink-muted)]">
+      <p className="text-[13px] text-gray-500">
         Showing {from}–{to} of {total} {noun} · {pageSize} per page
       </p>
       <div className="flex items-center gap-1">
@@ -41,21 +42,22 @@ export function Pagination({ page, pageSize, total, noun, onChange, bare }: Pagi
           type="button"
           disabled={page === 0}
           onClick={() => onChange(page - 1)}
-          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[var(--ink-muted)] hover:bg-gray-100 disabled:opacity-40"
+          className="inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:pointer-events-none disabled:opacity-40"
         >
+          <ChevronLeft className="size-3.5" aria-hidden />
           Previous
         </button>
         {pages.map((p, i) => (
           <span key={p} className="flex items-center gap-1">
-            {i > 0 && p - pages[i - 1] > 1 && <span className="px-1 text-xs text-[var(--ink-subtle)]">...</span>}
+            {i > 0 && p - pages[i - 1] > 1 && <span className="px-1 text-xs text-gray-400">...</span>}
             <button
               type="button"
               onClick={() => onChange(p)}
               aria-current={p === page ? 'page' : undefined}
               className={
                 p === page
-                  ? 'flex size-8 items-center justify-center rounded-lg bg-[var(--brand)] text-xs font-bold text-white'
-                  : 'flex size-8 items-center justify-center rounded-lg text-xs font-semibold text-[var(--ink-muted)] hover:bg-gray-100'
+                  ? 'flex size-8 items-center justify-center rounded-lg bg-[#F26F21] text-xs font-bold text-white'
+                  : 'flex size-8 items-center justify-center rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-100'
               }
             >
               {p + 1}
@@ -66,9 +68,10 @@ export function Pagination({ page, pageSize, total, noun, onChange, bare }: Pagi
           type="button"
           disabled={page + 1 >= totalPages}
           onClick={() => onChange(page + 1)}
-          className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-[var(--ink-muted)] hover:bg-gray-100 disabled:opacity-40"
+          className="inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 disabled:pointer-events-none disabled:opacity-40"
         >
           Next
+          <ChevronRight className="size-3.5" aria-hidden />
         </button>
       </div>
     </div>

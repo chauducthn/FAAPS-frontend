@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
+import { RotateCcw, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';
 import { useCoursesQuery } from '../../../academic/hooks/queries/useCoursesQuery';
@@ -57,21 +57,21 @@ export function AttendanceConfigTab() {
     <div className="flex flex-col gap-4">
       <DefaultRuleCard rule={defaultRule.data} />
 
-      <section aria-labelledby="course-rules" className="flex flex-col gap-4 rounded-xl bg-white p-4 shadow-sm sm:p-5">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+      <section aria-labelledby="course-rules" className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-3.5">
           <div>
-            <h2 id="course-rules" className="text-base font-semibold text-[#151c27]">
+            <h2 id="course-rules" className="text-sm font-bold text-gray-900">
               Course conditions
             </h2>
-            <p className="mt-0.5 text-sm text-[#555f6f]">
+            <p className="mt-0.5 text-xs text-gray-500">
               {byCourse.size === 1 ? '1 course has its own condition.' : `${byCourse.size} courses have their own condition.`} Edit a course to change it.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="flex h-10 flex-1 items-center gap-2 rounded-lg border border-[#e5e7eb] px-3">
-            <Search className="size-4 text-[#98a2b3]" aria-hidden />
+        <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3 lg:flex-nowrap">
+          <div className="relative min-w-0 flex-1 basis-full lg:basis-auto">
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" aria-hidden />
             <input
               value={search}
               onChange={(e) => {
@@ -80,10 +80,23 @@ export function AttendanceConfigTab() {
               }}
               placeholder="Search by course code or name..."
               aria-label="Search courses"
-              className="flex-1 bg-transparent text-sm text-[#151c27] outline-none placeholder:text-[#98a2b3]"
+              className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
             />
-          </label>
-          <label className="inline-flex items-center gap-2 text-sm font-medium text-[#151c27]">
+            {search && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch('');
+                  setPage(0);
+                }}
+                aria-label="Clear search"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
+              >
+                <X className="size-3.5" />
+              </button>
+            )}
+          </div>
+          <label className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:border-gray-300">
             <input
               type="checkbox"
               checked={customOnly}
@@ -91,23 +104,39 @@ export function AttendanceConfigTab() {
                 setCustomOnly(e.target.checked);
                 setPage(0);
               }}
-              className="size-4 accent-[#f37021]"
+              className="size-4 accent-[#F26F21]"
             />
             Custom only
           </label>
+          <button
+            type="button"
+            disabled={!search && !customOnly}
+            onClick={() => {
+              setSearch('');
+              setCustomOnly(false);
+              setPage(0);
+            }}
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-default disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-600"
+          >
+            <RotateCcw className="size-3.5" /> Reset
+          </button>
         </div>
 
-        <CourseConditionsTable
-          rows={visible}
-          loading={loading}
-          isError={courses.isError}
-          customOnly={customOnly}
-          isRemoving={removeOverride.isPending}
-          onRetry={() => courses.refetch()}
-          onEdit={setEditing}
-          onReset={reset}
-        />
-        <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun="courses" onChange={setPage} />
+        <div className="min-h-[420px] p-4 sm:p-5">
+          <CourseConditionsTable
+            rows={visible}
+            loading={loading}
+            isError={courses.isError}
+            customOnly={customOnly}
+            isRemoving={removeOverride.isPending}
+            onRetry={() => courses.refetch()}
+            onEdit={setEditing}
+            onReset={reset}
+          />
+          <div className="mt-4">
+            <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun="courses" onChange={setPage} />
+          </div>
+        </div>
       </section>
 
       {editing && (

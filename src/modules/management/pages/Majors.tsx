@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { CreateMajorDto, Major, MajorStatus } from '../../academic/types/major';
 import { majorService } from '../services/major.service';
 import { useMajorsQuery, MAJOR_QUERY_KEYS } from '../../academic/hooks/queries/useMajorsQuery';
 import MajorTable, { MajorItem } from '@/modules/management/components/majors/MajorTable';
 import MajorFilterBar from '@/modules/management/components/majors/MajorFilterBar';
-import MajorSelectionBanner from '@/modules/management/components/majors/MajorSelectionBanner';
+import { MajorsTopBar } from '@/modules/management/components/majors/MajorsTopBar';
 import CreateMajorModal from '@/modules/management/components/majors/CreateMajorModal';
 import { ConfirmDialog } from '@/modules/management/components/ConfirmDialog';
 
@@ -26,8 +25,26 @@ export default function MajorsPage() {
   const [deletingMajor, setDeletingMajor] = useState<MajorItem | null>(null);
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const { data: result, isLoading, isError } = useMajorsQuery({ search: search || undefined, status: selectedStatus as MajorStatus | 'ALL', cohort: selectedCohort, page, size: 20 });
-  const data: MajorItem[] = (result?.items ?? []).map((major) => ({ id: major.id, code: major.code, name: major.name, cohort: major.cohort, status: major.status }));
+
+  const { data: result, isLoading, isError } = useMajorsQuery({
+    search: search || undefined, status: selectedStatus as MajorStatus | 'ALL', cohort: selectedCohort, page, size: 20,
+  });
+  const { data: allMajors } = useMajorsQuery({ page: 0, size: 100 });
+
+  const data: MajorItem[] = useMemo(
+    () => (result?.items ?? []).map((m) => ({ id: m.id, code: m.code, name: m.name, totalCredits: m.totalCredits, durationYears: m.durationYears, cohort: m.cohort, status: m.status })),
+    [result],
+  );
+  const cohortOptions = useMemo(() => {
+    const source = allMajors?.items ?? result?.items ?? [];
+    return Array.from(new Set(source.map((m) => m.cohort).filter(Boolean))).sort();
+  }, [allMajors, result]);
+
+  const applyFilter = <T,>(setter: (v: T) => void) => (v: T) => {
+    setter(v);
+    setPage(0);
+    setSelectedIds([]);
+  };
 
   const refresh = async () => {
     setSelectedIds([]);
@@ -42,11 +59,8 @@ export default function MajorsPage() {
       toast.success(`${deleted} major${deleted === 1 ? '' : 's'} deleted.`);
       setIsBulkDeleteOpen(false);
       await refresh();
-    } catch (error) {
-      toast.error(`Major could not be deleted: ${errorMessage(error)}`);
-    } finally {
-      setIsDeleting(false);
-    }
+    } catch (error) { toast.error(`Major could not be deleted: ${errorMessage(error)}`); }
+    finally { setIsDeleting(false); }
   };
 
   const handleDeleteSingle = async () => {
@@ -57,11 +71,8 @@ export default function MajorsPage() {
       toast.success(`Major ${deletingMajor.code} deleted.`);
       setDeletingMajor(null);
       await refresh();
-    } catch (error) {
-      toast.error(`Major could not be deleted: ${errorMessage(error)}`);
-    } finally {
-      setIsDeleting(false);
-    }
+    } catch (error) { toast.error(`Major could not be deleted: ${errorMessage(error)}`); }
+    finally { setIsDeleting(false); }
   };
 
   const handleSubmit = async (formData: CreateMajorDto) => {
@@ -73,20 +84,15 @@ export default function MajorsPage() {
       setIsModalOpen(false);
       setEditingMajor(null);
       await refresh();
-    } catch (error) {
-      toast.error(`Could not save major: ${errorMessage(error)}`);
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (error) { toast.error(`Could not save major: ${errorMessage(error)}`); }
+    finally { setIsSaving(false); }
   };
 
   const handleEdit = async (item: MajorItem) => {
     try {
       setEditingMajor(await majorService.getMajorById(item.id));
       setIsModalOpen(true);
-    } catch (error) {
-      toast.error(`Could not load major: ${errorMessage(error)}`);
-    }
+    } catch (error) { toast.error(`Could not load major: ${errorMessage(error)}`); }
   };
 
   const clearFilters = () => {
@@ -94,85 +100,82 @@ export default function MajorsPage() {
     setSelectedCohort('ALL');
     setSelectedStatus('ALL');
     setPage(0);
+    setSelectedIds([]);
   };
 
   return (
-    <div className="w-full space-y-5">
-      {/* Page header — title + primary action */}
-      <div className="flex flex-wrap items-end justify-between gap-3 px-1">
-        <div>
-          <h1 className="text-[22px] font-bold text-[#111827] tracking-tight leading-tight">Majors</h1>
-          <p className="text-[13px] text-gray-500 mt-1">Manage academic majors for each training cohort</p>
-        </div>
-        <button
-          onClick={() => { setEditingMajor(null); setIsModalOpen(true); }}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#F26F21] hover:bg-[#d95e13] active:bg-[#c55310] text-white font-semibold text-[13px] rounded-lg transition-all cursor-pointer shadow-[0_1px_2px_rgba(242,111,33,0.45),0_8px_16px_-6px_rgba(242,111,33,0.35)] hover:shadow-[0_1px_2px_rgba(242,111,33,0.5),0_10px_20px_-6px_rgba(242,111,33,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40 focus-visible:ring-offset-2"
-        >
-          <Plus className="size-4" strokeWidth={2.5} /> Create Major
-        </button>
-      </div>
+    <div className="w-full space-y-4">
+      <MajorsTopBar
+        totalItems={result?.totalItems}
+        activeCount={data.filter((m) => m.status === 'ACTIVE').length}
+        draftCount={data.filter((m) => m.status === 'DRAFT').length}
+        inactiveCount={data.filter((m) => m.status === 'INACTIVE').length}
+        selectedStatus={selectedStatus}
+        onSelectStatus={applyFilter(setSelectedStatus)}
+        onCreate={() => { setEditingMajor(null); setIsModalOpen(true); }}
+      />
 
-      <MajorSelectionBanner selectedCount={selectedIds.length} onCancelSelection={() => setSelectedIds([])} onDeleteSelected={() => setIsBulkDeleteOpen(true)} />
-
-      {/* Main content surface — single white layer, no nested boxes */}
-      <section className="bg-white rounded-xl shadow-[0_1px_2px_rgba(16,24,40,0.05),0_8px_24px_-12px_rgba(16,24,40,0.12)] overflow-hidden">
+      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
         <MajorFilterBar
           search={search}
-          onSearchChange={(value) => { setSearch(value); setPage(0); }}
+          onSearchChange={applyFilter(setSearch)}
           selectedCohort={selectedCohort}
-          onCohortChange={(value) => { setSelectedCohort(value); setPage(0); }}
+          cohortOptions={cohortOptions}
+          onCohortChange={applyFilter(setSelectedCohort)}
           selectedStatus={selectedStatus}
-          onStatusChange={(value) => { setSelectedStatus(value); setPage(0); }}
+          onStatusChange={applyFilter(setSelectedStatus)}
           onClearContext={clearFilters}
-          resultCount={result?.totalItems}
+          selectedCount={selectedIds.length}
+          onClearSelection={() => setSelectedIds([])}
+          onDeleteSelected={() => setIsBulkDeleteOpen(true)}
         />
-        {isLoading && (
-          <div className="px-6 py-10 space-y-3" aria-label="Loading majors">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="h-10 rounded-lg bg-gray-100 animate-pulse" />
-            ))}
-          </div>
-        )}
-        {isError && (
-          <div className="px-6 py-10 text-center">
-            <p className="text-sm font-semibold text-gray-900">Could not load majors from the server.</p>
-            <p className="text-[13px] text-gray-500 mt-1">Check your connection and try again.</p>
-            <button onClick={() => refresh()} className="mt-4 px-4 py-2 text-[13px] font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer">Retry</button>
-          </div>
-        )}
-        {!isLoading && !isError && (
-          <MajorTable
-            data={data}
-            selectedIds={selectedIds}
-            onSelectAll={(checked) => setSelectedIds(checked ? data.map((item) => item.id) : [])}
-            onSelectRow={(id) => setSelectedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])}
-            onEditMajor={handleEdit}
-            onDeleteMajor={(item) => setDeletingMajor(item)}
-            page={page}
-            totalItems={result?.totalItems ?? 0}
-            totalPages={result?.totalPages ?? 0}
-            onPageChange={(nextPage) => { setPage(nextPage); setSelectedIds([]); }}
-          />
-        )}
+        <div className="h-[520px]">
+          {isLoading && (
+            <div className="space-y-3 px-6 py-10" aria-label="Loading majors">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-10 animate-pulse rounded-lg bg-gray-100" />
+              ))}
+            </div>
+          )}
+          {isError && (
+            <div className="px-6 py-14 text-center">
+              <p className="text-sm font-semibold text-gray-900">Could not load majors from the server.</p>
+              <p className="mt-1 text-[13px] text-gray-500">Check your connection and try again.</p>
+              <button onClick={() => refresh()} className="mt-4 cursor-pointer rounded-lg bg-gray-100 px-4 py-2 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-gray-200">Retry</button>
+            </div>
+          )}
+          {!isLoading && !isError && (
+            <div className="h-full">
+              <MajorTable
+                data={data}
+                selectedIds={selectedIds}
+                onSelectAll={(checked) => setSelectedIds(checked ? data.map((item) => item.id) : [])}
+                onSelectRow={(id) => setSelectedIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]))}
+                onEditMajor={handleEdit}
+                onDeleteMajor={(item) => setDeletingMajor(item)}
+                page={page}
+                totalItems={result?.totalItems ?? 0}
+                totalPages={result?.totalPages ?? 0}
+                onPageChange={(nextPage) => { setPage(nextPage); setSelectedIds([]); }}
+              />
+            </div>
+          )}
+        </div>
       </section>
 
       <CreateMajorModal
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); setEditingMajor(null); }}
         onSubmit={handleSubmit}
+        existingCodes={Array.from(new Set((allMajors?.items ?? result?.items ?? []).map((m) => m.code))).sort()}
         initialData={editingMajor ? { code: editingMajor.code, name: editingMajor.name, description: editingMajor.description, totalCredits: editingMajor.totalCredits, durationYears: editingMajor.durationYears, cohort: editingMajor.cohort, status: editingMajor.status } : undefined}
         isSaving={isSaving}
       />
 
-      {/* Delete a single major */}
       <ConfirmDialog
         open={!!deletingMajor}
         title="Delete major?"
-        message={
-          deletingMajor
-            ? `Delete ${deletingMajor.code} - ${deletingMajor.name}? Majors referenced by a curriculum or cohort cannot be deleted.`
-            : ''
-        }
+        message={deletingMajor ? `Delete ${deletingMajor.code} - ${deletingMajor.name}? Majors referenced by a curriculum or cohort cannot be deleted.` : ''}
         confirmLabel="Delete major"
         destructive
         isLoading={isDeleting}
@@ -180,7 +183,6 @@ export default function MajorsPage() {
         onConfirm={handleDeleteSingle}
       />
 
-      {/* Delete selected majors */}
       <ConfirmDialog
         open={isBulkDeleteOpen}
         title="Delete selected majors?"

@@ -33,35 +33,35 @@ export const STATUS_META: Record<AppointmentStatus, StatusMeta> = {
   SCHEDULED: {
     label: 'Scheduled',
     icon: Clock,
-    badge: 'bg-[#eff6ff] text-[#1d4ed8] ring-[#1d4ed8]/15',
+    badge: 'text-[#1d4ed8]',
     chip: 'bg-[#dbeafe] text-[#1e40af]',
     dot: 'bg-[#3b82f6]',
   },
   IN_PROGRESS: {
     label: 'In progress',
     icon: Activity,
-    badge: 'bg-[#f5f3ff] text-[#6d28d9] ring-[#6d28d9]/15',
+    badge: 'text-[#6d28d9]',
     chip: 'bg-[#ede9fe] text-[#5b21b6]',
     dot: 'bg-[#8b5cf6]',
   },
   COMPLETED: {
     label: 'Completed',
     icon: CheckCircle2,
-    badge: 'bg-[#ecfdf5] text-[#047857] ring-[#047857]/15',
+    badge: 'text-[#047857]',
     chip: 'bg-[#d1fae5] text-[#065f46]',
     dot: 'bg-[#10b981]',
   },
   CANCELLED: {
     label: 'Cancelled',
     icon: XCircle,
-    badge: 'bg-[#fef2f2] text-[#b91c1c] ring-[#b91c1c]/15',
+    badge: 'text-[#b91c1c]',
     chip: 'bg-[#fee2e2] text-[#991b1b]',
     dot: 'bg-[#ef4444]',
   },
   NO_SHOW: {
     label: 'No-show',
     icon: UserX,
-    badge: 'bg-[#f1f5f9] text-[#475569] ring-[#475569]/20',
+    badge: 'text-[#475569]',
     chip: 'bg-[#e2e8f0] text-[#334155]',
     dot: 'bg-[#94a3b8]',
   },
@@ -90,7 +90,7 @@ export function AppointmentStatusBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset',
+        'inline-flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold',
         meta.badge,
         className,
       )}

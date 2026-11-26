@@ -1,13 +1,14 @@
 import { useSearchParams } from 'react-router';
+import { SlidersHorizontal, Upload } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { AttendanceConfigTab } from '../components/attendance/AttendanceConfigTab';
 import { AttendanceImportTab } from '../components/attendance/AttendanceImportTab';
 
 type Tab = 'import' | 'config';
 
-const TABS: { key: Tab; label: string }[] = [
-  { key: 'import', label: 'Import' },
-  { key: 'config', label: 'Config' },
+const TABS: { key: Tab; label: string; icon: typeof Upload }[] = [
+  { key: 'import', label: 'Import', icon: Upload },
+  { key: 'config', label: 'Config', icon: SlidersHorizontal },
 ];
 
 /** Admin attendance: import attendance data and set each course's attendance condition. */
@@ -16,28 +17,35 @@ export default function Attendance() {
   const tab: Tab = params.get('tab') === 'config' ? 'config' : 'import';
 
   return (
-    <div className="flex w-full flex-col gap-5">
-      <div>
-        <p className="text-xs text-[#555f6f]">Academic Data / Attendance</p>
-        <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">Attendance</h1>
-      </div>
-
-      <div role="tablist" aria-label="Attendance view" className="flex flex-wrap gap-1 rounded-xl bg-white p-1.5 shadow-sm">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.key}
-            onClick={() => setParams(t.key === 'import' ? {} : { tab: t.key }, { replace: true })}
-            className={cn(
-              'rounded-md border-b-2 px-3 py-2 text-sm font-semibold',
-              tab === t.key ? 'border-[#f37021] bg-[#fff7ed] text-[#f37021]' : 'border-transparent text-[#555f6f] hover:bg-gray-50',
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
+    <div className="flex w-full flex-col gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div
+          role="tablist"
+          aria-label="Attendance view"
+          className="inline-flex rounded-xl border border-gray-200/80 bg-gray-100/80 p-1"
+        >
+          {TABS.map(({ key, label, icon: Icon }) => {
+            const active = tab === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setParams(key === 'import' ? {} : { tab: key }, { replace: true })}
+                className={cn(
+                  'inline-flex h-8 items-center gap-1.5 rounded-lg px-3.5 text-[13px] font-semibold transition-all',
+                  active
+                    ? 'bg-white text-gray-900 shadow-2xs ring-1 ring-gray-200/70'
+                    : 'text-gray-500 hover:text-gray-800',
+                )}
+              >
+                <Icon className={cn('size-3.5', active ? 'text-[#F26F21]' : 'text-gray-400')} aria-hidden />
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {tab === 'import' ? <AttendanceImportTab /> : <AttendanceConfigTab />}

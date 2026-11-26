@@ -30,6 +30,7 @@ export function DataTable<TData extends RowData, TValue = unknown>(
     showSearch = true,
     filters,
     bulkActions,
+    hideBulkBar = false,
     isLoading = false,
     pageSizes = [10, 25, 50, 100],
     showPageSizeSelect = true,
@@ -59,7 +60,7 @@ export function DataTable<TData extends RowData, TValue = unknown>(
   const lastRow = Math.min((pageIndex + 1) * pageSize, totalRows);
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('flex w-full flex-col', className)}>
       <div className={cn('flex flex-wrap items-center gap-3', showSearch ? 'pb-4' : 'hidden')}>
         {showSearch ? (
           <div className="relative w-full sm:w-72">
@@ -84,13 +85,15 @@ export function DataTable<TData extends RowData, TValue = unknown>(
         {filters ? <div className="flex flex-wrap items-center gap-3">{filters}</div> : null}
       </div>
 
-      <DataTableBulkBar
-        selectedRows={selectedRows}
-        bulkActions={bulkActions}
-        onClearSelection={() => table.resetRowSelection()}
-      />
+      {!hideBulkBar ? (
+        <DataTableBulkBar
+          selectedRows={selectedRows}
+          bulkActions={bulkActions}
+          onClearSelection={() => table.resetRowSelection()}
+        />
+      ) : null}
 
-      <TableShell>
+      <TableShell stickyHeader className="min-h-0 flex-1 overflow-auto">
         <DataTableHeader
           headerGroups={table.getHeaderGroups()}
           alignments={alignments}

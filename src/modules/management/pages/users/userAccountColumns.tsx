@@ -50,7 +50,7 @@ export function createUserAccountColumns(handlers: {
       cell: ({ row }) => (
         <span
           title={row.original.userId}
-          className="inline-block max-w-[220px] truncate rounded-md bg-gray-100 px-2 py-0.5 align-middle font-mono text-xs font-medium text-gray-700"
+          className="inline-block max-w-[220px] truncate align-middle font-mono text-[13px] text-gray-700"
         >
           {row.original.userId}
         </span>
@@ -72,13 +72,13 @@ export function createUserAccountColumns(handlers: {
       enableSorting: false,
       cell: ({ row }) =>
         row.original.role === 'STUDENT' ? (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-2.5 py-1 text-[11px] font-bold text-[#9a3412] ring-1 ring-inset ring-orange-200">
-            <GraduationCap className="size-3" aria-hidden />
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#C2410C]">
+            <GraduationCap className="size-3.5" aria-hidden />
             Student
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-bold text-indigo-800 ring-1 ring-inset ring-indigo-200">
-            <UserRound className="size-3" aria-hidden />
+          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-indigo-700">
+            <UserRound className="size-3.5" aria-hidden />
             Advisor
           </span>
         ),

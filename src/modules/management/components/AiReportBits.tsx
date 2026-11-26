@@ -2,14 +2,14 @@ import { cn } from '@/shared/lib/utils';
 import type { AiReportStatus } from '../types/admin';
 
 const STYLES: Record<AiReportStatus, string> = {
-  PENDING: 'bg-[#fef2f2] text-[#b91c1c]',
-  RESOLVED: 'bg-[#ecfdf5] text-[#047857]',
-  DISMISSED: 'bg-gray-100 text-[#555f6f]',
+  PENDING: 'text-red-600',
+  RESOLVED: 'text-emerald-700',
+  DISMISSED: 'text-gray-500',
 };
 
 export function ReportStatusBadge({ status }: { status: AiReportStatus }) {
   return (
-    <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em]', STYLES[status])}>
+    <span className={cn('text-xs font-semibold uppercase tracking-[0.02em]', STYLES[status])}>
       {status}
     </span>
   );

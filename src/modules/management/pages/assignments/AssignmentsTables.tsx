@@ -5,7 +5,6 @@ import { UserInitials } from '../../components/UserInitials';
 import { Pagination } from '../../components/Pagination';
 import { AdvisorRowMenu } from '../../components/AdvisorRowMenu';
 import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
-import { cn } from '@/shared/lib/utils';
 
 export interface AdvisorRowItem {
   id: string;
@@ -13,22 +12,6 @@ export interface AdvisorRowItem {
   name: string;
   limit: number | null;
   chips: { key: string; majorCode: string; cohort: string; inPool: boolean; students: number }[];
-}
-
-function WorkloadCell({ count, limit }: { count: number; limit: number | null }) {
-  const ratio = limit && limit > 0 ? Math.min(100, Math.round((count / limit) * 100)) : null;
-  const barTone =
-    limit && count > limit ? 'bg-red-500' : ratio !== null && ratio >= 80 ? 'bg-amber-500' : 'bg-emerald-500';
-  return (
-    <div className="flex flex-col gap-1.5">
-      <LoadBadge count={count} limit={limit} />
-      {ratio !== null && (
-        <div className="h-1.5 w-24 overflow-hidden rounded-full bg-gray-100">
-          <div className={cn('h-full rounded-full transition-all', barTone)} style={{ width: `${ratio}%` }} />
-        </div>
-      )}
-    </div>
-  );
 }
 
 export function AdvisorsTableSection(props: {
@@ -75,45 +58,36 @@ export function AdvisorsTableSection(props: {
     {
       key: 'load',
       header: 'Workload',
-      render: (advisor) => <WorkloadCell count={loadOf(advisor.id)} limit={advisor.limit} />,
+      render: (advisor) => <LoadBadge count={loadOf(advisor.id)} limit={advisor.limit} />,
     },
     {
       key: 'majors',
-      header: 'Majors',
+      header: 'Major',
       render: (advisor) => {
         const majorCodes = [...new Set(advisor.chips.map((c) => c.majorCode).filter(Boolean))];
         return majorCodes.length === 0 ? (
           <span className="text-xs text-gray-400">—</span>
         ) : (
-          <div className="flex flex-wrap gap-1">
-            {majorCodes.map((code) => (
-              <span key={code} className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-700">{code}</span>
-            ))}
-          </div>
+          <span className="text-[13px] font-semibold text-gray-700">{majorCodes.join(', ')}</span>
         );
       },
     },
     {
       key: 'cohorts',
-      header: 'Cohorts',
+      header: 'Cohort',
       render: (advisor) =>
         advisor.chips.length === 0 ? (
           <span className="text-xs text-gray-400">No cohort assigned</span>
         ) : (
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {advisor.chips.map((chip) => (
               <Link
                 key={chip.key}
                 to={`/admin/assignments/cohorts/${chip.key}`}
-                className={cn(
-                  'inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium transition-colors',
-                  chip.students > 0
-                    ? 'bg-orange-50 text-[#9a3412] ring-1 ring-inset ring-orange-200/80 hover:bg-orange-100'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200/80',
-                )}
-                title={`${chip.majorCode} — ${chip.cohort} (${chip.inPool ? 'configured in pool' : 'not in pool'})`}
+                className="inline-flex items-center text-[13px] font-semibold text-[#C2410C] transition-colors hover:underline"
+                title={`${chip.majorCode} — ${chip.cohort}`}
               >
-                {chip.cohort} · {chip.students}
+                {chip.cohort}
               </Link>
             ))}
           </div>
@@ -137,10 +111,10 @@ export function AdvisorsTableSection(props: {
   ];
 
   return (
-    <div className="flex min-h-[540px] flex-col justify-between">
-      <div>
+    <div className="flex h-[520px] flex-col">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {selectedIds.size > 0 && (
-          <div role="region" aria-label="Advisor bulk actions" className="flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5">
+          <div role="region" aria-label="Advisor bulk actions" className="flex shrink-0 flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5">
             <div className="flex items-center gap-2">
               <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
                 {selectedIds.size} advisor{selectedIds.size === 1 ? '' : 's'} selected
@@ -159,6 +133,8 @@ export function AdvisorsTableSection(props: {
           </div>
         )}
         <StaticTable
+          stickyHeader
+          className="min-h-0 flex-1 overflow-auto"
           columns={columns}
           rows={rows}
           rowKey={(advisor) => advisor.id}

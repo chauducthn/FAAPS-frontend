@@ -68,7 +68,7 @@ export function CohortStudentsTable({
       key: 'studentCode',
       header: 'Student ID',
       render: (row) => (
-        <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 font-mono text-xs font-medium text-gray-700">
+        <span className="font-mono text-[13px] font-medium text-gray-700">
           {row.studentCode}
         </span>
       ),
@@ -104,7 +104,7 @@ export function CohortStudentsTable({
       header: 'Request',
       render: (row) =>
         row.hasPendingRequest ? (
-          <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[11px] font-bold uppercase text-amber-800 ring-1 ring-inset ring-amber-200">
+          <span className="text-xs font-semibold uppercase text-amber-700">
             Requested
           </span>
         ) : (

@@ -14,7 +14,7 @@ export function createCourseColumns(handlers: {
       accessorKey: 'code',
       header: 'Code',
       cell: ({ row }) => (
-        <span className="inline-flex items-center rounded-lg bg-gray-900 px-2.5 py-1 font-mono text-[11px] font-bold text-white">
+        <span className="font-mono text-[13px] font-semibold text-gray-900">
           {row.original.code}
         </span>
       ),
@@ -41,7 +41,7 @@ export function createCourseColumns(handlers: {
       accessorKey: 'credits',
       header: 'Credits',
       cell: ({ row }) => (
-        <span className="inline-flex min-w-9 items-center justify-center rounded-md bg-orange-50 px-2 py-0.5 font-mono text-[12px] font-bold tabular-nums text-[#9a3412] ring-1 ring-orange-200">
+        <span className="font-mono text-[13px] font-semibold tabular-nums text-[#C2410C]">
           {row.original.credits}
         </span>
       ),
@@ -52,7 +52,7 @@ export function createCourseColumns(handlers: {
       enableSorting: false,
       cell: ({ row }) => (
         <div className="min-w-0" title={row.original.categoryName}>
-          <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 font-mono text-[11px] font-bold text-gray-700">
+          <span className="font-mono text-xs font-semibold text-gray-800">
             {row.original.categoryCode}
           </span>
           <p className="mt-0.5 max-w-[180px] truncate text-[11px] font-medium text-gray-400">
@@ -67,7 +67,7 @@ export function createCourseColumns(handlers: {
       enableSorting: false,
       meta: { align: 'center' },
       cell: ({ row }) => (
-        <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-gray-100 px-2.5 py-1 text-[12px] font-bold tabular-nums text-gray-800">
+        <span className="text-[13px] font-semibold tabular-nums text-gray-700">
           {row.original.prerequisiteCount}
         </span>
       ),

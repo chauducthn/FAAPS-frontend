@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { RotateCcw, Search, User } from 'lucide-react';
+import { RotateCcw, Search, User, X } from 'lucide-react';
 import { APPOINTMENT_STATUSES, STATUS_META } from '../AppointmentBits';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import type { AppointmentStatus, AssignmentAdvisor } from '../../types/admin';
@@ -54,31 +54,38 @@ export function AppointmentFilters({
   }, [debouncedSearch]);
 
   return (
-    <div className="flex flex-wrap items-center gap-1 rounded-xl border border-[#e5e7eb] bg-[#f7f8fa] p-1">
-      <div className="relative min-w-[13rem] flex-1">
+    <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3 lg:flex-nowrap">
+      <div className="relative min-w-0 flex-1 basis-full lg:basis-auto">
         <Search
-          className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-[#5b6577]"
+          className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400"
           aria-hidden
         />
         <input
           type="search"
           value={localSearch}
-          onChange={(event) => {
-            setLocalSearch(event.target.value);
-          }}
+          onChange={(event) => setLocalSearch(event.target.value)}
           placeholder="Search student, advisor or topic..."
           aria-label="Search appointments"
-          className="h-9 w-full rounded-lg border border-transparent bg-transparent pl-8 pr-3 text-[13px] text-[#151c27] outline-none transition-colors placeholder:text-[#5b6577] hover:bg-white focus:border-[#f37021] focus:bg-white focus:ring-1 focus:ring-[#f37021]/30"
+          className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
         />
+        {localSearch && (
+          <button
+            type="button"
+            onClick={() => setLocalSearch('')}
+            aria-label="Clear search"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
+          >
+            <X className="size-3.5" />
+          </button>
+        )}
       </div>
-
-      <span aria-hidden className="h-5 w-px shrink-0 bg-[#e5e7eb]" />
 
       <FilterSelectControl
         label="Filter by status"
         value={status}
         onChange={(value) => onStatusChange(value as AppointmentStatus | '')}
         icon={<AppointmentStatusIcon status={status} />}
+        widthClass="w-[calc(50%-0.25rem)] shrink-0 sm:w-[144px]"
       >
         <option value="">All statuses</option>
         {APPOINTMENT_STATUSES.map((value) => (
@@ -93,6 +100,7 @@ export function AppointmentFilters({
         value={advisorId}
         onChange={onAdvisorChange}
         icon={<User className="size-4" aria-hidden />}
+        widthClass="w-[calc(50%-0.25rem)] shrink-0 sm:w-[168px]"
       >
         <option value="">All advisors</option>
         {advisors.map((advisor) => (
@@ -109,16 +117,15 @@ export function AppointmentFilters({
         onToChange={onToDateChange}
       />
 
-      {hasFilters ? (
-        <button
-          type="button"
-          onClick={onClear}
-          className="inline-flex h-9 items-center gap-1.5 rounded-lg px-2.5 text-[13px] font-semibold text-[#555f6f] transition-colors hover:bg-white hover:text-[#151c27]"
-        >
-          <RotateCcw className="size-3.5" aria-hidden />
-          Reset
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={onClear}
+        disabled={!hasFilters}
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-default disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-600"
+      >
+        <RotateCcw className="size-3.5" aria-hidden />
+        Reset
+      </button>
     </div>
   );
 }
