@@ -17,7 +17,6 @@ export function createAiConfigColumns(handlers: {
     {
       accessorKey: 'name',
       header: 'Configuration',
-      enableSorting: false,
       cell: ({ row }) => (
         <div className="min-w-0">
           <button
@@ -37,7 +36,6 @@ export function createAiConfigColumns(handlers: {
     {
       accessorKey: 'modelName',
       header: 'Model',
-      enableSorting: false,
       cell: ({ row }) => (
         <code className="inline-block max-w-[210px] truncate font-mono text-[13px] font-semibold text-gray-900">
           {row.original.modelName}
@@ -46,8 +44,8 @@ export function createAiConfigColumns(handlers: {
     },
     {
       id: 'apiKey',
+      accessorFn: (cfg) => (cfg.hasApiKey ? 1 : 0),
       header: 'API Key',
-      enableSorting: false,
       cell: ({ row }) => (
         <span
           className={cn(
@@ -63,7 +61,6 @@ export function createAiConfigColumns(handlers: {
     {
       accessorKey: 'temperature',
       header: 'Temp',
-      enableSorting: false,
       meta: { align: 'center' },
       cell: ({ row }) => (
         <span className="font-mono text-[13px] font-semibold tabular-nums text-gray-700">
@@ -74,7 +71,6 @@ export function createAiConfigColumns(handlers: {
     {
       accessorKey: 'maxTokens',
       header: 'Max tokens',
-      enableSorting: false,
       meta: { align: 'right' },
       cell: ({ row }) => (
         <span className="font-mono text-[13px] font-semibold tabular-nums text-[#C2410C]">
@@ -85,7 +81,6 @@ export function createAiConfigColumns(handlers: {
     {
       accessorKey: 'isActive',
       header: 'Status',
-      enableSorting: false,
       cell: ({ row }) => (
         <span
           className={cn(

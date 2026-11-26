@@ -1,15 +1,17 @@
-// Student AI chat panel: conversation sidebar, message thread, and composer.
-// Used on the student /student/ai-chat page.
-
+// Student AI Advisor Chat workspace: sub-sidebar of past chats, student context awareness,
+// starter coaching prompts, message thread, and composer.
 import { useEffect, useRef, useState } from 'react';
-import { ChatCircleText as MessageSquareText, PaperPlaneRight as SendHorizonal } from '@phosphor-icons/react';
+import { Link } from 'react-router';
+import { SidebarSimple, Sparkle as Sparkles, UploadSimple } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
+import { useAuth } from '@/modules/auth/stores/useAuth';
+import { useMyProfile, useMyProgress } from '@/modules/learning/hooks/queries/useStudentQueries';
 import { useAiConversations, useAiMessages } from '../hooks/queries/useAiStudentQueries';
 import { useCreateAiConversation, useSendAiMessage } from '../hooks/mutations/useAiStudentMutations';
 import { ChatBubble, TypingBubble } from './ChatBubble';
-import { ChatSidebar } from './ChatSidebar';
-
-const MAX_MESSAGE = 2000;
+import { ChatComposer } from './ChatComposer';
+import { ChatSidebar, type StudentContextSummary } from './ChatSidebar';
+import { ChatWelcomeState } from './ChatWelcomeState';
 
 export function ChatPanel({
   activeId,
@@ -18,25 +20,44 @@ export function ChatPanel({
   activeId: string | null;
   onSelect: (id: string | null) => void;
 }) {
+  const user = useAuth((s) => s.user);
+  const profileQuery = useMyProfile();
+  const progressQuery = useMyProgress();
   const conversationsQuery = useAiConversations();
   const messagesQuery = useAiMessages(activeId);
   const createConversation = useCreateAiConversation();
   const sendMessage = useSendAiMessage(activeId);
 
   const [draft, setDraft] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const conversations = conversationsQuery.data ?? [];
   const messages = messagesQuery.data ?? [];
+  const activeConversation = conversations.find((c) => c.id === activeId);
 
-  // Auto-select the latest conversation on initial load.
+  const profile = profileQuery.data;
+  const progress = progressQuery.data;
+  const creditsEarned = progress?.earnedCredits ?? profile?.totalCreditsEarned ?? null;
+  const gpa = profile?.currentGpa ?? null;
+  const hasCurriculum = !!(profile?.majorCode || profile?.curriculumVersionId);
+  const hasTranscript = (creditsEarned ?? 0) > 0 || (gpa != null && gpa > 0);
+
+  const studentContext: StudentContextSummary = {
+    majorCode: profile?.majorCode,
+    cohort: profile?.cohort,
+    gpa,
+    creditsEarned,
+    hasCurriculum,
+    hasTranscript,
+    isLoading: profileQuery.isLoading,
+  };
+
   useEffect(() => {
     if (!activeId && conversations.length > 0) onSelect(conversations[0].id);
-    // Run only when the conversation list finishes loading.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationsQuery.data]);
 
-  // Scroll to the newest message.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages.length, sendMessage.isPending, activeId]);
@@ -47,116 +68,119 @@ export function ChatPanel({
     onSelect(created.id);
   };
 
-  const handleSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    const content = draft.trim();
-    if (!activeId || content.length === 0 || sendMessage.isPending) return;
+  const dispatchMessage = async (text: string, file: File | null = null) => {
+    const content = text.trim();
+    if ((!content && !file) || sendMessage.isPending || createConversation.isPending) return;
     setDraft('');
-    sendMessage.mutate({ content });
+    let targetId = activeId;
+    if (!targetId) {
+      const created = await createConversation.mutateAsync({});
+      targetId = created.id;
+      onSelect(targetId);
+    }
+    sendMessage.mutate({ conversationId: targetId, content, file });
   };
 
-  return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)]">
-      <ChatSidebar
-        conversations={conversations}
-        activeId={activeId}
-        isLoading={conversationsQuery.isLoading}
-        isCreating={createConversation.isPending}
-        onSelect={onSelect}
-        onNewChat={handleNewChat}
-      />
+  const showWelcome = !activeId || (!messagesQuery.isLoading && !messagesQuery.isError && messages.length === 0);
 
-      <section className="flex min-h-[480px] flex-col overflow-hidden rounded-xl bg-white shadow-sm">
-        {!activeId ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
-            <span className="flex size-12 items-center justify-center rounded-full bg-orange-100 text-[#F26F21]">
-              <MessageSquareText className="size-6" />
+  return (
+    <div className="flex h-[calc(100vh-128px)] min-h-[520px] w-full gap-4">
+      {sidebarOpen && (
+        <div className="h-full w-[264px] shrink-0 sm:w-[280px]">
+          <ChatSidebar
+            conversations={conversations}
+            activeId={activeId}
+            isLoading={conversationsQuery.isLoading}
+            isCreating={createConversation.isPending}
+            studentContext={studentContext}
+            onSelect={onSelect}
+            onNewChat={handleNewChat}
+          />
+        </div>
+      )}
+
+      <section className="flex h-full min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-gray-100 px-4 py-3">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => setSidebarOpen((v) => !v)}
+              aria-label={sidebarOpen ? 'Hide chat history' : 'Show chat history'}
+              title={sidebarOpen ? 'Hide chat history' : 'Show chat history'}
+              className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+            >
+              <SidebarSimple className="size-4" />
+            </button>
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21]">
+              <Sparkles className="size-4" weight="fill" />
             </span>
-            <p className="text-sm font-semibold text-[#151c27]">Select a conversation to start chatting</p>
-            <p className="max-w-sm text-[13px] text-[#555f6f]">
-              Ask about curricula, prerequisites, academic policies, or request a study roadmap.
-            </p>
+            <div className="min-w-0">
+              <h1 className="truncate text-sm font-bold text-gray-900">
+                {activeConversation?.title && activeConversation.title !== 'New Advising Chat'
+                  ? activeConversation.title
+                  : 'Advisor Assistant'}
+              </h1>
+              <p className="truncate text-xs text-gray-500">
+                Personalized FPTU study guidance &amp; academic coaching
+              </p>
+            </div>
           </div>
-        ) : (
-          <>
-            <div className="flex-1 space-y-4 overflow-y-auto bg-[#f7f8fa] p-4 sm:p-5">
-              {messagesQuery.isLoading ? (
-                <div className="space-y-4">
-                  {Array.from({ length: 3 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={cn(
-                        'h-14 animate-pulse rounded-2xl bg-white',
-                        i % 2 === 0 ? 'ml-auto w-2/3' : 'w-2/3',
-                      )}
-                    />
-                  ))}
-                </div>
-              ) : messagesQuery.isError ? (
-                <div className="flex flex-col items-center gap-2 py-10 text-center">
-                  <p className="text-sm font-semibold text-[#151c27]">Unable to load messages</p>
-                  <button
-                    type="button"
-                    onClick={() => messagesQuery.refetch()}
-                    className="rounded-lg border border-[#e5e7eb] bg-white px-3 py-1.5 text-[13px] font-semibold text-[#555f6f] hover:bg-gray-50"
-                  >
-                    Try again
-                  </button>
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex flex-col items-center gap-2 py-10 text-center">
-                  <p className="text-sm font-semibold text-[#151c27]">Start a New Conversation</p>
-                  <p className="max-w-sm text-[13px] text-[#555f6f]">
-                    Example: “Suggest a two-semester roadmap for graduating on time” or “What are the
-                    prerequisites for PRJ301?”.
-                  </p>
-                </div>
-              ) : (
-                messages.map((m) => <ChatBubble key={m.id} message={m} />)
-              )}
+
+          {!studentContext.isLoading && !studentContext.hasTranscript && (
+            <Link
+              to="/student/transcript"
+              className="hidden shrink-0 items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50/70 px-3 py-1.5 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100 sm:inline-flex"
+            >
+              <UploadSimple className="size-3.5" /> Upload transcript
+            </Link>
+          )}
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto bg-gray-50/40 px-4 py-5 sm:px-6">
+          {messagesQuery.isLoading && activeId ? (
+            <div className="mx-auto max-w-3xl space-y-4">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div
+                  key={i}
+                  className={cn('h-14 animate-pulse rounded-2xl bg-white', i % 2 === 0 ? 'ml-auto w-2/3' : 'w-2/3')}
+                />
+              ))}
+            </div>
+          ) : messagesQuery.isError && activeId ? (
+            <div className="flex flex-col items-center gap-2 py-12 text-center">
+              <p className="text-sm font-semibold text-gray-900">Unable to load messages</p>
+              <button
+                type="button"
+                onClick={() => messagesQuery.refetch()}
+                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Try again
+              </button>
+            </div>
+          ) : showWelcome ? (
+            <ChatWelcomeState
+              userName={user?.fullName}
+              studentContext={studentContext}
+              disabled={sendMessage.isPending || createConversation.isPending}
+              onSelectPrompt={(prompt) => void dispatchMessage(prompt)}
+            />
+          ) : (
+            <div className="mx-auto max-w-3xl space-y-4">
+              {messages.map((m) => (
+                <ChatBubble key={m.id} message={m} />
+              ))}
               {sendMessage.isPending && <TypingBubble />}
               <div ref={bottomRef} />
             </div>
+          )}
+        </div>
 
-            <form onSubmit={handleSend} className="border-t border-[#e5e7eb] p-3 sm:p-4">
-              <div className="flex items-end gap-2">
-                <textarea
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend(e);
-                    }
-                  }}
-                  rows={2}
-                  maxLength={MAX_MESSAGE}
-                  placeholder="Ask AI about courses, policies, or study roadmaps..."
-                  aria-label="Enter a message for AI"
-                  className={cn(
-                    'max-h-32 min-h-[44px] flex-1 resize-none rounded-lg border border-[#e5e7eb] px-3 py-2',
-                    'text-sm text-[#151c27] outline-none placeholder:text-[#98a2b3]',
-                    'focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]',
-                  )}
-                />
-                <button
-                  type="submit"
-                  disabled={draft.trim().length === 0 || sendMessage.isPending}
-                  aria-label="Send message"
-                  className={cn(
-                    'flex size-11 shrink-0 items-center justify-center rounded-lg bg-[#F26F21] text-white',
-                    'transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-50',
-                  )}
-                >
-                  <SendHorizonal className="size-5" />
-                </button>
-              </div>
-              <p className="mt-1 text-right text-[11px] text-[#98a2b3]">
-                {draft.length}/{MAX_MESSAGE}
-              </p>
-            </form>
-          </>
-        )}
+        <ChatComposer
+          draft={draft}
+          onDraftChange={setDraft}
+          isBusy={sendMessage.isPending || createConversation.isPending}
+          onSend={(text, file) => void dispatchMessage(text, file)}
+        />
       </section>
     </div>
   );

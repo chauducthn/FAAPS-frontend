@@ -63,6 +63,13 @@ export const studentService = {
     return data;
   },
 
+  clearAllNotifications: async (): Promise<{ deleted: number }> => {
+    const { data } = await apiClient.delete<{ deleted: number }>('/student/notifications', {
+      headers: await getCsrfHeaders(),
+    });
+    return data;
+  },
+
   /** Các yêu cầu tư vấn của chính sinh viên. */
   getMyAdvisingRequests: async (): Promise<AdvisingRequest[]> => {
     const { data } = await apiClient.get<AdvisingRequest[]>('/student/advising-requests');

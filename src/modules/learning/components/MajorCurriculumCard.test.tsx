@@ -39,14 +39,15 @@ describe('MajorCurriculumCard', () => {
     ]);
   });
 
-  it('offers every curriculum and selects nothing for a student who has not chosen yet', async () => {
+  it('auto-extracts cohort from Student ID and filters matching curriculums', async () => {
     renderCard(profileWith(null));
     await waitForOptions();
 
     const select = screen.getByLabelText(/major \/ curriculum/i) as HTMLSelectElement;
-    // The Student ID is SE..., yet the AI curriculum is still offered, and nothing is picked for the student.
-    expect(Array.from(select.options).map((o) => o.value)).toEqual(['', 'c-ai19', 'c-se19', 'c-se18']);
+    // Student ID is SE190001 -> Cohort K19, so only K19 curriculums are offered.
+    expect(Array.from(select.options).map((o) => o.value)).toEqual(['', 'c-ai19', 'c-se19']);
     expect(select).toHaveValue('');
+    expect(screen.getByText(/Cohort K19 · SE190001/i)).toBeInTheDocument();
     expect(screen.getByRole('note')).toHaveTextContent(/have not chosen your major yet/i);
     expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled();
   });
@@ -74,9 +75,9 @@ describe('MajorCurriculumCard', () => {
     expect(screen.queryByRole('note')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Update' })).toBeDisabled();
 
-    await user.selectOptions(select, 'c-se18');
+    await user.selectOptions(select, 'c-ai19');
     await user.click(screen.getByRole('button', { name: 'Update' }));
-    await waitFor(() => expect(changeCurriculum).toHaveBeenCalledWith('c-se18'));
+    await waitFor(() => expect(changeCurriculum).toHaveBeenCalledWith('c-ai19'));
   });
 
   it('shows the backend reason when the change is refused', async () => {

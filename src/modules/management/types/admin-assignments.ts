@@ -21,6 +21,7 @@ export interface AssignmentStudent {
   advisorId: string | null;
   advisorName: string | null;
   assignedDate: string | null; // yyyy-MM-dd
+  avatarUrl?: string | null;
 }
 
 export interface CohortLite {

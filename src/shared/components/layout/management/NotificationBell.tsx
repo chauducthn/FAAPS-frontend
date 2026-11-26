@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { Bell } from '@phosphor-icons/react';
 import {
   useAdminNotifications,
+  useClearAllNotifications,
   useMarkAllNotificationsRead,
   useMarkNotificationRead,
   useUnreadNotificationCount,
@@ -28,6 +29,7 @@ export function NotificationBell() {
   const { data: unread = 0 } = useUnreadNotificationCount();
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
+  const clearAll = useClearAllNotifications();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -89,8 +91,13 @@ export function NotificationBell() {
                   Mark all as read
                 </button>
               )}
-              <button type="button" onClick={() => { setOpen(false); navigate('/admin/assignments'); }} className="text-xs font-semibold text-[#555f6f] hover:underline">
-                Assignments
+              <button
+                type="button"
+                onClick={() => { clearAll.mutate(); setPage(0); }}
+                disabled={clearAll.isPending || items.length === 0}
+                className="text-xs font-semibold text-[#555f6f] hover:text-red-600 hover:underline disabled:pointer-events-none disabled:opacity-40"
+              >
+                Clear all
               </button>
             </div>
           </div>

@@ -10,6 +10,7 @@ import {
   useUnreadStudentNotificationCount,
 } from '../../../../modules/learning/hooks/queries/useStudentQueries';
 import {
+  useClearAllStudentNotifications,
   useMarkAllStudentNotificationsRead,
   useMarkStudentNotificationRead,
 } from '../../../../modules/advising/hooks/mutations/useAdvisingMutations';
@@ -33,6 +34,7 @@ export function StudentNotificationBell() {
   const { data: unread = 0 } = useUnreadStudentNotificationCount();
   const markRead = useMarkStudentNotificationRead();
   const markAll = useMarkAllStudentNotificationsRead();
+  const clearAll = useClearAllStudentNotifications();
 
   useEffect(() => {
     if (!open) return;
@@ -79,16 +81,28 @@ export function StudentNotificationBell() {
         <div className="absolute right-0 top-full z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg">
           <div className="flex items-center justify-between gap-2 border-b border-[#e5e7eb] px-4 py-3">
             <p className="text-sm font-semibold text-[#151c27]">Notifications</p>
-            {unread > 0 && (
-              <button
-                type="button"
-                onClick={() => markAll.mutate()}
-                disabled={markAll.isPending}
-                className="text-xs font-semibold text-orange-600 hover:underline disabled:opacity-60"
-              >
-                Mark all as read
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {unread > 0 && (
+                <button
+                  type="button"
+                  onClick={() => markAll.mutate()}
+                  disabled={markAll.isPending}
+                  className="text-xs font-semibold text-orange-600 hover:underline disabled:opacity-60"
+                >
+                  Mark all as read
+                </button>
+              )}
+              {items.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => clearAll.mutate()}
+                  disabled={clearAll.isPending}
+                  className="text-xs font-semibold text-[#555f6f] hover:text-red-600 hover:underline disabled:opacity-60"
+                >
+                  Clear all
+                </button>
+              )}
+            </div>
           </div>
 
           {items.length === 0 ? (

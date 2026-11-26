@@ -45,17 +45,22 @@ export function toCourseBody(values: CreateCourseFormValues, isCreate: boolean) 
   };
 }
 
-/**
- * The backend sorts courses by a whitelist; the table only offers the ones it
- * can serve (code and credits). Anything else falls back to `code,asc`.
- */
+const COURSE_SORT_FIELDS = new Set([
+  'code',
+  'name',
+  'credits',
+  'categoryCode',
+  'categoryName',
+  'prerequisiteCount',
+  'status',
+  'createdAt',
+]);
+
 export function toCourseSort(sorting: SortingState): NonNullable<CourseFilterParams['sort']> {
   const active = sorting[0];
-  if (!active) return 'code,asc';
+  if (!active || !COURSE_SORT_FIELDS.has(active.id)) return 'code,asc';
   const dir = active.desc ? 'desc' : 'asc';
-  if (active.id === 'credits') return `credits,${dir}` as NonNullable<CourseFilterParams['sort']>;
-  if (active.id === 'code') return `code,${dir}` as NonNullable<CourseFilterParams['sort']>;
-  return 'code,asc';
+  return `${active.id},${dir}` as NonNullable<CourseFilterParams['sort']>;
 }
 
 export function downloadFile(blob: Blob, name: string) {

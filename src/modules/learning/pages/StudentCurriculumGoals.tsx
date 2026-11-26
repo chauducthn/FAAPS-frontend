@@ -6,8 +6,8 @@ import { toast } from 'sonner';
 import { studentAcademicService } from '../../academic/services/studentAcademicService';
 import { useGenerateRoadmap } from '../../ai/hooks/mutations/useAiStudentMutations';
 import type { RoadmapOrientation } from '../../ai/types/ai-student';
-import { MajorCurriculumCard } from '../components/MajorCurriculumCard';
 import { useMyProfile, useMyProgress } from '../hooks/queries/useStudentQueries';
+import { StudentCurriculumCoursesCard } from '../components/StudentCurriculumCoursesCard';
 
 const ORIENTATIONS: { value: RoadmapOrientation; label: string; hint: string }[] = [
   { value: 'JOB', label: 'Industry / Job-ready', hint: 'Hands-on projects, OJT & portfolio' },
@@ -62,22 +62,27 @@ export default function StudentCurriculumGoals() {
         <p className="text-xs text-gray-500">Study Setup &amp; Plan / Curriculum &amp; Goals</p>
         <h1 className="mt-1 text-2xl font-semibold text-gray-900">Curriculum &amp; Study Goals</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Select your curriculum, import your FAP grades, and define your graduation, career, and GPA targets.
+          Update your major in My Profile, import your FAP grades, and define your graduation, career, and GPA targets.
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="flex items-center gap-3 rounded-xl border border-gray-200/80 bg-white p-4 shadow-2xs">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21]">
-            <GraduationCap className="size-4.5" />
-          </span>
-          <div className="min-w-0">
-            <p className="text-xs font-medium text-gray-500">1. Curriculum</p>
-            <p className="truncate text-sm font-bold text-gray-900">
-              {profile.data?.majorCode ? `${profile.data.majorCode} · ${profile.data.majorName ?? ''}` : 'Not selected'}
-            </p>
+        <Link to="/student/profile" className="flex items-center justify-between gap-3 rounded-xl border border-gray-200/80 bg-white p-4 shadow-2xs transition-colors hover:border-orange-300">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21]">
+              <GraduationCap className="size-4.5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-gray-500">1. Curriculum (My Profile)</p>
+              <p className="truncate text-sm font-bold text-gray-900">
+                {profile.data?.majorCode
+                  ? `${profile.data.majorCode}${profile.data.cohort ? ` · ${profile.data.cohort}` : ''}`
+                  : 'Set in My Profile'}
+              </p>
+            </div>
           </div>
-        </div>
+          <ArrowRight className="size-4 shrink-0 text-gray-400" />
+        </Link>
 
         <Link to="/student/transcript" className="flex items-center justify-between gap-3 rounded-xl border border-gray-200/80 bg-white p-4 shadow-2xs transition-colors hover:border-orange-300">
           <div className="flex items-center gap-3">
@@ -107,8 +112,6 @@ export default function StudentCurriculumGoals() {
           <ArrowRight className="size-4 text-gray-400" />
         </Link>
       </div>
-
-      {profile.data && <MajorCurriculumCard profile={profile.data} />}
 
       <form onSubmit={handleGeneratePlan} className="rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs">
         <div className="flex items-center gap-2 border-b border-gray-100 pb-3.5">
@@ -176,6 +179,8 @@ export default function StudentCurriculumGoals() {
           </button>
         </div>
       </form>
+
+      <StudentCurriculumCoursesCard />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import { Check, Plus, Sparkle as Sparkles, Lightning as Zap } from '@phosphor-icons/react';
+import { Check, Cpu, Plus, Scan, Sparkle as Sparkles, Lightning as Zap } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
+import { AdminTabBar } from '../../components/AdminTabBar';
 
 export { AiConfigFilterBar } from './AiConfigFilterBar';
 
@@ -66,6 +67,7 @@ export function AiConfigTopBar({
   onClearAll,
   onToggleActive,
   onToggleChat,
+  onSelectPurpose,
   onCreate,
 }: {
   total?: number;
@@ -78,11 +80,33 @@ export function AiConfigTopBar({
   onClearAll: () => void;
   onToggleActive: () => void;
   onToggleChat: () => void;
+  onSelectPurpose?: (purpose: string) => void;
   onCreate: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div className="grid flex-1 grid-cols-1 gap-2.5 sm:grid-cols-3">
+    <div className="space-y-4">
+      <AdminTabBar
+        ariaLabel="AI configuration purpose tabs"
+        activeKey={purpose}
+        onChange={(next) => (onSelectPurpose ? onSelectPurpose(next) : next === 'ALL' ? onClearAll() : onToggleChat())}
+        tabs={[
+          { key: 'ALL', label: 'All configs', icon: Sparkles, count: total, badgeTone: 'slate' },
+          { key: 'CHAT', label: 'Chat', icon: Zap, badgeTone: 'orange' },
+          { key: 'EMBEDDING', label: 'Embedding', icon: Cpu, badgeTone: 'slate' },
+          { key: 'OCR', label: 'OCR', icon: Scan, badgeTone: 'slate' },
+        ]}
+        actions={
+          <button
+            type="button"
+            onClick={onCreate}
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+          >
+            <Plus className="size-4" /> New configuration
+          </button>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
         <StatTile
           icon={<Sparkles className="size-4" />}
           label="Total configurations"
@@ -110,16 +134,6 @@ export function AiConfigTopBar({
           active={purpose === 'CHAT'}
           onClick={onToggleChat}
         />
-      </div>
-
-      <div className="flex shrink-0 items-center justify-end">
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
-        >
-          <Plus className="size-4" /> New configuration
-        </button>
       </div>
     </div>
   );

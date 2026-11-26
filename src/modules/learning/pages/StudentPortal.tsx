@@ -1,9 +1,10 @@
-// src/pages/learning/StudentPortal.tsx
-// Dashboard Sinh viên: hồ sơ học tập, thông tin cố vấn phụ trách, danh sách thông báo.
-
-import { useState } from 'react';
 import { Link } from 'react-router';
-import { Robot as BotMessageSquare, CalendarDot as CalendarClock, ChatCircleText as MessageSquareText, Path as Route } from '@phosphor-icons/react';
+import {
+  Robot as BotMessageSquare,
+  CalendarDot as CalendarClock,
+  ChatCircleText as MessageSquareText,
+  Path as Route,
+} from '@phosphor-icons/react';
 import { useAuth } from '../../auth/stores/useAuth';
 import { useIdentityProfile } from '@/shared/hooks/useIdentityProfile';
 import {
@@ -14,164 +15,95 @@ import {
   useMyProgress,
 } from '../hooks/queries/useStudentQueries';
 import { AdvisorInfoCard } from '../components/AdvisorInfoCard';
-import { NotificationList } from '../components/NotificationList';
 import { ProgressSummary } from '../components/ProgressSummary';
 import { RecentRequestsCard } from '../components/RecentRequestsCard';
-import { StudentProfileCard } from '../components/StudentProfileCard';
 import { UpcomingAppointmentCard } from '../components/UpcomingAppointmentCard';
-
 
 export default function StudentPortal() {
   const user = useAuth((s) => s.user);
-  const [profileError, setProfileError] = useState<string | null>(null);
-
   const profileQuery = useMyProfile();
   const advisorQuery = useMyAdvisor();
   const progressQuery = useMyProgress();
   const appointmentsQuery = useMyAppointments();
   const requestsQuery = useMyAdvisingRequests();
-
   const displayName = useIdentityProfile().data?.fullName || user?.fullName || 'Student';
+  const profile = profileQuery.data;
+
+  const quickActions = [
+    { to: '/student/ai-chat', label: 'AI Chat', icon: BotMessageSquare, primary: true },
+    { to: '/student/ai-roadmap', label: 'Roadmap', icon: Route, primary: false },
+    { to: '/student/appointments', label: 'Book Slot', icon: CalendarClock, primary: false },
+    { to: '/student/advising-requests', label: 'Ask Advisor', icon: MessageSquareText, primary: false },
+  ];
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-5">
-      <div>
-        <p className="text-xs text-[#555f6f]">Student / Home</p>
-        <h1 className="mt-1 text-2xl font-semibold text-[#151c27]">Welcome, {displayName}</h1>
-        <p className="mt-1 text-sm text-[#555f6f]">
-          View your academic progress, assigned advisor, appointments, and latest notifications.
-        </p>
+    <div className="flex w-full flex-col gap-4 pb-4">
+      <div className="flex flex-col gap-3 rounded-2xl border border-gray-200/80 bg-white px-5 py-4 shadow-2xs lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="truncate text-lg font-bold tracking-tight text-gray-900 sm:text-xl">
+              Welcome back, {displayName}
+            </h1>
+            {profile?.studentCode && (
+              <span className="rounded-full bg-orange-50 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-[#C2410C] ring-1 ring-inset ring-orange-200/80">
+                {profile.studentCode}
+                {profile.majorCode ? ` · ${profile.majorCode}` : ''}
+                {profile.cohort ? ` ${profile.cohort}` : ''}
+                {profile.currentSemester ? ` · Sem ${profile.currentSemester}` : ''}
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {quickActions.map(({ to, label, icon: Icon, primary }) => (
+            <Link
+              key={to}
+              to={to}
+              className={
+                primary
+                  ? 'inline-flex h-8.5 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3 text-xs font-semibold text-white transition-colors hover:bg-[#e05f14]'
+                  : 'inline-flex h-8.5 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition-colors hover:border-[#F26F21] hover:text-[#C2410C]'
+              }
+            >
+              <Icon className="size-3.5" aria-hidden />
+              {label}
+            </Link>
+          ))}
+        </div>
       </div>
 
-      {profileQuery.data && !profileQuery.data.curriculumVersionId && (
+      {profile && !profile.curriculumVersionId && (
         <div
           role="note"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] text-amber-900"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-2.5 text-xs text-amber-900"
         >
-          <span>You have not chosen your major and curriculum yet. Choose them in your Profile to see your progress and study plan.</span>
-          <Link to="/student/profile" className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-[13px] font-bold text-white hover:bg-[#e05f14]">
+          <span>Choose your major &amp; curriculum in My Profile to unlock your progress and study plan.</span>
+          <Link to="/student/profile" className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#e05f14]">
             Go to Profile
           </Link>
         </div>
       )}
 
-      <ProgressSummary progress={progressQuery.data} isLoading={progressQuery.isLoading} />
-
-
-
       {profileQuery.isError && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-800">
-          <span>{profileError ?? 'Unable to load your academic profile.'}</span>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs text-red-800">
+          <span>Unable to load your academic profile.</span>
           <button
             type="button"
             onClick={() => profileQuery.refetch()}
-            className="rounded-lg border border-red-300 bg-white px-3 py-1.5 text-[13px] font-semibold text-red-700 hover:bg-red-100"
+            className="rounded-lg border border-red-300 bg-white px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
           >
             Try again
           </button>
         </div>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        {/* Hồ sơ học tập */}
-        {profileQuery.isLoading ? (
-          <section className="rounded-xl bg-white p-5 shadow-sm">
-            <div className="h-4 w-32 animate-pulse rounded bg-gray-100" />
-            <div className="mt-4 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="h-2.5 w-16 animate-pulse rounded bg-gray-100" />
-                  <div className="h-3 w-24 animate-pulse rounded bg-gray-100" />
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : profileQuery.data ? (
-          <StudentProfileCard profile={profileQuery.data} />
-        ) : null}
+      <ProgressSummary progress={progressQuery.data} isLoading={progressQuery.isLoading} />
 
-        {/* Cố vấn phụ trách */}
+      <div className="grid items-stretch gap-4 lg:grid-cols-3">
         <AdvisorInfoCard advisor={advisorQuery.data} />
-      </div>
-
-      {/* Lịch hẹn sắp tới và yêu cầu tư vấn gần đây */}
-      <div className="grid gap-5 lg:grid-cols-2">
         <UpcomingAppointmentCard appointments={appointmentsQuery.data} isLoading={appointmentsQuery.isLoading} />
         <RecentRequestsCard requests={requestsQuery.data} isLoading={requestsQuery.isLoading} />
-      </div>
-
-      {/* Thông báo */}
-      <NotificationList />
-
-      {/* Lối tắt */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Link
-          to="/student/ai-chat"
-          className="flex items-center justify-between rounded-xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-orange-100 text-[#F26F21]">
-              <BotMessageSquare className="size-5" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-[#151c27]">Chat with AI</p>
-              <p className="text-[13px] text-[#555f6f]">
-                Ask about courses, academic policies, and study roadmaps.
-              </p>
-            </div>
-          </div>
-          <span className="text-[13px] font-semibold text-[#F26F21]">Open</span>
-        </Link>
-
-        <Link
-          to="/student/ai-roadmap"
-          className="flex items-center justify-between rounded-xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-orange-100 text-[#F26F21]">
-              <Route className="size-5" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-[#151c27]">Study Roadmap</p>
-              <p className="text-[13px] text-[#555f6f]">An AI-generated semester-by-semester timeline.</p>
-            </div>
-          </div>
-          <span className="text-[13px] font-semibold text-[#F26F21]">Open</span>
-        </Link>
-
-        <Link
-          to="/student/advising-requests"
-          className="flex items-center justify-between rounded-xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-orange-100 text-[#F26F21]">
-              <MessageSquareText className="size-5" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-[#151c27]">Send Advising Request</p>
-              <p className="text-[13px] text-[#555f6f]">
-                Ask your advisor a question and track its status.
-              </p>
-            </div>
-          </div>
-          <span className="text-[13px] font-semibold text-[#F26F21]">Open</span>
-        </Link>
-
-        <Link
-          to="/student/appointments"
-          className="flex items-center justify-between rounded-xl bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
-        >
-          <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-orange-100 text-[#F26F21]">
-              <CalendarClock className="size-5" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-[#151c27]">Book Appointment</p>
-              <p className="text-[13px] text-[#555f6f]">Choose a suitable available time slot.</p>
-            </div>
-          </div>
-          <span className="text-[13px] font-semibold text-[#F26F21]">Open</span>
-        </Link>
       </div>
     </div>
   );

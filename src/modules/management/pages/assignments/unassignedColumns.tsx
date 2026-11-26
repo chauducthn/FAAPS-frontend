@@ -10,7 +10,6 @@ export function createUnassignedColumns(
     {
       accessorKey: 'studentCode',
       header: 'Student ID',
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-mono text-[13px] font-medium text-gray-700">
           {row.original.studentCode}
@@ -20,10 +19,9 @@ export function createUnassignedColumns(
     {
       accessorKey: 'fullName',
       header: 'Full Name',
-      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex min-w-0 items-center gap-2.5">
-          <UserInitials name={row.original.fullName} />
+          <UserInitials name={row.original.fullName} avatarUrl={row.original.avatarUrl} />
           <div className="flex min-w-0 items-center gap-2">
             <span className="truncate font-semibold text-gray-900">{row.original.fullName}</span>
             {row.original.hasPendingRequest && (
@@ -39,13 +37,11 @@ export function createUnassignedColumns(
     {
       accessorKey: 'majorCode',
       header: 'Major',
-      enableSorting: false,
       cell: ({ row }) => <span className="text-gray-600">{row.original.majorCode}</span>,
     },
     {
       accessorKey: 'cohort',
       header: 'Cohort',
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="text-[13px] font-medium text-gray-700">
           {row.original.cohort}

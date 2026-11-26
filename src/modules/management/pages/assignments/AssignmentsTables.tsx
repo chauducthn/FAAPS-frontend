@@ -10,6 +10,7 @@ export interface AdvisorRowItem {
   id: string;
   email: string;
   name: string;
+  avatarUrl?: string | null;
   limit: number | null;
   chips: { key: string; majorCode: string; cohort: string; inPool: boolean; students: number }[];
 }
@@ -45,26 +46,35 @@ export function AdvisorsTableSection(props: {
     {
       key: 'advisor',
       header: 'Advisor',
+      sortValue: (advisor) => advisor.name,
       render: (advisor) => (
-        <div className="flex min-w-0 items-center gap-2.5">
-          <UserInitials name={advisor.name} />
-          <span className="truncate text-[13px] font-semibold text-gray-900">{advisor.name}</span>
-        </div>
+        <button
+          type="button"
+          onClick={() => props.onOpenDetails(advisor.id)}
+          title={`View students assigned to ${advisor.name}`}
+          className="flex min-w-0 items-center gap-2.5 text-left transition-colors hover:text-[#C2410C]"
+        >
+          <UserInitials name={advisor.name} avatarUrl={advisor.avatarUrl} />
+          <span className="truncate text-[13px] font-semibold text-gray-900 hover:text-[#C2410C] hover:underline">{advisor.name}</span>
+        </button>
       ),
     },
     {
       key: 'email',
       header: 'Email',
+      sortValue: (advisor) => advisor.email,
       render: (advisor) => <span className="block truncate text-[13px] text-gray-600">{advisor.email}</span>,
     },
     {
       key: 'load',
       header: 'Workload',
+      sortValue: (advisor) => loadOf(advisor.id),
       render: (advisor) => <LoadBadge count={loadOf(advisor.id)} limit={advisor.limit} />,
     },
     {
       key: 'majors',
       header: 'Major',
+      sortValue: (advisor) => [...new Set(advisor.chips.map((c) => c.majorCode).filter(Boolean))].join(', '),
       render: (advisor) => {
         const majorCodes = [...new Set(advisor.chips.map((c) => c.majorCode).filter(Boolean))];
         return majorCodes.length === 0 ? (
@@ -77,6 +87,7 @@ export function AdvisorsTableSection(props: {
     {
       key: 'cohorts',
       header: 'Cohort',
+      sortValue: (advisor) => advisor.chips.map((c) => c.cohort).join(', '),
       render: (advisor) =>
         advisor.chips.length === 0 ? (
           <span className="text-xs text-gray-400">No cohort assigned</span>

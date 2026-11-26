@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Bell, UserCheck, UserMinus as UserX, Users, MagicWand as WandSparkles } from '@phosphor-icons/react';
+import { Bell, UserCheck, UserMinus as UserX, Users } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AssignmentTab } from './AssignmentsToolbar';
 
@@ -68,9 +68,9 @@ export function AssignmentsStatStrip({
   activeTab,
   pendingOnly,
   onSelectAdvisors,
+  onSelectAssigned,
   onSelectUnassigned,
   onSelectPending,
-  onAutoAssign,
 }: {
   total?: number;
   assigned?: number;
@@ -81,9 +81,9 @@ export function AssignmentsStatStrip({
   activeTab: AssignmentTab;
   pendingOnly: boolean;
   onSelectAdvisors: () => void;
+  onSelectAssigned: () => void;
   onSelectUnassigned: () => void;
   onSelectPending: () => void;
-  onAutoAssign: () => void;
 }) {
   const coverage = total && total > 0 && assigned !== undefined ? `${Math.round((assigned / total) * 100)}% covered` : undefined;
   const unassignedMeta = waitingCohorts > 0 ? `in ${waitingCohorts} cohort${waitingCohorts === 1 ? '' : 's'}` : 'all covered';
@@ -97,6 +97,7 @@ export function AssignmentsStatStrip({
           value={total !== undefined ? String(total) : '—'}
           meta={coverage}
           tone="slate"
+          active={activeTab === 'advisors'}
           onClick={onSelectAdvisors}
         />
         <StatTile
@@ -105,8 +106,8 @@ export function AssignmentsStatStrip({
           value={assigned !== undefined ? String(assigned) : '—'}
           meta={`${advisorCount} advisor${advisorCount === 1 ? '' : 's'}`}
           tone="emerald"
-          active={activeTab === 'advisors'}
-          onClick={onSelectAdvisors}
+          active={activeTab === 'assigned'}
+          onClick={onSelectAssigned}
         />
         <StatTile
           icon={<UserX className="size-4" aria-hidden />}
@@ -127,20 +128,6 @@ export function AssignmentsStatStrip({
           onClick={(pending ?? 0) > 0 ? onSelectPending : undefined}
         />
       </div>
-
-      {waitingCohorts > 0 && (
-        <div className="flex shrink-0 items-center justify-end">
-          <button
-            type="button"
-            onClick={onAutoAssign}
-            title="Automatically distribute unassigned students across each cohort's advisor pool"
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14]"
-          >
-            <WandSparkles className="size-4" aria-hidden />
-            Auto assign
-          </button>
-        </div>
-      )}
     </div>
   );
 }

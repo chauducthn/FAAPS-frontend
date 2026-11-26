@@ -28,7 +28,9 @@ interface NotificationBellDropdownProps {
   items: StudentNotification[];
   unread: number;
   markAllPending: boolean;
+  clearAllPending?: boolean;
   onMarkAll: () => void;
+  onClearAll?: () => void;
   onSelect: (item: StudentNotification) => void;
   onViewAll: () => void;
   formatTime: (iso: string) => string;
@@ -38,7 +40,9 @@ export function NotificationBellDropdown({
   items,
   unread,
   markAllPending,
+  clearAllPending = false,
   onMarkAll,
+  onClearAll,
   onSelect,
   onViewAll,
   formatTime,
@@ -66,14 +70,28 @@ export function NotificationBellDropdown({
             </span>
           )}
         </p>
-        <button
-          type="button"
-          onClick={onMarkAll}
-          disabled={markAllPending || unread === 0}
-          className="rounded-lg px-2 py-1 text-xs font-semibold text-[#f37021] transition-colors hover:bg-[#fff7ed] disabled:opacity-50"
-        >
-          Mark all as read
-        </button>
+        <div className="flex items-center gap-1.5">
+          {unread > 0 && (
+            <button
+              type="button"
+              onClick={onMarkAll}
+              disabled={markAllPending}
+              className="rounded-lg px-2 py-1 text-xs font-semibold text-[#f37021] transition-colors hover:bg-[#fff7ed] disabled:opacity-50"
+            >
+              Mark all as read
+            </button>
+          )}
+          {onClearAll && items.length > 0 && (
+            <button
+              type="button"
+              onClick={onClearAll}
+              disabled={clearAllPending}
+              className="rounded-lg px-2 py-1 text-xs font-semibold text-[#6B7280] transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
       </div>
 
       {items.length === 0 ? (

@@ -25,6 +25,9 @@ interface Props {
   semesters: { id: string; code: string }[];
   hasFilters: boolean;
   selectedCount: number;
+  totalCount?: number;
+  selectingAll?: boolean;
+  onSelectAll?: () => void;
   onSearchChange: (v: string) => void;
   onMajorChange: (v: string) => void;
   onVersionChange: (v: string) => void;
@@ -36,30 +39,8 @@ interface Props {
   onClearSelection: () => void;
 }
 
-export function CurriculumManagerFilters({
-  kind,
-  searchPlaceholder,
-  search,
-  majorId,
-  version,
-  startSemesterId,
-  status,
-  current,
-  majors,
-  versions,
-  semesters,
-  hasFilters,
-  selectedCount,
-  onSearchChange,
-  onMajorChange,
-  onVersionChange,
-  onStartSemesterChange,
-  onStatusChange,
-  onCurrentChange,
-  onClearFilters,
-  onBulkAction,
-  onClearSelection,
-}: Props) {
+export function CurriculumManagerFilters(p: Props) {
+  const { kind, searchPlaceholder, search, majorId, version, startSemesterId, status, current, majors, versions, semesters, hasFilters, selectedCount, totalCount, selectingAll = false, onSelectAll, onSearchChange, onMajorChange, onVersionChange, onStartSemesterChange, onStatusChange, onCurrentChange, onClearFilters, onBulkAction, onClearSelection } = p;
   return (
     <>
       <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3">
@@ -149,10 +130,20 @@ export function CurriculumManagerFilters({
           role="toolbar"
           aria-label={`${kind === 'cohort' ? 'Cohort' : 'Curriculum'} bulk actions`}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
               {selectedCount} selected
             </span>
+            {onSelectAll && !!totalCount && totalCount > selectedCount && (
+              <button
+                type="button"
+                disabled={selectingAll}
+                onClick={onSelectAll}
+                className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70 disabled:opacity-50"
+              >
+                {selectingAll ? 'Selecting…' : `Select all ${totalCount}`}
+              </button>
+            )}
             <button
               type="button"
               onClick={onClearSelection}

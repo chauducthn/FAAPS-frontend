@@ -1,20 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router';
-import { CaretLeft as ChevronLeft, SlidersHorizontal as Settings2, Sparkle as Sparkles } from '@phosphor-icons/react';
+import { useParams } from 'react-router';
+import { toast } from 'sonner';
+import { assignmentService } from '../../../advising/services/assignmentService';
+import { fetchAllPages } from '../../../../shared/lib/fetchAllPages';
+import { apiErrorMessage } from '../../../../shared/lib/apiError';
 import { AssignAdvisorModal } from '../../components/AssignAdvisorModal';
 import { UnassignAdvisorModal } from '../../components/UnassignAdvisorModal';
 import { AutoAssignModal } from '../../components/AutoAssignModal';
 import { CohortAssignModal } from '../../components/CohortAssignModal';
 import { CohortPoolModal } from '../../components/CohortPoolModal';
 import {
-  useAssignmentAdvisors,
-  useAssignmentSummary,
-  useCohortPool,
-  useCohortStudents,
-  useUnassignedStudents,
+  useAssignmentAdvisors, useAssignmentSummary, useCohortPool, useCohortStudents, useUnassignedStudents,
 } from '../../hooks/queries/useAdminAssignments';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { CohortPoolSection, CohortStudentsFilterBar } from './CohortHeaderAndPool';
+import { CohortDetailsHeader } from './CohortDetailsHeader';
 import { CohortStudentsTable, type CohortStudentRow } from './CohortStudentsTable';
 
 const PAGE_SIZE = 10;
@@ -30,6 +30,8 @@ export default function CohortDetails() {
   const [pendingOnly, setPendingOnly] = useState(false);
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [allSelectedRows, setAllSelectedRows] = useState<CohortStudentRow[] | null>(null);
+  const [selectingAll, setSelectingAll] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [autoOpen, setAutoOpen] = useState(false);
   const [poolOpen, setPoolOpen] = useState(false);
@@ -38,18 +40,12 @@ export default function CohortDetails() {
 
   const debouncedSearch = useDebounce(search.trim());
   const students = useCohortStudents({
-    cohortId: pendingOnly ? undefined : cohortId,
-    search: debouncedSearch || undefined,
-    unassignedOnly,
-    page,
-    size: PAGE_SIZE,
+    cohortId: pendingOnly ? undefined : cohortId, search: debouncedSearch || undefined,
+    unassignedOnly, page, size: PAGE_SIZE,
   });
   const requested = useUnassignedStudents({
-    cohortId,
-    hasPendingRequest: true,
-    search: pendingOnly ? debouncedSearch || undefined : undefined,
-    page: pendingOnly ? page : 0,
-    size: pendingOnly ? PAGE_SIZE : 100,
+    cohortId, hasPendingRequest: true, search: pendingOnly ? debouncedSearch || undefined : undefined,
+    page: pendingOnly ? page : 0, size: pendingOnly ? PAGE_SIZE : 100,
   });
 
   const cohort = summary.data?.cohorts.find((c) => c.cohortId === cohortId) ?? null;
@@ -57,17 +53,15 @@ export default function CohortDetails() {
   const requestedIds = useMemo(() => new Set((requested.data?.items ?? []).map((s) => s.id)), [requested.data]);
 
   const rows: CohortStudentRow[] = useMemo(
-    () =>
-      pendingOnly
-        ? (requested.data?.items ?? []).map((s) => ({
-            id: s.id, studentCode: s.studentCode, fullName: s.fullName,
-            advisorName: null, assignedDate: null, hasPendingRequest: true,
-          }))
-        : (students.data?.items ?? []).map((s) => ({
-            id: s.id, studentCode: s.studentCode, fullName: s.fullName,
-            advisorName: s.advisorName, assignedDate: s.assignedDate,
-            hasPendingRequest: requestedIds.has(s.id),
-          })),
+    () => pendingOnly
+      ? (requested.data?.items ?? []).map((s) => ({
+          id: s.id, studentCode: s.studentCode, fullName: s.fullName,
+          advisorName: null, assignedDate: null, hasPendingRequest: true,
+        }))
+      : (students.data?.items ?? []).map((s) => ({
+          id: s.id, studentCode: s.studentCode, fullName: s.fullName,
+          advisorName: s.advisorName, assignedDate: s.assignedDate, hasPendingRequest: requestedIds.has(s.id),
+        })),
     [pendingOnly, requested.data, students.data, requestedIds],
   );
 
@@ -76,74 +70,55 @@ export default function CohortDetails() {
   const pageIds = rows.map((s) => s.id);
   const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selected.has(id));
 
-  useEffect(() => setSelected(new Set()), [debouncedSearch, unassignedOnly, pendingOnly, page, cohortId]);
+  useEffect(() => {
+    setSelected(new Set()); setAllSelectedRows(null);
+  }, [debouncedSearch, unassignedOnly, pendingOnly, page, cohortId]);
 
-  const toggleOne = (id: string) =>
+  const toggleOne = (id: string) => {
+    setAllSelectedRows(null);
     setSelected((cur) => {
       const next = new Set(cur);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  const toggleAll = () =>
+  };
+  const toggleAll = () => {
+    setAllSelectedRows(null);
     setSelected((cur) => {
       const next = new Set(cur);
       pageIds.forEach((id) => (allPageSelected ? next.delete(id) : next.add(id)));
       return next;
     });
+  };
 
-  const selectedStudents = rows.filter((s) => selected.has(s.id)).map((s) => ({ id: s.id, name: s.fullName }));
+  const selectAllMatching = async () => {
+    setSelectingAll(true);
+    try {
+      const all: CohortStudentRow[] = pendingOnly
+        ? (await fetchAllPages((p, size) => assignmentService.getUnassigned({ cohortId, hasPendingRequest: true, search: debouncedSearch || undefined, page: p, size })))
+            .map((s) => ({ id: s.id, studentCode: s.studentCode, fullName: s.fullName, advisorName: null, assignedDate: null, hasPendingRequest: true }))
+        : (await fetchAllPages((p, size) => assignmentService.getCohortStudents({ cohortId, search: debouncedSearch || undefined, unassignedOnly, page: p, size })))
+            .map((s) => ({ id: s.id, studentCode: s.studentCode, fullName: s.fullName, advisorName: s.advisorName, assignedDate: s.assignedDate, hasPendingRequest: requestedIds.has(s.id) }));
+      setAllSelectedRows(all);
+      setSelected(new Set(all.map((s) => s.id)));
+    } catch (err) { toast.error(apiErrorMessage(err)); } finally { setSelectingAll(false); }
+  };
+
+  const selectedPool = allSelectedRows ?? rows.filter((s) => selected.has(s.id));
+  const selectedStudents = selectedPool.map((s) => ({ id: s.id, name: s.fullName }));
+  const assignedSelected = selectedPool.filter((s) => s.advisorName).map((s) => ({ id: s.id, name: s.fullName }));
+  const clearSelection = () => {
+    setSelected(new Set()); setAllSelectedRows(null);
+  };
   const hasFilters = !!search || unassignedOnly || pendingOnly;
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="space-y-1">
-          <Link to="/admin/assignments" className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#F26F21]">
-            <ChevronLeft className="size-3.5" /> Back to Advisor Assignments
-          </Link>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-lg font-bold tracking-tight text-gray-900">Cohort {title}</h1>
-            <span className="rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 tabular-nums">
-              Total {cohort?.total ?? '–'}
-            </span>
-            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 tabular-nums">
-              Assigned {cohort?.assigned ?? '–'}
-            </span>
-            <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800 tabular-nums">
-              Unassigned {cohort?.unassigned ?? '–'}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setPoolOpen(true)}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
-          >
-            <Settings2 className="size-3.5" /> Configure advisors
-          </button>
-          {(cohort?.unassigned ?? 0) > 0 && (
-            <>
-              <button
-                type="button"
-                onClick={() => setAssignOpen(true)}
-                className="inline-flex h-9 items-center rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
-              >
-                Assign advisor
-              </button>
-              <button
-                type="button"
-                onClick={() => setAutoOpen(true)}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-xs font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14]"
-              >
-                <Sparkles className="size-3.5" /> Auto Assign
-              </button>
-            </>
-          )}
-        </div>
-      </div>
+      <CohortDetailsHeader
+        title={title} cohort={cohort}
+        onOpenPool={() => setPoolOpen(true)} onOpenAssign={() => setAssignOpen(true)} onOpenAuto={() => setAutoOpen(true)}
+      />
 
       {summary.isSuccess && !cohort && (
         <div className="rounded-xl border border-gray-200/80 bg-white p-8 text-center text-sm text-gray-500">
@@ -155,28 +130,23 @@ export default function CohortDetails() {
 
       <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
         <CohortStudentsFilterBar
-          search={search}
-          unassignedOnly={unassignedOnly}
-          pendingOnly={pendingOnly}
-          hasFilters={hasFilters}
+          search={search} unassignedOnly={unassignedOnly} pendingOnly={pendingOnly} hasFilters={hasFilters}
           onSearchChange={(val) => { setSearch(val); setPage(0); }}
           onUnassignedChange={(val) => { setUnassignedOnly(val); setPage(0); }}
           onPendingChange={(val) => { setPendingOnly(val); setPage(0); }}
           onClear={() => {
-            setSearch('');
-            setUnassignedOnly(false);
-            setPendingOnly(false);
-            setPage(0);
+            setSearch(''); setUnassignedOnly(false);
+            setPendingOnly(false); setPage(0);
           }}
         />
         <CohortStudentsTable
           cohortId={cohortId} title={title} rows={rows} total={total} page={page} pageSize={PAGE_SIZE}
           isLoading={active.isLoading} isError={active.isError && !active.data} hasFilters={hasFilters}
-          selected={selected} allPageSelected={allPageSelected} onToggleAll={toggleAll} onToggleOne={toggleOne}
-          onClearSelection={() => setSelected(new Set())} onAssignSelected={() => setAssignStudents(selectedStudents)}
-          onUnassignSelected={() =>
-            setUnassignStudents(rows.filter((s) => selected.has(s.id) && s.advisorName).map((s) => ({ id: s.id, name: s.fullName })))
-          }
+          selected={selected} allPageSelected={allPageSelected} selectingAll={selectingAll}
+          hasAssignedSelected={assignedSelected.length > 0}
+          onToggleAll={toggleAll} onToggleOne={toggleOne} onSelectAll={() => void selectAllMatching()}
+          onClearSelection={clearSelection} onAssignSelected={() => setAssignStudents(selectedStudents)}
+          onUnassignSelected={() => setUnassignStudents(assignedSelected)}
           onAssignOne={(student) => setAssignStudents([student])}
           onUnassignOne={(student) => setUnassignStudents([student])}
           onRetry={() => active.refetch()} onPageChange={setPage}

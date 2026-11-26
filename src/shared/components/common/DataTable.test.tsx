@@ -59,11 +59,17 @@ describe('DataTable', () => {
     expect(screen.getByText('Grace Hopper')).toBeInTheDocument();
   });
 
-  it('renders plain column headers without sort buttons', () => {
+  it('renders sortable column header buttons and toggles sort order', async () => {
+    const user = userEvent.setup();
     render(<DataTable columns={columns} data={data} searchKey="name" />);
 
     const header = screen.getByRole('columnheader', { name: /Name/i });
-    expect(within(header).queryByRole('button')).toBeNull();
+    const sortBtn = within(header).getByRole('button', { name: /Name/i });
+    await user.click(sortBtn);
+    await user.click(sortBtn);
+
+    const rows = screen.getAllByRole('row');
+    expect(within(rows[1]).getByText('Grace Hopper')).toBeInTheDocument();
   });
 
   it('selects rows and reveals the floating bulk-action bar', async () => {

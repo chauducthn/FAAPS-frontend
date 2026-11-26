@@ -63,6 +63,29 @@ export const useMyProgress = () =>
     queryFn: studentAcademicService.progress,
   });
 
+/** Active curriculum assigned to the student. */
+export const useMyCurriculum = () =>
+  useQuery({
+    queryKey: ['student', 'curriculum'],
+    queryFn: studentAcademicService.curriculum,
+    retry: false,
+  });
+
+/** Courses in the student's active curriculum (with FLM combo/elective resolution). */
+export const useMyCurriculumCourses = () =>
+  useQuery({
+    queryKey: ['student', 'curriculum-courses'],
+    queryFn: studentAcademicService.curriculumCourses,
+    retry: false,
+  });
+
+/** Student's transcript records (shared across Transcript & Curriculum pages). */
+export const useMyTranscript = () =>
+  useQuery({
+    queryKey: ['student', 'transcript'],
+    queryFn: studentAcademicService.transcript,
+  });
+
 /** The student's own appointments (same cache entry as the Book Appointment page). */
 export const useMyAppointments = () =>
   useQuery({

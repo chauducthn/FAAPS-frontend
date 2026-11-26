@@ -22,6 +22,7 @@ export interface UnassignedStudent {
   id: string;
   studentCode: string;
   fullName: string;
+  avatarUrl?: string | null;
   cohortId: string;
   cohort: string;
   majorCode: string;
@@ -33,6 +34,7 @@ export interface AdvisorCohortRow {
   advisorId: string;
   email: string;
   fullName: string;
+  avatarUrl?: string | null;
   maxAdvisees: number | null;
   status: string;
   cohortId: string | null;

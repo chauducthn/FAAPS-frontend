@@ -8,6 +8,8 @@ import { IDENTITY_QUERY_KEYS } from './useIdentityProfile';
 export interface ProfileSaveValues {
   fullName: string;
   phone: string;
+  email?: string;
+  dateOfBirth?: string | null;
   specialization?: string;
 }
 
@@ -40,6 +42,8 @@ export const useProfileSave = ({
       const updated = await profileService.updateProfile({
         fullName: values.fullName.trim(),
         phone: values.phone.trim() || null,
+        email: values.email?.trim() || undefined,
+        dateOfBirth: values.dateOfBirth !== undefined ? values.dateOfBirth || null : undefined,
       });
 
       if (saveRoleFields) {
@@ -50,7 +54,7 @@ export const useProfileSave = ({
     },
     onSuccess: async (updated) => {
       if (user) {
-        setUser({ ...user, fullName: updated.fullName });
+        setUser({ ...user, fullName: updated.fullName, email: updated.email, avatarUrl: updated.avatarUrl });
       }
       await queryClient.invalidateQueries({ queryKey: IDENTITY_QUERY_KEYS.profile });
       await onSaved?.();

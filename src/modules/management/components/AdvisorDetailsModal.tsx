@@ -155,6 +155,7 @@ export function AdvisorDetailsModal({
                 onClearSearch={() => s.setSearch('')}
                 onToggleAll={s.toggleAll}
                 onToggleOne={s.toggleOne}
+                onSelectAllFiltered={() => s.setSelected(new Set(s.filtered.map((row) => row.id)))}
                 onClearSelection={() => s.setSelected(new Set())}
                 onReassignSelected={() => s.setReassign(selectedList())}
                 onUnassignSelected={() => s.setUnassign(selectedList())}

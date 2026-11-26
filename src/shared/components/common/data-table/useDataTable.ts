@@ -93,7 +93,7 @@ export function useDataTable<TData extends RowData, TValue>(
       : {}),
     getRowId: getRowId ? (row, index) => getRowId(row, index) : undefined,
     manualFiltering: manual,
-    manualSorting: manual,
+    manualSorting: Boolean(manual && onSortingChange),
     manualPagination: manual,
     ...(manual && totalRowCount !== undefined ? { rowCount: totalRowCount } : {}),
     ...(manual && pageCount !== undefined ? { pageCount } : {}),

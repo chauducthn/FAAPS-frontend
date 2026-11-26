@@ -27,10 +27,10 @@ export function UpcomingAppointmentCard({
   const next = appointments ? nextAppointment(appointments) : null;
 
   return (
-    <section className="flex flex-col rounded-xl bg-white p-5 shadow-sm">
+    <section className="flex h-full flex-col rounded-2xl border border-gray-200/80 bg-white p-5 shadow-2xs">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-[#151c27]">Upcoming Appointment</h2>
-        <Link to="/student/appointments" className="text-[13px] font-semibold text-[#F26F21] hover:underline">
+        <h2 className="text-sm font-bold text-gray-900">Upcoming Appointment</h2>
+        <Link to="/student/appointments" className="text-xs font-semibold text-[#C2410C] hover:underline">
           Manage
         </Link>
       </div>

@@ -5,6 +5,8 @@
 import { useState } from 'react';
 import { BookOpenText, WarningCircle as CircleAlert, FileX as FileWarning, Sparkle as Sparkles, ThumbsDown, ThumbsUp } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
+import { UserAvatar } from '@/shared/components/common/UserAvatar';
+import { useAuth } from '@/modules/auth/stores/useAuth';
 import { useSendAiFeedback } from '../hooks/mutations/useAiStudentMutations';
 import type { AiChatMessage, AiQuestionCategory } from '../types/ai-student';
 
@@ -70,17 +72,24 @@ function AssistantMeta({ message }: { message: AiChatMessage }) {
 }
 
 export function ChatBubble({ message }: { message: AiChatMessage }) {
+  const user = useAuth((state) => state.user);
   const isUser = message.sender === 'USER';
 
   if (isUser) {
     return (
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2.5">
         <div className="max-w-[85%] sm:max-w-[75%]">
           <div className="rounded-2xl rounded-br-md bg-[#F26F21] px-4 py-2.5 text-sm leading-relaxed text-white shadow-sm">
             <p className="whitespace-pre-wrap break-words">{message.content}</p>
           </div>
           <p className="mt-1 text-right text-[11px] text-[#98a2b3]">{timeOf(message.createdAt)}</p>
         </div>
+        <UserAvatar
+          name={user?.fullName}
+          avatarUrl={user?.avatarUrl}
+          className="mt-0.5 size-8 shrink-0"
+          textClassName="text-xs font-semibold"
+        />
       </div>
     );
   }

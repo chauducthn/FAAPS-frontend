@@ -20,53 +20,20 @@ export interface CohortStudentRow {
   hasPendingRequest: boolean;
 }
 
-export function CohortStudentsTable({
-  cohortId,
-  title,
-  rows,
-  total,
-  page,
-  pageSize,
-  isLoading,
-  isError,
-  hasFilters,
-  selected,
-  allPageSelected,
-  onToggleAll,
-  onToggleOne,
-  onClearSelection,
-  onAssignSelected,
-  onUnassignSelected,
-  onAssignOne,
-  onUnassignOne,
-  onRetry,
-  onPageChange,
-}: {
-  cohortId: string;
-  title: string;
-  rows: CohortStudentRow[];
-  total: number;
-  page: number;
-  pageSize: number;
-  isLoading: boolean;
-  isError: boolean;
-  hasFilters: boolean;
-  selected: Set<string>;
-  allPageSelected: boolean;
-  onToggleAll: () => void;
-  onToggleOne: (id: string) => void;
-  onClearSelection: () => void;
-  onAssignSelected: () => void;
-  onUnassignSelected: () => void;
-  onAssignOne: (student: { id: string; name: string }) => void;
-  onUnassignOne: (student: { id: string; name: string }) => void;
-  onRetry: () => void;
-  onPageChange: (page: number) => void;
+export function CohortStudentsTable(props: {
+  cohortId: string, title: string, rows: CohortStudentRow[], total: number, page: number, pageSize: number,
+  isLoading: boolean, isError: boolean, hasFilters: boolean, selected: Set<string>, allPageSelected: boolean,
+  selectingAll?: boolean, hasAssignedSelected?: boolean, onToggleAll: () => void, onToggleOne: (id: string) => void,
+  onSelectAll?: () => void, onClearSelection: () => void, onAssignSelected: () => void, onUnassignSelected: () => void,
+  onAssignOne: (student: { id: string; name: string }) => void, onUnassignOne: (student: { id: string; name: string }) => void,
+  onRetry: () => void, onPageChange: (page: number) => void,
 }) {
+  const { cohortId, title, rows, total, page, pageSize, isLoading, isError, hasFilters, selected, allPageSelected, selectingAll = false, hasAssignedSelected, onToggleAll, onToggleOne, onSelectAll, onClearSelection, onAssignSelected, onUnassignSelected, onAssignOne, onUnassignOne, onRetry, onPageChange } = props;
   const columns: StaticColumn<CohortStudentRow>[] = [
     {
       key: 'studentCode',
       header: 'Student ID',
+      sortValue: (row) => row.studentCode,
       render: (row) => (
         <span className="font-mono text-[13px] font-medium text-gray-700">
           {row.studentCode}
@@ -76,6 +43,7 @@ export function CohortStudentsTable({
     {
       key: 'fullName',
       header: 'Full name',
+      sortValue: (row) => row.fullName,
       render: (row) => (
         <div className="flex min-w-0 items-center gap-2.5">
           <UserInitials name={row.fullName} />
@@ -86,6 +54,7 @@ export function CohortStudentsTable({
     {
       key: 'advisorName',
       header: 'Current advisor',
+      sortValue: (row) => row.advisorName ?? '',
       render: (row) => (
         <span className={row.advisorName ? 'text-sm text-gray-800' : 'text-xs text-gray-400'}>
           {row.advisorName ?? 'No advisor assigned'}
@@ -95,6 +64,7 @@ export function CohortStudentsTable({
     {
       key: 'assignedDate',
       header: 'Assigned',
+      sortValue: (row) => row.assignedDate ?? '',
       render: (row) => (
         <span className="text-xs text-gray-500">{row.assignedDate ? formatDate(row.assignedDate) : '—'}</span>
       ),
@@ -102,6 +72,7 @@ export function CohortStudentsTable({
     {
       key: 'request',
       header: 'Request',
+      sortValue: (row) => (row.hasPendingRequest ? 1 : 0),
       render: (row) =>
         row.hasPendingRequest ? (
           <span className="text-xs font-semibold uppercase text-amber-700">
@@ -141,10 +112,20 @@ export function CohortStudentsTable({
     <div>
       {selected.size > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
               {selected.size} student{selected.size === 1 ? '' : 's'} selected
             </span>
+            {onSelectAll && total > selected.size && (
+              <button
+                type="button"
+                disabled={selectingAll}
+                onClick={onSelectAll}
+                className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70 disabled:opacity-50"
+              >
+                {selectingAll ? 'Selecting…' : `Select all ${total}`}
+              </button>
+            )}
             <button
               type="button"
               onClick={onClearSelection}
@@ -161,7 +142,7 @@ export function CohortStudentsTable({
             >
               Assign / reassign
             </button>
-            {rows.some((student) => selected.has(student.id) && student.advisorName) && (
+            {(hasAssignedSelected ?? rows.some((student) => selected.has(student.id) && student.advisorName)) && (
               <button
                 type="button"
                 onClick={onUnassignSelected}

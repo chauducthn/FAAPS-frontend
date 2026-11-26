@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { cn } from '@/shared/lib/utils';
 
 interface UserInitialsProps {
   /** The backend may omit the name — never call `.replace` on undefined. */
   name: string | null | undefined;
+  avatarUrl?: string | null;
   className?: string;
 }
 
@@ -14,23 +16,38 @@ export function initialsOf(name: string | null | undefined): string {
       .split(/[^\p{L}\p{N}]+/u)
       .filter(Boolean)
       .slice(-2)
-      .map(part => part.charAt(0).toUpperCase())
+      .map((part) => part.charAt(0).toUpperCase())
       .join('') || '?'
   );
 }
 
-export function UserInitials({ name, className }: UserInitialsProps) {
+export function UserInitials({ name, avatarUrl, className }: UserInitialsProps) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    setFailed(false);
+  }, [avatarUrl]);
+
   const initials = initialsOf(name);
+  const showImage = !!avatarUrl && !failed;
 
   return (
     <span
       className={cn(
-        'flex size-8 shrink-0 items-center justify-center rounded-md bg-orange-100 text-sm font-semibold text-orange-700',
-        className
+        'flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-orange-100 text-sm font-semibold text-orange-700',
+        className,
       )}
-      aria-hidden="true"
+      aria-hidden={!showImage}
     >
-      {initials}
+      {showImage ? (
+        <img
+          src={avatarUrl}
+          alt={name ? `${name} avatar` : 'User avatar'}
+          onError={() => setFailed(true)}
+          className="size-full object-cover"
+        />
+      ) : (
+        initials
+      )}
     </span>
   );
 }

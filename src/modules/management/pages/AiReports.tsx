@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Warning as AlertTriangle, CheckCircle as CheckCircle2, Flag, XCircle } from '@phosphor-icons/react';
+import { AdminTabBar } from '../components/AdminTabBar';
 import { Pagination } from '../components/Pagination';
 import { useAiReports } from '../../ai/hooks/queries/useAdminAiReports';
 import { useDebounce } from '@/shared/hooks/useDebounce';
@@ -40,6 +41,18 @@ export default function AiReports() {
 
   return (
     <div className="flex w-full flex-col gap-4">
+      <AdminTabBar
+        ariaLabel="AI report status tabs"
+        activeKey={status || 'ALL'}
+        onChange={(next) => selectStatus(next === 'ALL' ? '' : (next as AiReportStatus))}
+        tabs={[
+          { key: 'ALL', label: 'All reports', icon: Flag, count: total, badgeTone: 'slate' },
+          { key: 'PENDING', label: 'Pending', icon: AlertTriangle, count: pending.data?.totalElements, badgeTone: 'red' },
+          { key: 'RESOLVED', label: 'Resolved', icon: CheckCircle2, count: resolved.data?.totalElements, badgeTone: 'emerald' },
+          { key: 'DISMISSED', label: 'Dismissed', icon: XCircle, count: dismissed.data?.totalElements, badgeTone: 'slate' },
+        ]}
+      />
+
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
         <StatusCard
           label="Total reports"

@@ -25,6 +25,14 @@ export type Curriculum = { id: string; version: string; name: string; descriptio
   majorCode: string; majorName: string };
 export type CurriculumCourse = { courseId: string; code: string; name: string; credits: number;
   semesterNumber: number; mandatory: boolean; groupName: string | null };
+export type FlmPreferencesView = {
+  comboCode: string | null;
+  englishPrep: string | null;
+  musicalInstrument: string | null;
+  combos: { code: string; label: string; courses: { code: string; name: string; credits: number }[] }[];
+  englishOptions: { code: string; label: string }[];
+  instrumentOptions: { code: string; label: string }[];
+};
 export type ImportRow = { rowNumber: number; courseCode: string; semesterCode: string;
   finalScore: number | null; status: string; attemptNumber: number; error: string | null };
 export type ImportPreview = { importId: string; rowCount: number; errorCount: number; rows: ImportRow[] };
@@ -79,6 +87,17 @@ export const studentAcademicService = {
         { curriculumVersionId },
         { headers: await getCsrfHeaders() },
       )
+    ).data,
+  getFlmPreferences: () => get<FlmPreferencesView>('/profile/flm-preferences'),
+  saveFlmPreferences: async (body: {
+    comboCode?: string | null;
+    englishPrep?: string | null;
+    musicalInstrument?: string | null;
+  }) =>
+    (
+      await apiClient.put<FlmPreferencesView>('/student/profile/flm-preferences', body, {
+        headers: await getCsrfHeaders(),
+      })
     ).data,
   transcript: () => get<TranscriptRow[]>('/transcript'),
   progress: () => get<Progress>('/progress'),

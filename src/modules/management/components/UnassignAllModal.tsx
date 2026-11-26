@@ -25,7 +25,6 @@ interface Props {
 
 export function UnassignAllModal({ target, onClose, onDone }: Props) {
   const [mode, setMode] = useState<'students' | 'cohorts'>('students');
-  const [scope, setScope] = useState<'selected' | 'all'>('selected');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
   const mutation = useUnassignAll();
@@ -33,7 +32,6 @@ export function UnassignAllModal({ target, onClose, onDone }: Props) {
   useEffect(() => {
     if (!target) return;
     setMode('students');
-    setScope('selected');
     setNotes('');
     setError(null);
   }, [target]);
@@ -45,7 +43,7 @@ export function UnassignAllModal({ target, onClose, onDone }: Props) {
     setError(null);
     try {
       const res = await mutation.mutateAsync({
-        advisorIds: scope === 'all' ? undefined : target.advisorIds,
+        advisorIds: target.advisorIds,
         clearPools,
         notes: notes.trim() || undefined,
       });
@@ -66,7 +64,7 @@ export function UnassignAllModal({ target, onClose, onDone }: Props) {
       <AssignmentModalHeader
         icon={clearPools ? FolderMinus : UserMinus}
         title="Unassign"
-        subtitle={scope === 'all' ? 'All advisors' : target.label}
+        subtitle={target.label}
         onClose={onClose}
       />
       <div className="flex flex-col gap-3.5 px-6 py-5">
@@ -100,26 +98,6 @@ export function UnassignAllModal({ target, onClose, onDone }: Props) {
             </span>
             <span className="mt-0.5 block text-[11px] text-gray-500">Clear pool + students</span>
           </button>
-        </div>
-
-        <div className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50/70 px-3 py-2 text-xs">
-          <span className="font-medium text-gray-600">Scope</span>
-          <div className="inline-flex rounded-md border border-gray-200 bg-white p-0.5 font-semibold">
-            <button
-              type="button"
-              onClick={() => setScope('selected')}
-              className={cn('rounded px-2 py-0.5', scope === 'selected' ? 'bg-gray-900 text-white' : 'text-gray-600')}
-            >
-              Selected ({target.advisorIds.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setScope('all')}
-              className={cn('rounded px-2 py-0.5', scope === 'all' ? 'bg-red-600 text-white' : 'text-gray-600')}
-            >
-              All advisors
-            </button>
-          </div>
         </div>
 
         <textarea

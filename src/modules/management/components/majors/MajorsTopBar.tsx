@@ -52,6 +52,7 @@ function StatTile({
 }
 
 export function MajorsTopBar({
+  headerLeft,
   totalItems,
   activeCount,
   draftCount,
@@ -63,6 +64,7 @@ export function MajorsTopBar({
   onImportFile,
   onCreate,
 }: {
+  headerLeft?: ReactNode;
   totalItems?: number;
   activeCount: number;
   draftCount: number;
@@ -76,8 +78,44 @@ export function MajorsTopBar({
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-4">
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>{headerLeft}</div>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".xlsx"
+            className="hidden"
+            onChange={(e) => {
+              onImportFile(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+          />
+          <ExampleSheetButton
+            examples={examples}
+            className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+          />
+          <button
+            type="button"
+            disabled={isImporting}
+            onClick={() => fileRef.current?.click()}
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:opacity-50"
+          >
+            {isImporting ? <Loader2 className="size-3.5 animate-spin text-gray-500" /> : <FileSpreadsheet className="size-3.5 text-gray-500" aria-hidden />}
+            {isImporting ? 'Importing…' : 'Import Excel'}
+          </button>
+          <button
+            type="button"
+            onClick={onCreate}
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+          >
+            <Plus className="size-4" /> Create major
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <StatTile
           icon={<GraduationCap className="size-4" />}
           label="Total majors"
@@ -110,39 +148,6 @@ export function MajorsTopBar({
           active={selectedStatus === 'INACTIVE'}
           onClick={() => onSelectStatus(selectedStatus === 'INACTIVE' ? 'ALL' : 'INACTIVE')}
         />
-      </div>
-
-      <div className="flex shrink-0 items-center justify-end gap-2">
-        <input
-          ref={fileRef}
-          type="file"
-          accept=".xlsx"
-          className="hidden"
-          onChange={(e) => {
-            onImportFile(e.target.files?.[0]);
-            e.target.value = '';
-          }}
-        />
-        <ExampleSheetButton
-          examples={examples}
-          className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
-        />
-        <button
-          type="button"
-          disabled={isImporting}
-          onClick={() => fileRef.current?.click()}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:opacity-50"
-        >
-          {isImporting ? <Loader2 className="size-3.5 animate-spin text-gray-500" /> : <FileSpreadsheet className="size-3.5 text-gray-500" aria-hidden />}
-          {isImporting ? 'Importing…' : 'Import Excel'}
-        </button>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
-        >
-          <Plus className="size-4" /> Create major
-        </button>
       </div>
     </div>
   );

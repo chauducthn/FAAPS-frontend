@@ -1,22 +1,13 @@
-// Static table for lists that do not need sorting, filtering or paging.
-//
-// Used by the tables embedded in modals (inline editing, import previews) and
-// by the read-only tables (transcript, reset results). It reuses the shared
-// table primitives so every table in FAAPS looks the same.
+// Reusable table supporting optional checkbox selection and client-side column sorting.
 
-import type { ReactNode } from 'react';
-import { Tray as Inbox } from '@phosphor-icons/react';
+import { useMemo, useState, type ReactNode } from 'react';
+import { CaretDown, CaretUp, CaretUpDown, Tray as Inbox } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import {
-  TableBody,
-  TableCell,
-  TableEmpty,
-  TableError,
-  TableHead,
-  TableRow,
-  TableShell,
-  TableSkeletonRows,
+  TableBody, TableCell, TableEmpty, TableError, TableHead, TableRow, TableShell, TableSkeletonRows,
 } from './TablePrimitives';
+
+export type SortableValue = string | number | boolean | null | undefined;
 
 export interface StaticColumn<TData> {
   /** Stable key of the column. */
@@ -26,6 +17,8 @@ export interface StaticColumn<TData> {
   align?: 'left' | 'center' | 'right';
   /** Renders the cell content. */
   render: (row: TData, index: number) => ReactNode;
+  /** Enables click-to-sort on this column when provided. */
+  sortValue?: (row: TData) => SortableValue;
   /** Extra classes for the header cell. */
   headerClassName?: string;
   /** Extra classes for every cell of the column. */
@@ -60,22 +53,37 @@ export interface StaticTableProps<TData> {
   className?: string;
 }
 
-export function StaticTable<TData>({
-  columns,
-  rows,
-  rowKey,
-  loading = false,
-  error,
-  onRetry,
-  emptyTitle = 'No data to display',
-  emptyDescription,
-  emptyIcon,
-  selection,
-  minWidth,
-  stickyHeader = false,
-  className,
-}: StaticTableProps<TData>) {
+function compareValues(a: SortableValue, b: SortableValue): number {
+  const aEmpty = a === null || a === undefined || a === '';
+  const bEmpty = b === null || b === undefined || b === '';
+  if (aEmpty && bEmpty) return 0;
+  if (aEmpty) return 1;
+  if (bEmpty) return -1;
+  if (typeof a === 'number' && typeof b === 'number') return a - b;
+  if (typeof a === 'boolean' && typeof b === 'boolean') return Number(a) - Number(b);
+  return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+}
+
+export function StaticTable<TData>(props: StaticTableProps<TData>) {
+  const { columns, rows, rowKey, loading = false, error, onRetry, emptyTitle = 'No data to display', emptyDescription, emptyIcon, selection, minWidth, stickyHeader = false, className } = props;
+  const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(null);
   const colSpan = columns.length + (selection ? 1 : 0);
+
+  const toggleSort = (key: string) => {
+    setSort((cur) => {
+      if (!cur || cur.key !== key) return { key, dir: 'asc' };
+      if (cur.dir === 'asc') return { key, dir: 'desc' };
+      return null;
+    });
+  };
+
+  const displayRows = useMemo(() => {
+    if (!sort) return rows;
+    const col = columns.find((c) => c.key === sort.key);
+    if (!col?.sortValue) return rows;
+    const factor = sort.dir === 'asc' ? 1 : -1;
+    return [...rows].sort((a, b) => compareValues(col.sortValue!(a), col.sortValue!(b)) * factor);
+  }, [rows, columns, sort]);
 
   return (
     <TableShell stickyHeader={stickyHeader} minWidth={minWidth} className={className}>
@@ -95,15 +103,40 @@ export function StaticTable<TData>({
               />
             </TableHead>
           ) : null}
-          {columns.map((column) => (
-            <TableHead
-              key={column.key}
-              align={column.align}
-              className={column.headerClassName}
-            >
-              {column.header}
-            </TableHead>
-          ))}
+          {columns.map((column) => {
+            const activeDir = sort?.key === column.key ? sort.dir : null;
+            return (
+              <TableHead
+                key={column.key}
+                align={column.align}
+                className={column.headerClassName}
+              >
+                {column.sortValue ? (
+                  <button
+                    type="button"
+                    onClick={() => toggleSort(column.key)}
+                    className={cn(
+                      'group inline-flex items-center gap-1 uppercase tracking-inherit transition-colors hover:text-gray-900',
+                      activeDir ? 'text-[#C2410C]' : 'text-inherit',
+                      column.align === 'right' && 'ml-auto flex-row-reverse',
+                      column.align === 'center' && 'mx-auto',
+                    )}
+                  >
+                    <span>{column.header}</span>
+                    {activeDir === 'asc' ? (
+                      <CaretUp weight="fill" className="size-3 shrink-0 text-[#F26F21]" aria-hidden />
+                    ) : activeDir === 'desc' ? (
+                      <CaretDown weight="fill" className="size-3 shrink-0 text-[#F26F21]" aria-hidden />
+                    ) : (
+                      <CaretUpDown className="size-3 shrink-0 text-gray-400 opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />
+                    )}
+                  </button>
+                ) : (
+                  column.header
+                )}
+              </TableHead>
+            );
+          })}
         </tr>
       </thead>
       <TableBody>
@@ -111,7 +144,7 @@ export function StaticTable<TData>({
           <TableSkeletonRows colSpan={colSpan} />
         ) : error ? (
           <TableError colSpan={colSpan} message={error} onRetry={onRetry} />
-        ) : rows.length === 0 ? (
+        ) : displayRows.length === 0 ? (
           <TableEmpty
             colSpan={colSpan}
             title={emptyTitle}
@@ -119,7 +152,7 @@ export function StaticTable<TData>({
             icon={emptyIcon ?? <Inbox className="size-5" aria-hidden />}
           />
         ) : (
-          rows.map((row, index) => (
+          displayRows.map((row, index) => (
             <TableRow key={rowKey(row, index)}>
               {selection ? (
                 <TableCell className="w-12">

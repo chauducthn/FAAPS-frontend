@@ -51,6 +51,28 @@ export const aiStudentService = {
     return data;
   },
 
+  /** Gửi tin nhắn kèm file/ảnh (bảng điểm Excel/CSV/PDF/ảnh...) để AI đọc và cập nhật profile nếu được yêu cầu. */
+  sendMessageWithAttachment: async (
+    conversationId: string,
+    content: string,
+    file: File,
+  ): Promise<SendAiMessageResult> => {
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('file', file);
+    const { data } = await apiClient.post<SendAiMessageResult>(
+      `/student/ai/conversations/${conversationId}/messages/upload`,
+      formData,
+      {
+        headers: {
+          ...(await getCsrfHeaders()),
+          'Content-Type': 'multipart/form-data',
+        },
+      },
+    );
+    return data;
+  },
+
   /** Đánh giá câu trả lời (was_helpful + feedback). */
   sendFeedback: async (
     messageId: string,

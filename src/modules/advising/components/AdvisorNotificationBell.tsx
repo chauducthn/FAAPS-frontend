@@ -8,6 +8,7 @@ import {
   useUnreadAdvisorNotificationCount,
 } from '../hooks/queries/useAdvisorQueries';
 import {
+  useClearAllAdvisorNotifications,
   useMarkAdvisorNotificationRead,
   useMarkAllAdvisorNotificationsRead,
 } from '../hooks/mutations/useAdvisingMutations';
@@ -35,6 +36,7 @@ export function AdvisorNotificationBell() {
   const { data: unread = 0 } = useUnreadAdvisorNotificationCount();
   const markRead = useMarkAdvisorNotificationRead();
   const markAll = useMarkAllAdvisorNotificationsRead();
+  const clearAll = useClearAllAdvisorNotifications();
 
   useEffect(() => {
     if (!open) return;
@@ -84,7 +86,9 @@ export function AdvisorNotificationBell() {
           items={items}
           unread={unread}
           markAllPending={markAll.isPending}
+          clearAllPending={clearAll.isPending}
           onMarkAll={() => markAll.mutate()}
+          onClearAll={() => clearAll.mutate()}
           onSelect={select}
           onViewAll={() => {
             setOpen(false);

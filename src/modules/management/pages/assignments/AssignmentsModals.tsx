@@ -1,10 +1,13 @@
+import { Modal } from '../../../../shared/components/ui/Modal';
+import { AssignAdvisorModal } from '../../components/AssignAdvisorModal';
 import { AssignToAdvisorModal } from '../../components/AssignToAdvisorModal';
 import { AutoAssignModal } from '../../components/AutoAssignModal';
 import { CohortPickerModal } from '../../components/CohortPickerModal';
 import { CohortAssignModal } from '../../components/CohortAssignModal';
 import { CohortPoolModal } from '../../components/CohortPoolModal';
 import { AdvisoryLimitModal, type AdvisoryLimitTarget } from '../../components/AdvisoryLimitModal';
-import { AdvisorDetailsModal } from '../../components/AdvisorDetailsModal';
+import { StudentHistoryPanel, type HistoryStudentTarget } from '../../components/StudentHistoryPanel';
+import { UnassignAdvisorModal } from '../../components/UnassignAdvisorModal';
 import { UnassignAllModal, type UnassignAllTarget } from '../../components/UnassignAllModal';
 import type { AssignmentAdvisor, CohortPoolAdvisor, SummaryCohort } from '../../types/admin';
 
@@ -32,10 +35,15 @@ export function AssignmentsModals({
   onBackFromPool,
   bulkAssignStudents,
   onCloseBulkAssign,
+  reassignStudents,
+  onCloseReassign,
+  excludeAdvisorId,
+  unassignStudents,
+  onCloseUnassignStudents,
+  historyStudent,
+  onCloseHistory,
   limitTarget,
   onCloseLimit,
-  detailAdvisorId,
-  onCloseDetail,
   unassignAllTarget,
   onCloseUnassignAll,
   onDoneUnassignAll,
@@ -61,10 +69,15 @@ export function AssignmentsModals({
   onBackFromPool: () => void;
   bulkAssignStudents: { id: string; name: string; cohortId?: string }[] | null;
   onCloseBulkAssign: () => void;
+  reassignStudents: { id: string; name: string; cohortId?: string; advisorId?: string | null }[] | null;
+  onCloseReassign: () => void;
+  excludeAdvisorId?: string;
+  unassignStudents: { id: string; name: string }[] | null;
+  onCloseUnassignStudents: () => void;
+  historyStudent: HistoryStudentTarget | null;
+  onCloseHistory: () => void;
   limitTarget: AdvisoryLimitTarget | null;
   onCloseLimit: () => void;
-  detailAdvisorId: string | null;
-  onCloseDetail: () => void;
   unassignAllTarget: UnassignAllTarget | null;
   onCloseUnassignAll: () => void;
   onDoneUnassignAll: () => void;
@@ -74,11 +87,18 @@ export function AssignmentsModals({
   poolCountByCohort: Map<string, number>;
   poolAdvisorsByCohort: Map<string, Set<string>>;
 }) {
-  const requiredCohorts = [...new Set((bulkAssignStudents ?? []).map((s) => s.cohortId).filter(Boolean) as string[])];
-  const eligibleAdvisors =
-    requiredCohorts.length > 0 && poolAdvisorsByCohort.size > 0
-      ? advisors.filter((a) => requiredCohorts.every((cId) => poolAdvisorsByCohort.get(cId)?.has(a.id)))
-      : advisors;
+  const filterEligibleByCohorts = (list: { cohortId?: string }[] | null) => {
+    const requiredCohorts = [...new Set((list ?? []).map((s) => s.cohortId).filter(Boolean) as string[])];
+    if (requiredCohorts.length === 0) return advisors;
+    return advisors.filter((a) => requiredCohorts.every((cId) => poolAdvisorsByCohort.get(cId)?.has(a.id)));
+  };
+  const eligibleAdvisors = filterEligibleByCohorts(bulkAssignStudents);
+  const eligibleReassignAdvisors = filterEligibleByCohorts(reassignStudents);
+  const sharedCurrentAdvisorIds = [
+    ...new Set((reassignStudents ?? []).map((s) => s.advisorId).filter(Boolean) as string[]),
+  ];
+  const effectiveExcludeAdvisorId =
+    excludeAdvisorId ?? (sharedCurrentAdvisorIds.length === 1 ? sharedCurrentAdvisorIds[0] : undefined);
   const assignedAdvisorIds = new Set<string>();
   poolAdvisorsByCohort.forEach((set) => set.forEach((id) => assignedAdvisorIds.add(id)));
   const idleAdvisors = advisors.filter((a) => !assignedAdvisorIds.has(a.id));
@@ -93,6 +113,7 @@ export function AssignmentsModals({
         fixedAdvisorId={assignCohortFor?.advisorId}
         initialCohortIds={assignCohortFor?.initialCohortIds}
         bulkAdvisors={assignCohortFor?.bulkAdvisors}
+        assignedAdvisorIds={assignedAdvisorIds}
         onDone={onDoneAssignCohort}
       />
       <CohortPickerModal
@@ -128,8 +149,22 @@ export function AssignmentsModals({
         students={bulkAssignStudents ?? []}
         advisors={eligibleAdvisors}
       />
+      <AssignAdvisorModal
+        open={!!reassignStudents?.length}
+        onClose={onCloseReassign}
+        students={reassignStudents ?? []}
+        advisors={eligibleReassignAdvisors}
+        excludeAdvisorId={effectiveExcludeAdvisorId}
+      />
+      <UnassignAdvisorModal students={unassignStudents} onClose={onCloseUnassignStudents} />
+      <Modal open={!!historyStudent} onClose={onCloseHistory} title="Assignment history" className="max-w-4xl">
+        {historyStudent && (
+          <div className="p-4">
+            <StudentHistoryPanel student={historyStudent} onBack={onCloseHistory} />
+          </div>
+        )}
+      </Modal>
       <AdvisoryLimitModal target={limitTarget} onClose={onCloseLimit} />
-      <AdvisorDetailsModal advisorId={detailAdvisorId} onClose={onCloseDetail} />
       <UnassignAllModal target={unassignAllTarget} onClose={onCloseUnassignAll} onDone={onDoneUnassignAll} />
     </>
   );

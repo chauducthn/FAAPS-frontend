@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { CaretDown as ChevronDown, SignOut as LogOut, User as UserRound } from '@phosphor-icons/react';
+import { UserAvatar } from '@/shared/components/common/UserAvatar';
 import { useAuth } from '../../../../modules/auth/stores/useAuth';
 import { authService } from '../../../../modules/auth/services/authService';
 
@@ -57,9 +58,12 @@ export function ProfileMenu({ roleLabel, profilePath }: ProfileMenuProps) {
           className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50"
           aria-expanded={open}
         >
-          <span className="flex size-8 items-center justify-center rounded-full bg-orange-100 text-sm font-semibold text-orange-700 ring-1 ring-[#e5e7eb]">
-            {user?.fullName?.charAt(0).toUpperCase() ?? 'U'}
-          </span>
+          <UserAvatar
+            name={user?.fullName}
+            avatarUrl={user?.avatarUrl}
+            className="size-8 ring-1 ring-[#e5e7eb]"
+            textClassName="text-xs font-semibold"
+          />
           <span className="hidden text-left sm:block">
             <span className="block text-sm font-semibold leading-[19px] text-[var(--ink-primary)]">
               {user?.fullName}

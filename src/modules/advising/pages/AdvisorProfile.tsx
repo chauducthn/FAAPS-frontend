@@ -33,13 +33,15 @@ export default function AdvisorProfile() {
     <div className="mx-auto flex max-w-6xl flex-col gap-6 pb-4">
       <ProfileHero
         fullName={identity?.fullName ?? user?.fullName}
-        subtitle={`Academic Advisor${identity ? ` · ${identity.email}` : ''}`}
+        subtitle={identity?.email ?? user?.email ?? 'Academic Advisor'}
+        roleBadge="Academic Advisor"
+        avatarUrl={identity?.avatarUrl ?? user?.avatarUrl}
         isLoading={identityQuery.isLoading}
         action={
           <Link
             to="/advisor/students"
-            className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-bold
-              text-[#c2410c] shadow-sm hover:bg-orange-50"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50/70 px-3.5 text-[13px] font-semibold
+              text-[#C2410C] transition-colors hover:bg-orange-100"
           >
             My Students <ArrowRight className="size-4" aria-hidden />
           </Link>

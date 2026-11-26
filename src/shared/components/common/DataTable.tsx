@@ -9,6 +9,8 @@
 import { useEffect, useState } from 'react';
 import { MagnifyingGlass as Search } from '@phosphor-icons/react';
 import type { RowData } from '@tanstack/react-table';
+import { toast } from 'sonner';
+import { apiErrorMessage } from '@/shared/lib/apiError';
 import { cn } from '@/shared/lib/utils';
 import { TableShell } from './table/TablePrimitives';
 import { DataTableBody } from './data-table/DataTableBody';
@@ -67,6 +69,10 @@ export function DataTable<TData extends RowData, TValue = unknown>(
     if (selectedRows.length === 0) setAllRowsOverride(null);
   }, [selectedRows.length]);
 
+  useEffect(() => {
+    setAllRowsOverride(null);
+  }, [totalRowCount]);
+
   const effectiveSelected = allRowsOverride ?? selectedRows;
   const handleSelectAll = !manual
     ? () => table.toggleAllRowsSelected(true)
@@ -76,6 +82,8 @@ export function DataTable<TData extends RowData, TValue = unknown>(
           try {
             const all = await onFetchAllRows();
             if (all.length > 0) setAllRowsOverride(all);
+          } catch (err) {
+            toast.error(apiErrorMessage(err));
           } finally {
             setLoadingAll(false);
           }
@@ -113,6 +121,7 @@ export function DataTable<TData extends RowData, TValue = unknown>(
           selectedRows={effectiveSelected}
           totalRows={totalRows}
           loadingAll={loadingAll}
+          allRowsSelected={allRowsOverride !== null}
           onSelectAll={handleSelectAll}
           bulkActions={bulkActions}
           onClearSelection={() => {

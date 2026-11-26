@@ -1,4 +1,5 @@
 // Unified list + create / edit / activate / import / delete for Curriculum and Cohorts pages.
+import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { Pagination } from '../Pagination';
 import CurriculumTable from './CurriculumTable';
@@ -29,9 +30,11 @@ const COPY = {
 
 export default function CurriculumManager({
   kind,
+  headerLeft,
   onOpenCohort,
 }: {
   kind: CurriculumKind;
+  headerLeft?: ReactNode;
   onOpenCohort?: (item: CurriculumItem) => void;
 }) {
   const copy = COPY[kind];
@@ -53,6 +56,7 @@ export default function CurriculumManager({
     <div className="w-full min-w-0 space-y-4">
       <CurriculumManagerTopBar
         kind={kind}
+        headerLeft={headerLeft}
         plural={copy.plural}
         createLabel={copy.create}
         totalElements={data?.totalElements}
@@ -76,28 +80,14 @@ export default function CurriculumManager({
 
       <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
         <CurriculumManagerFilters
-          kind={kind}
-          searchPlaceholder={copy.search}
-          search={s.search}
-          majorId={s.majorId}
-          version={s.version}
-          startSemesterId={s.startSemesterId}
-          status={s.status}
-          current={s.current}
-          majors={s.majors}
-          versions={s.versionOptions}
-          semesters={s.semesters}
-          hasFilters={s.hasFilters}
-          selectedCount={s.selectedItems.length}
-          onSearchChange={s.setSearch}
-          onMajorChange={s.setMajorId}
-          onVersionChange={s.setVersion}
-          onStartSemesterChange={s.setStartSemesterId}
-          onStatusChange={s.setStatus}
-          onCurrentChange={s.setCurrent}
-          onClearFilters={s.clearFilters}
-          onBulkAction={s.setBulkAction}
-          onClearSelection={() => s.setSelectedIds(new Set())}
+          kind={kind} searchPlaceholder={copy.search} search={s.search} majorId={s.majorId} version={s.version}
+          startSemesterId={s.startSemesterId} status={s.status} current={s.current} majors={s.majors}
+          versions={s.versionOptions} semesters={s.semesters} hasFilters={s.hasFilters}
+          selectedCount={s.selectedItems.length} totalCount={data?.totalElements ?? 0} selectingAll={s.selectingAll}
+          onSelectAll={() => void s.selectAllMatching()} onSearchChange={s.setSearch} onMajorChange={s.setMajorId}
+          onVersionChange={s.setVersion} onStartSemesterChange={s.setStartSemesterId} onStatusChange={s.setStatus}
+          onCurrentChange={s.setCurrent} onClearFilters={s.clearFilters} onBulkAction={s.setBulkAction}
+          onClearSelection={s.clearSelection}
         />
 
         {isLoading ? (

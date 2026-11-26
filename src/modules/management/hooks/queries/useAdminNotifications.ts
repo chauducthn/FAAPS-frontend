@@ -31,3 +31,11 @@ export const useMarkAllNotificationsRead = () => {
     onSuccess: () => qc.invalidateQueries({ queryKey: NOTIFICATIONS }),
   });
 };
+
+export const useClearAllNotifications = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => notificationService.clearAll(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: NOTIFICATIONS }),
+  });
+};

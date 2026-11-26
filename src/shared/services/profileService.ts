@@ -17,11 +17,14 @@ export interface UserProfileDto {
   authProvider: string;
   lastLoginAt: string | null;
   createdAt: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface UpdateBaseProfileBody {
   fullName: string;
   phone: string | null;
+  email?: string;
+  dateOfBirth?: string | null;
 }
 
 export interface ChangePasswordBody {
@@ -37,6 +40,25 @@ export const profileService = {
 
   updateProfile: async (body: UpdateBaseProfileBody): Promise<UserProfileDto> => {
     const { data } = await apiClient.put<UserProfileDto>('/profile', body, {
+      headers: await getCsrfHeaders(),
+    });
+    return data;
+  },
+
+  uploadAvatar: async (file: File): Promise<UserProfileDto> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await apiClient.post<UserProfileDto>('/profile/avatar', formData, {
+      headers: {
+        ...(await getCsrfHeaders()),
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
+
+  removeAvatar: async (): Promise<UserProfileDto> => {
+    const { data } = await apiClient.delete<UserProfileDto>('/profile/avatar', {
       headers: await getCsrfHeaders(),
     });
     return data;

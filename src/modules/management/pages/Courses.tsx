@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { CheckCircle as CheckCircle2, Prohibit as CircleOff, Trash as Trash2 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { DataTable } from '../../../shared/components/common/DataTable';
+import { fetchAllPages } from '../../../shared/lib/fetchAllPages';
 import { courseService } from '../services/course.service';
 import type { CourseDetail } from '../../academic/types/course';
 import type { CreateCourseFormValues } from '../../academic/validations/course.schema';
@@ -86,39 +87,21 @@ export default function CoursesPage() {
   return (
     <div className="w-full space-y-4">
       <CoursesTopBar
-        totalItems={query.data?.totalItems}
-        isFetching={query.isFetching}
-        pageIndex={s.pagination.pageIndex}
-        totalPages={query.data?.totalPages ?? 1}
-        activeOnPage={visibleItems.filter((c) => c.status === 'ACTIVE').length}
-        shownCount={visibleItems.length}
-        creditsOnPage={visibleItems.reduce((sum, c) => sum + c.credits, 0)}
-        activeStatus={s.status}
-        examples={s.examples}
-        importing={s.importing}
-        importOpen={s.importOpen}
+        totalItems={query.data?.totalItems} isFetching={query.isFetching} pageIndex={s.pagination.pageIndex}
+        totalPages={query.data?.totalPages ?? 1} activeOnPage={visibleItems.filter((c) => c.status === 'ACTIVE').length}
+        shownCount={visibleItems.length} creditsOnPage={visibleItems.reduce((sum, c) => sum + c.credits, 0)}
+        activeStatus={s.status} examples={s.examples} importing={s.importing} importOpen={s.importOpen}
         onToggleActive={() => s.resetPage(s.setStatus)(s.status === 'ACTIVE' ? 'ALL' : 'ACTIVE')}
-        onClearStatus={() => s.resetPage(s.setStatus)('ALL')}
-        onPickFile={(f) => void s.handlePickFile(f)}
-        onCreate={() => {
-          s.setEditing(null);
-          s.setFormOpen(true);
-        }}
+        onClearStatus={() => s.resetPage(s.setStatus)('ALL')} onSelectStatus={s.resetPage(s.setStatus)}
+        onPickFile={(f) => void s.handlePickFile(f)} onCreate={() => { s.setEditing(null); s.setFormOpen(true); }}
       />
 
       <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
         <CoursesFilterBar
-          search={s.search}
-          status={s.status}
-          categoryId={s.categoryId}
-          credits={s.credits}
-          categories={s.categories}
-          hasFilters={s.hasFilters}
-          onSearchChange={s.resetPage(s.setSearch)}
-          onStatusChange={s.resetPage(s.setStatus)}
-          onCategoryChange={s.resetPage(s.setCategoryId)}
-          onCreditsChange={s.resetPage(s.setCredits)}
-          onClear={s.clearFilters}
+          search={s.search} status={s.status} categoryId={s.categoryId} credits={s.credits}
+          categories={s.categories} hasFilters={s.hasFilters} onSearchChange={s.resetPage(s.setSearch)}
+          onStatusChange={s.resetPage(s.setStatus)} onCategoryChange={s.resetPage(s.setCategoryId)}
+          onCreditsChange={s.resetPage(s.setCredits)} onClear={s.clearFilters}
         />
 
         <div className="h-[calc(100vh-295px)] min-h-[460px]">
@@ -143,12 +126,17 @@ export default function CoursesPage() {
                 manual columns={columns} data={visibleItems} searchKey="name" searchValue={s.search}
                 searchPlaceholder="Search by code or name..." emptyText={s.hasFilters ? 'No courses match your filters.' : 'No courses yet.'}
                 getRowId={(row) => row.id} isLoading={false} totalRowCount={totalItems}
-                onFetchAllRows={async () =>
-                  (await courseService.list({
-                    page: 0, size: Math.min(totalItems || 500, 500),
-                    search: s.search.trim() || undefined, status: s.status === 'ALL' ? undefined : s.status,
-                    categoryId: s.categoryId || undefined,
-                  })).items
+                onFetchAllRows={() =>
+                  fetchAllPages((page, size) =>
+                    courseService.list({
+                      page,
+                      size,
+                      search: s.search.trim() || undefined,
+                      status: s.status === 'ALL' ? undefined : s.status,
+                      categoryId: s.categoryId === 'ALL' ? undefined : s.categoryId,
+                      credits: s.credits === 'ALL' ? undefined : s.credits,
+                    }),
+                  )
                 }
                 pagination={s.pagination} onPaginationChange={s.setPagination} sorting={s.sorting} onSortingChange={s.setSorting}
                 onSearchChange={s.resetPage(s.setSearch)} showSearch={false}

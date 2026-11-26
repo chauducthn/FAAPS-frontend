@@ -1,26 +1,23 @@
-import { CaretDown as ChevronDown, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, UserMinus as UserX, Users, X } from '@phosphor-icons/react';
-import type { SummaryCohort } from '../../types/admin';
+import { CaretDown as ChevronDown, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, UserCheck, UserMinus as UserX, Users, MagicWand as WandSparkles, X } from '@phosphor-icons/react';
+import type { AssignmentAdvisor, SummaryCohort } from '../../types/admin';
 import { cn } from '@/shared/lib/utils';
 
-export type AssignmentTab = 'advisors' | 'unassigned';
+export type AssignmentTab = 'advisors' | 'assigned' | 'unassigned';
 
 export const ASSIGNMENT_TABS: { key: AssignmentTab; label: string; icon: typeof Users }[] = [
   { key: 'advisors', label: 'Advisors', icon: Users },
+  { key: 'assigned', label: 'Assigned students', icon: UserCheck },
   { key: 'unassigned', label: 'Unassigned students', icon: UserX },
 ];
 
 const selectClass =
   'h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-[13px] font-medium text-gray-700 transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15';
 
-export function AssignmentsTabBar({
-  tab,
-  unassignedCount,
-  onTabChange,
-}: {
-  tab: AssignmentTab;
-  unassignedCount?: number;
-  onTabChange: (tab: AssignmentTab) => void;
+export function AssignmentsTabBar(props: {
+  tab: AssignmentTab; assignedCount?: number; unassignedCount?: number;
+  showAutoAssign?: boolean; onTabChange: (tab: AssignmentTab) => void; onAutoAssign?: () => void;
 }) {
+  const { tab, assignedCount, unassignedCount, showAutoAssign, onTabChange, onAutoAssign } = props;
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div
@@ -30,6 +27,7 @@ export function AssignmentsTabBar({
       >
         {ASSIGNMENT_TABS.map(({ key, label, icon: Icon }) => {
           const active = tab === key;
+          const badgeCount = key === 'assigned' ? assignedCount : key === 'unassigned' ? unassignedCount : undefined;
           return (
             <button
               key={key}
@@ -46,59 +44,50 @@ export function AssignmentsTabBar({
             >
               <Icon className="size-4" aria-hidden />
               {label}
-              {key === 'unassigned' && unassignedCount !== undefined ? (
+              {badgeCount !== undefined ? (
                 <span
                   className={cn(
                     'rounded-full px-1.5 py-0.25 text-[11px] font-semibold tabular-nums',
                     active
                       ? 'bg-white/20 text-white'
-                      : unassignedCount > 0
+                      : key === 'unassigned' && badgeCount > 0
                         ? 'bg-orange-100 text-[#C2410C]'
-                        : 'bg-gray-100 text-gray-600',
+                        : key === 'assigned' && badgeCount > 0
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : 'bg-gray-100 text-gray-600',
                   )}
                 >
-                  {unassignedCount}
+                  {badgeCount}
                 </span>
               ) : null}
             </button>
           );
         })}
       </div>
+
+      {showAutoAssign && onAutoAssign && (
+        <button
+          type="button"
+          onClick={onAutoAssign}
+          title="Automatically distribute unassigned students across each cohort's advisor pool"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14]"
+        >
+          <WandSparkles className="size-4" aria-hidden />
+          Auto assign
+        </button>
+      )}
     </div>
   );
 }
 
-export function AssignmentsFilterBar({
-  tab,
-  search,
-  majorFilter,
-  cohortFilter,
-  pendingOnly,
-  majors,
-  cohorts,
-  advisorCohortOptions,
-  hasFilter,
-  onSearchChange,
-  onMajorChange,
-  onCohortChange,
-  onPendingChange,
-  onClear,
-}: {
-  tab: AssignmentTab;
-  search: string;
-  majorFilter: string;
-  cohortFilter: string;
-  pendingOnly: boolean;
-  majors: string[];
-  cohorts: SummaryCohort[];
-  advisorCohortOptions: SummaryCohort[];
-  hasFilter: boolean;
-  onSearchChange: (val: string) => void;
-  onMajorChange: (val: string) => void;
-  onCohortChange: (val: string) => void;
-  onPendingChange: (checked: boolean) => void;
-  onClear: () => void;
+export function AssignmentsFilterBar(props: {
+  tab: AssignmentTab, search: string, advisorFilter: string, majorFilter: string, cohortFilter: string,
+  pendingOnly: boolean, advisors: AssignmentAdvisor[], majors: string[], cohorts: SummaryCohort[],
+  advisorCohortOptions: SummaryCohort[], hasFilter: boolean, onSearchChange: (val: string) => void,
+  onAdvisorChange: (val: string) => void, onMajorChange: (val: string) => void, onCohortChange: (val: string) => void,
+  onPendingChange: (checked: boolean) => void, onClear: () => void,
 }) {
+  const { tab, search, advisorFilter, majorFilter, cohortFilter, pendingOnly, advisors, majors, cohorts, advisorCohortOptions, hasFilter, onSearchChange, onAdvisorChange, onMajorChange, onCohortChange, onPendingChange, onClear } = props;
   return (
     <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3 lg:flex-nowrap">
       <div className="relative min-w-0 flex-1 basis-full lg:basis-auto">
@@ -107,7 +96,13 @@ export function AssignmentsFilterBar({
           type="search"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder={tab === 'advisors' ? 'Search by advisor name or email...' : 'Search by student ID or name...'}
+          placeholder={
+            tab === 'advisors'
+              ? 'Search by advisor name or email...'
+              : tab === 'assigned'
+                ? 'Search by student ID, name, or advisor...'
+                : 'Search by student ID or name...'
+          }
           aria-label="Search"
           className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
         />
@@ -123,6 +118,20 @@ export function AssignmentsFilterBar({
         )}
       </div>
 
+      {tab === 'assigned' && (
+        <div className="relative w-full shrink-0 sm:w-[210px]">
+          <select value={advisorFilter} onChange={(e) => onAdvisorChange(e.target.value)} aria-label="Filter by advisor" className={selectClass}>
+            <option value="">All advisors</option>
+            {advisors.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.fullName} ({a.activeStudents})
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        </div>
+      )}
+
       <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[144px]">
         <select value={majorFilter} onChange={(e) => onMajorChange(e.target.value)} aria-label="Filter by major" className={selectClass}>
           <option value="">All majors</option>
@@ -136,13 +145,15 @@ export function AssignmentsFilterBar({
       <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[164px]">
         <select value={cohortFilter} onChange={(e) => onCohortChange(e.target.value)} aria-label="Filter by cohort" className={selectClass}>
           <option value="">All cohorts</option>
-          {(majorFilter ? advisorCohortOptions : cohorts).map((c) => (
-            <option key={c.cohortId} value={c.cohortId}>
-              {majorFilter
-                ? tab === 'unassigned' ? `${c.cohort} (${c.unassigned})` : c.cohort
-                : tab === 'unassigned' ? `${c.cohort} · ${c.majorCode} (${c.unassigned})` : `${c.cohort} · ${c.majorCode}`}
-            </option>
-          ))}
+          {(majorFilter ? advisorCohortOptions : cohorts).map((c) => {
+            const countSuffix =
+              tab === 'unassigned' ? ` (${c.unassigned})` : tab === 'assigned' ? ` (${c.assigned})` : '';
+            return (
+              <option key={c.cohortId} value={c.cohortId}>
+                {majorFilter ? `${c.cohort}${countSuffix}` : `${c.cohort} · ${c.majorCode}${countSuffix}`}
+              </option>
+            );
+          })}
         </select>
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
       </div>

@@ -57,127 +57,117 @@ function StatItem({
   );
 }
 
-export function CurriculumManagerTopBar({
-  kind,
-  plural,
-  createLabel,
-  totalElements,
-  shownCount,
-  activeOnPage,
-  inactiveOnPage,
-  creditsOnPage,
-  activeStatus,
-  disableImport,
-  isImportingCohort,
-  onSelectStatus,
-  onClearAll,
-  onOpenImport,
-  cohortExamples,
-  onImportCohortFile,
-  onOpenCreate,
-}: {
-  kind?: CurriculumKind;
-  plural: string;
-  createLabel: string;
-  totalElements: number | undefined;
-  shownCount: number;
-  activeOnPage: number;
-  inactiveOnPage: number;
-  creditsOnPage: number;
-  activeStatus: string;
-  disableImport: boolean;
-  isImportingCohort?: boolean;
-  onSelectStatus: (status: string) => void;
-  onClearAll: () => void;
-  onOpenImport: () => void;
-  cohortExamples?: ExampleSheet[];
-  onImportCohortFile?: (file: File | undefined) => void;
-  onOpenCreate: () => void;
+export function CurriculumManagerTopBar(props: {
+  kind?: CurriculumKind, headerLeft?: ReactNode, plural: string, createLabel: string,
+  totalElements: number | undefined, shownCount: number, activeOnPage: number, inactiveOnPage: number,
+  creditsOnPage: number, activeStatus: string, disableImport: boolean, isImportingCohort?: boolean,
+  onSelectStatus: (status: string) => void, onClearAll: () => void, onOpenImport: () => void,
+  cohortExamples?: ExampleSheet[], onImportCohortFile?: (file: File | undefined) => void, onOpenCreate: () => void,
 }) {
+  const { kind, headerLeft, plural, createLabel, totalElements, shownCount, activeOnPage, inactiveOnPage, creditsOnPage, activeStatus, disableImport, isImportingCohort, onSelectStatus, onClearAll, onOpenImport, cohortExamples, onImportCohortFile, onOpenCreate } = props;
   const fileRef = useRef<HTMLInputElement>(null);
-  return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div className="grid flex-1 grid-cols-2 gap-2.5 lg:grid-cols-4">
-        <StatItem
-          icon={<Layers className="size-4" />}
-          label={`Total ${plural}`}
-          value={totalElements !== undefined ? String(totalElements) : '—'}
-          tone="slate"
-          active={!activeStatus}
-          onClick={onClearAll}
-        />
-        <StatItem
-          icon={<BookOpenCheck className="size-4" />}
-          label="Active"
-          value={String(activeOnPage)}
-          sub={`of ${shownCount}`}
-          tone="emerald"
-          active={activeStatus === 'ACTIVE'}
-          onClick={() => onSelectStatus(activeStatus === 'ACTIVE' ? '' : 'ACTIVE')}
-        />
-        <StatItem
-          icon={<CircleOff className="size-4" />}
-          label="Inactive"
-          value={String(inactiveOnPage)}
-          tone="amber"
-          active={activeStatus === 'INACTIVE'}
-          onClick={() => onSelectStatus(activeStatus === 'INACTIVE' ? '' : 'INACTIVE')}
-        />
-        <StatItem
-          icon={<GraduationCap className="size-4" />}
-          label="Credits"
-          value={String(creditsOnPage)}
-          sub="shown"
-          tone="orange"
-        />
-      </div>
+  const stats = (
+    <div className="grid flex-1 grid-cols-2 gap-2.5 lg:grid-cols-4">
+      <StatItem
+        icon={<Layers className="size-4" />}
+        label={`Total ${plural}`}
+        value={totalElements !== undefined ? String(totalElements) : '—'}
+        tone="slate"
+        active={!activeStatus}
+        onClick={onClearAll}
+      />
+      <StatItem
+        icon={<BookOpenCheck className="size-4" />}
+        label="Active"
+        value={String(activeOnPage)}
+        sub={`of ${shownCount}`}
+        tone="emerald"
+        active={activeStatus === 'ACTIVE'}
+        onClick={() => onSelectStatus(activeStatus === 'ACTIVE' ? '' : 'ACTIVE')}
+      />
+      <StatItem
+        icon={<CircleOff className="size-4" />}
+        label="Inactive"
+        value={String(inactiveOnPage)}
+        tone="amber"
+        active={activeStatus === 'INACTIVE'}
+        onClick={() => onSelectStatus(activeStatus === 'INACTIVE' ? '' : 'INACTIVE')}
+      />
+      <StatItem
+        icon={<GraduationCap className="size-4" />}
+        label="Credits"
+        value={String(creditsOnPage)}
+        sub="shown"
+        tone="orange"
+      />
+    </div>
+  );
 
-      <div className="flex shrink-0 items-center justify-end gap-2">
-        {kind === 'cohort' && cohortExamples && onImportCohortFile && (
-          <>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".xlsx"
-              className="hidden"
-              onChange={(e) => {
-                onImportCohortFile(e.target.files?.[0]);
-                e.target.value = '';
-              }}
-            />
-            <ExampleSheetButton
-              examples={cohortExamples}
-              className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
-            />
-            <button
-              type="button"
-              disabled={isImportingCohort}
-              onClick={() => fileRef.current?.click()}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:opacity-50"
-            >
-              {isImportingCohort ? <Loader2 className="size-3.5 animate-spin text-gray-500" /> : <FileSpreadsheet className="size-3.5 text-gray-500" aria-hidden />}
-              {isImportingCohort ? 'Importing…' : 'Import Excel'}
-            </button>
-          </>
-        )}
-        {kind === 'curriculum' && (
+  const actions = (
+    <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+      {kind === 'cohort' && cohortExamples && onImportCohortFile && (
+        <>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".xlsx"
+            className="hidden"
+            onChange={(e) => {
+              onImportCohortFile(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+          />
+          <ExampleSheetButton
+            examples={cohortExamples}
+            className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+          />
           <button
             type="button"
-            disabled={disableImport}
-            onClick={onOpenImport}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isImportingCohort}
+            onClick={() => fileRef.current?.click()}
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:opacity-50"
           >
-            <FileSpreadsheet className="size-4 text-gray-500" aria-hidden /> Import Excel
+            {isImportingCohort ? <Loader2 className="size-3.5 animate-spin text-gray-500" /> : <FileSpreadsheet className="size-3.5 text-gray-500" aria-hidden />}
+            {isImportingCohort ? 'Importing…' : 'Import Excel'}
           </button>
-        )}
+        </>
+      )}
+      {kind === 'curriculum' && (
         <button
           type="button"
-          onClick={onOpenCreate}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+          disabled={disableImport}
+          onClick={onOpenImport}
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <Plus className="size-4" aria-hidden /> {createLabel}
+          <FileSpreadsheet className="size-4 text-gray-500" aria-hidden /> Import Excel
         </button>
+      )}
+      <button
+        type="button"
+        onClick={onOpenCreate}
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+      >
+        <Plus className="size-4" aria-hidden /> {createLabel}
+      </button>
+    </div>
+  );
+
+  if (headerLeft) {
+    return (
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>{headerLeft}</div>
+          {actions}
+        </div>
+        {stats}
       </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+      {stats}
+      {actions}
     </div>
   );
 }

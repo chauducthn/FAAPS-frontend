@@ -115,6 +115,7 @@ interface DataTableBulkBarProps<TData> {
   selectedRows: TData[];
   totalRows?: number;
   loadingAll?: boolean;
+  allRowsSelected?: boolean;
   onSelectAll?: () => void;
   bulkActions?: (selectedRows: TData[]) => ReactNode;
   onClearSelection: () => void;
@@ -124,13 +125,14 @@ export function DataTableBulkBar<TData>({
   selectedRows,
   totalRows,
   loadingAll = false,
+  allRowsSelected = false,
   onSelectAll,
   bulkActions,
   onClearSelection,
 }: DataTableBulkBarProps<TData>) {
   const selectedCount = selectedRows.length;
   if (selectedCount === 0) return null;
-  const canSelectAll = !!onSelectAll && !!totalRows && totalRows > selectedCount;
+  const canSelectAll = !allRowsSelected && !!onSelectAll && !!totalRows && totalRows > selectedCount;
 
   return (
     <div

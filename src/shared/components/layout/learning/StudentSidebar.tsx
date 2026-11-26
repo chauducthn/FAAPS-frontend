@@ -18,25 +18,78 @@ import {
 
 export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
   {
-    items: [{ label: 'Home', to: '/student', icon: LayoutDashboard, end: true }],
+    items: [
+      {
+        label: 'Home',
+        to: '/student',
+        icon: LayoutDashboard,
+        end: true,
+        description: 'Track your academic standing, GPA progress, and upcoming advising tasks.',
+      },
+      {
+        label: 'Advisor Assistant',
+        to: '/student/ai-chat',
+        icon: BotMessageSquare,
+        description: 'Get personalized study advice, strengths & weaknesses analysis, and course guidance.',
+      },
+    ],
   },
   {
     title: 'STUDY SETUP & PLAN',
     items: [
-      { label: 'Curriculum & Goals', to: '/student/curriculum-goals', icon: Target },
-      { label: 'Transcript & Import', to: '/student/transcript', icon: FileText },
-      { label: 'AI Study Roadmap', to: '/student/ai-roadmap', icon: Route },
-      { label: 'Study Plan Board', to: '/student/study-plan', icon: Map },
-      { label: 'Courses', to: '/student/courses', icon: BookOpenCheck },
-      { label: 'Learning Tasks', to: '/student/learning-plan', icon: ListChecks },
+      {
+        label: 'Curriculum & Goals',
+        to: '/student/curriculum-goals',
+        icon: Target,
+        description: 'Configure your major, curriculum version, and graduation targets.',
+      },
+      {
+        label: 'Transcript & Import',
+        to: '/student/transcript',
+        icon: FileText,
+        description: 'Upload your FPTU transcript and review completed courses and grades.',
+      },
+      {
+        label: 'AI Study Roadmap',
+        to: '/student/ai-roadmap',
+        icon: Route,
+        description: 'Generate a personalized semester-by-semester study roadmap with AI.',
+      },
+      {
+        label: 'Study Plan Board',
+        to: '/student/study-plan',
+        icon: Map,
+        description: 'Organize and track your planned courses across upcoming semesters.',
+      },
+      {
+        label: 'Courses',
+        to: '/student/courses',
+        icon: BookOpenCheck,
+        description: 'Browse course details, credits, and prerequisite chains.',
+      },
+      {
+        label: 'Learning Tasks',
+        to: '/student/learning-plan',
+        icon: ListChecks,
+        description: 'Manage your study tasks, milestones, and action items.',
+      },
     ],
   },
   {
-    title: 'AI & ADVISING',
+    title: 'ADVISING',
     items: [
-      { label: 'AI Advisor Chat', to: '/student/ai-chat', icon: BotMessageSquare },
-      { label: 'Book Appointment', to: '/student/appointments', icon: CalendarClock },
-      { label: 'Advising Requests', to: '/student/advising-requests', icon: MessageSquareText },
+      {
+        label: 'Book Appointment',
+        to: '/student/appointments',
+        icon: CalendarClock,
+        description: 'Schedule and manage 1-on-1 advising sessions with your academic advisor.',
+      },
+      {
+        label: 'Advising Requests',
+        to: '/student/advising-requests',
+        icon: MessageSquareText,
+        description: 'Send academic questions and follow up on responses from your advisor.',
+      },
     ],
   },
 ];

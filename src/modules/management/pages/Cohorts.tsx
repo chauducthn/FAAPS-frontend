@@ -54,49 +54,54 @@ export default function CohortsPage() {
     setParams({ tab: 'curriculum', cohortId: item.id }, { replace: true });
   };
 
+  const tabBar = (
+    <div
+      role="tablist"
+      aria-label="Academic structure sections"
+      className="inline-flex items-center gap-1 rounded-xl border border-gray-200/80 bg-white p-1 shadow-2xs"
+    >
+      {tabs.map(({ key, label, icon: Icon, disabled, title }) => {
+        const active = activeTab === key;
+        return (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            disabled={disabled}
+            title={title}
+            onClick={() => handleSelect(key)}
+            className={cn(
+              'inline-flex h-8.5 items-center gap-2 rounded-lg px-3.5 text-[13px] font-semibold transition-colors',
+              active
+                ? 'bg-[#F26F21] text-white shadow-2xs'
+                : disabled
+                  ? 'cursor-not-allowed text-gray-300'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
+            )}
+          >
+            <Icon className="size-4" aria-hidden />
+            {label}
+          </button>
+        );
+      })}
+    </div>
+  );
+
   return (
     <div className="w-full min-w-0 space-y-4">
-      <div
-        role="tablist"
-        aria-label="Academic structure sections"
-        className="inline-flex items-center gap-1 rounded-xl border border-gray-200/80 bg-white p-1 shadow-2xs"
-      >
-        {tabs.map(({ key, label, icon: Icon, disabled, title }) => {
-          const active = activeTab === key;
-          return (
-            <button
-              key={key}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              disabled={disabled}
-              title={title}
-              onClick={() => handleSelect(key)}
-              className={cn(
-                'inline-flex h-8.5 items-center gap-2 rounded-lg px-3.5 text-[13px] font-semibold transition-colors',
-                active
-                  ? 'bg-[#F26F21] text-white shadow-2xs'
-                  : disabled
-                    ? 'cursor-not-allowed text-gray-300'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-              )}
-            >
-              <Icon className="size-4" aria-hidden />
-              {label}
-            </button>
-          );
-        })}
-      </div>
-
       {activeTab === 'curriculum' && cohortId ? (
-        <CohortCurriculumWorkspace
-          cohortId={cohortId}
-          onBackToCohorts={() => setParams({ tab: 'cohorts', cohortId }, { replace: true })}
-        />
+        <>
+          {tabBar}
+          <CohortCurriculumWorkspace
+            cohortId={cohortId}
+            onBackToCohorts={() => setParams({ tab: 'cohorts', cohortId }, { replace: true })}
+          />
+        </>
       ) : activeTab === 'cohorts' ? (
-        <CurriculumManager kind="cohort" onOpenCohort={handleOpenCohort} />
+        <CurriculumManager kind="cohort" headerLeft={tabBar} onOpenCohort={handleOpenCohort} />
       ) : (
-        <MajorsPage />
+        <MajorsPage headerLeft={tabBar} />
       )}
     </div>
   );

@@ -132,6 +132,11 @@ export const advisorService = {
       { headers: await getCsrfHeaders() })).data;
   },
 
+  clearAllNotifications: async (): Promise<{ deleted: number }> => {
+    return (await apiClient.delete<{ deleted: number }>('/advisor/notifications',
+      { headers: await getCsrfHeaders() })).data;
+  },
+
   /**
    * Yêu cầu tư vấn mà advisor nhận xử lý.
    * API trả về mảng thô `AdvisingRequest[]` — lọc status/từ khoá và phân trang

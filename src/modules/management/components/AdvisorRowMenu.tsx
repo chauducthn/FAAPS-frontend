@@ -93,7 +93,7 @@ export function AdvisorRowMenu({
             </button>
             <button role="menuitem" className={itemCls} onClick={() => run(onOpenDetails)}>
               <Eye className="size-4 text-gray-400" aria-hidden />
-              Details &amp; history
+              View assigned students
             </button>
           </div>,
           document.body,

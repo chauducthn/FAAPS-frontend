@@ -1,11 +1,15 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
-import { Warning as AlertTriangle, FileXls as FileSpreadsheet, ShieldCheck, SlidersHorizontal, UploadSimple as Upload } from '@phosphor-icons/react';
+import { Warning as AlertTriangle, DownloadSimple as Download, FileXls as FileSpreadsheet, SpinnerGap as Loader2, ShieldCheck, SlidersHorizontal, UploadSimple as Upload } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
+import { apiErrorMessage } from '@/shared/lib/apiError';
+import { AdminTabBar } from '../components/AdminTabBar';
 import { AttendanceConfigTab } from '../components/attendance/AttendanceConfigTab';
 import { AttendanceImportTab } from '../components/attendance/AttendanceImportTab';
-import { useAttendanceDefaultRule, useAttendanceImports, useAttendanceOverrides } from '../hooks/queries/useAttendance';
-import { maxAbsentSessions } from '../types/attendance';
+import { downloadAttendanceCsv } from '../components/attendance/AttendanceImportPreviewTable';
+import { useAttendanceDefaultRule, useAttendanceImportMutations, useAttendanceImports, useAttendanceOverrides } from '../hooks/queries/useAttendance';
+import { attendanceTemplateCsv } from '../services/attendance.service';
+import { maxAbsentSessions, type AttendanceImportPreview } from '../types/attendance';
 
 type Tab = 'import' | 'config';
 
@@ -66,6 +70,20 @@ export default function Attendance() {
   const defaultRule = useAttendanceDefaultRule();
   const overrides = useAttendanceOverrides();
   const imports = useAttendanceImports();
+  const { preview, confirm } = useAttendanceImportMutations();
+  const [current, setCurrent] = useState<AttendanceImportPreview | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const pickFile = async (file: File | undefined) => {
+    if (!file) return;
+    setError(null);
+    setCurrent(null);
+    try {
+      setCurrent(await preview.mutateAsync(file));
+    } catch (err) {
+      setError(apiErrorMessage(err));
+    }
+  };
 
   const rule = defaultRule.data;
   const history = imports.data ?? [];
@@ -76,76 +94,95 @@ export default function Attendance() {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="grid flex-1 grid-cols-2 gap-2.5 lg:grid-cols-4">
-          <AttendanceStatTile
-            icon={<ShieldCheck className="size-4" />}
-            label="Default pass rule"
-            value={rule ? `${rule.minAttendancePercent}%` : '—'}
-            meta={rule ? `max ${maxAbsentSessions(rule)} / ${rule.totalSessions} absent` : 'loading…'}
-            tone="orange"
-            active={tab === 'config'}
-            onClick={() => setTab('config')}
-          />
-          <AttendanceStatTile
-            icon={<SlidersHorizontal className="size-4" />}
-            label="Course overrides"
-            value={overrides.data ? String(overrides.data.length) : '—'}
-            meta="custom rules"
-            tone="indigo"
-            onClick={() => setTab('config')}
-          />
-          <AttendanceStatTile
-            icon={<FileSpreadsheet className="size-4" />}
-            label="Files imported"
-            value={String(history.length)}
-            meta={`${totalRows} rows recorded`}
-            tone="emerald"
-            active={tab === 'import'}
-            onClick={() => setTab('import')}
-          />
-          <AttendanceStatTile
-            icon={<AlertTriangle className="size-4" />}
-            label="Flagged records"
-            value={String(totalWarnings + totalFails)}
-            meta={`${totalWarnings} warn · ${totalFails} fail`}
-            tone="amber"
-            onClick={() => setTab('import')}
-          />
-        </div>
+      <AdminTabBar
+        ariaLabel="Attendance view"
+        activeKey={tab}
+        onChange={setTab}
+        tabs={TABS.map((t) => ({ key: t.key, label: t.label, icon: t.icon }))}
+        actions={
+          tab === 'import' ? (
+            <>
+              <button
+                type="button"
+                onClick={() => downloadAttendanceCsv('attendance-template.csv', attendanceTemplateCsv())}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+              >
+                <Download className="size-4 text-gray-500" aria-hidden /> Template
+              </button>
+              <label
+                className={cn(
+                  'inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14]',
+                  preview.isPending && 'pointer-events-none opacity-60',
+                )}
+              >
+                {preview.isPending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Upload className="size-4" aria-hidden />}
+                {preview.isPending ? 'Reading…' : 'Upload file'}
+                <input
+                  type="file"
+                  accept=".csv,.xlsx"
+                  aria-label="Upload attendance file"
+                  className="sr-only"
+                  disabled={preview.isPending}
+                  onChange={(e) => {
+                    void pickFile(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            </>
+          ) : undefined
+        }
+      />
 
-        <div className="flex shrink-0 items-center justify-end">
-          <div
-            role="tablist"
-            aria-label="Attendance view"
-            className="inline-flex rounded-xl border border-gray-200/80 bg-gray-100/80 p-1"
-          >
-            {TABS.map(({ key, label, icon: Icon }) => {
-              const active = tab === key;
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => setTab(key)}
-                  className={cn(
-                    'inline-flex h-8 items-center gap-1.5 rounded-lg px-3.5 text-[13px] font-semibold transition-all',
-                    active
-                      ? 'bg-white text-gray-900 shadow-2xs ring-1 ring-gray-200/70'
-                      : 'text-gray-500 hover:text-gray-800',
-                  )}
-                >
-                  <Icon className={cn('size-3.5', active ? 'text-[#F26F21]' : 'text-gray-400')} aria-hidden />
-                  {label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <AttendanceStatTile
+          icon={<ShieldCheck className="size-4" />}
+          label="Default pass rule"
+          value={rule ? `${rule.minAttendancePercent}%` : '—'}
+          meta={rule ? `max ${maxAbsentSessions(rule)} / ${rule.totalSessions} absent` : 'loading…'}
+          tone="orange"
+          active={tab === 'config'}
+          onClick={() => setTab('config')}
+        />
+        <AttendanceStatTile
+          icon={<SlidersHorizontal className="size-4" />}
+          label="Course overrides"
+          value={overrides.data ? String(overrides.data.length) : '—'}
+          meta="custom rules"
+          tone="indigo"
+          onClick={() => setTab('config')}
+        />
+        <AttendanceStatTile
+          icon={<FileSpreadsheet className="size-4" />}
+          label="Files imported"
+          value={String(history.length)}
+          meta={`${totalRows} rows recorded`}
+          tone="emerald"
+          active={tab === 'import'}
+          onClick={() => setTab('import')}
+        />
+        <AttendanceStatTile
+          icon={<AlertTriangle className="size-4" />}
+          label="Flagged records"
+          value={String(totalWarnings + totalFails)}
+          meta={`${totalWarnings} warn · ${totalFails} fail`}
+          tone="amber"
+          onClick={() => setTab('import')}
+        />
       </div>
 
-      {tab === 'import' ? <AttendanceImportTab /> : <AttendanceConfigTab />}
+      {tab === 'import' ? (
+        <AttendanceImportTab
+          current={current}
+          error={error}
+          isConfirming={confirm.isPending}
+          onConfirm={confirm.mutateAsync}
+          onClearCurrent={() => setCurrent(null)}
+          onError={setError}
+        />
+      ) : (
+        <AttendanceConfigTab />
+      )}
     </div>
   );
 }

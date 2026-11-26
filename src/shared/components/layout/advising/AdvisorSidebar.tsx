@@ -28,27 +28,70 @@ const NAV_SECTIONS: PortalNavSection[] = [
   {
     title: 'WORKSPACE',
     items: [
-      { label: 'Overview', to: '/advisor', icon: LayoutDashboard, end: true },
-      { label: 'My Students', to: '/advisor/students', icon: UsersRound },
+      {
+        label: 'Overview',
+        to: '/advisor',
+        icon: LayoutDashboard,
+        end: true,
+        description: 'Monitor advisee progress, pending requests, and upcoming sessions.',
+      },
+      {
+        label: 'My Students',
+        to: '/advisor/students',
+        icon: UsersRound,
+        description: 'View and manage your assigned students and academic risk alerts.',
+      },
     ],
   },
   {
     title: 'ADVISING',
     items: [
-      { label: 'Advising Requests', to: '/advisor/advising-requests', icon: Inbox },
-      { label: 'Advising Conversations', to: '/advisor/conversations', icon: MessageSquareText },
-      { label: 'Study Plan Reviews', to: '/advisor/study-plans', icon: ClipboardCheck },
+      {
+        label: 'Advising Requests',
+        to: '/advisor/advising-requests',
+        icon: Inbox,
+        description: 'Review and respond to incoming academic advising requests.',
+      },
+      {
+        label: 'Advising Conversations',
+        to: '/advisor/conversations',
+        icon: MessageSquareText,
+        description: 'Message students and follow up on ongoing advising threads.',
+      },
+      {
+        label: 'Study Plan Reviews',
+        to: '/advisor/study-plans',
+        icon: ClipboardCheck,
+        description: 'Review, approve, or give feedback on student study plans.',
+      },
     ],
   },
   {
     title: 'APPOINTMENTS',
-    items: [{ label: 'Appointments', to: '/advisor/appointments', icon: CalendarDays }],
+    items: [
+      {
+        label: 'Appointments',
+        to: '/advisor/appointments',
+        icon: CalendarDays,
+        description: 'Manage scheduled 1-on-1 advising sessions and consultation notes.',
+      },
+    ],
   },
   {
     title: 'INSIGHTS',
     items: [
-      { label: 'Notifications', to: '/advisor/notifications', icon: Bell },
-      { label: 'Reports & Analytics', to: '/advisor/reports', icon: ChartNoAxesCombined },
+      {
+        label: 'Notifications',
+        to: '/advisor/notifications',
+        icon: Bell,
+        description: 'Stay updated on student alerts, requests, and schedule changes.',
+      },
+      {
+        label: 'Reports & Analytics',
+        to: '/advisor/reports',
+        icon: ChartNoAxesCombined,
+        description: 'Track advising coverage, session outcomes, and advisee performance.',
+      },
     ],
   },
   // Phân khu "RESOURCES" — tạm ẩn vì BE chưa có endpoint /advisor/academic/*.

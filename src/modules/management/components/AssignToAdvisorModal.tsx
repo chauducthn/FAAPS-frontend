@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Warning as AlertTriangle, CaretDown as ChevronDown, UserCheck } from '@phosphor-icons/react';
+import { Warning as AlertTriangle, UserCheck } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
+import { AdvisorPickerList } from './AdvisorPickerList';
 import { LoadBadge } from './LoadBadge';
 import { useAssignStudents, usePreviewAssign } from '../hooks/queries/useAdminAssignments';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
@@ -11,8 +12,6 @@ import {
   AssignmentModalHeader,
   assignmentCancelBtn,
   assignmentPrimaryBtn,
-  assignmentSelectClass,
-  assignmentTextareaClass,
 } from './AssignmentModalChrome';
 
 interface AssignToAdvisorModalProps {
@@ -27,7 +26,6 @@ export function AssignToAdvisorModal({ open, onClose, students, advisors, onDone
   const [advisorId, setAdvisorId] = useState('');
   const [preview, setPreview] = useState<AssignPreview | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notes, setNotes] = useState('');
   const previewMutation = usePreviewAssign();
   const assignMutation = useAssignStudents();
 
@@ -36,7 +34,6 @@ export function AssignToAdvisorModal({ open, onClose, students, advisors, onDone
     setAdvisorId('');
     setPreview(null);
     setError(null);
-    setNotes('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -62,7 +59,9 @@ export function AssignToAdvisorModal({ open, onClose, students, advisors, onDone
     setError(null);
     try {
       const res = await assignMutation.mutateAsync({
-        studentIds: ids, advisorId, acknowledge: (preview?.appointmentCount ?? 0) > 0, notes: notes.trim() || undefined,
+        studentIds: ids,
+        advisorId,
+        acknowledge: (preview?.appointmentCount ?? 0) > 0,
       });
       toast.success(`${res.assigned} student${res.assigned === 1 ? '' : 's'} assigned to ${advisor?.fullName}.`);
       if (res.warning) toast.warning(`${advisor?.fullName} is now ${res.overLimitBy} over the advisory limit.`);
@@ -88,22 +87,7 @@ export function AssignToAdvisorModal({ open, onClose, students, advisors, onDone
               No advisor is assigned to this cohort yet (or selected students belong to different cohorts). Assign an advisor to the cohort first.
             </p>
           ) : (
-            <div className="relative">
-              <select
-                value={advisorId}
-                onChange={(e) => choose(e.target.value)}
-                aria-label="Choose an advisor"
-                className={assignmentSelectClass}
-              >
-                <option value="">Choose an advisor...</option>
-                {advisors.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.fullName} ({a.activeStudents}/{a.maxAdvisees ?? 'no limit'})
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
-            </div>
+            <AdvisorPickerList advisors={advisors} selectedId={advisorId} onSelect={choose} />
           )}
         </div>
 
@@ -119,20 +103,6 @@ export function AssignToAdvisorModal({ open, onClose, students, advisors, onDone
             This is {overBy} over the advisory limit of {advisor?.maxAdvisees}. The limit is a warning, not a block.
           </p>
         )}
-
-        <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-gray-700">
-            Note <span className="font-normal text-gray-400">(optional)</span>
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            maxLength={500}
-            rows={2}
-            placeholder="Why is this assignment being made?"
-            className={assignmentTextareaClass}
-          />
-        </div>
 
         {previewMutation.isPending && <p className="text-xs text-gray-500">Checking appointments...</p>}
         {cancelling > 0 && preview && (

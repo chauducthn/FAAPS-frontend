@@ -13,7 +13,6 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'code',
       header: 'Code',
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-mono text-[13px] font-semibold text-gray-900">
           {row.original.code}
@@ -23,7 +22,6 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'name',
       header: 'Course Name',
-      enableSorting: false,
       cell: ({ row }) => (
         <div className="min-w-0">
           <button
@@ -40,7 +38,6 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'credits',
       header: 'Credits',
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-mono text-[13px] font-semibold tabular-nums text-[#C2410C]">
           {row.original.credits}
@@ -50,7 +47,6 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'categoryCode',
       header: 'Category Code',
-      enableSorting: false,
       cell: ({ row }) => (
         <span className="font-mono text-xs font-semibold text-gray-800">
           {row.original.categoryCode || '—'}
@@ -60,7 +56,6 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'categoryName',
       header: 'Category Name',
-      enableSorting: false,
       cell: ({ row }) => (
         <span
           className="block max-w-[180px] truncate text-[13px] text-gray-600"
@@ -73,7 +68,6 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'prerequisiteCount',
       header: 'Prereq',
-      enableSorting: false,
       meta: { align: 'center' },
       cell: ({ row }) => (
         <span className="text-[13px] font-semibold tabular-nums text-gray-700">
@@ -84,7 +78,6 @@ export function createCourseColumns(handlers: {
     {
       accessorKey: 'status',
       header: 'Status',
-      enableSorting: false,
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {

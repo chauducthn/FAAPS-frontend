@@ -64,7 +64,23 @@ export interface CourseFilterParams {
   specialization?: string;
   page?: number;
   size?: number;
-  sort?: 'code,asc' | 'code,desc' | 'credits,asc' | 'credits,desc' | 'createdAt,desc';
+  sort?:
+    | 'code,asc'
+    | 'code,desc'
+    | 'name,asc'
+    | 'name,desc'
+    | 'credits,asc'
+    | 'credits,desc'
+    | 'categoryCode,asc'
+    | 'categoryCode,desc'
+    | 'categoryName,asc'
+    | 'categoryName,desc'
+    | 'prerequisiteCount,asc'
+    | 'prerequisiteCount,desc'
+    | 'status,asc'
+    | 'status,desc'
+    | 'createdAt,desc'
+    | 'createdAt,asc';
 }
 
 export interface CreateCourseDto {

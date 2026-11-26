@@ -27,18 +27,27 @@ export const useCreateAiConversation = () => {
   });
 };
 
-/** Gửi tin nhắn trong hội thoại — backend trả về cặp USER + ASSISTANT. */
+/** Gửi tin nhắn (có thể kèm file/ảnh) — backend trả về cặp USER + ASSISTANT. */
 export const useSendAiMessage = (conversationId: string | null) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: SendAiMessageDto) =>
-      aiStudentService.sendMessage(conversationId as string, body),
-    onSuccess: () => {
+    mutationFn: (input: SendAiMessageDto & { conversationId?: string; file?: File | null }) => {
+      const targetId = input.conversationId ?? conversationId;
+      if (input.file) {
+        return aiStudentService.sendMessageWithAttachment(targetId as string, input.content, input.file);
+      }
+      return aiStudentService.sendMessage(targetId as string, { content: input.content });
+    },
+    onSuccess: (_data, variables) => {
+      const targetId = variables.conversationId ?? conversationId ?? '';
       queryClient.invalidateQueries({
-        queryKey: AI_STUDENT_QUERY_KEYS.messages(conversationId ?? ''),
+        queryKey: AI_STUDENT_QUERY_KEYS.messages(targetId),
       });
       queryClient.invalidateQueries({ queryKey: AI_STUDENT_QUERY_KEYS.conversations });
+      if (variables.file) {
+        queryClient.invalidateQueries({ queryKey: ['student'] });
+      }
     },
     onError: (error) => {
       toast.error(apiErrorMessage(error, 'Unable to send the message.'));

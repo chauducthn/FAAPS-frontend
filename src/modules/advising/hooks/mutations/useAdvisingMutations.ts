@@ -78,6 +78,20 @@ export const useMarkAllStudentNotificationsRead = () => {
   });
 };
 
+export const useClearAllStudentNotifications = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => studentService.clearAllNotifications(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: STUDENT_QUERY_KEYS.notificationsRoot });
+    },
+    onError: (error) => {
+      toast.error(apiErrorMessage(error, 'Unable to clear notifications.'));
+    },
+  });
+};
+
 export const useMarkAdvisorNotificationRead = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -101,5 +115,17 @@ export const useMarkAllAdvisorNotificationsRead = () => {
         queryKey: ['advisor', 'notifications'],
       }),
     onError: (error) => toast.error(apiErrorMessage(error, 'Unable to update notifications.')),
+  });
+};
+
+export const useClearAllAdvisorNotifications = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: advisorService.clearAllNotifications,
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ['advisor', 'notifications'],
+      }),
+    onError: (error) => toast.error(apiErrorMessage(error, 'Unable to clear notifications.')),
   });
 };

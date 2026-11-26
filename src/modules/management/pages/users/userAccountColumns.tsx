@@ -15,11 +15,12 @@ export const USER_ROLE_LABEL: Record<AdminUserRole, string> = {
   ADVISOR: 'Advisor',
 };
 
-/** The backend sorts users by a whitelist; the table only offers the ones it can serve. */
+const USER_SORT_FIELDS = new Set(['fullName', 'userId', 'email', 'role', 'major', 'cohort', 'status', 'createdAt']);
+
 export function toUserSort(sorting: SortingState): UserSort {
   const active = sorting[0];
-  if (!active || active.id !== 'fullName') return 'createdAt,desc';
-  return active.desc ? 'fullName,desc' : 'fullName,asc';
+  if (!active || !USER_SORT_FIELDS.has(active.id)) return 'createdAt,desc';
+  return `${active.id},${active.desc ? 'desc' : 'asc'}` as UserSort;
 }
 
 export function createUserAccountColumns(handlers: {
@@ -37,7 +38,7 @@ export function createUserAccountColumns(handlers: {
       header: 'Full Name',
       cell: ({ row }) => (
         <div className="flex max-w-[220px] min-w-0 items-center gap-2.5">
-          <UserInitials name={row.original.fullName} />
+          <UserInitials name={row.original.fullName} avatarUrl={row.original.avatarUrl} />
           <span title={row.original.fullName} className="truncate font-semibold text-gray-900">
             {row.original.fullName}
           </span>
@@ -47,7 +48,6 @@ export function createUserAccountColumns(handlers: {
     {
       accessorKey: 'userId',
       header: 'Identifier',
-      enableSorting: false,
       cell: ({ row }) => (
         <span
           title={row.original.userId}
@@ -60,7 +60,6 @@ export function createUserAccountColumns(handlers: {
     {
       accessorKey: 'email',
       header: 'Email',
-      enableSorting: false,
       cell: ({ row }) => (
         <span title={row.original.email} className="block max-w-[230px] truncate text-[#555f6f]">
           {row.original.email}
@@ -70,7 +69,6 @@ export function createUserAccountColumns(handlers: {
     {
       accessorKey: 'role',
       header: 'Role',
-      enableSorting: false,
       cell: ({ row }) =>
         row.original.role === 'STUDENT' ? (
           <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#C2410C]">
@@ -87,21 +85,18 @@ export function createUserAccountColumns(handlers: {
     {
       id: 'major',
       header: 'Major',
-      enableSorting: false,
       accessorFn: (user) => user.majorCode ?? '',
       cell: ({ row }) => <span className="text-[#555f6f]">{row.original.majorCode || '—'}</span>,
     },
     {
       id: 'cohort',
       header: 'Cohort',
-      enableSorting: false,
       accessorFn: (user) => user.cohort ?? '',
       cell: ({ row }) => <span className="text-[#555f6f]">{row.original.cohort || '—'}</span>,
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      enableSorting: false,
       cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {

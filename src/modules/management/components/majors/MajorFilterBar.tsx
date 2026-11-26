@@ -14,6 +14,9 @@ interface MajorFilterBarProps {
   onStatusChange: (value: string) => void;
   onClearContext: () => void;
   selectedCount: number;
+  totalItems?: number;
+  isSelectingAll?: boolean;
+  onSelectAllMatching?: () => void;
   isUpdatingStatus?: boolean;
   onClearSelection: () => void;
   onBulkStatus: (status: MajorStatus) => void;
@@ -23,24 +26,8 @@ interface MajorFilterBarProps {
 const selectClass =
   'h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-[13px] font-medium text-gray-700 transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15';
 
-export default function MajorFilterBar({
-  search,
-  onSearchChange,
-  selectedCode,
-  codeOptions,
-  onCodeChange,
-  selectedDuration,
-  durationOptions,
-  onDurationChange,
-  selectedStatus,
-  onStatusChange,
-  onClearContext,
-  selectedCount,
-  isUpdatingStatus,
-  onClearSelection,
-  onBulkStatus,
-  onDeleteSelected,
-}: MajorFilterBarProps) {
+export default function MajorFilterBar(p: MajorFilterBarProps) {
+  const { search, onSearchChange, selectedCode, codeOptions, onCodeChange, selectedDuration, durationOptions, onDurationChange, selectedStatus, onStatusChange, onClearContext, selectedCount, totalItems, isSelectingAll = false, onSelectAllMatching, isUpdatingStatus, onClearSelection, onBulkStatus, onDeleteSelected } = p;
   const hasFilters = search !== '' || selectedCode !== 'ALL' || selectedDuration !== 'ALL' || selectedStatus !== 'ALL';
   const codes = Array.from(new Set([...(selectedCode !== 'ALL' ? [selectedCode] : []), ...codeOptions])).sort();
   const durations = Array.from(
@@ -133,10 +120,20 @@ export default function MajorFilterBar({
           role="toolbar"
           aria-label="Major bulk actions"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
               {selectedCount} selected
             </span>
+            {onSelectAllMatching && !!totalItems && totalItems > selectedCount && (
+              <button
+                type="button"
+                disabled={isSelectingAll}
+                onClick={onSelectAllMatching}
+                className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70 disabled:opacity-50"
+              >
+                {isSelectingAll ? 'Selecting…' : `Select all ${totalItems}`}
+              </button>
+            )}
             <button
               type="button"
               onClick={onClearSelection}

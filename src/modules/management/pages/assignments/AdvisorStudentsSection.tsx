@@ -26,6 +26,7 @@ export function AdvisorStudentsSection({
   onClearSearch,
   onToggleAll,
   onToggleOne,
+  onSelectAllFiltered,
   onClearSelection,
   onReassignSelected,
   onUnassignSelected,
@@ -47,6 +48,7 @@ export function AdvisorStudentsSection({
   onClearSearch: () => void;
   onToggleAll: () => void;
   onToggleOne: (id: string) => void;
+  onSelectAllFiltered?: () => void;
   onClearSelection: () => void;
   onReassignSelected: () => void;
   onUnassignSelected: () => void;
@@ -101,10 +103,19 @@ export function AdvisorStudentsSection({
 
       {selected.size > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
               {selected.size} student{selected.size === 1 ? '' : 's'} selected
             </span>
+            {onSelectAllFiltered && totalFiltered > selected.size && (
+              <button
+                type="button"
+                onClick={onSelectAllFiltered}
+                className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70"
+              >
+                Select all {totalFiltered}
+              </button>
+            )}
             <button
               type="button"
               onClick={onClearSelection}

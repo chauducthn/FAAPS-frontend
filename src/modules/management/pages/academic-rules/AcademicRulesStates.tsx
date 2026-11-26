@@ -85,6 +85,10 @@ export function AcademicRulesModals({
   isDeleting,
   onCancelDelete,
   onConfirmDelete,
+  bulkDeleteTargets = [],
+  isBulkDeleting = false,
+  onCancelBulkDelete,
+  onConfirmBulkDelete,
 }: {
   formOpen: boolean;
   formMode: 'create' | 'edit' | 'view';
@@ -96,6 +100,10 @@ export function AcademicRulesModals({
   isDeleting: boolean;
   onCancelDelete: () => void;
   onConfirmDelete: () => Promise<void>;
+  bulkDeleteTargets?: AcademicRule[];
+  isBulkDeleting?: boolean;
+  onCancelBulkDelete?: () => void;
+  onConfirmBulkDelete?: () => Promise<void>;
 }) {
   return (
     <>
@@ -118,6 +126,19 @@ export function AcademicRulesModals({
         onCancel={onCancelDelete}
         onConfirm={onConfirmDelete}
       />
+
+      {onCancelBulkDelete && onConfirmBulkDelete && (
+        <ConfirmDialog
+          open={bulkDeleteTargets.length > 0}
+          title={`Delete ${bulkDeleteTargets.length} rule${bulkDeleteTargets.length === 1 ? '' : 's'}?`}
+          message={`Delete ${bulkDeleteTargets.length} selected academic rule${bulkDeleteTargets.length === 1 ? '' : 's'}? This cannot be undone.`}
+          confirmLabel="Delete selected"
+          destructive
+          isLoading={isBulkDeleting}
+          onCancel={onCancelBulkDelete}
+          onConfirm={onConfirmBulkDelete}
+        />
+      )}
 
       {deleting && (
         <div className="sr-only" aria-live="polite">

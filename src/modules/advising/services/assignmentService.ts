@@ -1,5 +1,6 @@
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
+import { chunkArray, fetchAllPages } from '../../../shared/lib/fetchAllPages';
 import type {
   AdminNotification,
   AdminPage,
@@ -37,6 +38,11 @@ export const assignmentService = {
   // ---- reads
   getSummary: async (): Promise<AssignmentSummary> => (await apiClient.get<AssignmentSummary>(`${BASE}/summary`)).data,
 
+  getAssigned: async (
+    params: PageParams & { advisorId?: string; cohortId?: string; majorCode?: string },
+  ): Promise<AdminPage<AssignmentStudent>> =>
+    (await apiClient.get<AdminPage<AssignmentStudent>>(`${BASE}/assigned`, { params })).data,
+
   getUnassigned: async (params: PageParams & { cohortId?: string; hasPendingRequest?: boolean }): Promise<AdminPage<UnassignedStudent>> =>
     (await apiClient.get<AdminPage<UnassignedStudent>>(`${BASE}/unassigned`, { params })).data,
 
@@ -52,16 +58,8 @@ export const assignmentService = {
     (await apiClient.get<AdminPage<AdvisorCohortRow>>(`${BASE}/advisors/by-cohort`, { params })).data,
 
   /** The by-cohort rows are paged one row per advisor and cohort, so grouping per advisor needs every page. */
-  getAllAdvisorCohorts: async (): Promise<AdvisorCohortRow[]> => {
-    const size = 100;
-    const rows: AdvisorCohortRow[] = [];
-    for (let page = 0; page < 50; page += 1) {
-      const result = await assignmentService.getAdvisorCohortsPage({ page, size });
-      rows.push(...result.items);
-      if ((page + 1) * size >= result.totalElements) break;
-    }
-    return rows;
-  },
+  getAllAdvisorCohorts: async (): Promise<AdvisorCohortRow[]> =>
+    fetchAllPages((page, size) => assignmentService.getAdvisorCohortsPage({ page, size })),
 
   getAdvisorAssignment: async (advisorId: string): Promise<AdvisorAssignmentDetail> =>
     (await apiClient.get<AdvisorAssignmentDetail>(`${BASE}/advisors/${advisorId}`)).data,
@@ -79,8 +77,34 @@ export const assignmentService = {
   replaceAdvisorCohorts: async (advisorId: string, cohortIds: string[]): Promise<{ advisorId: string; cohorts: number }> =>
     (await apiClient.put<{ advisorId: string; cohorts: number }>(`${BASE}/advisors/${advisorId}/cohorts`, { cohortIds }, { headers: await getCsrfHeaders() })).data,
 
-  bulkAssignAdvisorCohorts: (advisorIds: string[], cohortIds: string[]) =>
-    post<{ advisors: number; cohorts: number }>(`${BASE}/advisors/cohorts`, { advisorIds, cohortIds }),
+  bulkAssignAdvisorCohorts: async (advisorIds: string[], cohortIds: string[]) => {
+    let advisors = 0;
+    for (const batch of chunkArray(advisorIds, 100)) {
+      const res = await post<{ advisors: number; cohorts: number }>(`${BASE}/advisors/cohorts`, { advisorIds: batch, cohortIds });
+      advisors += res.advisors;
+    }
+    return { advisors, cohorts: cohortIds.length };
+  },
+
+  autoAssignAdvisorCohorts: async (advisorIds: string[]) => {
+    let assigned = 0;
+    let skippedAlreadyAssigned = 0;
+    let skippedNoNeed = 0;
+    let cohortsConfigured = 0;
+    for (const batch of chunkArray(advisorIds, 500)) {
+      const res = await post<{
+        assigned: number;
+        skippedAlreadyAssigned: number;
+        skippedNoNeed: number;
+        cohortsConfigured: number;
+      }>(`${BASE}/advisors/cohorts/auto`, { advisorIds: batch });
+      assigned += res.assigned;
+      skippedAlreadyAssigned += res.skippedAlreadyAssigned;
+      skippedNoNeed += res.skippedNoNeed;
+      cohortsConfigured += res.cohortsConfigured;
+    }
+    return { assigned, skippedAlreadyAssigned, skippedNoNeed, cohortsConfigured };
+  },
 
   updateLimit: async (advisorId: string, maxAdvisees: number): Promise<AdvisorLimitResult> =>
     (await apiClient.patch<AdvisorLimitResult>(`${BASE}/advisors/${advisorId}/limit`, { maxAdvisees }, { headers: await getCsrfHeaders() })).data,
@@ -154,4 +178,7 @@ export const notificationService = {
 
   markAllRead: async (): Promise<{ updated: number }> =>
     (await apiClient.patch<{ updated: number }>('/admin/notifications/read-all', null, { headers: await getCsrfHeaders() })).data,
+
+  clearAll: async (): Promise<{ deleted: number }> =>
+    (await apiClient.delete<{ deleted: number }>('/admin/notifications', { headers: await getCsrfHeaders() })).data,
 };

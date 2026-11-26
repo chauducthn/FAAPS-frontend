@@ -1,4 +1,5 @@
 import { CalendarBlank as CalendarDays, Clock, Shield, UserCheck } from '@phosphor-icons/react';
+import { cn } from '@/shared/lib/utils';
 import type { UserProfileDto } from '@/shared/services/profileService';
 
 interface AccountMetaCardProps {
@@ -19,41 +20,62 @@ function formatDateTime(value?: string | null): string {
 }
 
 export function AccountMetaCard({ profile }: AccountMetaCardProps) {
-  return (
-    <aside className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="text-base font-bold text-slate-900">Account overview</h2>
-      <p className="mt-1 text-sm text-slate-600">Identity and access summary.</p>
+  const isActive = profile.status === 'ACTIVE';
 
-      <ul className="mt-5 space-y-4 text-sm">
-        <li className="flex items-start gap-3">
-          <Shield className="mt-0.5 size-4 shrink-0 text-[var(--brand)]" aria-hidden />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Role</p>
-            <p className="font-semibold text-slate-900">{profile.role}</p>
-          </div>
-        </li>
-        <li className="flex items-start gap-3">
-          <UserCheck className="mt-0.5 size-4 shrink-0 text-emerald-600" aria-hidden />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
-            <p className="font-semibold text-slate-900">{profile.status}</p>
-          </div>
-        </li>
-        <li className="flex items-start gap-3">
-          <Clock className="mt-0.5 size-4 shrink-0 text-slate-500" aria-hidden />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Last sign-in</p>
-            <p className="font-semibold text-slate-900">{formatDateTime(profile.lastLoginAt)}</p>
-          </div>
-        </li>
-        <li className="flex items-start gap-3">
-          <CalendarDays className="mt-0.5 size-4 shrink-0 text-slate-500" aria-hidden />
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Member since</p>
-            <p className="font-semibold text-slate-900">{formatDateTime(profile.createdAt)}</p>
-          </div>
-        </li>
-      </ul>
+  return (
+    <aside className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
+      <div className="border-b border-gray-100 px-5 py-4">
+        <h2 className="text-sm font-bold text-gray-900">Account overview</h2>
+        <p className="mt-0.5 text-xs text-gray-500">Identity and access summary</p>
+      </div>
+
+      <dl className="divide-y divide-gray-100 px-5 text-sm">
+        <div className="flex items-center justify-between gap-3 py-3.5">
+          <dt className="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <Shield className="size-4 text-[#F26F21]" aria-hidden />
+            Role
+          </dt>
+          <dd className="text-xs font-semibold text-gray-900">{profile.role}</dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 py-3.5">
+          <dt className="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <UserCheck className="size-4 text-emerald-600" aria-hidden />
+            Status
+          </dt>
+          <dd>
+            <span
+              className={cn(
+                'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold',
+                isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-700',
+              )}
+            >
+              <span className={cn('size-1.5 rounded-full', isActive ? 'bg-emerald-500' : 'bg-gray-400')} />
+              {profile.status}
+            </span>
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 py-3.5">
+          <dt className="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <Clock className="size-4 text-gray-400" aria-hidden />
+            Last sign-in
+          </dt>
+          <dd className="text-right text-xs font-medium tabular-nums text-gray-700">
+            {formatDateTime(profile.lastLoginAt)}
+          </dd>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 py-3.5">
+          <dt className="flex items-center gap-2 text-xs font-medium text-gray-500">
+            <CalendarDays className="size-4 text-gray-400" aria-hidden />
+            Member since
+          </dt>
+          <dd className="text-right text-xs font-medium tabular-nums text-gray-700">
+            {formatDateTime(profile.createdAt)}
+          </dd>
+        </div>
+      </dl>
     </aside>
   );
 }

@@ -21,6 +21,7 @@ export interface AdminUserSummary {
   /** Students only. */
   majorCode?: string | null;
   cohort?: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface AdminUserDetail {
@@ -44,6 +45,7 @@ export interface AdminUserDetail {
   expectedGraduationSemesterCode?: string | null;
   currentSemester: number | null;
   academicStatus: string | null;
+  avatarUrl?: string | null;
 }
 
 export interface UserEditOption {
@@ -65,7 +67,17 @@ export type UserSort =
   | 'fullName,asc'
   | 'fullName,desc'
   | 'userId,asc'
-  | 'userId,desc';
+  | 'userId,desc'
+  | 'email,asc'
+  | 'email,desc'
+  | 'role,asc'
+  | 'role,desc'
+  | 'major,asc'
+  | 'major,desc'
+  | 'cohort,asc'
+  | 'cohort,desc'
+  | 'status,asc'
+  | 'status,desc';
 
 /**
  * Outcome of one account inside a password reset.

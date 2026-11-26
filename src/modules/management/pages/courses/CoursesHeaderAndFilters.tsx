@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import { BookOpenText as BookOpenCheck, FileXls as FileSpreadsheet, GraduationCap, Stack as Layers, SpinnerGap as Loader2, Plus } from '@phosphor-icons/react';
+import { BookOpenText as BookOpenCheck, Prohibit as CircleOff, FileXls as FileSpreadsheet, GraduationCap, Stack as Layers, SpinnerGap as Loader2, Plus } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
+import { AdminTabBar } from '../../components/AdminTabBar';
 import { ExampleSheetButton, type ExampleSheet } from '../../components/ImportCheckDialog';
 
 function StatTile({
@@ -68,6 +69,7 @@ export function CoursesTopBar({
   importOpen,
   onToggleActive,
   onClearStatus,
+  onSelectStatus,
   onPickFile,
   onCreate,
 }: {
@@ -84,12 +86,58 @@ export function CoursesTopBar({
   importOpen: boolean;
   onToggleActive: () => void;
   onClearStatus: () => void;
+  onSelectStatus?: (status: 'ALL' | 'ACTIVE' | 'INACTIVE') => void;
   onPickFile: (file: File | undefined) => void;
   onCreate: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div className="grid flex-1 grid-cols-1 gap-2.5 sm:grid-cols-3">
+    <div className="space-y-4">
+      <AdminTabBar
+        ariaLabel="Course status tabs"
+        activeKey={activeStatus}
+        onChange={(next) => {
+          if (onSelectStatus) onSelectStatus(next);
+          else if (next === 'ALL') onClearStatus();
+          else if (next === 'ACTIVE') onToggleActive();
+        }}
+        tabs={[
+          { key: 'ALL', label: 'All courses', icon: Layers, count: totalItems, badgeTone: 'slate' },
+          { key: 'ACTIVE', label: 'Active', icon: BookOpenCheck, badgeTone: 'emerald' },
+          { key: 'INACTIVE', label: 'Inactive', icon: CircleOff, badgeTone: 'slate' },
+        ]}
+        actions={
+          <>
+            <ExampleSheetButton
+              examples={examples}
+              className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+            />
+            <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50">
+              {importing && !importOpen ? <Loader2 className="size-3.5 animate-spin text-gray-500" /> : <FileSpreadsheet className="size-3.5 text-gray-500" aria-hidden />}
+              {importing && !importOpen ? 'Reading…' : 'Import Excel'}
+              <input
+                type="file"
+                accept=".xlsx,.xls"
+                aria-label="Import courses from Excel"
+                className="hidden"
+                disabled={importing}
+                onChange={(event) => {
+                  onPickFile(event.target.files?.[0]);
+                  event.target.value = '';
+                }}
+              />
+            </label>
+            <button
+              type="button"
+              onClick={onCreate}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+            >
+              <Plus className="size-4" /> Create course
+            </button>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
         <StatTile
           icon={<Layers className="size-4" />}
           label="Total courses"
@@ -115,35 +163,6 @@ export function CoursesTopBar({
           meta="sum of credits"
           tone="orange"
         />
-      </div>
-
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-        <ExampleSheetButton
-          examples={examples}
-          className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
-        />
-        <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50">
-          {importing && !importOpen ? <Loader2 className="size-3.5 animate-spin text-gray-500" /> : <FileSpreadsheet className="size-3.5 text-gray-500" aria-hidden />}
-          {importing && !importOpen ? 'Reading…' : 'Import Excel'}
-          <input
-            type="file"
-            accept=".xlsx,.xls"
-            aria-label="Import courses from Excel"
-            className="hidden"
-            disabled={importing}
-            onChange={(event) => {
-              onPickFile(event.target.files?.[0]);
-              event.target.value = '';
-            }}
-          />
-        </label>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
-        >
-          <Plus className="size-4" /> Create course
-        </button>
       </div>
     </div>
   );

@@ -8,4 +8,5 @@ export interface User {
   role: RoleCode;
   status: UserStatus;
   mustChangePassword?: boolean;
+  avatarUrl?: string | null;
 }

@@ -17,7 +17,9 @@ export default function AdminProfile() {
     <div className="mx-auto flex max-w-6xl flex-col gap-6">
       <ProfileHero
         fullName={data?.fullName ?? user?.fullName}
-        subtitle={`System Administrator${data ? ` · ${data.email}` : ''}`}
+        subtitle={data?.email ?? user?.email ?? 'System Administrator'}
+        roleBadge="System Administrator"
+        avatarUrl={data?.avatarUrl ?? user?.avatarUrl}
         isLoading={profileQuery.isLoading}
       />
 

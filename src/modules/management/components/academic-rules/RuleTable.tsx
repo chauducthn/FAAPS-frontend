@@ -3,7 +3,7 @@
 // FPT-orange focus, status badges for DRAFT / ACTIVE / INACTIVE.
 //
 // Columns: Rule Name | Policy Type | Condition/Grade | Status | Actions
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { ShieldCheck } from '@phosphor-icons/react';
 import { DataTable, type DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import { RowActionMenu } from '../RowActionMenu';
@@ -24,6 +24,8 @@ interface Props {
   onArchive: (r: AcademicRule) => void;
   onReopen: (r: AcademicRule) => void;
   onDelete: (r: AcademicRule) => void;
+  onFetchAllRows?: () => Promise<AcademicRule[]>;
+  bulkActions?: (selectedRows: AcademicRule[]) => ReactNode;
 }
 
 const STATUS_STYLE: Record<string, string> = {
@@ -76,6 +78,8 @@ export default function RuleTable({
   onArchive,
   onReopen,
   onDelete,
+  onFetchAllRows,
+  bulkActions,
 }: Props) {
   const columns = useMemo<DataTableColumnDef<AcademicRule>[]>(
     () => [
@@ -96,7 +100,6 @@ export default function RuleTable({
       {
         accessorKey: 'policyType',
         header: 'Policy type',
-        enableSorting: false,
         cell: ({ row }) => (
           <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-gray-700">
             <ShieldCheck className="size-3.5 text-[#F37021]" aria-hidden />
@@ -106,9 +109,8 @@ export default function RuleTable({
       },
       {
         id: 'condition',
-        accessorKey: 'condition',
+        accessorFn: (row) => (row.grade !== null ? String(row.grade).padStart(8, '0') : summarizeCondition(row.condition)),
         header: 'Condition / Grade',
-        enableSorting: false,
         cell: ({ row }) => {
           const grade = formatGrade(row.original.grade);
           return (
@@ -131,7 +133,6 @@ export default function RuleTable({
       {
         accessorKey: 'status',
         header: 'Status',
-        enableSorting: false,
         cell: ({ row }) => <RuleStatusBadge status={row.original.status} />,
       },
       {
@@ -186,6 +187,8 @@ export default function RuleTable({
         getRowId={(row) => row.id}
         isLoading={isLoading}
         totalRowCount={totalRowCount}
+        onFetchAllRows={onFetchAllRows}
+        bulkActions={bulkActions}
         pagination={pagination}
         onPaginationChange={onPaginationChange}
         emptyText="No academic rules match your filters."

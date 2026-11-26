@@ -104,6 +104,7 @@ export default function AiConfigPage() {
         }}
         onToggleActive={() => resetPage(setStatus)(status === 'ACTIVE' ? 'ALL' : 'ACTIVE')}
         onToggleChat={() => resetPage(setPurpose)(purpose === 'CHAT' ? 'ALL' : 'CHAT')}
+        onSelectPurpose={resetPage(setPurpose)}
         onCreate={() => openCreate()}
       />
 

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { CreateMajorDto, Major, MajorStatus } from '../../academic/types/major';
@@ -10,10 +10,11 @@ import { MajorsTopBar } from '@/modules/management/components/majors/MajorsTopBa
 import { MajorsDialogs } from '@/modules/management/components/majors/MajorsDialogs';
 import { useMajorImport } from '@/modules/management/components/majors/useMajorImport';
 import { useDebounce } from '@/shared/hooks/useDebounce';
+import { fetchAllPages } from '@/shared/lib/fetchAllPages';
 
 const errorMessage = (error: unknown) => error instanceof Error ? error.message : 'Please try again.';
 
-export default function MajorsPage() {
+export default function MajorsPage({ headerLeft }: { headerLeft?: ReactNode } = {}) {
   const queryClient = useQueryClient();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
@@ -28,6 +29,7 @@ export default function MajorsPage() {
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+  const [isSelectingAll, setIsSelectingAll] = useState(false);
   const debouncedSearch = useDebounce(search, 300);
 
   const { data: result, isLoading, isError } = useMajorsQuery({
@@ -117,46 +119,46 @@ export default function MajorsPage() {
     setPage(0); setSelectedIds([]);
   };
 
+  const handleSelectAllMatching = async () => {
+    setIsSelectingAll(true);
+    try {
+      const all = await fetchAllPages((p, size) => majorService.getMajors({
+        search: debouncedSearch || undefined, code: selectedCode === 'ALL' ? undefined : selectedCode,
+        durationYears: selectedDuration === 'ALL' ? undefined : Number(selectedDuration),
+        status: selectedStatus as MajorStatus | 'ALL', page: p, size,
+      }));
+      setSelectedIds(all.map((m) => m.id));
+    } catch (error) { toast.error(`Could not select all majors: ${errorMessage(error)}`); }
+    finally { setIsSelectingAll(false); }
+  };
+
   return (
     <div className="w-full space-y-4">
       <MajorsTopBar
-        totalItems={result?.totalItems}
+        headerLeft={headerLeft} totalItems={result?.totalItems}
         activeCount={data.filter((m) => m.status === 'ACTIVE').length}
         draftCount={data.filter((m) => m.status === 'DRAFT').length}
         inactiveCount={data.filter((m) => m.status === 'INACTIVE').length}
-        selectedStatus={selectedStatus}
-        isImporting={majorImport.isImporting}
-        examples={majorImport.examples}
-        onSelectStatus={applyFilter(setSelectedStatus)}
-        onImportFile={(file) => void majorImport.handleImportFile(file)}
+        selectedStatus={selectedStatus} isImporting={majorImport.isImporting} examples={majorImport.examples}
+        onSelectStatus={applyFilter(setSelectedStatus)} onImportFile={(file) => void majorImport.handleImportFile(file)}
         onCreate={() => { setEditingMajor(null); setIsModalOpen(true); }}
       />
 
       <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
         <MajorFilterBar
-          search={search}
-          onSearchChange={applyFilter(setSearch)}
-          selectedCode={selectedCode}
-          codeOptions={codeOptions}
-          onCodeChange={applyFilter(setSelectedCode)}
-          selectedDuration={selectedDuration}
-          durationOptions={durationOptions}
-          onDurationChange={applyFilter(setSelectedDuration)}
-          selectedStatus={selectedStatus}
-          onStatusChange={applyFilter(setSelectedStatus)}
-          onClearContext={clearFilters}
-          selectedCount={selectedIds.length}
-          isUpdatingStatus={isUpdatingStatus}
-          onClearSelection={() => setSelectedIds([])}
-          onBulkStatus={(status) => void handleBulkStatus(status)}
-          onDeleteSelected={() => setIsBulkDeleteOpen(true)}
+          search={search} onSearchChange={applyFilter(setSearch)} selectedCode={selectedCode}
+          codeOptions={codeOptions} onCodeChange={applyFilter(setSelectedCode)} selectedDuration={selectedDuration}
+          durationOptions={durationOptions} onDurationChange={applyFilter(setSelectedDuration)}
+          selectedStatus={selectedStatus} onStatusChange={applyFilter(setSelectedStatus)}
+          onClearContext={clearFilters} selectedCount={selectedIds.length} totalItems={result?.totalItems ?? 0}
+          isSelectingAll={isSelectingAll} onSelectAllMatching={() => void handleSelectAllMatching()}
+          isUpdatingStatus={isUpdatingStatus} onClearSelection={() => setSelectedIds([])}
+          onBulkStatus={(status) => void handleBulkStatus(status)} onDeleteSelected={() => setIsBulkDeleteOpen(true)}
         />
         <div className="h-[calc(100vh-295px)] min-h-[460px]">
           {isLoading && (
             <div className="space-y-3 px-6 py-10" aria-label="Loading majors">
-              {[0, 1, 2, 3].map((i) => (
-                <div key={i} className="h-10 animate-pulse rounded-lg bg-gray-100" />
-              ))}
+              {[0, 1, 2, 3].map((i) => <div key={i} className="h-10 animate-pulse rounded-lg bg-gray-100" />)}
             </div>
           )}
           {isError && (
@@ -169,15 +171,11 @@ export default function MajorsPage() {
           {!isLoading && !isError && (
             <div className="h-full">
               <MajorTable
-                data={data}
-                selectedIds={selectedIds}
+                data={data} selectedIds={selectedIds}
                 onSelectAll={(checked) => setSelectedIds(checked ? data.map((item) => item.id) : [])}
                 onSelectRow={(id) => setSelectedIds((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]))}
-                onEditMajor={handleEdit}
-                onDeleteMajor={(item) => setDeletingMajor(item)}
-                page={page}
-                totalItems={result?.totalItems ?? 0}
-                totalPages={result?.totalPages ?? 0}
+                onEditMajor={handleEdit} onDeleteMajor={(item) => setDeletingMajor(item)}
+                page={page} totalItems={result?.totalItems ?? 0} totalPages={result?.totalPages ?? 0}
                 onPageChange={(nextPage) => { setPage(nextPage); setSelectedIds([]); }}
               />
             </div>

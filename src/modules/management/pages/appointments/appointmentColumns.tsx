@@ -17,7 +17,6 @@ export function createAppointmentColumns(
     {
       accessorKey: 'studentName',
       header: 'Student',
-      enableSorting: false,
       cell: ({ row }) => {
         // The backend may omit the student name — never call `.replace` on undefined.
         const studentName = row.original.studentName ?? 'Unknown';
@@ -32,7 +31,6 @@ export function createAppointmentColumns(
     {
       accessorKey: 'advisorName',
       header: 'Advisor',
-      enableSorting: false,
       cell: ({ row }) => {
         // The backend may omit the advisor name — never call `.replace` on undefined.
         const advisorName = row.original.advisorName ?? 'Unknown';
@@ -47,7 +45,6 @@ export function createAppointmentColumns(
     {
       accessorKey: 'scheduledAt',
       header: 'Date & Time',
-      enableSorting: false,
       cell: ({ row }) => (
         <div className="flex items-center gap-2.5">
           <CalendarTile />
@@ -65,7 +62,6 @@ export function createAppointmentColumns(
     {
       accessorKey: 'status',
       header: 'Status',
-      enableSorting: false,
       cell: ({ row }) => <AppointmentStatusBadge status={row.original.status} />,
     },
     {

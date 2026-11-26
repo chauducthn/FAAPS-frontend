@@ -22,26 +22,31 @@ export function buildAdvisorStudentColumns(actions: {
     {
       key: 'studentCode',
       header: 'Student ID',
+      sortValue: (row) => row.studentCode,
       render: (row) => <span className="text-[13px] font-semibold">{row.studentCode}</span>,
     },
     {
       key: 'fullName',
       header: 'Name',
+      sortValue: (row) => row.fullName,
       render: (row) => <span className="text-sm font-semibold">{row.fullName}</span>,
     },
     {
       key: 'majorCode',
       header: 'Major',
+      sortValue: (row) => row.majorCode,
       render: (row) => <span className="text-sm">{row.majorCode}</span>,
     },
     {
       key: 'cohort',
       header: 'Cohort',
+      sortValue: (row) => row.cohort,
       render: (row) => <span className="text-sm">{row.cohort}</span>,
     },
     {
       key: 'assignedDate',
       header: 'Assigned',
+      sortValue: (row) => row.assignedDate ?? '',
       render: (row) => (
         <span className="text-[13px]">
           {row.assignedDate

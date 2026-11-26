@@ -4,6 +4,7 @@ import { adminService } from '../../services/adminService';
 import { apiClient } from '../../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../../shared/lib/csrf';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';
+import { chunkArray } from '../../../../shared/lib/fetchAllPages';
 import type {
   AdminUserRole,
   AdminUserStatus,
@@ -61,10 +62,18 @@ export const useAdminUser = (id: string | null) =>
 export const useChangeUserStatus = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: { ids: string[]; status: 'ACTIVE' | 'SUSPENDED' }) =>
-      input.ids.length === 1
-        ? adminService.changeUserStatus(input.ids[0], input.status).then(() => ({ updated: 1 }))
-        : adminService.bulkChangeUserStatus(input.ids, input.status),
+    mutationFn: async (input: { ids: string[]; status: 'ACTIVE' | 'SUSPENDED' }) => {
+      if (input.ids.length === 1) {
+        await adminService.changeUserStatus(input.ids[0], input.status);
+        return { updated: 1 };
+      }
+      let updated = 0;
+      for (const batch of chunkArray(input.ids, 100)) {
+        const res = await adminService.bulkChangeUserStatus(batch, input.status);
+        updated += res.updated;
+      }
+      return { updated };
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });
 };
@@ -104,9 +113,13 @@ export const useResetPasswords = () => {
     setIsPending(true);
     setError(null);
     try {
-      return ids.length === 1
-        ? await adminService.resetUserPassword(ids[0])
-        : await adminService.bulkResetUserPassword(ids);
+      if (ids.length === 1) return await adminService.resetUserPassword(ids[0]);
+      const allResults: NonNullable<PasswordResetResponse['resetResults']> = [];
+      for (const batch of chunkArray(ids, 100)) {
+        const res = await adminService.bulkResetUserPassword(batch);
+        if (res.resetResults) allResults.push(...res.resetResults);
+      }
+      return { resetResults: allResults };
     } catch (cause) {
       setError(apiErrorMessage(cause));
       throw cause;
@@ -127,8 +140,12 @@ export const useDeleteUsers = () => {
         const { data } = await apiClient.delete<{ deleted: number }>(`/admin/users/${ids[0]}`, { headers });
         return data;
       }
-      const { data } = await apiClient.post<{ deleted: number }>('/admin/users/bulk-delete', { userIds: ids }, { headers });
-      return data;
+      let deleted = 0;
+      for (const batch of chunkArray(ids, 100)) {
+        const { data } = await apiClient.post<{ deleted: number }>('/admin/users/bulk-delete', { userIds: batch }, { headers });
+        deleted += data.deleted;
+      }
+      return { deleted };
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ['admin', 'users'] }),
   });

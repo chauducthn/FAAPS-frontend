@@ -4,8 +4,9 @@ import { toast } from 'sonner';
 import { NO_PASSWORD_REASON } from '../components/UserRowMenu';
 import { canResetPassword } from '../utils/passwordReset';
 import { DataTable } from '../../../shared/components/common/DataTable';
+import { fetchAllPages } from '../../../shared/lib/fetchAllPages';
 import { adminService } from '../services/adminService';
-import { createUserAccountColumns } from './users/userAccountColumns';
+import { createUserAccountColumns, toUserSort } from './users/userAccountColumns';
 import { UserAccountsHeader } from './users/UserAccountsHeader';
 import { UserAccountsErrorState, UserAccountsFilterBar } from './users/UserAccountsFilterBar';
 import { UserAccountsModals } from './users/UserAccountsModals';
@@ -120,16 +121,19 @@ export default function UserAccounts() {
               isLoading={usersQuery.isLoading}
               totalRowCount={s.total}
               onFetchAllRows={async () => {
-                const res = await adminService.getUsers({
-                  page: 0,
-                  size: Math.min(s.total || 500, 500),
-                  search: s.search.trim() || undefined,
-                  role: s.role || undefined,
-                  status: s.status || undefined,
-                  majorId: s.majorId || undefined,
-                  curriculumVersionId: s.cohortId || undefined,
-                });
-                return res.items.filter((row) => canResetPassword(row));
+                const items = await fetchAllPages((page, size) =>
+                  adminService.getUsers({
+                    page,
+                    size,
+                    search: s.search.trim() || undefined,
+                    role: s.role || undefined,
+                    status: s.status || undefined,
+                    majorId: s.majorId || undefined,
+                    curriculumVersionId: s.cohortId || undefined,
+                    sort: toUserSort(s.sorting),
+                  }),
+                );
+                return items.filter((row) => canResetPassword(row));
               }}
               isRowSelectable={(row) => canResetPassword(row)}
               rowSelectDisabledReason={() => NO_PASSWORD_REASON}
@@ -170,15 +174,9 @@ export default function UserAccounts() {
         resetPending={s.resetPasswords.isPending}
         resetError={s.resetError ?? s.resetPasswords.error}
         onConfirmReset={() => void s.runReset()}
-        onCancelReset={() => {
-          s.setResetTargets(null);
-          s.setResetError(null);
-        }}
+        onCancelReset={() => { s.setResetTargets(null); s.setResetError(null); }}
         resetResults={s.resetResults}
-        onCloseResetResults={() => {
-          s.setResetResults(null);
-          s.setResetError(null);
-        }}
+        onCloseResetResults={() => { s.setResetResults(null); s.setResetError(null); }}
         confirm={s.confirm}
         changeStatusPending={s.changeStatus.isPending}
         onConfirmStatus={s.runConfirm}

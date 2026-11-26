@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Archive, BookOpenText as BookOpenCheck, CheckCircle as CheckCircle2, FileX as FileWarning, SpinnerGap as Loader2, Plus, ShieldCheck } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
+import { AdminTabBar } from '../../components/AdminTabBar';
 import type { AcademicRuleStatus } from '../../../academic/types/academic-rule';
 
 export { AcademicRulesFilterBar } from './AcademicRulesFilterBar';
@@ -86,8 +87,40 @@ export function AcademicRulesTopBar({
   isSeedingFlm: boolean;
 }) {
   return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-4">
+    <div className="space-y-4">
+      <AdminTabBar
+        ariaLabel="Academic rule status tabs"
+        activeKey={selectedStatus}
+        onChange={onSelectStatus}
+        tabs={[
+          { key: 'ALL', label: 'All rules', icon: ShieldCheck, count: totalItems, badgeTone: 'slate' },
+          { key: 'ACTIVE', label: 'Active', icon: CheckCircle2, count: activeCount, badgeTone: 'emerald' },
+          { key: 'DRAFT', label: 'Draft', icon: FileWarning, count: draftCount, badgeTone: 'amber' },
+          { key: 'INACTIVE', label: 'Archived', icon: Archive, count: inactiveCount, badgeTone: 'slate' },
+        ]}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={onSeedFlm}
+              disabled={isSeedingFlm}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#C2410C] disabled:cursor-not-allowed disabled:opacity-55"
+            >
+              {isSeedingFlm ? <Loader2 className="size-4 animate-spin" /> : <BookOpenCheck className="size-4 text-[#F26F21]" />}
+              {isSeedingFlm ? 'Loading FLM…' : 'Load FLM defaults'}
+            </button>
+            <button
+              type="button"
+              onClick={onCreate}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+            >
+              <Plus className="size-4" /> Create rule
+            </button>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <StatTile
           icon={<ShieldCheck className="size-4" />}
           label="Total rules"
@@ -124,25 +157,6 @@ export function AcademicRulesTopBar({
           active={selectedStatus === 'INACTIVE'}
           onClick={() => onSelectStatus(selectedStatus === 'INACTIVE' ? 'ALL' : 'INACTIVE')}
         />
-      </div>
-
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-        <button
-          type="button"
-          onClick={onSeedFlm}
-          disabled={isSeedingFlm}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#C2410C] disabled:cursor-not-allowed disabled:opacity-55"
-        >
-          {isSeedingFlm ? <Loader2 className="size-4 animate-spin" /> : <BookOpenCheck className="size-4 text-[#F26F21]" />}
-          {isSeedingFlm ? 'Loading FLM…' : 'Load FLM defaults'}
-        </button>
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
-        >
-          <Plus className="size-4" /> Create rule
-        </button>
       </div>
     </div>
   );
