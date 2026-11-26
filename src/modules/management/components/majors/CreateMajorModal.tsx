@@ -15,7 +15,7 @@ interface CreateMajorModalProps {
   isSaving?: boolean;
 }
 
-const MAJOR_CODE_PATTERN = /^[SHDQCAI][A-Z]$/;
+const MAJOR_CODE_PATTERN = /^[A-Z][A-Z0-9]{1,5}$/;
 
 const EMPTY: CreateMajorDto = {
   code: '', name: '', description: '', totalCredits: 144, durationYears: 3.5, cohort: '', status: 'ACTIVE',

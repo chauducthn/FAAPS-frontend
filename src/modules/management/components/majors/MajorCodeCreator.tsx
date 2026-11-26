@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
-const MAJOR_CODE_PATTERN = /^[SHDQCAI][A-Z]$/;
+const MAJOR_CODE_PATTERN = /^[A-Z][A-Z0-9]{1,5}$/;
 
 interface Props {
   open: boolean;
@@ -26,7 +26,7 @@ export function MajorCodeCreator({ open, existingCodes, onClose, onAdd }: Props)
   const handleAdd = () => {
     const clean = draft.trim().toUpperCase();
     if (!MAJOR_CODE_PATTERN.test(clean)) {
-      setError('Enter 2 letters starting with S, H, D, Q, C, A, or I (e.g. SE).');
+      setError('Enter 2–6 uppercase letters or digits starting with a letter (e.g. SE, EN, K1).');
       return;
     }
     if (existingCodes.includes(clean)) {
@@ -55,13 +55,13 @@ export function MajorCodeCreator({ open, existingCodes, onClose, onAdd }: Props)
       <div className="flex items-center gap-2">
         <input
           type="text"
-          maxLength={2}
-          placeholder="e.g. SE"
+          maxLength={6}
+          placeholder="e.g. SE, EN, GD"
           aria-label="New major code"
           value={draft}
           onChange={(e) => {
             setError(null);
-            setDraft(e.target.value.replace(/[^a-zA-Z]/g, '').toUpperCase());
+            setDraft(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase());
           }}
           className={cn(
             'h-9 w-full rounded-lg border bg-white px-3 text-[13px] uppercase text-gray-900 placeholder:normal-case placeholder:text-gray-400 focus:outline-none focus:ring-2',

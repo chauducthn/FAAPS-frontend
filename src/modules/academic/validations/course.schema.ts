@@ -6,18 +6,19 @@ import { z } from 'zod';
 const idRef = z.string().min(1, 'Select a valid option');
 
 /** The only credit values a course can have (chosen from a list, never typed). */
-export const CREDIT_OPTIONS = [0, 2, 3, 10] as const;
-export const CREDIT_OPTIONS_MESSAGE = 'Credits must be 0, 2, 3 or 10';
+export const CREDIT_OPTIONS = [0, 2, 3, 4, 6, 9, 10, 12] as const;
+export const CREDIT_OPTIONS_MESSAGE = 'Credits must be 0, 2, 3, 4, 6, 9, 10 or 12';
 
-export const COURSE_CODE_PATTERN = /^([A-Z]{3}\d{3}[a-z]?|[A-Z]{2,6}([_-][A-Z0-9]+)*(\*\d+)?)$/;
+const CODE_PART = '(?:[A-Z]{3}\\d{2}[\\dx][a-z]?\\*?|[A-Z][A-Za-z]{1,5}\\d{0,2}(?:[_-][A-Za-z0-9.*]+)*(?:\\*\\.?\\d+(?:\\.\\d+)?)?\\*?)';
+export const COURSE_CODE_PATTERN = new RegExp(`^${CODE_PART}(?:/${CODE_PART})*$`);
 
 export const createCourseSchema = z.object({
   code: z
     .string()
     .trim()
     .min(1, 'Course code is required')
-    .max(20, 'Course code must be at most 20 characters')
-    .regex(COURSE_CODE_PATTERN, 'Invalid course code (e.g. CSD201, SSL101c, PEN, PHE_COM*1, TMI_ELE)'),
+    .max(50, 'Course code must be at most 50 characters')
+    .regex(COURSE_CODE_PATTERN, 'Invalid course code (e.g. CSD201, SSL101c, IoT_GRA_ELE, NWC203c/NWC204)'),
   name: z.string().min(3, 'Course name is required').max(255),
   // Picked from CREDIT_OPTIONS; an empty pick reaches here as NaN.
   credits: z

@@ -25,7 +25,7 @@ export function useMajorImport(onImported: () => Promise<void>) {
     setIsImporting(true);
     try {
       const [majorsPage, semesters] = await Promise.all([
-        majorService.getMajors({ page: 0, size: 200 }),
+        majorService.getMajors({ page: 0, size: 100 }),
         semesterService.list(),
       ]);
       const parsed = await parseStructureImport(file, 'majors', majorsPage.items, semesters);
@@ -48,6 +48,8 @@ export function useMajorImport(onImported: () => Promise<void>) {
       if (summary.skipped > 0) {
         toast.warning(`${summary.skipped} record(s) could not be imported.`);
       }
+    } catch {
+      toast.error('Could not import Excel file. Please try again.');
     } finally {
       setIsImporting(false);
     }

@@ -36,7 +36,15 @@ export function useCohortSheetImport(
     if (!file) return;
     setIsImporting(true);
     try {
-      const activeCourses = (await courseService.list({ status: 'ACTIVE', page: 0, size: 500 })).items;
+      const firstPage = await courseService.list({ status: 'ACTIVE', page: 0, size: 100 });
+      const extraPages = firstPage.totalPages > 1
+        ? await Promise.all(
+            Array.from({ length: firstPage.totalPages - 1 }, (_, i) =>
+              courseService.list({ status: 'ACTIVE', page: i + 1, size: 100 }),
+            ),
+          )
+        : [];
+      const activeCourses = [...firstPage.items, ...extraPages.flatMap((p) => p.items)];
       const parsed = await parseStructureImport(file, 'cohorts', majors, semesters, activeCourses);
       if (parsed.problems.length > 0) {
         setProblems({ fileName: file.name, problems: parsed.problems });
@@ -60,6 +68,8 @@ export function useCohortSheetImport(
       if (summary.skipped > 0) {
         toast.warning(`${summary.skipped} record(s) could not be imported.`);
       }
+    } catch {
+      toast.error('Could not import Excel file. Please try again.');
     } finally {
       setIsImporting(false);
     }

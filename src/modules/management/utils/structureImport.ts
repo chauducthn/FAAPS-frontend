@@ -7,7 +7,7 @@ import { isAllowedCredits, type ImportProblem } from './importChecks';
 
 export { majorExample, majorCohortExample, cohortExample, cohortCurriculumExample } from './structureExamples';
 
-const MAJOR_CODE_RE = /^[SHDQCAI][A-Z]$/;
+const MAJOR_CODE_RE = /^[A-Z][A-Z0-9]{1,5}$/;
 const COHORT_RE = /^K(0[1-9]|[1-9]\d)$/;
 const SEM_CODE_RE = /^(SP|SU|FA)\d{4}$/;
 
@@ -15,7 +15,8 @@ export type StructureImportMode = 'major_only' | 'cohort_only' | 'major_cohort' 
 
 export interface PendingCohortRow {
   majorCode: string; majorName: string; majorId?: string; version: string;
-  effectiveFromSemesterId: string; effectiveToSemesterId: string;
+  effectiveFromSemesterId?: string; effectiveToSemesterId?: string;
+  startSemesterCode: string; endSemesterCode: string;
   isCurrent: boolean; status: CurriculumStatus;
 }
 
@@ -30,7 +31,7 @@ export interface StructureParseResult {
 
 const cell = (rows: SheetRows, r: number, c: number) => (c < 0 ? '' : (rows[r]?.[c] ?? '').trim());
 const clean = (v: string) => v.trim().toLowerCase().replace(/[:：]+$/, '').trim();
-const findCol = (header: string[], keys: string[]) => keys.map((k) => header.map(clean).indexOf(k)).find((i) => i >= 0) ?? -1;
+const findCol = (cleanedHeader: string[], keys: string[]) => keys.map((k) => cleanedHeader.indexOf(k)).find((i) => i >= 0) ?? -1;
 
 async function readWorkbook(file: File): Promise<SheetRows | ImportProblem> {
   if (!/\.xlsx$/i.test(file.name)) return { row: null, message: 'Upload an Excel file (.xlsx). Download an example sheet to start from the right layout.' };
@@ -52,7 +53,7 @@ export async function parseStructureImport(
 
   const sheet = await readWorkbook(file);
   if (!Array.isArray(sheet)) return { ...empty(sheet.message, sheet.row) };
-  const header = sheet[0] ?? [];
+  const header = (sheet[0] ?? []).map(clean);
 
   const codeCol = findCol(header, ['major code', 'major', 'code']);
   const nameCol = findCol(header, ['major name', 'name']);
@@ -82,6 +83,14 @@ export async function parseStructureImport(
 
   const semByCode = new Map(semesters.map((s) => [s.code.toUpperCase(), s]));
   const courseByCode = new Map(activeCourses.map((c) => [c.code.toUpperCase(), c]));
+  const majorsByCode = new Map<string, { id: string; code: string; name: string }[]>();
+  for (const m of existingMajors) {
+    const k = m.code.toUpperCase();
+    const list = majorsByCode.get(k);
+    if (list) list.push(m);
+    else majorsByCode.set(k, [m]);
+  }
+  const nowOrd = currentSemesterOrdinal();
   const majorsMap = new Map<string, CreateMajorDto>();
   const cohortsMap = new Map<string, PendingCohortRow>();
   const linkSeen = new Set<string>();
@@ -92,7 +101,7 @@ export async function parseStructureImport(
     const majorCode = cell(sheet, r, codeCol).toUpperCase();
     const majorName = cell(sheet, r, nameCol);
     const version = hasCohort ? cell(sheet, r, cohortCol).toUpperCase() : '';
-    const courseCode = hasCourse ? cell(sheet, r, courseCol) : '';
+    const courseCode = hasCourse ? cell(sheet, r, courseCol).replace(/\s+/g, '') : '';
     if (!majorCode && !majorName && !version && !courseCode) continue;
 
     const rowNo = r + 1;
@@ -102,7 +111,7 @@ export async function parseStructureImport(
     let matchedExistingMajorId: string | undefined;
 
     if (mode === 'cohort_only') {
-      const matches = existingMajors.filter((m) => m.code.toUpperCase() === majorCode);
+      const matches = majorsByCode.get(majorCode) ?? [];
       const match = majorName
         ? matches.find((m) => m.name.toLowerCase() === majorName.toLowerCase())
         : matches.length === 1 ? matches[0] : undefined;
@@ -115,7 +124,7 @@ export async function parseStructureImport(
         matchedExistingMajorId = match.id;
       }
     } else {
-      if (!MAJOR_CODE_RE.test(majorCode)) addErr(`Major code "${majorCode}" must be 2 letters starting with S, H, D, Q, C, A, or I.`);
+      if (!MAJOR_CODE_RE.test(majorCode)) addErr(`Major code "${majorCode}" must be 2–6 uppercase letters or digits starting with a letter (e.g. SE, EN, K1).`);
       if (!majorName) addErr('Major name is required.');
       const creditsRaw = cell(sheet, r, credCol);
       const totalCredits = creditsRaw === '' ? 140 : Number(creditsRaw);
@@ -137,11 +146,11 @@ export async function parseStructureImport(
       const endCode = cell(sheet, r, endCol).toUpperCase();
       const startSem = semByCode.get(startCode);
       const endSem = semByCode.get(endCode);
-      if (!SEM_CODE_RE.test(startCode) || !startSem) addErr(`Start semester "${startCode}" does not exist.`);
-      if (!SEM_CODE_RE.test(endCode) || !endSem) addErr(`End semester "${endCode}" does not exist.`);
+      if (!SEM_CODE_RE.test(startCode)) addErr(`Start semester "${startCode}" must be SP, SU, or FA + 4-digit year (e.g. FA2021).`);
+      if (!SEM_CODE_RE.test(endCode)) addErr(`End semester "${endCode}" must be SP, SU, or FA + 4-digit year (e.g. FA2030).`);
       const sOrd = semesterOrdinal(startCode);
       const eOrd = semesterOrdinal(endCode);
-      if (eOrd !== null && eOrd < currentSemesterOrdinal()) addErr(`End semester "${endCode}" cannot be in the past.`);
+      if (eOrd !== null && eOrd < nowOrd) addErr(`End semester "${endCode}" cannot be in the past.`);
       if (sOrd !== null && eOrd !== null && eOrd - sOrd < MIN_END_TERM_GAP) addErr(`End semester "${endCode}" must be at least ${MIN_END_TERM_GAP} terms after "${startCode}".`);
       const cStatus = (cell(sheet, r, cohortStatusCol) || 'ACTIVE').toUpperCase();
       if (!['ACTIVE', 'INACTIVE'].includes(cStatus)) addErr(`Cohort status must be ACTIVE or INACTIVE (found "${cStatus}").`);
@@ -151,10 +160,11 @@ export async function parseStructureImport(
       if (isCurrent && cStatus !== 'ACTIVE') addErr('Inactive cohort cannot be marked as current.');
 
       const cKey = `${majorCode}::${resolvedMajorName.toLowerCase()}::${version}`;
-      if (startSem && endSem && resolvedMajorName && !cohortsMap.has(cKey)) {
+      if (SEM_CODE_RE.test(startCode) && SEM_CODE_RE.test(endCode) && resolvedMajorName && !cohortsMap.has(cKey)) {
         cohortsMap.set(cKey, {
           majorCode, majorName: resolvedMajorName, majorId: matchedExistingMajorId, version,
-          effectiveFromSemesterId: startSem.id, effectiveToSemesterId: endSem.id,
+          effectiveFromSemesterId: startSem?.id, effectiveToSemesterId: endSem?.id,
+          startSemesterCode: startCode, endSemesterCode: endCode,
           isCurrent, status: cStatus as CurriculumStatus,
         });
       }
@@ -169,7 +179,6 @@ export async function parseStructureImport(
         const ccRaw = cell(sheet, r, courseCreditsCol);
         const ccNum = Number(ccRaw);
         if (ccRaw === '' || !Number.isInteger(ccNum) || !isAllowedCredits(ccNum)) addErr(`Course credits: ${CREDIT_OPTIONS_MESSAGE} (found "${ccRaw}").`);
-        else if (course?.credits !== undefined && course.credits !== ccNum) addErr(`Course "${courseCode}" has ${course.credits} credits in Course pool (file has ${ccNum}).`);
       }
       const termRaw = cell(sheet, r, termCol);
       const term = Number(termRaw);

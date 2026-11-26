@@ -88,7 +88,9 @@ export function CohortCurriculumWorkspace({ cohortId, onBackToCohorts }: Props) 
   }
 
   const item = curriculum.data;
-  const usedCredits = courses.reduce((sum, c) => sum + c.credits, 0);
+  const usedCredits = courses
+    .filter((c) => c.semesterNumber > 0 && !/^(PHE|VOV|GDQP|OTP|TMI|TPI|PEN|TRS|LUK)/i.test(c.courseCode))
+    .reduce((sum, c) => sum + c.credits, 0);
   const creditLimit = item.majorTotalCredits ?? 0;
 
   return (

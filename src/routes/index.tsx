@@ -32,6 +32,7 @@ const AttendancePage = lazy(() => import('../modules/management/pages/Attendance
 const AcademicRulesPage = lazy(() => import('../modules/management/pages/AcademicRules'));
 const AiConfigPage = lazy(() => import('../modules/management/pages/AiConfig'));
 const AiPerformancePage = lazy(() => import('../modules/management/pages/AiPerformance'));
+const DatabaseManagementPage = lazy(() => import('../modules/management/pages/DatabaseManagement'));
 const StudentBookAppointment = lazy(() => import('../modules/learning/pages/BookAppointment'));
 const StudentPortal = lazy(() => import('../modules/learning/pages/StudentPortal'));
 const StudentAdvisingRequests = lazy(() => import('../modules/learning/pages/AdvisingRequests'));
@@ -93,6 +94,7 @@ export const router = createBrowserRouter([
           { path: '/admin/reports', element: suspense(<AdvisingReports />) },
           { path: '/admin/ai-reports', element: suspense(<AiReports />) },
           { path: '/admin/ai-reports/:id', element: suspense(<AiReportDetail />) },
+          { path: '/admin/database', element: suspense(<DatabaseManagementPage />) },
           { path: '/admin/assignments', element: suspense(<AssignmentsOverview />) },
           { path: '/admin/assignments/advisors/:advisorId', element: suspense(<AdvisorDetails />) },
           { path: '/admin/assignments/cohorts/:cohortId', element: suspense(<CohortDetails />) },

@@ -76,10 +76,11 @@ function checkCourseRows(rows: CourseFields[], categories: CourseCategory[]): Im
   const seen = new Set<string>();
   for (const r of rows) {
     const add = (message: string) => problems.push({ row: r.row, message });
-    if (!r.code) add('Course code is required.');
-    else if (!COURSE_CODE_PATTERN.test(r.code)) add(`Course code "${r.code}" has an invalid format (e.g. CSD201, SSL101c, PEN, PHE_COM*1).`);
-    else if (seen.has(r.code.toUpperCase())) add(`Course code ${r.code} appears more than once in the file.`);
-    else seen.add(r.code.toUpperCase());
+    const code = r.code.replace(/\s+/g, '');
+    if (!code) add('Course code is required.');
+    else if (!COURSE_CODE_PATTERN.test(code)) add(`Course code "${r.code}" has an invalid format (e.g. CSD201, SSL101c, IoT_GRA_ELE, NWC203c/NWC204).`);
+    else if (seen.has(code.toUpperCase())) add(`Course code ${code} appears more than once in the file.`);
+    else seen.add(code.toUpperCase());
     if (!r.name) add('Course name is required.');
     const credits = Number(r.credits);
     if (r.credits === '' || Number.isNaN(credits)) add('Credits must be a number.');

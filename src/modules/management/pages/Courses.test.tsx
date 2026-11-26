@@ -288,7 +288,7 @@ describe('Courses', () => {
     expect(updateCourse).toHaveBeenCalledWith('c1', { status: 'INACTIVE' });
   });
 
-  it('does not upload an import file with credits outside 0/2/3/10', async () => {
+  it('does not upload an import file with credits outside 0/2/3/6/10', async () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByText('SE101');
@@ -300,7 +300,7 @@ describe('Courses', () => {
     await user.upload(screen.getByLabelText('Import courses from Excel'), file);
 
     expect(await screen.findByText('The file was not uploaded')).toBeInTheDocument();
-    expect(screen.getByText('Credits must be 0, 2, 3 or 10 (found 5).')).toBeInTheDocument();
+    expect(screen.getByText('Credits must be 0, 2, 3, 4, 6, 9, 10 or 12 (found 5).')).toBeInTheDocument();
     expect(previewImport).not.toHaveBeenCalled();
   });
 
@@ -308,7 +308,7 @@ describe('Courses', () => {
     const user = userEvent.setup();
     previewImport.mockResolvedValue({
       totalRows: 1, validRows: 1, errorRows: 0,
-      items: [{ rowNumber: 1, code: 'OLD101', name: 'Old', credits: 6, categoryId: 'cat1', categoryName: 'SE', description: '',
+      items: [{ rowNumber: 1, code: 'OLD101', name: 'Old', credits: 7, categoryId: 'cat1', categoryName: 'SE', description: '',
         prerequisites: '', objectives: '', learningOutcomes: '', status: 'VALID', errors: [] }],
     });
     renderPage();
@@ -316,7 +316,7 @@ describe('Courses', () => {
 
     await user.upload(screen.getByLabelText('Import courses from Excel'), new File(['x'], 'old.xls'));
 
-    expect(await screen.findByText('Credits must be 0, 2, 3 or 10')).toBeInTheDocument();
+    expect(await screen.findByText('Credits must be 0, 2, 3, 4, 6, 9, 10 or 12')).toBeInTheDocument();
   });
 
   it('creates a course with status, material link and prerequisites, without syllabus fields', async () => {

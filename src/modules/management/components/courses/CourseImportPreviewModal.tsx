@@ -86,9 +86,14 @@ const columns: StaticColumn<CourseImportRow>[] = [
   },
 ];
 
+const PREVIEW_CAP = 200;
+
 export default function CourseImportPreviewModal({ open, fileName, preview, isConfirming, isReading, onClose, onConfirm }: Props) {
-  const validRows = preview?.items.filter((r) => r.errors.length === 0) ?? [];
   const rows = preview?.items ?? [];
+  const validCount = preview?.validRows ?? 0;
+  const displayRows = rows.length <= PREVIEW_CAP
+    ? rows
+    : [...rows.filter((r) => r.errors.length > 0), ...rows.filter((r) => r.errors.length === 0)].slice(0, PREVIEW_CAP);
 
   return (
     <Modal open={open} onClose={onClose} title="Preview course import" className="max-w-3xl">
@@ -128,22 +133,16 @@ export default function CourseImportPreviewModal({ open, fileName, preview, isCo
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-2 px-6 pt-4">
-            <span className={cn(
-                'inline-flex items-center gap-1.5 rounded-full',
-                'bg-emerald-50 px-3 py-1 text-[11px] font-bold',
-                'text-emerald-700 ring-1 ring-emerald-200'
-              )}>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700 ring-1 ring-emerald-200">
               <CheckCircle2 className="size-3.5" /> {preview.validRows} valid
             </span>
-            <span className={cn(
-                'inline-flex items-center gap-1.5 rounded-full',
-                'bg-red-50 px-3 py-1 text-[11px] font-bold',
-                'text-red-700 ring-1 ring-red-200'
-              )}>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-[11px] font-bold text-red-700 ring-1 ring-red-200">
               <AlertTriangle className="size-3.5" /> {preview.errorRows} error
             </span>
             <span className="ml-auto text-[11px] text-gray-500">
-              Only valid rows will be imported on Confirm.
+              {rows.length > PREVIEW_CAP
+                ? `Showing first ${PREVIEW_CAP} of ${rows.length} rows · all ${validCount} valid rows import on Confirm.`
+                : 'Only valid rows will be imported on Confirm.'}
             </span>
           </div>
 
@@ -151,7 +150,7 @@ export default function CourseImportPreviewModal({ open, fileName, preview, isCo
             <div className="overflow-hidden rounded-xl border border-gray-200">
               <StaticTable
                 columns={columns}
-                rows={rows}
+                rows={displayRows}
                 rowKey={(row) => String(row.rowNumber)}
                 emptyTitle="No rows to import"
                 emptyDescription="The spreadsheet did not contain any course row."
@@ -166,20 +165,12 @@ export default function CourseImportPreviewModal({ open, fileName, preview, isCo
           Error rows are skipped automatically — fix the file and re-upload to include them.
         </p>
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className={cn(
-                'rounded-xl border border-gray-200 bg-white px-4 py-2',
-                'text-xs font-bold text-gray-600 transition-colors',
-                'hover:bg-gray-50'
-              )}
-          >
+          <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50">
             Cancel
           </button>
           <button
             type="button"
-            disabled={!preview || validRows.length === 0 || isConfirming || isReading}
+            disabled={!preview || validCount === 0 || isConfirming || isReading}
             onClick={onConfirm}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2 text-xs font-bold text-white',
@@ -188,7 +179,7 @@ export default function CourseImportPreviewModal({ open, fileName, preview, isCo
             )}
           >
             <Upload className="size-3.5" />
-            {isConfirming ? 'Importing…' : `Confirm · import ${validRows.length} rows`}
+            {isConfirming ? 'Importing…' : `Confirm · import ${validCount} rows`}
           </button>
         </div>
       </div>

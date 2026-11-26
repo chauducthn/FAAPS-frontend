@@ -6,6 +6,7 @@ import {
   CalendarCheck,
   ClipboardCheck,
   Cpu,
+  Database,
   Flag,
   GraduationCap,
   LayoutDashboard,
@@ -115,6 +116,17 @@ export const ADMIN_NAV_SECTIONS: PortalNavSection[] = [
         description: 'Review and resolve student reports on AI answers.',
         to: '/admin/ai-reports',
         icon: Flag,
+      },
+    ],
+  },
+  {
+    title: 'System',
+    items: [
+      {
+        label: 'Database',
+        description: 'Inspect database table counts and reset all operational data.',
+        to: '/admin/database',
+        icon: Database,
       },
     ],
   },
