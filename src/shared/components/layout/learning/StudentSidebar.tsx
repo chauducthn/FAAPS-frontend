@@ -39,7 +39,7 @@ export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
     title: 'STUDY SETUP & PLAN',
     items: [
       {
-        label: 'Curriculum',
+        label: 'Curriculum Courses',
         to: '/student/curriculum',
         icon: GraduationCap,
         description: 'Configure major, specialization & electives, import transcript, and view curriculum courses.',

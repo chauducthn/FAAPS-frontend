@@ -6,7 +6,7 @@
 /* Soft Semantic Surfaces */
 .dark :is(
   .bg-orange-50, .bg-orange-50\/15, .bg-orange-50\/30, .bg-orange-50\/40,
-  .bg-orange-50\/50, .bg-orange-50\/60, .bg-orange-50\/70, .bg-orange-50\/80,
+  .bg-orange-50\/50, .bg-orange-50\/55, .bg-orange-50\/60, .bg-orange-50\/70, .bg-orange-50\/80,
   .bg-\[\#FFF4ED\], .bg-\[\#FFF7ED\], .bg-\[\#fff3ea\], .bg-\[\#fff7ed\],
   .bg-\[\#fff7ed\]\/60, .bg-\[\#fff7f0\], .bg-\[\#fff4ec\]
 ) {
@@ -70,7 +70,7 @@
 .dark :is(.hover\:bg-emerald-50, .hover\:bg-emerald-100, .hover\:bg-green-50):hover {
   background-color: rgb(16 185 129 / 0.24);
 }
-.dark .hover\:bg-amber-100:hover { background-color: rgb(245 158 11 / 0.24); }
+.dark :is(.hover\:bg-amber-50, .hover\:bg-amber-100, .hover\:bg-amber-100\/60):hover { background-color: rgb(245 158 11 / 0.24); }
 .dark :is(.hover\:bg-red-50, .hover\:bg-red-100):hover { background-color: rgb(239 68 68 / 0.24); }
 .dark :is(.hover\:bg-purple-50, .hover\:bg-purple-100):hover { background-color: rgb(99 102 241 / 0.26); }
 .dark .disabled\:hover\:bg-purple-50:disabled:hover { background-color: rgb(99 102 241 / 0.16); }
@@ -83,16 +83,16 @@
 ) {
   border-color: rgb(242 111 33 / 0.34);
 }
-.dark :is(.border-emerald-200, .border-emerald-200\/80, .border-green-200) {
+.dark :is(.border-emerald-100, .border-emerald-200, .border-emerald-200\/80, .border-green-200) {
   border-color: rgb(16 185 129 / 0.34);
 }
-.dark :is(.border-amber-200, .border-amber-200\/80, .border-yellow-200) {
+.dark :is(.border-amber-200, .border-amber-200\/80, .border-amber-200\/90, .border-yellow-200) {
   border-color: rgb(245 158 11 / 0.34);
 }
-.dark :is(.border-red-200, .border-red-200\/80, .border-red-200\/90, .border-rose-200, .border-red-300) {
+.dark :is(.border-red-100, .border-red-200, .border-red-200\/80, .border-red-200\/90, .border-rose-200, .border-red-300) {
   border-color: rgb(239 68 68 / 0.34);
 }
-.dark :is(.border-blue-200, .border-sky-200, .border-sky-200\/80) {
+.dark :is(.border-blue-100, .border-blue-200, .border-sky-200, .border-sky-200\/80) {
   border-color: rgb(59 130 246 / 0.34);
 }
 .dark :is(.border-indigo-200, .border-indigo-200\/80, .border-purple-200) {

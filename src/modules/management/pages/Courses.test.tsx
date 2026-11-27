@@ -295,7 +295,7 @@ describe('Courses', () => {
     await user.upload(screen.getByLabelText('Import courses from Excel'), file);
 
     expect(await screen.findByText('The file was not uploaded')).toBeInTheDocument();
-    expect(screen.getByText('Credits must be 0, 2, 3, 4, 6, 9, 10 or 12 (found 5).')).toBeInTheDocument();
+    expect(screen.getByText('Credits must be 0, 1, 2, 3, 4, 6, 9, 10 or 12 (found 5).')).toBeInTheDocument();
     expect(previewImport).not.toHaveBeenCalled();
   });
 
@@ -311,7 +311,7 @@ describe('Courses', () => {
 
     await user.upload(screen.getByLabelText('Import courses from Excel'), new File(['x'], 'old.xls'));
 
-    expect(await screen.findByText('Credits must be 0, 2, 3, 4, 6, 9, 10 or 12')).toBeInTheDocument();
+    expect(await screen.findByText('Credits must be 0, 1, 2, 3, 4, 6, 9, 10 or 12')).toBeInTheDocument();
   });
 
   it('creates a course with status, material link and prerequisites, without syllabus fields', async () => {

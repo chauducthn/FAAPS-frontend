@@ -6,11 +6,11 @@ import { z } from 'zod';
 const idRef = z.string().min(1, 'Select a valid option');
 
 /** The only credit values a course can have (chosen from a list, never typed). */
-export const CREDIT_OPTIONS = [0, 2, 3, 4, 6, 9, 10, 12] as const;
-export const CREDIT_OPTIONS_MESSAGE = 'Credits must be 0, 2, 3, 4, 6, 9, 10 or 12';
+export const CREDIT_OPTIONS = [0, 1, 2, 3, 4, 6, 9, 10, 12] as const;
+export const CREDIT_OPTIONS_MESSAGE = 'Credits must be 0, 1, 2, 3, 4, 6, 9, 10 or 12';
 
 const CODE_PART =
-  '(?:[\\p{Lu}\\d][\\p{Lu}]{2}\\d{2}[\\dx][\\p{Ll}]?\\*?|[\\p{Lu}\\d][\\p{L}]{1,5}\\d{0,2}(?:[_-][\\p{L}0-9.*]+)*(?:\\*\\.?\\d+(?:\\.\\d+)?)?\\*?)';
+  '(?:[\\p{Lu}\\d][\\p{L}]{2}\\d{2}[\\dx][\\p{Ll}]?(?:[_-][\\p{L}0-9.*]+)*\\*?|[\\p{Lu}\\d][\\p{L}]{1,5}\\d{0,2}(?:[_-][\\p{L}0-9.*]+)*(?:\\*\\.?\\d+(?:\\.\\d+)?)?\\*?)';
 export const COURSE_CODE_PATTERN = new RegExp(`^${CODE_PART}(?:/${CODE_PART})*$`, 'u');
 
 export const createCourseSchema = z.object({

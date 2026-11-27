@@ -18,13 +18,16 @@ export type TranscriptRow = { id: string; courseCode: string; courseName: string
     /** The API may omit the GPA values; renderers must fall back to a placeholder. */
     semesterGpa: number | null; cumulativeGpa: number | null; standing: string }[] };
 export type Course = { id: string; code: string; name: string; credits: number; category: string;
-  description: string | null; objectives: string | null; learningOutcomes: string | null };
+  description: string | null; objectives: string | null; learningOutcomes: string | null;
+  materialLink?: string | null; knowledgeBlock?: string | null; gradingStructure?: string | null };
 export type CourseDetail = { course: Course; prerequisites: { id: string; courseCode: string;
   courseName: string; groupNo: number; type: string; minimumScore: number | null }[] };
 export type Curriculum = { id: string; version: string; name: string; description: string | null;
   majorCode: string; majorName: string };
 export type CurriculumCourse = { courseId: string; code: string; name: string; credits: number;
   semesterNumber: number; mandatory: boolean; groupName: string | null };
+export type BlockPlacement = { courseCode: string; semesterNumber: number; blockCode: string;
+  planMode: 'CUSTOM' | 'RETAKE' | 'DEFERRED' | 'EARLY'; note: string | null };
 export type FlmPreferencesView = {
   comboCode: string | null;
   englishPrep: string | null;
@@ -124,6 +127,22 @@ export const studentAcademicService = {
   course: (id: string) => get<CourseDetail>(`/courses/${id}`),
   curriculum: () => get<Curriculum>('/curriculum'),
   curriculumCourses: () => get<CurriculumCourse[]>('/curriculum/courses'),
+  blockPlacements: () => get<BlockPlacement[]>('/curriculum/block-plan'),
+  curriculumPrerequisites: () => get<Record<string, string[]>>('/curriculum/block-plan/prerequisites'),
+  saveBlockPlacement: async (body: {
+    courseCode: string;
+    semesterNumber: number;
+    blockCode: string;
+    planMode?: BlockPlacement['planMode'];
+    note?: string | null;
+  }) =>
+    (await apiClient.put<BlockPlacement[]>('/student/curriculum/block-plan', body, { headers: await getCsrfHeaders() })).data,
+  removeBlockPlacement: async (courseCode: string) =>
+    (await apiClient.delete<BlockPlacement[]>(`/student/curriculum/block-plan/${encodeURIComponent(courseCode)}`, {
+      headers: await getCsrfHeaders(),
+    })).data,
+  resetBlockPlacements: async () =>
+    (await apiClient.delete<BlockPlacement[]>('/student/curriculum/block-plan', { headers: await getCsrfHeaders() })).data,
   importPreview: async (file: File) => {
     const body = new FormData();
     body.append('file', file);

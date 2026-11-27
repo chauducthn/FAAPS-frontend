@@ -38,6 +38,8 @@ export interface CourseDetail extends CourseSummary {
   description: string | null;
   objectives: string | null;
   learningOutcomes: string | null;
+  knowledgeBlock?: string | null;
+  gradingStructure?: string | null;
   // Flat list of relations this course has to other courses
   relations: CourseRelation[];
   // Courses that list THIS course as a prerequisite
@@ -114,6 +116,7 @@ export interface UpdateCourseRelationDto {
 export interface CourseImportRow {
   rowNumber: number; code: string; name: string; credits: number; categoryId: string;
   categoryName: string; description: string; prerequisites: string; objectives: string;
-  learningOutcomes: string; courseStatus?: string; materialLink?: string | null; status: string; errors: string[];
+  learningOutcomes: string; courseStatus?: string; materialLink?: string | null;
+  knowledgeBlock?: string | null; gradingStructure?: string | null; status: string; errors: string[];
 }
 export interface CourseImportPreview { totalRows: number; validRows: number; errorRows: number; items: CourseImportRow[] }

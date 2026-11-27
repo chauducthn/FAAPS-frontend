@@ -12,12 +12,15 @@ import type { CreateAcademicRuleFormValues } from '../../academic/validations/ac
 import { AcademicRulesFilterBar, AcademicRulesTopBar } from './academic-rules/AcademicRulesHeader';
 import { AcademicRulesEmptyState, AcademicRulesErrorState, AcademicRulesModals } from './academic-rules/AcademicRulesStates';
 import { AcademicRulesBulkBar } from './academic-rules/AcademicRulesBulkBar';
+import { AcademicBlockLimitsTab } from './academic-rules/AcademicBlockLimitsTab';
 
 const PAGE_SIZE = 10;
 type FormMode = 'create' | 'edit' | 'view';
+type PageTab = 'rules' | 'blocks';
 
 export default function AcademicRulesPage() {
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<PageTab>('rules');
   const [search, setSearch] = useState('');
   const [policyType, setPolicyType] = useState('ALL');
   const [status, setStatus] = useState<'ALL' | AcademicRuleStatus>('ALL');
@@ -61,27 +64,21 @@ export default function AcademicRulesPage() {
 
   const hasFilters = search !== '' || policyType !== 'ALL' || status !== 'ALL';
   const clearFilters = () => {
-    setSearch(''); setPolicyType('ALL');
-    setStatus('ALL'); setPagination((p) => ({ ...p, pageIndex: 0 }));
+    setSearch('');
+    setPolicyType('ALL');
+    setStatus('ALL');
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
   };
 
-  const openCreate = () => {
-    setEditing(null); setFormMode('create');
+  const openForm = (rule: AcademicRule | null, mode: FormMode) => {
+    setEditing(rule);
+    setFormMode(mode);
     setFormOpen(true);
   };
-  const openView = (rule: AcademicRule) => {
-    setEditing(rule); setFormMode('view');
-    setFormOpen(true);
-  };
-  const openEdit = (rule: AcademicRule) => {
-    if (rule.status === 'ACTIVE') return openView(rule);
-    setEditing(rule); setFormMode('edit');
-    setFormOpen(true);
-  };
-
-  const guard = async (fn: () => Promise<unknown>) => {
-    try { await fn(); } catch { return; }
-  };
+  const openCreate = () => openForm(null, 'create');
+  const openView = (rule: AcademicRule) => openForm(rule, 'view');
+  const openEdit = (rule: AcademicRule) => openForm(rule, rule.status === 'ACTIVE' ? 'view' : 'edit');
+  const guard = async (fn: () => Promise<unknown>) => { try { await fn(); } catch { /* handled */ } };
 
   const runBatch = async (targets: AcademicRule[], action: (r: AcademicRule) => Promise<unknown>, okVerb: string, failVerb: string) => {
     setBulkBusy(true);
@@ -113,6 +110,14 @@ export default function AcademicRulesPage() {
 
   return (
     <div className="w-full space-y-4">
+      <div className="inline-flex items-center gap-1 rounded-xl border border-gray-200/80 bg-white p-1 shadow-2xs">
+        {([['rules', 'Academic Rules'], ['blocks', 'Block & Study Limits']] as const).map(([key, label]) => (
+          <button key={key} type="button" onClick={() => setActiveTab(key)} className={`h-8 rounded-lg px-3.5 text-xs font-semibold transition-colors ${activeTab === key ? 'bg-[#F26F21] text-white shadow-2xs' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {activeTab === 'blocks' ? <AcademicBlockLimitsTab /> : (<>
       <AcademicRulesTopBar
         totalItems={summaryQuery.data?.total ?? data?.totalItems} isFetching={isFetching}
         pageIndex={pagination.pageIndex} totalPages={data?.totalPages ?? 1}
@@ -161,10 +166,9 @@ export default function AcademicRulesPage() {
                 onPublish={(r) => guard(() => publish(r.id))}
                 onArchive={(r) => guard(() => archive(r.id))}
                 onReopen={(r) => guard(() => reopen(r.id))}
-                onDelete={(r) => {
-                  if (r.status === 'ACTIVE') return void toast.error(`${r.ruleName} is ACTIVE — archive it before deleting.`);
-                  setDeleting(r);
-                }}
+                onDelete={(r) => (r.status === 'ACTIVE'
+                  ? void toast.error(`${r.ruleName} is ACTIVE — archive it before deleting.`)
+                  : setDeleting(r))}
               />
             </div>
           )}
@@ -181,15 +185,13 @@ export default function AcademicRulesPage() {
             setFormOpen(false);
           } catch { return; }
         }}
-        deleting={deleting} isDeleting={isRemoving || isChangingStatus}
-        onCancelDelete={() => setDeleting(null)}
-        onConfirmDelete={async () => {
-          if (!deleting) return;
-          try { await remove(deleting.id); } finally { setDeleting(null); }
-        }}
+        deleting={deleting} isDeleting={isRemoving || isChangingStatus} onCancelDelete={() => setDeleting(null)}
+        onConfirmDelete={async () => { if (deleting) try { await remove(deleting.id); } finally { setDeleting(null); } }}
         bulkDeleteTargets={bulkDeleteTargets} isBulkDeleting={bulkBusy}
         onCancelBulkDelete={() => setBulkDeleteTargets([])} onConfirmBulkDelete={handleConfirmBulkDelete}
       />
+      </>
+      )}
     </div>
   );
 }

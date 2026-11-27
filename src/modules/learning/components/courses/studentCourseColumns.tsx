@@ -28,6 +28,9 @@ export function adaptStudentCourseDetail(data: StudentCourseDetail | undefined):
     description: course.description,
     objectives: course.objectives,
     learningOutcomes: course.learningOutcomes,
+    materialLink: course.materialLink ?? null,
+    knowledgeBlock: course.knowledgeBlock ?? null,
+    gradingStructure: course.gradingStructure ?? null,
     relations: prerequisites.map((p) => ({
       relationId: p.id,
       kind: p.type === 'REPLACEMENT' ? 'REPLACEMENT' : 'PREREQUISITE',

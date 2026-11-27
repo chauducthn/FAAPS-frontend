@@ -1,5 +1,5 @@
 // Course detail plus prerequisite / replacement relations (add, edit, remove).
-import { BookOpenText, ArrowSquareOut as ExternalLink, GraduationCap, Link as Link2, Scroll as ScrollText, Target, X } from '@phosphor-icons/react';
+import { BookOpenText, ChartBar, ArrowSquareOut as ExternalLink, GraduationCap, Link as Link2, Scroll as ScrollText, Stack, Target, X } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { StatusBadge } from '../StatusBadge';
 import type { CourseDetail } from '../../../academic/types/course';
@@ -63,6 +63,11 @@ export default function CourseDetailModal({
                   <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
                     {course.categoryCode} · {course.categoryName}
                   </span>
+                  {course.knowledgeBlock && (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700 ring-1 ring-sky-200/70">
+                      <Stack className="size-3" /> {course.knowledgeBlock}
+                    </span>
+                  )}
                   {course.specialization && (
                     <span className="rounded-md bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-700 ring-1 ring-violet-200/70">
                       {course.specialization}
@@ -105,8 +110,35 @@ export default function CourseDetailModal({
                 </header>
                 <div className="space-y-3.5 p-4">
                   {course.description && <CourseSyllabusBlock icon={<BookOpenText className="size-3.5" />} title="Description" text={course.description} fallback="" />}
-                  {course.objectives && <CourseSyllabusBlock icon={<Target className="size-3.5" />} title="Objectives" text={course.objectives} fallback="" />}
-                  {course.learningOutcomes && <CourseSyllabusBlock icon={<GraduationCap className="size-3.5" />} title="Learning outcomes" text={course.learningOutcomes} fallback="" />}
+                  {course.objectives && <CourseSyllabusBlock icon={<Target className="size-3.5" />} title="Objectives & Study Requirements" text={course.objectives} fallback="" />}
+                  {course.learningOutcomes && <CourseSyllabusBlock icon={<GraduationCap className="size-3.5" />} title="Learning outcomes (CLOs)" text={course.learningOutcomes} fallback="" />}
+                </div>
+              </section>
+            )}
+
+            {course.gradingStructure && (
+              <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+                <header className="flex items-center gap-2 border-b border-gray-100 px-4 py-2.5">
+                  <ChartBar className="size-4 text-[#F26F21]" />
+                  <h3 className="text-[13px] font-bold text-gray-900">Grading structure &amp; pass criteria</h3>
+                </header>
+                <div className="space-y-2 p-4">
+                  {course.gradingStructure.split('\n').map((line, i) => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return null;
+                    if (trimmed.toLowerCase().startsWith('pass criteria')) {
+                      return (
+                        <div key={i} className="inline-flex items-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          {trimmed}
+                        </div>
+                      );
+                    }
+                    return (
+                      <p key={i} className="rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2 text-xs leading-relaxed text-gray-700">
+                        {trimmed.replace(/^•\s*/, '')}
+                      </p>
+                    );
+                  })}
                 </div>
               </section>
             )}

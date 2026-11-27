@@ -119,7 +119,7 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <label htmlFor="flm-english" className="block text-xs font-semibold text-gray-700">
-              English Prep (PEN)
+              Starting English Level (PEN)
             </label>
             <select
               id="flm-english"
