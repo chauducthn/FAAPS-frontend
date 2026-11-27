@@ -15,7 +15,7 @@ export function createCourseColumns(handlers: {
       accessorKey: 'code',
       header: 'Code',
       cell: ({ row }) => (
-        <span className="font-mono text-[13px] font-semibold text-gray-900">
+        <span className="font-mono text-[13px] font-semibold text-ink-primary">
           {row.original.code}
         </span>
       ),
@@ -29,7 +29,7 @@ export function createCourseColumns(handlers: {
             type="button"
             onClick={() => handlers.onView(row.original.id)}
             title={`View detail of ${row.original.code}`}
-            className="block max-w-[280px] truncate text-left font-semibold text-gray-900 transition-colors hover:text-[#C2410C] hover:underline"
+            className="block max-w-[280px] truncate text-left font-semibold text-ink-primary transition-colors hover:text-brand-ink hover:underline"
           >
             {row.original.name}
           </button>
@@ -40,7 +40,7 @@ export function createCourseColumns(handlers: {
       accessorKey: 'credits',
       header: 'Credits',
       cell: ({ row }) => (
-        <span className="font-mono text-[13px] font-semibold tabular-nums text-[#C2410C]">
+        <span className="font-mono text-[13px] font-semibold tabular-nums text-brand-ink">
           {row.original.credits}
         </span>
       ),
@@ -49,7 +49,7 @@ export function createCourseColumns(handlers: {
       accessorKey: 'categoryCode',
       header: 'Category Code',
       cell: ({ row }) => (
-        <span className="font-mono text-xs font-semibold text-gray-800">
+        <span className="font-mono text-xs font-semibold text-ink-secondary">
           {row.original.categoryCode || '—'}
         </span>
       ),
@@ -59,7 +59,7 @@ export function createCourseColumns(handlers: {
       header: 'Category Name',
       cell: ({ row }) => (
         <span
-          className="block max-w-[180px] truncate text-[13px] text-gray-600"
+          className="block max-w-[180px] truncate text-[13px] text-ink-muted"
           title={row.original.categoryName}
         >
           {row.original.categoryName || '—'}
@@ -71,7 +71,7 @@ export function createCourseColumns(handlers: {
       header: 'Prereq',
       meta: { align: 'center' },
       cell: ({ row }) => (
-        <span className="text-[13px] font-semibold tabular-nums text-gray-700">
+        <span className="text-[13px] font-semibold tabular-nums text-ink-secondary">
           {row.original.prerequisiteCount}
         </span>
       ),

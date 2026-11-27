@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { CaretDown as ChevronDown, GraduationCap, SpinnerGap as Loader2, Plus, X } from '@phosphor-icons/react';
+import { CaretDown as ChevronDown, GraduationCap, SpinnerGap as Loader2, Plus } from '@phosphor-icons/react';
 import { Modal } from '@/shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '@/shared/components/ui/ModalParts';
 import { cn } from '@/shared/lib/utils';
 import type { CreateMajorDto } from '../../../academic/types/major';
 import { MajorAcademicFields } from './MajorAcademicFields';
@@ -23,7 +24,7 @@ const EMPTY: CreateMajorDto = {
 
 const fieldClass = (invalid?: boolean) =>
   cn(
-    'h-10 w-full rounded-lg border bg-white px-3 text-[13px] text-ink-primary placeholder:text-ink-subtle shadow-2xs transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-page disabled:opacity-60',
+    'h-9 w-full rounded-md border bg-white px-3 text-[13px] text-ink-primary placeholder:text-ink-subtle shadow-2xs transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-page disabled:opacity-60',
     invalid
       ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
       : 'border-line hover:border-ink-subtle/50 focus:border-brand focus:ring-brand/15',
@@ -69,34 +70,21 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
   return (
     <Modal open={isOpen} onClose={() => !isSaving && onClose()} title={editing ? 'Edit major' : 'Create major'} className="max-w-xl">
       <form noValidate onSubmit={handleSubmit} className="flex min-h-0 flex-col">
-        <div className="flex items-center justify-between gap-4 border-b border-line-soft bg-white px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand ring-1 ring-brand/25">
-              <GraduationCap className="size-4.5" />
-            </span>
-            <div>
-              <h2 className="text-[15px] font-semibold text-ink-primary">
-                {editing ? 'Edit major' : 'Create major'}
-              </h2>
-              <p className="text-[13px] text-ink-muted">
-                {editing
-                  ? 'Update major code, cohort, and credit requirements.'
-                  : 'Configure a 2-letter major code and default degree settings.'}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            disabled={isSaving}
-            onClick={onClose}
-            aria-label="Close dialog"
-            className="rounded-lg p-1.5 text-ink-subtle transition-colors hover:bg-line-soft hover:text-ink-secondary disabled:opacity-40"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
+        <ModalHeader
+          icon={<GraduationCap />}
+          tone="brand"
+          title={editing ? 'Edit major' : 'Create major'}
+          description={
+            editing
+              ? 'Update major code, cohort, and credit requirements.'
+              : 'Configure a major code and default degree settings.'
+          }
+          onClose={onClose}
+          closeDisabled={isSaving}
+          closeLabel="Close dialog"
+        />
 
-        <div className="space-y-4 overflow-y-auto px-6 py-5">
+        <ModalBody className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <div className="mb-1.5 flex items-center justify-between gap-1">
@@ -159,26 +147,26 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
             labelClass={labelClass}
             onChange={set}
           />
-        </div>
+        </ModalBody>
 
-        <div className="flex items-center justify-end gap-2.5 border-t border-line-soft bg-surface-page/70 px-6 py-3.5">
+        <ModalFooter>
           <button
             type="button"
             disabled={isSaving}
             onClick={onClose}
-            className="h-9 rounded-lg border border-line bg-white px-4 text-[13px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover disabled:opacity-50"
+            className={modalButtonClass('secondary')}
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isSaving || !isValid}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-[13px] font-semibold text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-55"
+            className={modalButtonClass('primary')}
           >
-            {isSaving && <Loader2 className="size-4 animate-spin" />}
-            {isSaving ? 'Saving…' : editing ? 'Save changes' : 'Create major'}
+            {isSaving && <Loader2 className="size-4 animate-spin" aria-hidden />}
+            {editing ? 'Save changes' : 'Create major'}
           </button>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

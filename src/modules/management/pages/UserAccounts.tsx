@@ -7,7 +7,7 @@ import { fetchAllPages } from '../../../shared/lib/fetchAllPages';
 import { adminService } from '../services/adminService';
 import { createUserAccountColumns, toUserSort } from './users/userAccountColumns';
 import { UserAccountsHeader } from './users/UserAccountsHeader';
-import { UserAccountsErrorState, UserAccountsFilterBar } from './users/UserAccountsFilterBar';
+import { UserAccountsEmptyState, UserAccountsErrorState, UserAccountsFilterBar } from './users/UserAccountsFilterBar';
 import { UserAccountsModals } from './users/UserAccountsModals';
 import { UserBulkActions } from './users/UserBulkActions';
 import { useUserAccountsState } from './users/useUserAccountsState';
@@ -99,6 +99,8 @@ export default function UserAccounts() {
 
         {usersQuery.isError && !usersQuery.data ? (
           <UserAccountsErrorState onRetry={() => usersQuery.refetch()} />
+        ) : !usersQuery.isLoading && s.items.length === 0 ? (
+          <UserAccountsEmptyState hasFilters={s.hasFilters} />
         ) : (
           <div className="relative">
             {usersQuery.isFetching && !usersQuery.isLoading && (

@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Warning as AlertTriangle, CheckCircle as CheckCircle2, Flag, XCircle } from '@phosphor-icons/react';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+import { useAiReports } from '../../ai/hooks/queries/useAdminAiReports';
 import { AdminTabBar } from '../components/AdminTabBar';
 import { Pagination } from '../components/Pagination';
-import { useAiReports } from '../../ai/hooks/queries/useAdminAiReports';
-import { useDebounce } from '@/shared/hooks/useDebounce';
 import type { AiReportStatus } from '../types/admin';
-import { REPORT_PAGE_SIZE } from './ai/reportConstants';
 import { AiReportsFilterBar, StatusCard } from './ai/AiReportsComponents';
 import { AiReportsTable } from './ai/AiReportsTable';
+import { REPORT_PAGE_SIZE } from './ai/reportConstants';
 
 export default function AiReports() {
   const [status, setStatus] = useState<AiReportStatus | ''>('PENDING');
@@ -58,7 +58,7 @@ export default function AiReports() {
           label="Total reports"
           value={total}
           icon={Flag}
-          tone="slate"
+          tone="neutral"
           active={status === ''}
           onClick={() => selectStatus('')}
         />
@@ -66,7 +66,7 @@ export default function AiReports() {
           label="Pending"
           value={pending.data?.totalElements}
           icon={AlertTriangle}
-          tone="red"
+          tone="danger"
           hint="needs review"
           active={status === 'PENDING'}
           onClick={() => selectStatus(status === 'PENDING' ? '' : 'PENDING')}
@@ -75,7 +75,7 @@ export default function AiReports() {
           label="Resolved"
           value={resolved.data?.totalElements}
           icon={CheckCircle2}
-          tone="green"
+          tone="success"
           hint="root cause fixed"
           active={status === 'RESOLVED'}
           onClick={() => selectStatus(status === 'RESOLVED' ? '' : 'RESOLVED')}
@@ -84,14 +84,14 @@ export default function AiReports() {
           label="Dismissed"
           value={dismissed.data?.totalElements}
           icon={XCircle}
-          tone="gray"
+          tone="neutral"
           hint="closed"
           active={status === 'DISMISSED'}
           onClick={() => selectStatus(status === 'DISMISSED' ? '' : 'DISMISSED')}
         />
       </div>
 
-      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
         <AiReportsFilterBar
           search={search}
           status={status}
@@ -108,8 +108,8 @@ export default function AiReports() {
           }}
         />
 
-        <div className="flex admin-fill flex-col">
-          <div className="min-h-0 flex-1 overflow-auto">
+        <div className="admin-fill flex flex-col">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <AiReportsTable
               items={items}
               isLoading={list.isLoading}
@@ -119,13 +119,15 @@ export default function AiReports() {
               onRetry={() => list.refetch()}
             />
           </div>
-          <Pagination
-            page={page}
-            pageSize={REPORT_PAGE_SIZE}
-            total={list.data?.totalElements ?? 0}
-            noun="reports"
-            onChange={setPage}
-          />
+          {items.length > 0 && (
+            <Pagination
+              page={page}
+              pageSize={REPORT_PAGE_SIZE}
+              total={list.data?.totalElements ?? 0}
+              noun="reports"
+              onChange={setPage}
+            />
+          )}
         </div>
       </section>
     </div>

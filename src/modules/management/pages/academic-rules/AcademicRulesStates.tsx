@@ -1,4 +1,10 @@
-import { WarningCircle as CircleAlert, Plus, ArrowCounterClockwise as RotateCcw, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
+import {
+  WarningCircle as CircleAlert,
+  ArrowCounterClockwise as RotateCcw,
+  MagnifyingGlassMinus as SearchX,
+  ShieldCheck,
+} from '@phosphor-icons/react';
+import { EmptyState } from '@/shared/components/common/EmptyState';
 import { RuleFormModal } from '../../components/academic-rules';
 import { RuleStatusBadge } from '../../components/academic-rules/RuleTable';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
@@ -8,11 +14,11 @@ import type { CreateAcademicRuleFormValues } from '../../../academic/validations
 export function AcademicRulesErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-lg bg-red-50 text-red-500">
-        <CircleAlert className="size-6" />
+      <span className="flex size-11 items-center justify-center rounded-md bg-red-50 text-red-600">
+        <CircleAlert className="size-5" />
       </span>
       <div>
-        <p className="text-sm font-bold text-ink-primary">Could not load rules</p>
+        <p className="text-sm font-semibold text-ink-primary">Could not load rules</p>
         <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-ink-muted">
           The rule list failed to load. Check your connection, then try again — your filters are kept.
         </p>
@@ -20,9 +26,9 @@ export function AcademicRulesErrorState({ onRetry }: { onRetry: () => void }) {
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-ink-primary px-4 py-2 text-xs font-bold text-surface-page transition-colors hover:bg-ink-secondary"
+        className="inline-flex h-9 items-center gap-1.5 rounded-md bg-ink-primary px-3.5 text-[13px] font-semibold text-surface-page transition-colors hover:bg-ink-secondary"
       >
-        <RotateCcw className="size-3.5" /> Retry
+        <RotateCcw className="size-4" /> Retry
       </button>
     </div>
   );
@@ -30,47 +36,22 @@ export function AcademicRulesErrorState({ onRetry }: { onRetry: () => void }) {
 
 export function AcademicRulesEmptyState({
   hasFilters,
-  onClear,
-  onCreate,
 }: {
   hasFilters: boolean;
-  onClear: () => void;
-  onCreate: () => void;
+  onClear?: () => void;
+  onCreate?: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-lg bg-brand-soft text-brand">
-        <SearchX className="size-6" />
-      </span>
-      <div>
-        <p className="text-sm font-bold text-ink-primary">
-          {hasFilters ? 'No rules match your filters' : 'No academic rules yet'}
-        </p>
-        <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-ink-muted">
-          {hasFilters
-            ? 'Try a different keyword, or clear the type / status filters to see the full list.'
-            : 'Create the first rule (e.g. Semester GPA warning below 5.0) to start enforcing academic policies.'}
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        {hasFilters && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="rounded-lg border border-line px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:bg-surface-hover"
-          >
-            Clear filters
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#D9601A]"
-        >
-          <Plus className="size-3.5" /> Create rule
-        </button>
-      </div>
-    </div>
+    <EmptyState
+      className="h-full justify-center"
+      icon={hasFilters ? <SearchX aria-hidden /> : <ShieldCheck aria-hidden />}
+      title={hasFilters ? 'No rules match your filters' : 'No academic rules yet'}
+      description={
+        hasFilters
+          ? 'Try a different keyword, or clear the type / status filters to see the full list.'
+          : 'Use Create rule or Load FLM defaults above to start configuring academic policies.'
+      }
+    />
   );
 }
 

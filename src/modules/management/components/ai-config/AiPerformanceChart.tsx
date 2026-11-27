@@ -1,6 +1,4 @@
-// AI Performance charts — Operate-mode, synced with the Cam ecosystem.
-// Three focused visuals: daily requests (bars), latency (line), tokens (area).
-// Shared tooltip styling, skeleton loading, empty state — no stray gray cards.
+// AI Performance charts — token-driven Recharts visuals for daily requests, latency, and tokens.
 import {
   Area,
   AreaChart,
@@ -49,12 +47,12 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-lg border border-line bg-white px-3 py-2 shadow-lg">
-      <p className="mb-1 text-[11px] font-extrabold uppercase tracking-wide text-ink-subtle">{label}</p>
+      <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-subtle">{label}</p>
       <div className="space-y-0.5">
         {payload.map((p) => (
-          <p key={String(p.dataKey)} className="flex items-center gap-2 text-xs font-semibold text-ink-secondary">
+          <p key={String(p.dataKey)} className="flex items-center gap-2 text-xs font-medium text-ink-secondary">
             <span className="size-2 rounded-full" style={{ background: p.color ?? p.fill }} />
-            {p.name}: <span className="font-mono tabular-nums">{fmtInt(p.value ?? 0)}</span>
+            {p.name}: <span className="font-mono font-semibold tabular-nums text-ink-primary">{fmtInt(p.value ?? 0)}</span>
           </p>
         ))}
       </div>
@@ -62,16 +60,16 @@ function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   );
 }
 
-const axisTick = { fontSize: 11, fill: '#9ca3af', fontWeight: 600 } as const;
+const AXIS_TICK = { fontSize: 11, fill: 'var(--ink-subtle)', fontWeight: 500 } as const;
 
 export default function AiPerformanceChart({ data, isLoading }: Props) {
   if (isLoading) {
     return (
-      <div className="grid gap-4 xl:grid-cols-5">
-        <div className="h-72 animate-pulse rounded-lg bg-line-soft xl:col-span-3" />
+      <div className="grid flex-1 gap-4 xl:grid-cols-5">
+        <div className="min-h-[260px] animate-pulse rounded-lg bg-line-soft xl:col-span-3" />
         <div className="grid gap-4 xl:col-span-2">
-          <div className="h-32 animate-pulse rounded-lg bg-line-soft" />
-          <div className="h-32 animate-pulse rounded-lg bg-line-soft" />
+          <div className="min-h-[120px] animate-pulse rounded-lg bg-line-soft" />
+          <div className="min-h-[120px] animate-pulse rounded-lg bg-line-soft" />
         </div>
       </div>
     );
@@ -79,14 +77,13 @@ export default function AiPerformanceChart({ data, isLoading }: Props) {
 
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
-        <span className="flex size-12 items-center justify-center rounded-lg bg-brand-soft text-brand">
-          <BarChart3 className="size-6" />
+      <div className="flex flex-1 flex-col items-center justify-center gap-2.5 px-6 py-12 text-center">
+        <span className="flex size-10 items-center justify-center rounded-md bg-brand-soft text-brand ring-1 ring-inset ring-brand/20">
+          <BarChart3 className="size-5" />
         </span>
-        <p className="text-sm font-bold text-ink-primary">No usage in this period</p>
+        <p className="text-sm font-semibold text-ink-primary">No usage in this period</p>
         <p className="max-w-sm text-xs leading-relaxed text-ink-muted">
-          Try widening the date range or clearing the configuration filter — charts appear as soon as
-          requests are logged.
+          Try widening the date range or clearing the configuration filter — charts appear as soon as requests are logged.
         </p>
       </div>
     );
@@ -99,63 +96,60 @@ export default function AiPerformanceChart({ data, isLoading }: Props) {
   }));
 
   return (
-    <div className="grid gap-4 xl:grid-cols-5">
-      {/* Requests — hero chart */}
-      <div className="rounded-lg border border-line-soft bg-white p-4 xl:col-span-3">
-        <div className="mb-1 flex items-center justify-between">
+    <div className="grid min-h-0 flex-1 gap-4 xl:grid-cols-5">
+      <div className="flex min-h-[260px] flex-col rounded-lg border border-line bg-surface-page/40 p-4 xl:col-span-3">
+        <div className="mb-2 flex items-center justify-between">
           <div>
-            <h3 className="text-[13px] font-extrabold tracking-tight text-ink-primary">Requests &amp; failures</h3>
-            <p className="text-[11px] text-ink-subtle">Daily volume per selected filter</p>
+            <h3 className="text-[13px] font-semibold tracking-tight text-ink-primary">Requests &amp; failures</h3>
+            <p className="text-[11px] text-ink-muted">Daily volume per selected filter</p>
           </div>
-          <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-bold text-brand-ink ring-1 ring-brand/30">
+          <span className="rounded-sm bg-brand-soft px-2 py-0.5 text-[11px] font-semibold tabular-nums text-brand-ink">
             {rows.length} days
           </span>
         </div>
-        <div className="h-72 w-full">
+        <div className="min-h-[200px] flex-1">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={rows} margin={{ top: 12, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%">
-              <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#eef2f7" />
-              <XAxis dataKey="label" tick={axisTick} tickLine={false} axisLine={{ stroke: '#e5e7eb' }} interval="preserveStartEnd" />
-              <YAxis allowDecimals={false} tick={axisTick} tickLine={false} axisLine={false} width={44} />
-              <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(242,111,33,0.08)' }} />
-              <Legend wrapperStyle={{ fontSize: 12, fontWeight: 600 }} iconType="circle" iconSize={8} />
-              <Bar dataKey="requests" name="Requests" fill="#F26F21" radius={[6, 6, 0, 0]} maxBarSize={34} />
-              <Bar dataKey="failed" name="Failed" fill="#dc2626" radius={[6, 6, 0, 0]} maxBarSize={34} />
+            <BarChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="28%">
+              <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--line)" />
+              <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: 'var(--line)' }} interval="preserveStartEnd" />
+              <YAxis allowDecimals={false} tick={AXIS_TICK} tickLine={false} axisLine={false} width={40} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: 'var(--brand-soft)' }} />
+              <Legend wrapperStyle={{ fontSize: 12, color: 'var(--ink-muted)' }} iconType="circle" iconSize={8} />
+              <Bar dataKey="requests" name="Requests" fill="var(--brand)" radius={[4, 4, 0, 0]} maxBarSize={32} />
+              <Bar dataKey="failed" name="Failed" fill="#dc2626" radius={[4, 4, 0, 0]} maxBarSize={32} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="grid gap-4 xl:col-span-2">
-        {/* Latency */}
-        <div className="rounded-lg border border-line-soft bg-white p-4">
-          <h3 className="text-[13px] font-extrabold tracking-tight text-ink-primary">Avg latency</h3>
-          <p className="mb-1 text-[11px] text-ink-subtle">Milliseconds per day</p>
-          <div className="h-36 w-full">
+      <div className="grid min-h-0 gap-4 xl:col-span-2 xl:grid-rows-2">
+        <div className="flex min-h-[150px] flex-col rounded-lg border border-line bg-surface-page/40 p-4">
+          <h3 className="text-[13px] font-semibold tracking-tight text-ink-primary">Avg latency</h3>
+          <p className="mb-1.5 text-[11px] text-ink-muted">Milliseconds per day</p>
+          <div className="min-h-[100px] flex-1">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#eef2f7" />
-                <XAxis dataKey="label" tick={axisTick} tickLine={false} axisLine={{ stroke: '#e5e7eb' }} interval="preserveStartEnd" />
-                <YAxis tick={axisTick} tickLine={false} axisLine={false} width={48} />
+              <LineChart data={rows} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--line)" />
+                <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: 'var(--line)' }} interval="preserveStartEnd" />
+                <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} />
                 <Tooltip content={<ChartTooltip />} />
-                <Line type="monotone" dataKey="averageLatencyMs" name="Latency (ms)" stroke="#2563eb" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: '#2563eb' }} />
+                <Line type="monotone" dataKey="averageLatencyMs" name="Latency (ms)" stroke="var(--brand)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: 'var(--brand)' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Tokens */}
-        <div className="rounded-lg border border-line-soft bg-white p-4">
-          <h3 className="text-[13px] font-extrabold tracking-tight text-ink-primary">Token usage</h3>
-          <p className="mb-1 text-[11px] text-ink-subtle">Prompt + completion per day</p>
-          <div className="h-36 w-full">
+        <div className="flex min-h-[150px] flex-col rounded-lg border border-line bg-surface-page/40 p-4">
+          <h3 className="text-[13px] font-semibold tracking-tight text-ink-primary">Token usage</h3>
+          <p className="mb-1.5 text-[11px] text-ink-muted">Prompt + completion per day</p>
+          <div className="min-h-[100px] flex-1">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid vertical={false} strokeDasharray="4 4" stroke="#eef2f7" />
-                <XAxis dataKey="label" tick={axisTick} tickLine={false} axisLine={{ stroke: '#e5e7eb' }} interval="preserveStartEnd" />
-                <YAxis tick={axisTick} tickLine={false} axisLine={false} width={48} tickFormatter={(v: number) => (v >= 1000 ? `${Math.round(v / 1000)}k` : `${v}`)} />
+              <AreaChart data={rows} margin={{ top: 6, right: 8, left: 0, bottom: 0 }}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--line)" />
+                <XAxis dataKey="label" tick={AXIS_TICK} tickLine={false} axisLine={{ stroke: 'var(--line)' }} interval="preserveStartEnd" />
+                <YAxis tick={AXIS_TICK} tickLine={false} axisLine={false} width={44} tickFormatter={(v: number) => (v >= 1000 ? `${Math.round(v / 1000)}k` : `${v}`)} />
                 <Tooltip content={<ChartTooltip />} />
-                <Area type="monotone" dataKey="tokens" name="Tokens" stroke="#F26F21" strokeWidth={2.5} fill="#F26F21" fillOpacity={0.15} />
+                <Area type="monotone" dataKey="tokens" name="Tokens" stroke="var(--brand)" strokeWidth={2} fill="var(--brand)" fillOpacity={0.14} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

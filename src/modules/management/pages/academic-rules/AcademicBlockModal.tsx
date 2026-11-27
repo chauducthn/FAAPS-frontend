@@ -1,5 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { Clock, SpinnerGap } from '@phosphor-icons/react';
 import { Modal } from '@/shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '@/shared/components/ui/ModalParts';
 import type {
   AcademicBlockInput,
   AcademicBlockItem,
@@ -13,8 +15,9 @@ const BLOCK_TYPES: { value: AcademicBlockType; label: string }[] = [
   { value: 'INTENSIVE', label: 'INTENSIVE — End-of-Term / Retake' },
 ];
 
-const inputCls =
-  'mt-1 h-9.5 w-full rounded-lg border border-line bg-white px-3 text-[13px] text-ink-primary focus:border-brand focus:outline-none';
+const INPUT_CLASS =
+  'mt-1 h-9 w-full rounded-md border border-line bg-white px-3 text-[13px] text-ink-primary shadow-2xs ' +
+  'transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
 
 interface Props {
   open: boolean;
@@ -64,64 +67,95 @@ export function AcademicBlockModal({ open, editing, saving, onClose, onSubmit }:
     });
   };
 
+  const title = editing ? `Edit Block · ${editing.code}` : 'Add Study Block';
+
   return (
-    <Modal open={open} onClose={onClose} title={editing ? `Edit Block · ${editing.code}` : 'Add Study Block'}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2">
-          <div>
-            <label className="block text-xs font-semibold text-ink-secondary">Block Code</label>
-            <input required value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. BLOCK_10W" className={inputCls} />
+    <Modal open={open} onClose={onClose} title={title} className="max-w-lg">
+      <form onSubmit={handleSubmit} className="flex min-h-0 flex-col">
+        <ModalHeader
+          title={title}
+          description="Configure block duration, course cap, and credit limit."
+          icon={<Clock aria-hidden />}
+          tone="brand"
+          onClose={onClose}
+          closeDisabled={saving}
+        />
+        <ModalBody className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary">Block Code</label>
+              <input required value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. BLOCK_10W" className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary">Block Type</label>
+              <select value={blockType} onChange={(e) => setBlockType(e.target.value as AcademicBlockType)} className={INPUT_CLASS}>
+                {BLOCK_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-ink-secondary">Block Type</label>
-            <select value={blockType} onChange={(e) => setBlockType(e.target.value as AcademicBlockType)} className={inputCls}>
-              {BLOCK_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
-            </select>
-          </div>
-        </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-ink-secondary">Display Name</label>
-          <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Block 10W (Main Term)" className={inputCls} />
-        </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div>
-            <label className="block text-xs font-semibold text-ink-secondary">Weeks</label>
-            <input type="number" min={1} max={30} value={durationWeeks} onChange={(e) => setDurationWeeks(e.target.value)} className={inputCls} />
+            <label className="block text-xs font-medium text-ink-secondary">Display Name</label>
+            <input
+              required value={name} onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Block 10W (Main Term)" className={INPUT_CLASS}
+            />
           </div>
-          <div>
-            <label className="block text-xs font-semibold text-ink-secondary">Max Courses</label>
-            <input type="number" min={1} max={15} value={maxCourses} onChange={(e) => setMaxCourses(e.target.value)} className={inputCls} />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-ink-secondary">Max Credits</label>
-            <input type="number" min={0} max={36} value={maxCredits} onChange={(e) => setMaxCredits(e.target.value)} className={inputCls} />
-          </div>
-          <div>
-            <label className="block text-xs font-semibold text-ink-secondary">Order</label>
-            <input type="number" min={0} max={99} value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className={inputCls} />
-          </div>
-        </div>
 
-        <div>
-          <label className="block text-xs font-semibold text-ink-secondary">Description</label>
-          <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Usage notes for students & AI roadmap" className={inputCls} />
-        </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary">Weeks</label>
+              <input
+                type="number" min={1} max={30} value={durationWeeks}
+                onChange={(e) => setDurationWeeks(e.target.value)} className={INPUT_CLASS}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary">Max Courses</label>
+              <input
+                type="number" min={1} max={15} value={maxCourses}
+                onChange={(e) => setMaxCourses(e.target.value)} className={INPUT_CLASS}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary">Max Credits</label>
+              <input
+                type="number" min={0} max={36} value={maxCredits}
+                onChange={(e) => setMaxCredits(e.target.value)} className={INPUT_CLASS}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-ink-secondary">Order</label>
+              <input
+                type="number" min={0} max={99} value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)} className={INPUT_CLASS}
+              />
+            </div>
+          </div>
 
-        <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-ink-secondary">
-          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="size-4 accent-brand" />
-          Active block
-        </label>
+          <div>
+            <label className="block text-xs font-medium text-ink-secondary">Description</label>
+            <input
+              value={description} onChange={(e) => setDescription(e.target.value)}
+              placeholder="Usage notes for students & AI roadmap" className={INPUT_CLASS}
+            />
+          </div>
 
-        <div className="flex justify-end gap-2 border-t border-line-soft pt-3">
-          <button type="button" onClick={onClose} className="h-9 rounded-lg border border-line px-4 text-xs font-semibold text-ink-secondary hover:bg-surface-hover">
+          <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-ink-secondary">
+            <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="size-4 accent-brand" />
+            Active block
+          </label>
+        </ModalBody>
+
+        <ModalFooter>
+          <button type="button" onClick={onClose} disabled={saving} className={modalButtonClass('secondary')}>
             Cancel
           </button>
-          <button type="submit" disabled={saving} className="h-9 rounded-lg bg-brand px-4 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-50">
-            {saving ? 'Saving…' : editing ? 'Save changes' : 'Create block'}
+          <button type="submit" disabled={saving} className={modalButtonClass('primary')}>
+            {saving && <SpinnerGap className="size-4 animate-spin" aria-hidden />}
+            {editing ? 'Save changes' : 'Create block'}
           </button>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
-import { FolderPlus, UserMinus, X } from '@phosphor-icons/react';
+import { FolderPlus, MagnifyingGlassMinus, UserMinus, Users, X } from '@phosphor-icons/react';
+import { EmptyState } from '../../../../shared/components/common/EmptyState';
 import { LoadBadge } from '../../components/LoadBadge';
 import { UserInitials } from '../../components/UserInitials';
 import { Pagination } from '../../components/Pagination';
@@ -123,6 +124,17 @@ export function AdvisorsTableSection(props: {
     },
   ];
 
+  if (!isLoading && !isError && advisorList.length === 0) {
+    return (
+      <EmptyState
+        className="admin-fill justify-center"
+        icon={hasFilter ? <MagnifyingGlassMinus aria-hidden /> : <Users aria-hidden />}
+        title={hasFilter ? 'No advisors match your filters' : 'No active advisors yet'}
+        description={hasFilter ? 'Try a different keyword or clear the active filters.' : 'Add advisor accounts in User Accounts to start assigning students.'}
+      />
+    );
+  }
+
   return (
     <div className="flex admin-fill flex-col">
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -164,23 +176,16 @@ export function AdvisorsTableSection(props: {
           </div>
         )}
         <StaticTable
-          stickyHeader
-          className="min-h-0 flex-1 overflow-auto"
-          columns={columns}
-          rows={rows}
-          rowKey={(advisor) => advisor.id}
-          loading={isLoading}
-          error={isError ? 'Could not load this list.' : undefined}
-          onRetry={props.onRetry}
+          stickyHeader className="min-h-0 flex-1 overflow-auto"
+          columns={columns} rows={rows} rowKey={(advisor) => advisor.id}
+          loading={isLoading} error={isError ? 'Could not load this list.' : undefined}
+          onRetry={props.onRetry} minWidth="780px"
           emptyTitle={hasFilter ? 'No advisors match your filters.' : 'No active advisors.'}
-          minWidth="780px"
           selection={{
-            selectedIds,
-            allSelected: allPageSelected,
+            selectedIds, allSelected: allPageSelected,
             someSelected: pageIds.some((id) => selectedIds.has(id)),
             onToggleAll: () => props.onToggleAll(pageIds, allPageSelected),
-            onToggleOne: props.onToggleOne,
-            label: (advisor) => advisor.name,
+            onToggleOne: props.onToggleOne, label: (advisor) => advisor.name,
           }}
         />
       </div>

@@ -1,4 +1,5 @@
 import { CalendarBlank as CalendarDays, MapPin } from '@phosphor-icons/react';
+import { EmptyState } from '@/shared/components/common/EmptyState';
 import { cn } from '@/shared/lib/utils';
 import {
   AppointmentAvatar,
@@ -52,15 +53,12 @@ export function AppointmentTimeline({ items, isLoading = false, onOpen }: Appoin
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-line py-16 text-center">
-        <span className="flex size-11 items-center justify-center rounded-lg bg-surface-page text-ink-muted">
-          <CalendarDays className="size-5" aria-hidden />
-        </span>
-        <p className="text-sm font-semibold text-ink-primary">No appointments to schedule</p>
-        <p className="text-[13px] text-ink-muted">
-          Adjust the filters or pick another date range to see the schedule.
-        </p>
-      </div>
+      <EmptyState
+        className="h-full justify-center"
+        icon={<CalendarDays aria-hidden />}
+        title="No appointments to schedule"
+        description="Adjust the filters or pick another date range to see the schedule."
+      />
     );
   }
 

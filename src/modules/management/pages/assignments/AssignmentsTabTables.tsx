@@ -1,5 +1,13 @@
-import { ArrowsLeftRight, UserMinus, UserPlus } from '@phosphor-icons/react';
+import {
+  ArrowsLeftRight,
+  MagnifyingGlassMinus,
+  UserCheck,
+  UserMinus,
+  UserPlus,
+  UsersThree,
+} from '@phosphor-icons/react';
 import { DataTable } from '../../../../shared/components/common/DataTable';
+import { EmptyState } from '../../../../shared/components/common/EmptyState';
 import { fetchAllPages } from '../../../../shared/lib/fetchAllPages';
 import { assignmentService } from '../../../advising/services/assignmentService';
 import { AdvisorsTableSection } from './AssignmentsTables';
@@ -19,6 +27,20 @@ export function AssignmentsTabTables({
   unassignedColumns: ReturnType<typeof createUnassignedColumns>;
 }) {
   if (s.tab === 'assigned') {
+    if (!s.assigned.isLoading && s.assignedRows.length === 0) {
+      return (
+        <EmptyState
+          className="admin-fill justify-center"
+          icon={s.hasFilter ? <MagnifyingGlassMinus aria-hidden /> : <UserCheck aria-hidden />}
+          title={s.hasFilter ? 'No assigned students match your filters' : 'No assigned students yet'}
+          description={
+            s.hasFilter
+              ? 'Try a different keyword or clear the active filters.'
+              : 'Assign students to advisors using Auto-assign or the Unassigned tab.'
+          }
+        />
+      );
+    }
     return (
       <DataTable
         className="admin-fill"
@@ -76,6 +98,20 @@ export function AssignmentsTabTables({
   }
 
   if (s.tab === 'unassigned') {
+    if (!s.unassigned.isLoading && s.unassignedRows.length === 0) {
+      return (
+        <EmptyState
+          className="admin-fill justify-center"
+          icon={s.hasFilter ? <MagnifyingGlassMinus aria-hidden /> : <UsersThree aria-hidden />}
+          title={s.hasFilter ? 'No students match your filters' : 'Every student has an advisor'}
+          description={
+            s.hasFilter
+              ? 'Try a different keyword or clear the active filters.'
+              : 'All active students are currently assigned to an advisor.'
+          }
+        />
+      );
+    }
     return (
       <DataTable
         className="admin-fill"

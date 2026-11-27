@@ -1,38 +1,26 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowUpRight, ChartBar as BarChart3, CaretDown as ChevronDown, DownloadSimple as Download, SpinnerGap as Loader2, EnvelopeSimple as Mail, ArrowsClockwise as RefreshCw, MagnifyingGlass as Search, ShieldWarning as ShieldAlert, Users, VideoCamera as Video } from '@phosphor-icons/react';
+import {
+  ArrowUpRight, ChartBar as BarChart3, CaretDown as ChevronDown, DownloadSimple as Download,
+  SpinnerGap as Loader2, MagnifyingGlassMinus, EnvelopeSimple as Mail, ArrowsClockwise as RefreshCw,
+  MagnifyingGlass as Search, ShieldWarning as ShieldAlert, Users, VideoCamera as Video,
+} from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { apiMessage } from '@/shared/lib/apiMessage';
+import { EmptyState } from '../../../shared/components/common/EmptyState';
 import { StaticTable, type StaticColumn } from '../../../shared/components/common/table/StaticTable';
+import { AdminStatTile } from '../components/AdminStatTile';
 import { AdminTabBar } from '../components/AdminTabBar';
 import { AdvisingBreakdownPanel } from '../components/AdvisingBreakdownPanel';
 import { advisingReportService, type AdvisorEffectivenessRow } from '../services/advising-report.service';
 
 type SortKey = 'completed' | 'assigned' | 'pending' | 'name';
 
-function ReportStatTile({
-  icon, label, value, meta, tone, loading,
-}: {
-  icon: ReactNode; label: string; value: string; meta: string;
-  tone: 'orange' | 'emerald' | 'blue' | 'amber'; loading: boolean;
-}) {
-  const iconTone = { orange: 'bg-brand-soft text-brand-ink', emerald: 'bg-emerald-50 text-emerald-700', blue: 'bg-line-soft text-ink-secondary', amber: 'bg-amber-50 text-amber-700' }[tone];
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-line/80 bg-white px-3.5 py-2.5 text-left">
-      <span className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${iconTone}`}>{icon}</span>
-      <div className="min-w-0">
-        <p className="truncate text-xs font-medium text-ink-muted">{label}</p>
-        {loading ? <div className="mt-1 h-5 w-16 animate-pulse rounded bg-line-soft" /> : (
-          <div className="mt-0.5 flex items-baseline gap-1.5">
-            <span className="text-lg font-bold leading-none tabular-nums text-ink-primary">{value}</span>
-            <span className="truncate text-xs text-ink-subtle">{meta}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+const SELECT_CLASS =
+  'h-9 w-full appearance-none truncate rounded-md border border-line bg-white pl-3 pr-7 ' +
+  'text-[13px] font-medium text-ink-secondary hover:border-ink-subtle/50 ' +
+  'focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
 
 export default function AdvisingReports() {
   const navigate = useNavigate();
@@ -43,23 +31,16 @@ export default function AdvisingReports() {
   const [isExporting, setIsExporting] = useState(false);
 
   const semestersQuery = useQuery({ queryKey: ['admin', 'semesters'], queryFn: advisingReportService.getSemesters });
-  const overviewQuery = useQuery({
-    queryKey: ['admin', 'advising-reports', 'overview', semesterId],
-    queryFn: () => advisingReportService.getOverview(semesterId || undefined),
-  });
-  const advisorsQuery = useQuery({
-    queryKey: ['admin', 'advising-reports', 'by-advisor', semesterId],
-    queryFn: () => advisingReportService.getByAdvisor(semesterId || undefined),
-  });
+  const overviewQuery = useQuery({ queryKey: ['admin', 'advising-reports', 'overview', semesterId], queryFn: () => advisingReportService.getOverview(semesterId || undefined) });
+  const advisorsQuery = useQuery({ queryKey: ['admin', 'advising-reports', 'by-advisor', semesterId], queryFn: () => advisingReportService.getByAdvisor(semesterId || undefined) });
 
-  const pendingAdvisorCount = useMemo(
-    () => (advisorsQuery.data ?? []).filter((r) => r.pendingRequests > 0).length,
-    [advisorsQuery.data],
-  );
+  const semesters = useMemo(() => (Array.isArray(semestersQuery.data) ? semestersQuery.data : []), [semestersQuery.data]);
+  const advisorRows = useMemo(() => (Array.isArray(advisorsQuery.data) ? advisorsQuery.data : []), [advisorsQuery.data]);
+  const pendingAdvisorCount = useMemo(() => advisorRows.filter((r) => r.pendingRequests > 0).length, [advisorRows]);
 
   const filteredAdvisors = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = (advisorsQuery.data ?? []).filter(
+    const list = advisorRows.filter(
       (r) =>
         (reportTab === 'all' || r.pendingRequests > 0) &&
         (!q || r.fullName.toLowerCase().includes(q) || r.email.toLowerCase().includes(q)),
@@ -70,7 +51,7 @@ export default function AdvisingReports() {
       if (sortBy === 'name') return a.fullName.localeCompare(b.fullName);
       return b.completedSessions - a.completedSessions || a.fullName.localeCompare(b.fullName);
     });
-  }, [advisorsQuery.data, reportTab, search, sortBy]);
+  }, [advisorRows, reportTab, search, sortBy]);
 
   const columns: StaticColumn<AdvisorEffectivenessRow>[] = useMemo(() => [
     {
@@ -88,7 +69,11 @@ export default function AdvisingReports() {
     {
       key: 'actions', header: '', align: 'right',
       render: (r) => (
-        <button type="button" onClick={() => navigate(`/admin/appointments?advisorId=${r.advisorId}`)} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-soft">
+        <button
+          type="button"
+          onClick={() => navigate(`/admin/appointments?advisorId=${r.advisorId}`)}
+          className="inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-soft"
+        >
           Sessions <ArrowUpRight className="size-3.5" />
         </button>
       ),
@@ -101,8 +86,10 @@ export default function AdvisingReports() {
       const blob = await advisingReportService.exportCsv(semesterId || undefined);
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement('a');
-      anchor.href = url; anchor.download = `faaps-advising-report-${overviewQuery.data?.semesterCode ?? 'all'}.csv`;
-      anchor.click(); URL.revokeObjectURL(url);
+      anchor.href = url;
+      anchor.download = `faaps-advising-report-${overviewQuery.data?.semesterCode ?? 'all'}.csv`;
+      anchor.click();
+      URL.revokeObjectURL(url);
       toast.success('Advising report exported to CSV.');
     } catch (error) { toast.error(apiMessage(error)); } finally { setIsExporting(false); }
   };
@@ -117,74 +104,91 @@ export default function AdvisingReports() {
         activeKey={reportTab}
         onChange={setReportTab}
         tabs={[
-          { key: 'all', label: 'All advisors', icon: Users, count: advisorsQuery.data?.length, badgeTone: 'slate' },
+          { key: 'all', label: 'All advisors', icon: Users, count: advisorRows.length, badgeTone: 'slate' },
           { key: 'pending', label: 'With pending', icon: ShieldAlert, count: pendingAdvisorCount, badgeTone: 'amber' },
         ]}
         actions={
           <>
             <div className="relative w-[196px]">
-              <select aria-label="Filter by semester" value={semesterId} onChange={(e) => setSemesterId(e.target.value)} className="h-9 w-full appearance-none truncate rounded-lg border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15">
+              <select aria-label="Filter by semester" value={semesterId} onChange={(e) => setSemesterId(e.target.value)} className={SELECT_CLASS}>
                 <option value="">All semesters</option>
-                {(semestersQuery.data ?? []).map((sem) => (
+                {semesters.map((sem) => (
                   <option key={sem.id} value={sem.id}>{sem.code} — {sem.name}</option>
                 ))}
               </select>
               <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
             </div>
-            <button type="button" onClick={() => { overviewQuery.refetch(); advisorsQuery.refetch(); }} disabled={refreshing} aria-label="Refresh report" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs hover:bg-surface-hover disabled:opacity-60">
-              <RefreshCw className={refreshing ? 'size-3.5 animate-spin' : 'size-3.5'} />
+            <button
+              type="button"
+              onClick={() => { void overviewQuery.refetch(); void advisorsQuery.refetch(); }}
+              disabled={refreshing}
+              aria-label="Refresh report"
+              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs hover:bg-surface-hover disabled:opacity-60"
+            >
+              <RefreshCw className={refreshing ? 'size-4 animate-spin' : 'size-4'} />
             </button>
-            <button type="button" onClick={handleExport} disabled={isExporting || overviewQuery.isLoading} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-55">
-              {isExporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
-              {isExporting ? 'Exporting…' : 'Export CSV'}
+            <button
+              type="button"
+              onClick={handleExport}
+              disabled={isExporting || overviewQuery.isLoading}
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-55"
+            >
+              {isExporting ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <Download className="size-4" aria-hidden />}
+              Export CSV
             </button>
           </>
         }
       />
 
       <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-4">
-        <ReportStatTile icon={<ShieldAlert className="size-4" />} label="At-risk coverage" value={overview ? `${overview.coverageRate}%` : '—'} meta={overview ? `${overview.contactedAtRisk}/${overview.atRiskStudents} contacted` : ''} tone="orange" loading={overviewQuery.isLoading} />
-        <ReportStatTile icon={<BarChart3 className="size-4" />} label="Total sessions" value={overview ? String(overview.totalSessions) : '—'} meta={overview ? `${overview.completedSessions} done · ${overview.noShowSessions} no-show` : ''} tone="emerald" loading={overviewQuery.isLoading} />
-        <ReportStatTile icon={<Video className="size-4" />} label="Online / offline" value={overview ? `${overview.onlineSessions} / ${overview.offlineSessions}` : '—'} meta="virtual vs in-person" tone="blue" loading={overviewQuery.isLoading} />
-        <ReportStatTile icon={<Mail className="size-4" />} label="Email advising" value={overview ? String(overview.emailSessions) : '—'} meta={overview ? `${overview.totalStudents} tracked` : ''} tone="amber" loading={overviewQuery.isLoading} />
+        <AdminStatTile icon={<ShieldAlert />} label="At-risk coverage" value={overview ? `${overview.coverageRate}%` : '—'} meta={overview ? `${overview.contactedAtRisk}/${overview.atRiskStudents} contacted` : ''} tone="brand" isLoading={overviewQuery.isLoading} />
+        <AdminStatTile icon={<BarChart3 />} label="Total sessions" value={overview ? String(overview.totalSessions) : '—'} meta={overview ? `${overview.completedSessions} done · ${overview.noShowSessions} no-show` : ''} tone="success" isLoading={overviewQuery.isLoading} />
+        <AdminStatTile icon={<Video />} label="Online / offline" value={overview ? `${overview.onlineSessions} / ${overview.offlineSessions}` : '—'} meta="virtual vs in-person" tone="neutral" isLoading={overviewQuery.isLoading} />
+        <AdminStatTile icon={<Mail />} label="Email advising" value={overview ? String(overview.emailSessions) : '—'} meta={overview ? `${overview.totalStudents} tracked` : ''} tone="warning" isLoading={overviewQuery.isLoading} />
       </div>
 
       {overviewQuery.isError && (
-        <div className="flex items-center justify-between rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
+        <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">
           Could not load advising overview metrics.
-          <button type="button" onClick={() => overviewQuery.refetch()} className="font-semibold hover:underline">Retry</button>
+          <button type="button" onClick={() => void overviewQuery.refetch()} className="font-semibold hover:underline">Retry</button>
         </div>
       )}
 
       <AdvisingBreakdownPanel overview={overview} loading={overviewQuery.isLoading} />
 
-      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+      <section className="overflow-hidden rounded-lg border border-line bg-white shadow-2xs">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line-soft px-4 py-3">
           <div className="flex items-center gap-2">
             <Users className="size-4 text-brand" />
-            <h2 className="text-[13px] font-bold text-ink-primary">Advisor effectiveness breakdown</h2>
+            <h2 className="text-sm font-semibold text-ink-primary">Advisor effectiveness breakdown</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative w-56">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search advisor…" aria-label="Search advisors" className="h-8 w-full rounded-lg border border-line bg-white pl-8 pr-3 text-xs text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search advisor…" aria-label="Search advisors" className="h-9 w-full rounded-md border border-line bg-white pl-8 pr-3 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15" />
             </div>
-            <select aria-label="Sort advisors" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className="h-8 rounded-lg border border-line bg-white px-2.5 text-xs font-medium text-ink-secondary focus:border-brand focus:outline-none">
-              <option value="completed">Most completed</option>
-              <option value="assigned">Most assigned</option>
-              <option value="pending">Most pending</option>
-              <option value="name">Name (A–Z)</option>
+            <select aria-label="Sort advisors" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className="h-9 rounded-md border border-line bg-white px-2.5 text-[13px] font-medium text-ink-secondary focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15">
+              <option value="completed">Most completed</option><option value="assigned">Most assigned</option>
+              <option value="pending">Most pending</option><option value="name">Name (A–Z)</option>
             </select>
           </div>
         </div>
-        <div className="flex admin-fill flex-col">
-          <StaticTable
-            stickyHeader className="min-h-0 flex-1 overflow-auto"
-            columns={columns} rows={filteredAdvisors}
-            rowKey={(row) => row.advisorId} loading={advisorsQuery.isLoading}
-            error={advisorsQuery.isError ? 'Could not load the advisor breakdown.' : undefined}
-            emptyTitle={search ? 'No advisors match your search.' : 'No advisor activity recorded for this semester yet.'}
-          />
+        <div className="admin-fill flex flex-col">
+          {!advisorsQuery.isLoading && !advisorsQuery.isError && filteredAdvisors.length === 0 ? (
+            <EmptyState
+              className="h-full justify-center"
+              icon={search || reportTab === 'pending' ? <MagnifyingGlassMinus aria-hidden /> : <Users aria-hidden />}
+              title={search ? 'No advisors match your search' : reportTab === 'pending' ? 'No advisors with pending requests' : 'No advisor activity yet'}
+              description={search ? 'Try a different name or email to find an advisor.' : reportTab === 'pending' ? 'All advisor requests for this semester have been handled.' : 'Advisor sessions and outreach metrics will appear here once recorded.'}
+            />
+          ) : (
+            <StaticTable
+              stickyHeader className="min-h-0 flex-1 overflow-auto"
+              columns={columns} rows={filteredAdvisors} rowKey={(row) => row.advisorId}
+              loading={advisorsQuery.isLoading} onRetry={() => void advisorsQuery.refetch()}
+              error={advisorsQuery.isError ? 'Could not load the advisor breakdown.' : undefined}
+            />
+          )}
         </div>
       </section>
     </div>

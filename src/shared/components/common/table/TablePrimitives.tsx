@@ -9,6 +9,7 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
+import { EmptyState } from '../EmptyState';
 
 export interface TableShellProps {
   children: ReactNode;
@@ -26,15 +27,16 @@ export function TableShell({
   className,
 }: TableShellProps) {
   return (
-    <div className={cn('w-full overflow-x-auto', className)}>
+    <div className={cn('w-full overflow-x-auto bg-surface-page', className)}>
       <table
         className={cn(
-          'w-full border-collapse text-left',
+          'w-full border-collapse bg-card text-left',
           minWidth && 'min-w-[720px]',
           '[&_tbody_tr]:border-b [&_tbody_tr]:border-line-soft [&_tbody_tr]:transition-colors',
           '[&_tbody_tr:hover]:bg-surface-hover',
           '[&_thead_tr]:border-b [&_thead_tr]:border-line [&_thead_tr]:bg-surface-page',
-          stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10 [&_thead_th]:bg-surface-page',
+          stickyHeader &&
+            '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10 [&_thead_th]:bg-surface-page [&_thead_th]:shadow-[inset_0_-1px_0_var(--line)]',
         )}
         style={minWidth ? { minWidth } : undefined}
       >
@@ -128,19 +130,9 @@ export function TableEmpty({
   icon?: ReactNode;
 }) {
   return (
-    <tr>
-      <td colSpan={colSpan} className="px-4 py-14 text-center">
-        <div className="flex flex-col items-center justify-center gap-2">
-          {icon ? (
-            <span className="flex size-10 items-center justify-center rounded-md bg-line-soft text-ink-subtle">
-              {icon}
-            </span>
-          ) : null}
-          <p className="text-sm font-semibold text-ink-primary">{title}</p>
-          {description ? (
-            <p className="text-[13px] text-[var(--ink-muted)]">{description}</p>
-          ) : null}
-        </div>
+    <tr className="hover:!bg-transparent">
+      <td colSpan={colSpan} className="p-0">
+        <EmptyState icon={icon} title={title} description={description} />
       </td>
     </tr>
   );

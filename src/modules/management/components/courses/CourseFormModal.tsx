@@ -1,9 +1,10 @@
 // Create / edit form for the Courses catalogue.
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { BookOpenText, SpinnerGap as Loader2, X } from '@phosphor-icons/react';
+import { BookOpenText, SpinnerGap as Loader2 } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '../../../../shared/components/ui/ModalParts';
 import { createCourseSchema, type CreateCourseFormValues } from '../../../academic/validations/course.schema';
 import type { CourseCategory, CourseDetail } from '../../../academic/types/course';
 import { CourseFormFields } from './CourseFormFields';
@@ -75,6 +76,14 @@ export default function CourseFormModal({
     }
   }, [open, initial, reset]);
 
+  const initialPrerequisites = useMemo(
+    () =>
+      (initial?.relations ?? [])
+        .filter((r) => r.kind === 'PREREQUISITE')
+        .map((r) => ({ id: r.otherCourseId, code: r.otherCourseCode, name: r.otherCourseName })),
+    [initial],
+  );
+
   const status = watch('status');
   const code = watch('code') ?? '';
   const showCodeError = isSubmitted || code.trim().length >= 6;
@@ -82,36 +91,27 @@ export default function CourseFormModal({
   const canSubmit = !isLoading && !isLoadingInitial && isValid;
 
   return (
-    <Modal open={open} onClose={onClose} title={isCreate ? 'Create course' : 'Edit course'} className="max-w-xl">
+    <Modal open={open} onClose={onClose} title={isCreate ? 'Create course' : 'Edit course'} className="max-w-[760px]">
       <form noValidate onSubmit={handleSubmit(onSubmit)} className="flex min-h-0 flex-col">
-        <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
-              <BookOpenText className="size-4.5" />
-            </span>
-            <div>
-              <h2 className="text-[15px] font-semibold text-gray-900">
-                {isCreate ? 'Create course' : `Edit ${initial?.code ?? 'course'}`}
-              </h2>
-              <p className="text-[13px] text-gray-500">
-                {isCreate
-                  ? 'Configure course code, credits, category, and optional prerequisites.'
-                  : 'Update course details — curriculums referencing this course sync automatically.'}
-              </p>
-            </div>
-          </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700">
-            <X className="size-4" />
-          </button>
-        </div>
+        <ModalHeader
+          icon={<BookOpenText aria-hidden />}
+          tone="brand"
+          title={isCreate ? 'Create course' : `Edit ${initial?.code ?? 'course'}`}
+          description={
+            isCreate
+              ? 'Configure course code, credits, category, and optional prerequisites.'
+              : 'Update course details — curriculums referencing this course sync automatically.'
+          }
+          onClose={onClose}
+        />
 
-        <div className="space-y-4 overflow-y-auto px-6 py-5 text-[13px]">
+        <ModalBody className="space-y-4 text-[13px]">
           {isLoadingInitial ? (
             <div className="space-y-3" aria-label="Loading course">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="h-10 animate-pulse rounded-lg bg-gray-100" style={{ animationDelay: `${i * 80}ms` }} />
+                <div key={i} className="h-9 animate-pulse rounded-md bg-line-soft" />
               ))}
-              <p className="text-center text-xs font-medium text-gray-400">Loading course…</p>
+              <p className="text-center text-xs font-medium text-ink-subtle">Loading course…</p>
             </div>
           ) : (
             <CourseFormFields
@@ -120,27 +120,28 @@ export default function CourseFormModal({
               status={status ?? 'ACTIVE'}
               code={code}
               codeError={codeError}
+              initialPrerequisites={initialPrerequisites}
               register={register}
               control={control}
               errors={errors}
             />
           )}
-        </div>
+        </ModalBody>
 
-        <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/70 px-6 py-3.5">
-          <button type="button" onClick={onClose} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-50">
+        <ModalFooter>
+          <button type="button" onClick={onClose} className={modalButtonClass('secondary')}>
             Cancel
           </button>
           <button
             type="submit"
             disabled={!canSubmit}
             title={!canSubmit ? 'Fill in a valid Course code, Credits, Category and Name to continue' : undefined}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#F26F21] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55"
+            className={modalButtonClass('primary')}
           >
-            {isLoading && <Loader2 className="size-4 animate-spin" />}
-            {isLoadingInitial ? 'Loading…' : isLoading ? 'Saving…' : isCreate ? 'Create course' : 'Save changes'}
+            {isLoading && <Loader2 className="size-4 animate-spin" aria-hidden />}
+            {isCreate ? 'Create course' : 'Save changes'}
           </button>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

@@ -64,7 +64,7 @@ export function MajorCodeCreator({ open, existingCodes, onClose, onAdd }: Props)
             setDraft(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase());
           }}
           className={cn(
-            'h-9 w-full rounded-lg border bg-white px-3 text-[13px] uppercase text-ink-primary placeholder:normal-case placeholder:text-ink-subtle focus:outline-none focus:ring-2',
+            'h-9 w-full rounded-md border bg-white px-3 text-[13px] uppercase text-ink-primary placeholder:normal-case placeholder:text-ink-subtle focus:outline-none focus:ring-2',
             error
               ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
               : 'border-line focus:border-brand focus:ring-brand/15',
@@ -73,14 +73,14 @@ export function MajorCodeCreator({ open, existingCodes, onClose, onAdd }: Props)
         <button
           type="button"
           onClick={resetAndClose}
-          className="h-9 shrink-0 rounded-lg border border-line bg-white px-3 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
+          className="h-9 shrink-0 rounded-md border border-line bg-white px-3 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={handleAdd}
-          className="h-9 shrink-0 rounded-lg bg-brand px-3 text-xs font-semibold text-white transition-colors hover:bg-brand-hover"
+          className="h-9 shrink-0 rounded-md bg-brand px-3 text-xs font-semibold text-white transition-colors hover:bg-brand-hover"
         >
           Add code
         </button>

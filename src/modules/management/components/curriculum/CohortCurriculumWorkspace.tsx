@@ -64,9 +64,11 @@ export function CohortCurriculumWorkspace({ cohortId, onBackToCohorts }: Props) 
     return (
       <div className="space-y-4">
         <div className="h-16 animate-pulse rounded-lg bg-line-soft" />
-        <div className="grid gap-4 lg:grid-cols-12">
-          <div className="h-[520px] animate-pulse rounded-lg bg-line-soft lg:col-span-5" />
-          <div className="h-[520px] animate-pulse rounded-lg bg-line-soft lg:col-span-7" />
+        <div className="admin-fill">
+          <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)]">
+            <div className="min-h-[18rem] animate-pulse rounded-lg bg-line-soft lg:col-span-5" />
+            <div className="min-h-[18rem] animate-pulse rounded-lg bg-line-soft lg:col-span-7" />
+          </div>
         </div>
       </div>
     );
@@ -79,9 +81,9 @@ export function CohortCurriculumWorkspace({ cohortId, onBackToCohorts }: Props) 
         <button
           type="button"
           onClick={onBackToCohorts}
-          className="mt-4 inline-flex items-center gap-1.5 rounded-lg border border-line bg-white px-3.5 py-2 text-xs font-semibold text-ink-secondary hover:bg-surface-hover"
+          className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-md border border-line bg-white px-3.5 text-[13px] font-medium text-ink-secondary hover:bg-surface-hover"
         >
-          <ArrowLeft className="size-3.5" aria-hidden /> Back to cohorts
+          <ArrowLeft className="size-4" aria-hidden /> Back to cohorts
         </button>
       </div>
     );
@@ -95,19 +97,19 @@ export function CohortCurriculumWorkspace({ cohortId, onBackToCohorts }: Props) 
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line/80 bg-white px-4 py-3 shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line bg-white px-4 py-3 shadow-2xs">
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
             onClick={onBackToCohorts}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-white px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-white px-2.5 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
           >
             <ArrowLeft className="size-3.5" aria-hidden /> Cohorts
           </button>
           <div className="h-5 w-px bg-line" aria-hidden />
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-ink-primary">
+              <h2 className="text-sm font-semibold tracking-tight text-ink-primary">
                 {item.majorCode} {item.version} — {item.majorName}
               </h2>
               <StatusBadge status={item.status} />
@@ -118,7 +120,7 @@ export function CohortCurriculumWorkspace({ cohortId, onBackToCohorts }: Props) 
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 rounded-lg border border-line/80 bg-surface-page px-3 py-1.5 text-xs font-semibold tabular-nums text-ink-secondary">
+        <div className="flex items-center gap-2 rounded-md border border-line bg-surface-page px-3 py-1.5 text-xs font-semibold tabular-nums text-ink-secondary">
           <span>Credits:</span>
           <span className={creditLimit > 0 && usedCredits >= creditLimit ? 'text-brand-ink' : 'text-ink-primary'}>
             {creditLimit > 0 ? `${usedCredits} / ${creditLimit}` : usedCredits}
@@ -126,25 +128,27 @@ export function CohortCurriculumWorkspace({ cohortId, onBackToCohorts }: Props) 
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-12">
-        <div className="lg:col-span-5">
-          <CoursePoolPanel
-            placedTerms={placedTerms}
-            targetTerm={targetTerm}
-            onTargetTermChange={setTargetTerm}
-            onAddCourse={(courseId, term) => void handleAddCourse(courseId, term)}
-            busyCourseId={busyCourseId}
-          />
-        </div>
-        <div className="lg:col-span-7">
-          <CurriculumTermsPanel
-            courses={courses}
-            targetTerm={targetTerm}
-            onSelectTerm={setTargetTerm}
-            onMoveCourse={(courseId, term) => void handleMoveCourse(courseId, term)}
-            onRemoveCourse={(courseId) => void handleRemoveCourse(courseId)}
-            busyCourseId={busyCourseId}
-          />
+      <div className="admin-fill">
+        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)]">
+          <div className="flex min-h-0 flex-col lg:col-span-5">
+            <CoursePoolPanel
+              placedTerms={placedTerms}
+              targetTerm={targetTerm}
+              onTargetTermChange={setTargetTerm}
+              onAddCourse={(courseId, term) => void handleAddCourse(courseId, term)}
+              busyCourseId={busyCourseId}
+            />
+          </div>
+          <div className="flex min-h-0 flex-col lg:col-span-7">
+            <CurriculumTermsPanel
+              courses={courses}
+              targetTerm={targetTerm}
+              onSelectTerm={setTargetTerm}
+              onMoveCourse={(courseId, term) => void handleMoveCourse(courseId, term)}
+              onRemoveCourse={(courseId) => void handleRemoveCourse(courseId)}
+              busyCourseId={busyCourseId}
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { Warning as AlertTriangle, SpinnerGap as Loader2 } from '@phosphor-icons/react';
 import { Modal } from '@/shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '@/shared/components/ui/ModalParts';
 import type { DatabaseResetScope } from '../services/database.service';
 
 interface Props {
@@ -26,62 +27,68 @@ export function DatabaseResetModal({
   const isAll = target === 'ALL' || !target;
   const canConfirm = confirmText.trim().toUpperCase() === 'RESET' && !isPending;
   const heading = isAll ? 'Reset entire database?' : `Reset ${target.label}?`;
+  const description = isAll ? (
+    <>
+      Deletes all data except{' '}
+      <span className="font-mono font-medium text-ink-primary">
+        {preservedAdminEmail ?? 'your admin account'}
+      </span>
+      , roles &amp; categories.
+    </>
+  ) : (
+    <>
+      Clears {target.rowCount.toLocaleString()} rows across {target.tables.length} tables. {target.preserves}
+    </>
+  );
 
   return (
     <Modal open={open} onClose={() => !isPending && onClose()} title="Confirm database reset" className="max-w-md">
-      <div className="space-y-4 p-5">
-        <div className="flex items-start gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600 ring-1 ring-red-200/70">
-            <AlertTriangle className="size-4.5" />
-          </span>
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-ink-primary">{heading}</h3>
-            {isAll ? (
-              <p className="mt-1 text-xs text-ink-muted">
-                Deletes all data except <span className="font-mono font-medium text-ink-primary">{preservedAdminEmail ?? 'your admin account'}</span>, roles &amp; categories.
-              </p>
-            ) : (
-              <p className="mt-1 text-xs text-ink-muted">
-                Clears {target.rowCount.toLocaleString()} rows across {target.tables.length} tables. {target.preserves}
-              </p>
-            )}
-          </div>
-        </div>
+      <ModalHeader
+        icon={<AlertTriangle />}
+        tone="danger"
+        title={heading}
+        description={description}
+        onClose={onClose}
+        closeDisabled={isPending}
+      />
 
-        <div>
-          <label htmlFor="confirm-reset-input" className="mb-1.5 block text-xs font-medium text-ink-secondary">
-            Type <span className="font-mono font-bold text-red-600">RESET</span> to confirm
-          </label>
-          <input
-            id="confirm-reset-input"
-            type="text"
-            value={confirmText}
-            onChange={(e) => onConfirmTextChange(e.target.value)}
-            placeholder="RESET"
-            className="h-9 w-full rounded-lg border border-line px-3 font-mono text-xs uppercase focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100"
-          />
-        </div>
+      <ModalBody>
+        <label htmlFor="confirm-reset-input" className="mb-1.5 block text-[13px] font-medium text-ink-secondary">
+          Type <span className="font-mono font-semibold text-red-600">RESET</span> to confirm
+        </label>
+        <input
+          id="confirm-reset-input"
+          type="text"
+          value={confirmText}
+          onChange={(e) => onConfirmTextChange(e.target.value)}
+          placeholder="RESET"
+          className={
+            'h-9 w-full rounded-md border border-line bg-white px-3 font-mono text-[13px] uppercase ' +
+            'text-ink-primary placeholder:text-ink-subtle focus:border-red-500 focus:outline-none ' +
+            'focus:ring-2 focus:ring-red-500/15'
+          }
+        />
+      </ModalBody>
 
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            disabled={isPending}
-            onClick={onClose}
-            className="h-9 rounded-lg border border-line bg-white px-3.5 text-xs font-medium text-ink-secondary hover:bg-surface-hover disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            disabled={!canConfirm}
-            onClick={onConfirm}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-red-600 px-3.5 text-xs font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {isPending && <Loader2 className="size-3.5 animate-spin" />}
-            {isPending ? 'Resetting…' : 'Confirm'}
-          </button>
-        </div>
-      </div>
+      <ModalFooter>
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={onClose}
+          className={modalButtonClass('secondary')}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          disabled={!canConfirm}
+          onClick={onConfirm}
+          className={modalButtonClass('danger')}
+        >
+          {isPending && <Loader2 className="size-4 animate-spin" aria-hidden />}
+          Confirm
+        </button>
+      </ModalFooter>
     </Modal>
   );
 }

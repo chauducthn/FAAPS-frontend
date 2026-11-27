@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
-import { CaretLeft as ChevronLeft } from '@phosphor-icons/react';
+import { CaretLeft as ChevronLeft, SpinnerGap } from '@phosphor-icons/react';
 import { toast } from 'sonner';
-import { ConfirmDialog } from '../components/ConfirmDialog';
-import { useAiReport, useResolveAiReport } from '../../ai/hooks/queries/useAdminAiReports';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
-import { CitedSourcesCard, ReportSummaryCard, StudentReportCard } from './ai/AiReportDetailPanels';
+import { useAiReport, useResolveAiReport } from '../../ai/hooks/queries/useAdminAiReports';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { AiReportConversationPanel, ResolutionSection } from './ai/AiReportConversationPanel';
+import { CitedSourcesCard, ReportSummaryCard, StudentReportCard } from './ai/AiReportDetailPanels';
 
 export default function AiReportDetail() {
   const { id } = useParams();
@@ -27,7 +27,6 @@ export default function AiReportDetail() {
     [data, current],
   );
 
-  // Keep the selected reported response in view inside the conversation panel.
   useEffect(() => {
     if (!current || !listRef.current) return;
     const el = listRef.current.querySelector<HTMLElement>(`[data-message-id="${current.id}"]`);
@@ -46,18 +45,18 @@ export default function AiReportDetail() {
 
   if (isLoading) {
     return (
-      <div className="w-full">
+      <div className="w-full space-y-4">
         {back}
-        <div className="mt-6 h-64 animate-pulse rounded-lg bg-white" />
+        <div className="h-64 animate-pulse rounded-lg border border-line bg-white" />
       </div>
     );
   }
 
   if (isError || !data) {
     return (
-      <div className="w-full">
+      <div className="w-full space-y-4">
         {back}
-        <div className="mt-6 rounded-lg bg-white p-8 text-center text-sm text-ink-muted">
+        <div className="rounded-lg border border-line bg-white p-8 text-center text-sm text-ink-muted">
           Could not load this report.{' '}
           <button type="button" onClick={() => refetch()} className="font-semibold text-brand-ink hover:underline">
             Retry
@@ -112,7 +111,7 @@ export default function AiReportDetail() {
       <ResolutionSection report={report} pending={pending} note={note} error={error} onNoteChange={setNote} />
 
       {pending && (
-        <div className="flex flex-col gap-3 rounded-lg border border-line/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-lg border border-line bg-white p-4 shadow-2xs sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
             onClick={() => (note.trim() ? setConfirmDismiss(true) : setError('A resolution note is required.'))}
@@ -124,7 +123,7 @@ export default function AiReportDetail() {
             <button
               type="button"
               onClick={() => navigate('/admin/ai-reports')}
-              className="h-9 rounded-lg border border-line bg-white px-4 text-[13px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
+              className="inline-flex h-9 items-center rounded-md border border-line bg-white px-4 text-[13px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
             >
               Cancel
             </button>
@@ -132,9 +131,10 @@ export default function AiReportDetail() {
               type="button"
               disabled={resolve.isPending}
               onClick={() => submit('RESOLVED')}
-              className="h-9 rounded-lg bg-brand px-4 text-[13px] font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
+              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-brand px-4 text-[13px] font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
             >
-              {resolve.isPending ? 'Saving...' : 'Save & mark as resolved'}
+              {resolve.isPending && <SpinnerGap className="size-4 animate-spin" aria-hidden />}
+              Save &amp; mark as resolved
             </button>
           </div>
         </div>

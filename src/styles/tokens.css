@@ -29,6 +29,11 @@
   /* Lines */
   --line: #e5e7eb;
   --line-soft: #f1f5f9;
+
+  /* Scrollbars */
+  --scrollbar-thumb: rgb(152 162 179 / 0.35);
+  --scrollbar-thumb-hover: rgb(100 116 139 / 0.55);
+  --scrollbar-thumb-active: rgb(85 95 111 / 0.72);
 }
 
 .dark {
@@ -54,4 +59,9 @@
   /* Lines */
   --line: #2a2725;
   --line-soft: #211f1d;
+
+  /* Scrollbars */
+  --scrollbar-thumb: rgb(203 196 188 / 0.18);
+  --scrollbar-thumb-hover: rgb(203 196 188 / 0.34);
+  --scrollbar-thumb-active: rgb(203 196 188 / 0.48);
 }

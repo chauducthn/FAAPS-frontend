@@ -1,7 +1,11 @@
 import { useMemo, useState } from 'react';
-import { CalendarBlank, DownloadSimple as Download, SpinnerGap as Loader2, ArrowsClockwise as RefreshCw, Table } from '@phosphor-icons/react';
+import {
+  CalendarBlank, DownloadSimple as Download, SpinnerGap as Loader2,
+  MagnifyingGlassMinus, ArrowsClockwise as RefreshCw, Table,
+} from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { buildCsv, csvFilename, downloadCsv, type CsvValue } from '@/shared/lib/csv';
+import { EmptyState } from '@/shared/components/common/EmptyState';
 import { AdminTabBar } from '../components/AdminTabBar';
 import { AppointmentDetailModal } from '../components/AppointmentDetailModal';
 import { AppointmentFilters } from '../components/appointments/AppointmentFilters';
@@ -165,20 +169,21 @@ export default function Appointments() {
         />
 
         {view === 'table' ? (
-          <DataTable
-            className="admin-fill"
-            manual
-            columns={columns}
-            data={items}
-            searchKey="studentName"
-            showSearch={false}
-            emptyText={hasFilters ? 'No appointments match your filters.' : 'No appointments yet.'}
-            getRowId={(row) => row.id}
-            isLoading={list.isLoading}
-            totalRowCount={list.data?.totalElements ?? 0}
-            pagination={pagination}
-            onPaginationChange={setPagination}
-          />
+          !list.isLoading && items.length === 0 ? (
+            <EmptyState
+              className="admin-fill justify-center"
+              icon={hasFilters ? <MagnifyingGlassMinus aria-hidden /> : <CalendarBlank aria-hidden />}
+              title={hasFilters ? 'No appointments match your filters' : 'No appointments yet'}
+              description={hasFilters ? 'Try a different keyword or clear the active filters.' : 'Advising appointments will appear here once sessions are scheduled.'}
+            />
+          ) : (
+            <DataTable
+              className="admin-fill" manual columns={columns} data={items} searchKey="studentName"
+              showSearch={false} getRowId={(row) => row.id} isLoading={list.isLoading}
+              totalRowCount={list.data?.totalElements ?? 0} pagination={pagination} onPaginationChange={setPagination}
+              emptyText={hasFilters ? 'No appointments match your filters.' : 'No appointments yet.'}
+            />
+          )
         ) : (
           <div className="admin-fill overflow-y-auto p-4 sm:p-5">
             <AppointmentTimeline items={items} isLoading={list.isLoading} onOpen={setOpenId} />

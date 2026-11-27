@@ -49,57 +49,59 @@ export function MajorsTopBar({
           />
           <ExampleSheetButton
             examples={examples}
-            className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover"
+            className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover"
           />
           <button
             type="button"
             disabled={isImporting}
             onClick={() => fileRef.current?.click()}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover disabled:opacity-50"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover disabled:opacity-50"
           >
-            {isImporting ? <Loader2 className="size-3.5 animate-spin text-ink-muted" /> : <FileSpreadsheet className="size-3.5 text-ink-muted" aria-hidden />}
-            {isImporting ? 'Importing…' : 'Import Excel'}
+            {isImporting
+              ? <Loader2 className="size-4 animate-spin text-ink-muted" aria-hidden />
+              : <FileSpreadsheet className="size-4 text-ink-muted" aria-hidden />}
+            Import Excel
           </button>
           <button
             type="button"
             onClick={onCreate}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
           >
-            <Plus className="size-4" /> Create major
+            <Plus className="size-4" aria-hidden /> Create major
           </button>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <StatTile
-          icon={<GraduationCap className="size-4" />}
+          icon={<GraduationCap className="size-[18px]" />}
           label="Total majors"
           value={totalItems !== undefined ? String(totalItems) : '—'}
-          tone="slate"
+          tone="neutral"
           active={selectedStatus === 'ALL'}
           onClick={() => onSelectStatus('ALL')}
         />
         <StatTile
-          icon={<CheckCircle2 className="size-4" />}
+          icon={<CheckCircle2 className="size-[18px]" />}
           label="Active on page"
           value={String(activeCount)}
-          tone="emerald"
+          tone="success"
           active={selectedStatus === 'ACTIVE'}
           onClick={() => onSelectStatus(selectedStatus === 'ACTIVE' ? 'ALL' : 'ACTIVE')}
         />
         <StatTile
-          icon={<FileEdit className="size-4" />}
+          icon={<FileEdit className="size-[18px]" />}
           label="Draft on page"
           value={String(draftCount)}
-          tone="amber"
+          tone="warning"
           active={selectedStatus === 'DRAFT'}
           onClick={() => onSelectStatus(selectedStatus === 'DRAFT' ? 'ALL' : 'DRAFT')}
         />
         <StatTile
-          icon={<CircleOff className="size-4" />}
+          icon={<CircleOff className="size-[18px]" />}
           label="Inactive on page"
           value={String(inactiveCount)}
-          tone="gray"
+          tone="neutral"
           active={selectedStatus === 'INACTIVE'}
           onClick={() => onSelectStatus(selectedStatus === 'INACTIVE' ? 'ALL' : 'INACTIVE')}
         />

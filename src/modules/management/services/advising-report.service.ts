@@ -1,4 +1,5 @@
 import { apiClient } from '@/shared/lib/apiClient';
+import type { ApiResponse } from '@/shared/types/api';
 
 export interface SchoolAdvisingOverview {
   semesterId: string | null;
@@ -34,8 +35,9 @@ export interface SemesterOption {
 
 export const advisingReportService = {
   getSemesters: async (): Promise<SemesterOption[]> => {
-    const { data } = await apiClient.get<SemesterOption[]>('/admin/semesters');
-    return data;
+    const { data } = await apiClient.get<ApiResponse<SemesterOption[]> | SemesterOption[]>('/admin/semesters');
+    if (Array.isArray(data)) return data;
+    return Array.isArray(data?.data) ? data.data : [];
   },
 
   getOverview: async (semesterId?: string): Promise<SchoolAdvisingOverview> => {
@@ -49,7 +51,7 @@ export const advisingReportService = {
     const { data } = await apiClient.get<AdvisorEffectivenessRow[]>('/admin/reports/advising/by-advisor', {
       params: semesterId ? { semesterId, limit: 100 } : { limit: 100 },
     });
-    return data;
+    return Array.isArray(data) ? data : [];
   },
 
   exportCsv: async (semesterId?: string): Promise<Blob> => {

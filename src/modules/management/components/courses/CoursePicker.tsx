@@ -3,9 +3,9 @@ import { useCoursesQuery } from '../../../academic/hooks/queries/useCoursesQuery
 import { cn } from '@/shared/lib/utils';
 
 export const courseRelationInputClass =
-  'h-9 w-full rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-primary transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-line-soft disabled:opacity-60';
+  'h-9 w-full rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-primary transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-line-soft disabled:opacity-60';
 export const courseRelationLabelClass =
-  'mb-1.5 block text-xs font-medium text-ink-secondary';
+  'mb-1 block text-[11px] font-medium text-ink-muted';
 
 /** Dropdown course picker backed by the active course pool. */
 export function CoursePicker({

@@ -2,6 +2,7 @@ import { Clock, FileXls as FileSpreadsheet } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { cn } from '@/shared/lib/utils';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';
+import { EmptyState } from '../../../../shared/components/common/EmptyState';
 import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
 import { useAttendanceImports } from '../../hooks/queries/useAttendance';
 import { attendanceErrorsCsv } from '../../services/attendance.service';
@@ -116,16 +117,25 @@ export function AttendanceImportTab({
           <h2 id="history" className="text-sm font-bold text-ink-primary">Import history</h2>
         </div>
         <div className="flex admin-fill flex-col">
-          <StaticTable
-            stickyHeader
-            className="min-h-0 flex-1 overflow-auto"
-            columns={importHistoryColumns}
-            rows={imports.data ?? []}
-            rowKey={(record) => record.id}
-            loading={imports.isLoading}
-            emptyTitle="No attendance has been imported yet."
-            minWidth="560px"
-          />
+          {!imports.isLoading && (imports.data ?? []).length === 0 ? (
+            <EmptyState
+              className="h-full justify-center"
+              icon={<FileSpreadsheet aria-hidden />}
+              title="No attendance imported yet"
+              description="Use Upload file above to import student attendance records."
+            />
+          ) : (
+            <StaticTable
+              stickyHeader
+              className="min-h-0 flex-1 overflow-auto"
+              columns={importHistoryColumns}
+              rows={imports.data ?? []}
+              rowKey={(record) => record.id}
+              loading={imports.isLoading}
+              emptyTitle="No attendance imported yet"
+              minWidth="560px"
+            />
+          )}
         </div>
       </section>
     </div>

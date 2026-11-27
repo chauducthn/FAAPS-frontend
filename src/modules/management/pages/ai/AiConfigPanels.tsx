@@ -1,22 +1,30 @@
-import { WarningCircle as CircleAlert, Plus, ArrowCounterClockwise as RotateCcw, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
+import {
+  ArrowCounterClockwise as RotateCcw,
+  MagnifyingGlassMinus as SearchX,
+  Sparkle,
+  WarningCircle as CircleAlert,
+} from '@phosphor-icons/react';
+import { EmptyState } from '../../../../shared/components/common/EmptyState';
+import { Modal } from '../../../../shared/components/ui/Modal';
+import { ModalBody, ModalHeader } from '../../../../shared/components/ui/ModalParts';
 import type { AiPreset } from '../../../ai/types/ai-config';
 
 export function AiConfigErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-lg bg-red-50 text-red-500">
-        <CircleAlert className="size-6" />
+      <span className="flex size-10 items-center justify-center rounded-md bg-red-50 text-red-600 ring-1 ring-inset ring-red-600/15">
+        <CircleAlert className="size-5" weight="fill" />
       </span>
       <div>
-        <p className="text-sm font-bold text-ink-primary">Could not load configurations</p>
+        <p className="text-sm font-semibold text-ink-primary">Could not load configurations</p>
         <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-ink-muted">
-          The list failed to load. Check your connection or mock flag, then try again — your filters are kept.
+          The list failed to load. Check your connection and try again — your filters are kept.
         </p>
       </div>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-ink-primary px-4 py-2 text-xs font-bold text-surface-page transition-colors hover:bg-ink-secondary"
+        className="inline-flex h-9 items-center gap-1.5 rounded-md bg-ink-primary px-4 text-xs font-semibold text-surface-page transition-colors hover:bg-ink-secondary"
       >
         <RotateCcw className="size-3.5" /> Retry
       </button>
@@ -26,100 +34,78 @@ export function AiConfigErrorState({ onRetry }: { onRetry: () => void }) {
 
 export function AiConfigEmptyState({
   hasFilters,
-  onClear,
-  onCreate,
 }: {
   hasFilters: boolean;
-  onClear: () => void;
-  onCreate: () => void;
+  onClear?: () => void;
+  onCreate?: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-lg bg-brand-soft text-brand">
-        <SearchX className="size-6" />
-      </span>
-      <div>
-        <p className="text-sm font-bold text-ink-primary">
-          {hasFilters ? 'No configurations match your filters' : 'No configurations yet'}
-        </p>
-        <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-ink-muted">
-          {hasFilters
-            ? 'Try a different keyword, or clear the provider / purpose filters.'
-            : 'Create the first configuration — or start from a preset below.'}
-        </p>
-      </div>
-      <div className="flex items-center gap-2">
-        {hasFilters && (
-          <button
-            type="button"
-            onClick={onClear}
-            className="rounded-lg border border-line px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:bg-surface-hover"
-          >
-            Clear filters
-          </button>
-        )}
-        <button
-          type="button"
-          onClick={onCreate}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-hover"
-        >
-          <Plus className="size-3.5" /> New configuration
-        </button>
-      </div>
-    </div>
+    <EmptyState
+      className="h-full justify-center"
+      icon={hasFilters ? <SearchX aria-hidden /> : <Sparkle aria-hidden />}
+      title={hasFilters ? 'No configurations match your filters' : 'No configurations yet'}
+      description={
+        hasFilters
+          ? 'Try a different keyword, or clear the provider / purpose filters.'
+          : 'Use New configuration or Presets above to get started.'
+      }
+    />
   );
 }
 
-export function PresetsPanel({
+export function PresetsModal({
+  open,
   presets,
   isLoading,
+  onClose,
   onSelect,
 }: {
+  open: boolean;
   presets: AiPreset[];
   isLoading: boolean;
+  onClose: () => void;
   onSelect: (preset: AiPreset) => void;
 }) {
-  if (!isLoading && presets.length === 0) return null;
   return (
-    <section className="rounded-lg border border-line/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:p-5">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-[13px] font-extrabold tracking-tight text-ink-primary">AI presets</h2>
-          <p className="mt-0.5 text-[11px] text-ink-subtle">
-            Ready-made templates — pick one to prefill the creation form.
-          </p>
-        </div>
-        <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-bold uppercase text-brand-ink ring-1 ring-brand/30">
-          {isLoading ? '…' : `${presets.length} presets`}
-        </span>
-      </div>
-      {isLoading ? (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-28 animate-pulse rounded-lg bg-line-soft" style={{ animationDelay: `${i * 70}ms` }} />
-          ))}
-        </div>
-      ) : (
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {presets.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => onSelect(p)}
-              className="flex flex-col gap-2 rounded-lg border border-line/80 bg-white p-4 text-left shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-all hover:-translate-y-px hover:border-brand/30 hover:shadow-[0_4px_14px_rgba(242,111,33,0.15)]"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="truncate text-[13px] font-extrabold text-ink-primary">{p.label}</span>
-                <span className="shrink-0 rounded bg-line-soft px-1.5 py-0.5 text-[10px] font-bold uppercase text-ink-muted">
-                  {p.purpose}
-                </span>
-              </div>
-              <p className="text-[12px] leading-5 text-ink-muted">{p.description}</p>
-              <p className="mt-auto truncate pt-1 font-mono text-[11px] font-medium text-ink-subtle">{p.modelName}</p>
-            </button>
-          ))}
-        </div>
-      )}
-    </section>
+    <Modal open={open} onClose={onClose} title="AI presets" className="max-w-2xl">
+      <ModalHeader
+        icon={<Sparkle aria-hidden />}
+        tone="brand"
+        title="AI presets"
+        description="Ready-made templates — pick one to prefill the creation form."
+        onClose={onClose}
+      />
+      <ModalBody className="bg-surface-page/50">
+        {isLoading ? (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 animate-pulse rounded-lg bg-line-soft" />
+            ))}
+          </div>
+        ) : presets.length === 0 ? (
+          <p className="py-10 text-center text-xs text-ink-muted">No presets available.</p>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {presets.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onClick={() => onSelect(p)}
+                className="flex flex-col gap-1.5 rounded-lg border border-line bg-white p-3.5 text-left transition-colors hover:border-brand/40 hover:bg-surface-hover"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate text-[13px] font-semibold text-ink-primary">{p.label}</span>
+                  <span className="shrink-0 rounded-sm bg-line-soft px-1.5 py-0.5 text-[10px] font-semibold uppercase text-ink-muted">
+                    {p.purpose}
+                  </span>
+                </div>
+                <p className="line-clamp-2 text-xs leading-relaxed text-ink-muted">{p.description}</p>
+                <p className="mt-auto truncate pt-1 font-mono text-[11px] font-medium text-ink-subtle">{p.modelName}</p>
+              </button>
+            ))}
+          </div>
+        )}
+      </ModalBody>
+    </Modal>
   );
 }

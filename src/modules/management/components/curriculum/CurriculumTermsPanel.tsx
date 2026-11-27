@@ -29,7 +29,7 @@ export function CurriculumTermsPanel({
   }
 
   return (
-    <section className="flex h-[640px] flex-col overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+    <section className="flex min-h-[18rem] flex-1 flex-col overflow-hidden rounded-lg border border-line bg-white shadow-2xs">
       <div className="flex items-center justify-between border-b border-line-soft bg-surface-page/60 px-4 py-3">
         <div>
           <h3 className="text-sm font-semibold text-ink-primary">Curriculum roadmap (Term 0 – Term 9)</h3>
@@ -50,7 +50,7 @@ export function CurriculumTermsPanel({
               key={term}
               className={cn(
                 'overflow-hidden rounded-lg border transition-colors',
-                isTarget ? 'border-brand/60 bg-brand-soft/15' : 'border-line/80 bg-white',
+                isTarget ? 'border-brand/60 bg-brand-soft/15' : 'border-line bg-white',
               )}
             >
               <button
@@ -62,7 +62,7 @@ export function CurriculumTermsPanel({
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <span className={cn('text-xs font-bold', isTarget ? 'text-brand-ink' : 'text-ink-primary')}>
+                  <span className={cn('text-xs font-semibold', isTarget ? 'text-brand-ink' : 'text-ink-primary')}>
                     Term {term}
                   </span>
                   {term === 0 && (

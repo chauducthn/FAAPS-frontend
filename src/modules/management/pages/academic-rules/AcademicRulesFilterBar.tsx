@@ -3,7 +3,7 @@ import type { AcademicRuleStatus } from '../../../academic/types/academic-rule';
 import { POLICY_TYPES } from '../../../academic/validations/academic-rule.schema';
 
 const selectClass =
-  'h-9 w-full appearance-none truncate rounded-lg border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
+  'h-9 w-full appearance-none truncate rounded-md border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
 
 export function AcademicRulesFilterBar({
   search,
@@ -35,7 +35,7 @@ export function AcademicRulesFilterBar({
           placeholder="Search by rule name, policy type, or description..."
           aria-label="Search academic rules"
           role="searchbox"
-          className="h-9 w-full rounded-lg border border-line bg-white pl-9 pr-7 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
+          className="h-9 w-full rounded-md border border-line bg-white pl-9 pr-7 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
         />
         {search && (
           <button
@@ -86,7 +86,7 @@ export function AcademicRulesFilterBar({
         onClick={onClear}
         disabled={!hasFilters}
         aria-label="Clear filters"
-        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand hover:text-brand-ink disabled:cursor-default disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-muted"
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand hover:text-brand-ink disabled:cursor-default disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-muted"
       >
         <RotateCcw className="size-3.5" /> Reset
       </button>

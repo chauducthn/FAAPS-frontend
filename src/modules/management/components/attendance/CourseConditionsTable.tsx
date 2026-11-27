@@ -1,4 +1,6 @@
+import { MagnifyingGlassMinus, SlidersHorizontal } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
+import { EmptyState } from '@/shared/components/common/EmptyState';
 import { StaticTable, type StaticColumn } from '@/shared/components/common/table/StaticTable';
 import { maxAbsentSessions, type AttendanceRule } from '../../types/attendance';
 
@@ -113,6 +115,22 @@ export function CourseConditionsTable({
   ];
 
   const showError = isError && !customOnly;
+
+  if (!loading && !showError && rows.length === 0) {
+    return (
+      <div className="rounded-lg border border-line bg-white">
+        <EmptyState
+          icon={customOnly ? <SlidersHorizontal aria-hidden /> : <MagnifyingGlassMinus aria-hidden />}
+          title={customOnly ? 'No custom course conditions yet' : 'No courses match your search'}
+          description={
+            customOnly
+              ? 'Edit any course rule to override the default attendance policy.'
+              : 'Try a different keyword or clear the search filter.'
+          }
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto rounded-lg border border-[var(--line)]">

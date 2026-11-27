@@ -3,8 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient } from '@tanstack/react-query';
-import { GraduationCap, SpinnerGap as Loader2, X } from '@phosphor-icons/react';
+import { GraduationCap, SpinnerGap as Loader2 } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '../../../../shared/components/ui/ModalParts';
 import { toastBadRequest } from '@/shared/lib/apiError';
 import { useMajorsQuery } from '../../../academic/hooks/queries/useMajorsQuery';
 import { useSemesterOptions } from '../../../academic/hooks/queries/useCurriculumsQuery';
@@ -133,59 +134,51 @@ export default function CurriculumFormModal({ open, noun, initial, isSubmitting,
   return (
     <Modal open={open} onClose={() => !busy && onClose()} title={`${isCreate ? 'Create' : 'Edit'} ${noun.toLowerCase()}`} className="max-w-2xl">
       <form noValidate onSubmit={submit} className="flex min-h-0 flex-col">
-        <div className="flex items-center justify-between gap-4 border-b border-line-soft bg-white px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand ring-1 ring-brand/25">
-              <GraduationCap className="size-4.5" />
-            </span>
-            <div>
-              <h2 className="text-[15px] font-semibold text-ink-primary">
-                {isCreate ? `Create ${noun.toLowerCase()}` : `Edit ${noun.toLowerCase()}`}
-              </h2>
-              <p className="text-[13px] text-ink-muted">
-                Configure major, cohort intake, and effective semester range.
-              </p>
-            </div>
-          </div>
-          <button type="button" disabled={busy} onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-ink-subtle transition-colors hover:bg-line-soft hover:text-ink-secondary disabled:opacity-40">
-            <X className="size-4" />
-          </button>
-        </div>
-
-        <CurriculumFormFields
-          noun={noun}
-          status={status}
-          majorId={majorId}
-          displayName={displayName}
-          startDraft={startDraft}
-          endDraft={endDraft}
-          startError={shownStartError}
-          endError={shownEndError}
-          isCurrentDisabled={isCurrentDisabled}
-          majorList={majorList}
-          semesterList={semesterList}
-          register={register}
-          setValue={setValue}
-          errors={errors}
-          onStartDraftChange={syncStart}
-          onEndDraftChange={syncEnd}
-          onManualNameEdit={() => { nameTouchedRef.current = true; }}
+        <ModalHeader
+          icon={<GraduationCap />}
+          tone="brand"
+          title={isCreate ? `Create ${noun.toLowerCase()}` : `Edit ${noun.toLowerCase()}`}
+          description="Configure major, cohort intake, and effective semester range."
+          onClose={onClose}
+          closeDisabled={busy}
         />
 
-        <div className="flex items-center justify-end gap-2.5 border-t border-line-soft bg-surface-page/70 px-6 py-3.5">
-          <button type="button" disabled={busy} onClick={onClose} className="h-9 rounded-lg border border-line bg-white px-4 text-[13px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover disabled:opacity-50">
+        <ModalBody>
+          <CurriculumFormFields
+            noun={noun}
+            status={status}
+            majorId={majorId}
+            displayName={displayName}
+            startDraft={startDraft}
+            endDraft={endDraft}
+            startError={shownStartError}
+            endError={shownEndError}
+            isCurrentDisabled={isCurrentDisabled}
+            majorList={majorList}
+            semesterList={semesterList}
+            register={register}
+            setValue={setValue}
+            errors={errors}
+            onStartDraftChange={syncStart}
+            onEndDraftChange={syncEnd}
+            onManualNameEdit={() => { nameTouchedRef.current = true; }}
+          />
+        </ModalBody>
+
+        <ModalFooter>
+          <button type="button" disabled={busy} onClick={onClose} className={modalButtonClass('secondary')}>
             Cancel
           </button>
           <button
             type="submit"
             disabled={!canSubmit}
             title={!canSubmit ? 'Fill in Major, Cohort, Name, Start semester and End semester to continue' : undefined}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-[13px] font-semibold text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-55"
+            className={modalButtonClass('primary')}
           >
-            {busy && <Loader2 className="size-4 animate-spin" />}
-            {busy ? 'Saving…' : isCreate ? `Create ${noun.toLowerCase()}` : 'Save changes'}
+            {busy && <Loader2 className="size-4 animate-spin" aria-hidden />}
+            {isCreate ? `Create ${noun.toLowerCase()}` : 'Save changes'}
           </button>
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

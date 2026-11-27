@@ -334,9 +334,9 @@ describe('Courses', () => {
     await user.selectOptions(screen.getByLabelText('Category'), 'cat1');
     await user.click(within(dialog).getByText('Inactive'));
 
-    const prereqSelect = screen.getByLabelText('Select prerequisite course');
-    await waitFor(() => expect(within(prereqSelect).getByRole('option', { name: /SE101/ })).toBeInTheDocument());
-    await user.selectOptions(prereqSelect, 'c1');
+    const prereqSearch = screen.getByLabelText('Search prerequisite course');
+    await user.click(prereqSearch);
+    await user.click(await screen.findByRole('option', { name: /SE101/ }));
     expect(screen.getByRole('list', { name: 'Selected prerequisites' })).toHaveTextContent('SE101');
 
     await user.type(screen.getByLabelText('Material link'), 'not a link');

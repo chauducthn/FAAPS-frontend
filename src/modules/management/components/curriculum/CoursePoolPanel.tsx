@@ -35,7 +35,7 @@ export function CoursePoolPanel({
   const courses = hideAdded ? allCourses.filter((c) => !placedTerms.has(c.id)) : allCourses;
 
   return (
-    <section className="flex h-[640px] flex-col overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+    <section className="flex min-h-[18rem] flex-1 flex-col overflow-hidden rounded-lg border border-line bg-white shadow-2xs">
       <div className="border-b border-line-soft bg-surface-page/60 px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <div>
@@ -47,7 +47,7 @@ export function CoursePoolPanel({
               value={targetTerm}
               onChange={(e) => onTargetTermChange(Number(e.target.value))}
               aria-label="Target term"
-              className="h-8 appearance-none rounded-lg border border-brand/30 bg-brand-soft/70 pl-2.5 pr-7 text-xs font-semibold text-brand-ink focus:border-brand focus:outline-none"
+              className="h-8 appearance-none rounded-md border border-brand/30 bg-brand-soft/70 pl-2.5 pr-7 text-xs font-semibold text-brand-ink focus:border-brand focus:outline-none"
             >
               {TERMS.map((t) => (
                 <option key={t} value={t} className="bg-white text-ink-primary">
@@ -68,7 +68,7 @@ export function CoursePoolPanel({
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search course code or name..."
               aria-label="Search course pool"
-              className="h-8.5 w-full rounded-lg border border-line bg-white pl-8 pr-7 text-xs text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
+              className="h-9 w-full rounded-md border border-line bg-white pl-8 pr-7 text-xs text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
             />
             {search && (
               <button

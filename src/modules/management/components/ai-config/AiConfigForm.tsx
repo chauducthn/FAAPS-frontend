@@ -1,12 +1,14 @@
-// AI Configuration form — orange header, sectioned layout, strict numeric validation, read-only view mode.
+// AI Configuration modal — create, edit, and read-only view modes.
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Cpu, SpinnerGap as Loader2, X } from '@phosphor-icons/react';
+import { Cpu, SpinnerGap as Loader2 } from '@phosphor-icons/react';
+import { InlineAlert } from '../../../../shared/components/ui/InlineAlert';
 import { Modal } from '../../../../shared/components/ui/Modal';
-import { cn } from '@/shared/lib/utils';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '../../../../shared/components/ui/ModalParts';
 import { createAiConfigSchema, type CreateAiConfigFormValues } from '../../../ai/validations/ai-config.schema';
 import type { AiConfig, AiPreset } from '../../../ai/types/ai-config';
+import { StatusBadge } from '../StatusBadge';
 import { AiConfigLimitsSection } from './AiConfigLimitsSection';
 import { AiConfigIdentitySection, AiConfigPromptAndStatus, AiConfigSecretSection } from './AiConfigTextSections';
 
@@ -109,74 +111,76 @@ export default function AiConfigForm({ open, mode, initial, preset, isLoading, o
   return (
     <Modal open={open} onClose={onClose} title={title} className="max-w-3xl">
       <form noValidate onSubmit={handleSubmit((vals) => onSubmit(vals, apiKey.trim() || undefined))} className="flex min-h-0 flex-col">
-        <div className="flex items-start justify-between gap-4 border-b border-line-soft bg-[var(--brand-soft)] px-6 py-5">
-          <div className="flex items-start gap-3">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
-              <Cpu className="size-5" />
-            </span>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-base font-extrabold tracking-tight text-ink-primary">{title}</h2>
-                {initial && (
-                  <span
-                    className={cn(
-                      'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em]',
-                      initial.isActive ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-line-soft text-ink-muted',
-                    )}
-                  >
-                    {initial.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                )}
-                {isCreate && (
-                  <span className="inline-flex items-center rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.02em] text-brand-ink ring-1 ring-brand/30">
-                    New
-                  </span>
-                )}
-              </div>
-              <p className="mt-0.5 text-xs leading-relaxed text-ink-muted">
-                {isCreate
-                  ? 'Define the model, limits and prompt — numbers reject letters and negatives.'
-                  : readOnly
-                    ? 'Read-only view of this configuration.'
-                    : 'Changes apply to subsequent requests.'}
-              </p>
-            </div>
-          </div>
-          <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-ink-subtle transition-colors hover:bg-line-soft hover:text-ink-secondary">
-            <X className="size-4" />
-          </button>
-        </div>
+        <ModalHeader
+          icon={<Cpu aria-hidden />}
+          tone={readOnly ? 'neutral' : 'brand'}
+          title={title}
+          description={
+            isCreate
+              ? 'Define the model, limits and prompt — numbers reject letters and negatives.'
+              : readOnly
+                ? 'Read-only view of this configuration.'
+                : 'Changes apply to subsequent requests.'
+          }
+          actions={
+            initial ? (
+              <StatusBadge status={initial.isActive ? 'ACTIVE' : 'INACTIVE'} />
+            ) : isCreate ? (
+              <span className="rounded-sm bg-brand-soft px-2 py-0.5 text-[11px] font-semibold uppercase text-brand-ink">
+                New
+              </span>
+            ) : undefined
+          }
+          onClose={onClose}
+        />
 
-        <div className="space-y-5 overflow-y-auto px-6 py-6 text-[13px]">
+        <ModalBody className="max-h-[68vh] space-y-4 bg-surface-page/50 text-[13px]">
           {preset && isCreate && (
-            <div className="flex items-center justify-between gap-3 rounded-lg border border-brand/30 bg-brand-soft px-4 py-3">
-              <p className="text-xs text-brand-ink">
-                Prefilled from preset <span className="font-bold">{preset.label}</span> — review before creating.
-              </p>
-            </div>
+            <InlineAlert tone="info">
+              <span className="text-xs">
+                Prefilled from preset <strong className="font-semibold">{preset.label}</strong> — review before creating.
+              </span>
+            </InlineAlert>
           )}
 
           <AiConfigIdentitySection disabled={disabled} register={register} errors={errors} />
-          <AiConfigLimitsSection purpose={purpose} temperature={temperature} disabled={disabled} register={register} watch={watch} setValue={setValue} errors={errors} />
-          <AiConfigPromptAndStatus disabled={disabled} approvalActive={!!approvalActive} register={register} setValue={setValue} errors={errors} />
-          <AiConfigSecretSection provider={provider} initial={initial} apiKey={apiKey} onApiKeyChange={setApiKey} readOnly={readOnly} disabled={disabled} />
-        </div>
+          <AiConfigLimitsSection
+            purpose={purpose}
+            temperature={temperature}
+            disabled={disabled}
+            register={register}
+            watch={watch}
+            setValue={setValue}
+            errors={errors}
+          />
+          <AiConfigPromptAndStatus
+            disabled={disabled}
+            approvalActive={!!approvalActive}
+            register={register}
+            setValue={setValue}
+            errors={errors}
+          />
+          <AiConfigSecretSection
+            provider={provider}
+            initial={initial}
+            apiKey={apiKey}
+            onApiKeyChange={setApiKey}
+            readOnly={readOnly}
+            disabled={disabled}
+          />
+        </ModalBody>
 
-        <div className="flex items-center justify-end gap-2.5 border-t border-line-soft bg-surface-page/60 px-6 py-4">
-          <button type="button" onClick={onClose} className="rounded-lg border border-line bg-white px-4 py-2.5 text-xs font-bold text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary">
+        <ModalFooter>
+          <button type="button" onClick={onClose} className={modalButtonClass('secondary')}>
             {readOnly ? 'Close' : 'Cancel'}
           </button>
           {!readOnly && (
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="inline-flex min-w-44 items-center justify-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isLoading && <Loader2 className="size-3.5 animate-spin" />}
-              {isLoading ? 'Saving…' : isCreate ? 'Create configuration' : 'Save changes'}
+            <button type="submit" disabled={isLoading} className={modalButtonClass('primary')}>
+              {isLoading && <Loader2 className="size-4 animate-spin" aria-hidden />}
+              {isCreate ? 'Create configuration' : 'Save changes'}
             </button>
           )}
-        </div>
+        </ModalFooter>
       </form>
     </Modal>
   );

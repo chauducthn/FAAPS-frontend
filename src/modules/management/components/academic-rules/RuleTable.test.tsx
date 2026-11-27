@@ -61,13 +61,13 @@ describe('Academic Rules table', () => {
       />,
     );
 
-  it('shows the rule name, policy type, condition/grade, status and actions columns', async () => {
+  it('shows the rule name, policy type, trigger/threshold, status and actions columns', async () => {
     renderTable();
 
     expect(await screen.findByText('Semester GPA warning')).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /Rule name/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /Policy type/i })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /Condition \/ Grade/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /Trigger \/ Threshold/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /Status/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /Actions/i })).toBeInTheDocument();
   });
@@ -80,12 +80,14 @@ describe('Academic Rules table', () => {
     expect(screen.queryByRole('columnheader', { name: /Display Message/i })).not.toBeInTheDocument();
   });
 
-  it('renders the grade of every rule next to its condition', async () => {
+  it('renders a human-readable threshold and scope for each rule', async () => {
     renderTable();
 
     await screen.findByText('Semester GPA warning');
-    expect(screen.getByText('Grade 5')).toBeInTheDocument();
-    expect(screen.getByText('Grade 24')).toBeInTheDocument();
+    expect(screen.getByText('GPA < 5')).toBeInTheDocument();
+    expect(screen.getByText('Semester GPA')).toBeInTheDocument();
+    expect(screen.getByText('Max 24 credits')).toBeInTheDocument();
+    expect(screen.getByText('Per semester')).toBeInTheDocument();
   });
 });
 

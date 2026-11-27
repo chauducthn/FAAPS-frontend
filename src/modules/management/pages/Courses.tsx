@@ -96,7 +96,7 @@ export default function CoursesPage() {
         onPickFile={(f) => void s.handlePickFile(f)} onCreate={() => { s.setEditing(null); s.setFormOpen(true); }}
       />
 
-      <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
         <CoursesFilterBar
           search={s.search} status={s.status} categoryId={s.categoryId} credits={s.credits}
           workloadLevel={s.workloadLevel} categories={s.categories} hasFilters={s.hasFilters}
@@ -105,48 +105,53 @@ export default function CoursesPage() {
           onWorkloadChange={s.resetPage(s.setWorkloadLevel)} onClear={s.clearFilters}
         />
 
-        <div className="h-[calc(100vh-295px)] min-h-[460px]">
-          {query.isLoading ? (
-            <CoursesListSkeleton />
-          ) : query.isError ? (
-            <CoursesErrorState onRetry={() => query.refetch()} />
-          ) : visibleItems.length === 0 ? (
-            <CoursesEmptyState
-              hasFilters={s.hasFilters}
-              onClear={s.clearFilters}
-            />
-          ) : (
-            <div className="relative h-full">
-              {query.isFetching && (
-                <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
-                  <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
-                </div>
-              )}
-              <DataTable
-                className="h-full"
-                manual columns={columns} data={visibleItems} searchKey="name" searchValue={s.search}
-                searchPlaceholder="Search by code or name..." emptyText={s.hasFilters ? 'No courses match your filters.' : 'No courses yet.'}
-                getRowId={(row) => row.id} isLoading={false} totalRowCount={totalItems}
-                onFetchAllRows={() =>
-                  fetchAllPages((page, size) =>
-                    courseService.list({
-                      page,
-                      size,
-                      search: s.search.trim() || undefined,
-                      status: s.status === 'ALL' ? undefined : s.status,
-                      categoryId: s.categoryId === 'ALL' ? undefined : s.categoryId,
-                      credits: s.credits === 'ALL' ? undefined : s.credits,
-                      workloadLevel: s.workloadLevel === 'ALL' ? undefined : s.workloadLevel,
-                    }),
-                  )
-                }
-                pagination={s.pagination} onPaginationChange={s.setPagination} sorting={s.sorting} onSortingChange={s.setSorting}
-                onSearchChange={s.resetPage(s.setSearch)} showSearch={false}
-                bulkActions={(selectedRows) => (
-                  <>
-                    <button type="button" onClick={() => s.setBulkStatus({ rows: selectedRows, status: 'ACTIVE' })} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100"><CheckCircle2 className="size-3.5" /> Set active</button>
-                    <button type="button" onClick={() => s.setBulkStatus({ rows: selectedRows, status: 'INACTIVE' })} className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-700 ring-1 ring-gray-200 transition-colors hover:bg-gray-50"><CircleOff className="size-3.5" /> Set inactive</button>
-                    <button type="button" onClick={() => {
+        {query.isLoading ? (
+          <div className="admin-fill"><CoursesListSkeleton /></div>
+        ) : query.isError ? (
+          <div className="admin-fill"><CoursesErrorState onRetry={() => query.refetch()} /></div>
+        ) : visibleItems.length === 0 ? (
+          <div className="admin-fill"><CoursesEmptyState hasFilters={s.hasFilters} onClear={s.clearFilters} /></div>
+        ) : (
+          <div className="relative">
+            {query.isFetching && (
+              <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-brand-soft-strong">
+                <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-brand" />
+              </div>
+            )}
+            <DataTable
+              className="admin-fill"
+              manual columns={columns} data={visibleItems} searchKey="name" searchValue={s.search}
+              searchPlaceholder="Search by code or name..."
+              emptyText={s.hasFilters ? 'No courses match your filters.' : 'No courses yet.'}
+              getRowId={(row) => row.id} isLoading={false} totalRowCount={totalItems}
+              onFetchAllRows={() =>
+                fetchAllPages((page, size) =>
+                  courseService.list({
+                    page,
+                    size,
+                    search: s.search.trim() || undefined,
+                    status: s.status === 'ALL' ? undefined : s.status,
+                    categoryId: s.categoryId === 'ALL' ? undefined : s.categoryId,
+                    credits: s.credits === 'ALL' ? undefined : s.credits,
+                    workloadLevel: s.workloadLevel === 'ALL' ? undefined : s.workloadLevel,
+                  }),
+                )
+              }
+              pagination={s.pagination} onPaginationChange={s.setPagination}
+              sorting={s.sorting} onSortingChange={s.setSorting}
+              onSearchChange={s.resetPage(s.setSearch)} showSearch={false}
+              showPageSizeSelect={false} showPageJump
+              bulkActions={(selectedRows) => (
+                <>
+                  <button type="button" onClick={() => s.setBulkStatus({ rows: selectedRows, status: 'ACTIVE' })} className="inline-flex h-8 items-center gap-1.5 rounded-md bg-emerald-50 px-3 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100">
+                    <CheckCircle2 className="size-3.5" /> Set active
+                  </button>
+                  <button type="button" onClick={() => s.setBulkStatus({ rows: selectedRows, status: 'INACTIVE' })} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover">
+                    <CircleOff className="size-3.5" /> Set inactive
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
                       const blocked = selectedRows.filter((c) => c.usedInCurriculumCount > 0);
                       if (blocked.length > 0) {
                         toast.error(`Cannot delete ${blocked.map((c) => c.code).join(', ')}: still used in a curriculum. Unselect them first.`);
@@ -154,14 +159,17 @@ export default function CoursesPage() {
                       }
                       s.setBulkTargets(selectedRows);
                       s.setBulkDeleting(true);
-                    }} className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"><Trash2 className="size-3.5" /> Delete selected</button>
-                  </>
-                )}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+                    }}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-md bg-red-50 px-3 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"
+                  >
+                    <Trash2 className="size-3.5" /> Delete selected
+                  </button>
+                </>
+              )}
+            />
+          </div>
+        )}
+      </section>
       <style>{`@keyframes slide { 0% { transform: translateX(-100%);} 100% { transform: translateX(300%);} }`}</style>
 
       <CoursesModals

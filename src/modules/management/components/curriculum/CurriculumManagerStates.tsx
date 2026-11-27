@@ -1,4 +1,10 @@
-import { WarningCircle as CircleAlert, ArrowCounterClockwise as RotateCcw, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/react';
+import {
+  WarningCircle as CircleAlert,
+  FolderOpen,
+  ArrowCounterClockwise as RotateCcw,
+  MagnifyingGlassMinus as SearchX,
+} from '@phosphor-icons/react';
+import { EmptyState } from '@/shared/components/common/EmptyState';
 
 export function CurriculumListSkeleton() {
   return (
@@ -26,11 +32,11 @@ export function CurriculumListSkeleton() {
 export function CurriculumListError({ plural, onRetry }: { plural: string; onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-lg bg-red-50 text-red-500">
-        <CircleAlert className="size-6" />
+      <span className="flex size-11 items-center justify-center rounded-md bg-red-50 text-red-600">
+        <CircleAlert className="size-5" />
       </span>
       <div>
-        <p className="text-sm font-bold text-ink-primary">Could not load {plural}</p>
+        <p className="text-sm font-semibold text-ink-primary">Could not load {plural}</p>
         <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-ink-muted">
           The list failed to load. Check your connection, then try again — your filters are kept.
         </p>
@@ -38,9 +44,9 @@ export function CurriculumListError({ plural, onRetry }: { plural: string; onRet
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-ink-primary px-4 py-2 text-xs font-bold text-surface-page transition-colors hover:bg-ink-secondary"
+        className="inline-flex h-9 items-center gap-1.5 rounded-md bg-ink-primary px-3.5 text-[13px] font-semibold text-surface-page transition-colors hover:bg-ink-secondary"
       >
-        <RotateCcw className="size-3.5" /> Retry
+        <RotateCcw className="size-4" /> Retry
       </button>
     </div>
   );
@@ -50,39 +56,22 @@ export function CurriculumListEmpty({
   plural,
   noun,
   hasFilters,
-  onClearFilters,
 }: {
   plural: string;
   noun: string;
   hasFilters: boolean;
-  onClearFilters: () => void;
+  onClearFilters?: () => void;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-lg bg-brand-soft text-brand">
-        <SearchX className="size-6" />
-      </span>
-      <div>
-        <p className="text-sm font-bold text-ink-primary">
-          {hasFilters ? `No ${plural} match your filters` : `No ${plural} yet`}
-        </p>
-        <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-ink-muted">
-          {hasFilters
-            ? 'Try a different keyword, or clear the major / status filters to see the full list.'
-            : `Use the button above to create or import the first ${noun.toLowerCase()}.`}
-        </p>
-      </div>
-      {hasFilters && (
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={onClearFilters}
-            className="rounded-lg border border-line px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:bg-surface-hover"
-          >
-            Clear filters
-          </button>
-        </div>
-      )}
-    </div>
+    <EmptyState
+      className="admin-fill justify-center"
+      icon={hasFilters ? <SearchX aria-hidden /> : <FolderOpen aria-hidden />}
+      title={hasFilters ? `No ${plural} match your filters` : `No ${plural} yet`}
+      description={
+        hasFilters
+          ? 'Try a different keyword, or clear the major / status filters to see the full list.'
+          : `Use the button above to create or import the first ${noun.toLowerCase()}.`
+      }
+    />
   );
 }

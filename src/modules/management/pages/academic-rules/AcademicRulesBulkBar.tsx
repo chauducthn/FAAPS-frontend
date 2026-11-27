@@ -19,7 +19,7 @@ export function AcademicRulesBulkBar({
         type="button"
         disabled={busy}
         onClick={() => onBulkStatus(selectedRows, 'ACTIVE')}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
       >
         <CheckCircle2 className="size-3.5" /> Set active
       </button>
@@ -27,7 +27,7 @@ export function AcademicRulesBulkBar({
         type="button"
         disabled={busy}
         onClick={() => onBulkStatus(selectedRows, 'DRAFT')}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-[13px] font-medium text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-3 py-1.5 text-[13px] font-medium text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
       >
         <FileEdit className="size-3.5" /> Set draft
       </button>
@@ -35,7 +35,7 @@ export function AcademicRulesBulkBar({
         type="button"
         disabled={busy}
         onClick={() => onBulkStatus(selectedRows, 'INACTIVE')}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-ink-secondary ring-1 ring-line transition-colors hover:bg-surface-hover disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-[13px] font-medium text-ink-secondary ring-1 ring-line transition-colors hover:bg-surface-hover disabled:opacity-50"
       >
         <CircleOff className="size-3.5" /> Set inactive
       </button>
@@ -50,7 +50,7 @@ export function AcademicRulesBulkBar({
           }
           onBulkDelete(selectedRows);
         }}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 rounded-md bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
       >
         <Trash2 className="size-3.5" /> Delete selected
       </button>

@@ -133,18 +133,8 @@ export function CoursesModals({
         isReading={importing && !importPreview}
         onClose={onCloseImport}
         onConfirm={onConfirmImport}
+        onDownloadErrors={onDownloadErrors}
       />
-      {importPreview?.errorRows ? (
-        <div className="flex items-center justify-end">
-          <button
-            type="button"
-            className="text-[11px] font-semibold text-red-600 underline hover:text-red-700"
-            onClick={onDownloadErrors}
-          >
-            Download error report (CSV)
-          </button>
-        </div>
-      ) : null}
 
       <ConfirmDialog
         open={!!deleting}

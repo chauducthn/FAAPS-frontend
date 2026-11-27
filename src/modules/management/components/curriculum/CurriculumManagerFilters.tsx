@@ -3,7 +3,7 @@ import type { CurriculumKind } from '../../../academic/hooks/queries/useCurricul
 import type { CurriculumBulkAction } from '../../utils/curriculumBulk';
 
 const selectClass =
-  'h-9 w-full appearance-none truncate rounded-lg border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
+  'h-9 w-full appearance-none truncate rounded-md border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
 
 interface MajorOption {
   id: string;
@@ -52,7 +52,7 @@ export function CurriculumManagerFilters(p: Props) {
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
             aria-label="Search"
-            className="h-9 w-full rounded-lg border border-line bg-white pl-9 pr-7 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
+            className="h-9 w-full rounded-md border border-line bg-white pl-9 pr-7 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
           />
           {search && (
             <button
@@ -118,7 +118,7 @@ export function CurriculumManagerFilters(p: Props) {
           type="button"
           onClick={onClearFilters}
           disabled={!hasFilters}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand hover:text-brand-ink disabled:cursor-default disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-muted"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand hover:text-brand-ink disabled:cursor-default disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-muted"
         >
           <RotateCcw className="size-3.5" /> Reset
         </button>
@@ -131,7 +131,7 @@ export function CurriculumManagerFilters(p: Props) {
           aria-label={`${kind === 'cohort' ? 'Cohort' : 'Curriculum'} bulk actions`}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-brand px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
+            <span className="rounded-sm bg-brand px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
               {selectedCount} selected
             </span>
             {onSelectAll && !!totalCount && totalCount > selectedCount && (
@@ -156,21 +156,21 @@ export function CurriculumManagerFilters(p: Props) {
             <button
               type="button"
               onClick={() => onBulkAction('ACTIVE')}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
+              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100"
             >
               <CheckCircle2 className="size-3.5" /> Set active
             </button>
             <button
               type="button"
               onClick={() => onBulkAction('INACTIVE')}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-ink-secondary ring-1 ring-line transition-colors hover:bg-surface-hover"
+              className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-[13px] font-medium text-ink-secondary ring-1 ring-line transition-colors hover:bg-surface-hover"
             >
               <CircleOff className="size-3.5" /> Set inactive
             </button>
             <button
               type="button"
               onClick={() => onBulkAction('DELETE')}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"
+              className="inline-flex items-center gap-1.5 rounded-md bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"
             >
               <Trash2 className="size-3.5" /> Delete selected
             </button>

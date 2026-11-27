@@ -8,7 +8,7 @@ import { SemesterPickerField } from './SemesterPickerField';
 
 const inputClass = (hasError?: boolean) =>
   cn(
-    'h-10 w-full rounded-lg border bg-white px-3 text-[13px] text-ink-primary placeholder:text-ink-subtle shadow-2xs transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-page disabled:opacity-60',
+    'h-9 w-full rounded-md border bg-white px-3 text-[13px] text-ink-primary placeholder:text-ink-subtle shadow-2xs transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-page disabled:opacity-60',
     hasError
       ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
       : 'border-line hover:border-ink-subtle/50 focus:border-brand focus:ring-brand/15',
@@ -55,7 +55,7 @@ export function CurriculumFormFields(props: Props) {
   };
 
   return (
-    <div className="space-y-4 overflow-y-auto px-6 py-5">
+    <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Major" required error={errors.majorId?.message}>
           {noun === 'Cohort' ? (
@@ -110,12 +110,12 @@ export function CurriculumFormFields(props: Props) {
 
       <div className="grid items-start gap-4 sm:grid-cols-2">
         <Field label="Status" error={errors.status?.message}>
-          <div className="grid h-10 grid-cols-2 gap-1 rounded-lg border border-line bg-surface-page p-1">
+          <div className="grid h-9 grid-cols-2 gap-1 rounded-md border border-line bg-surface-page p-1">
             {(['ACTIVE', 'INACTIVE'] as const).map((s) => (
               <label
                 key={s}
                 className={cn(
-                  'flex cursor-pointer items-center justify-center rounded-md text-[13px] font-medium transition-colors',
+                  'flex cursor-pointer items-center justify-center rounded-sm text-[13px] font-medium transition-colors',
                   status === s
                     ? s === 'ACTIVE'
                       ? 'bg-white font-semibold text-emerald-700 shadow-2xs ring-1 ring-emerald-200'
@@ -132,7 +132,7 @@ export function CurriculumFormFields(props: Props) {
         <Field label="Current version" error={errors.isCurrent?.message}>
           <label
             className={cn(
-              'flex h-10 cursor-pointer items-center gap-2.5 rounded-lg border px-3 text-[13px] font-medium transition-colors',
+              'flex h-9 cursor-pointer items-center gap-2.5 rounded-md border px-3 text-[13px] font-medium transition-colors',
               isCurrentDisabled
                 ? 'cursor-not-allowed border-line-soft bg-surface-page text-ink-subtle'
                 : 'border-line bg-white text-ink-secondary hover:border-ink-subtle/50',

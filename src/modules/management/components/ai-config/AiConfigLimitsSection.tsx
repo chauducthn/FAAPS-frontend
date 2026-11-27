@@ -30,7 +30,7 @@ export function AiConfigLimitsSection({
 }: Props) {
   return (
     <AiFormSection title="Generation limits" hint="Strict numbers only — letters and negatives are rejected.">
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-3.5 sm:grid-cols-2">
         <div>
           <label className={aiLabelClass} htmlFor="ai-temperature">
             Temperature
@@ -60,11 +60,11 @@ export function AiConfigLimitsSection({
               })}
               disabled={disabled}
               aria-label="Temperature"
-              className={cn(aiNoSpinClass, 'w-20 bg-white text-center')}
+              className={cn(aiNoSpinClass, 'w-20 text-center')}
             />
           </div>
           {errors.temperature?.message ? (
-            <p className="mt-1.5 text-[11px] font-semibold text-red-600">{errors.temperature.message}</p>
+            <p className="mt-1 text-xs font-medium text-red-600">{errors.temperature.message}</p>
           ) : (
             <p className="mt-1 text-[11px] text-ink-subtle">0 = precise, 2 = creative. 0–0.5 for advising.</p>
           )}
@@ -86,7 +86,8 @@ export function AiConfigLimitsSection({
           }}
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-3">
+
+      <div className="grid gap-3.5 sm:grid-cols-3">
         <AiStepperField
           label="Timeout (s)"
           hint="5 – 120s"
@@ -131,11 +132,12 @@ export function AiConfigLimitsSection({
             disabled={disabled}
             placeholder="5000"
             aria-label="Daily request limit"
-            className={cn(aiNoSpinClass, 'bg-white')}
+            className={aiNoSpinClass}
           />
         </AiFormField>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+
+      <div className="grid gap-3.5 sm:grid-cols-2">
         <AiFormField label="Similarity threshold" error={errors.similarityThreshold?.message} hint="0 – 1. Empty when retrieval is off.">
           <input
             type="number"
@@ -149,10 +151,10 @@ export function AiConfigLimitsSection({
             disabled={disabled}
             placeholder="0.72"
             aria-label="Similarity threshold"
-            className={cn(aiNoSpinClass, 'bg-white')}
+            className={aiNoSpinClass}
           />
         </AiFormField>
-        <div className="rounded-lg bg-brand-soft/70 px-4 py-3 text-[11px] leading-relaxed text-brand-ink ring-1 ring-brand/30 sm:mt-[26px] sm:self-start">
+        <div className="rounded-md border border-brand/20 bg-brand-soft px-3.5 py-2.5 text-xs leading-relaxed text-ink-secondary sm:mt-[26px] sm:self-start">
           {purpose === 'EMBEDDING'
             ? 'Embedding configs ignore the prompt, temperature and fallback — they only build the vector index.'
             : 'Limits apply per request. Daily limit caps cost across the whole feature.'}

@@ -2,9 +2,9 @@ import { cn } from '@/shared/lib/utils';
 import type { CourseWorkload, WorkloadLevel, WorkloadSource } from '../types/course';
 
 const LEVEL_STYLES: Record<WorkloadLevel, string> = {
-  LIGHT: 'bg-emerald-50 text-emerald-700 ring-emerald-200/80',
-  MEDIUM: 'bg-amber-50 text-amber-800 ring-amber-200/80',
-  HEAVY: 'bg-rose-50 text-rose-700 ring-rose-200/80',
+  LIGHT: 'bg-emerald-50 text-emerald-700 [--dot:var(--color-emerald-500)]',
+  MEDIUM: 'bg-amber-50 text-amber-700 [--dot:var(--color-amber-500)]',
+  HEAVY: 'bg-red-50 text-red-700 [--dot:var(--color-red-500)]',
 };
 
 const LEVEL_LABELS: Record<WorkloadLevel, string> = {
@@ -29,7 +29,7 @@ export function WorkloadBadge({
   className?: string;
 }) {
   if (!workload) {
-    return <span className="text-xs text-gray-400">--</span>;
+    return <span className="text-xs text-ink-subtle">--</span>;
   }
 
   const label = LEVEL_LABELS[workload.level] ?? workload.level;
@@ -40,15 +40,15 @@ export function WorkloadBadge({
     <span
       title={tooltip}
       className={cn(
-        'inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1 ring-inset',
+        'inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-sm px-2 py-0.5 text-[11px] font-medium leading-4',
+        !showSource && 'min-w-[68px]',
         LEVEL_STYLES[workload.level],
         className,
       )}
     >
+      <span className="size-1.5 shrink-0 rounded-full bg-[var(--dot)]" aria-hidden />
       <span>{label}</span>
-      {showSource && (
-        <span className="font-medium opacity-75">· {sourceLabel}</span>
-      )}
+      {showSource && <span className="opacity-75">· {sourceLabel}</span>}
     </span>
   );
 }

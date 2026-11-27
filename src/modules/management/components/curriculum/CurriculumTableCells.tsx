@@ -3,21 +3,11 @@ import { cn } from '@/shared/lib/utils';
 import { TableCell } from '../../../../shared/components/common/table/TablePrimitives';
 import type { CurriculumItem } from '../../../academic/types/curriculum';
 
-const MAJOR_TONES: Record<string, string> = {
-  SE: 'text-brand-ink',
-  IA: 'text-ink-secondary',
-  AI: 'text-ink-secondary',
-  IT: 'text-ink-secondary',
-  CE: 'text-ink-secondary',
-  BA: 'text-emerald-700',
-  DS: 'text-ink-secondary',
-};
-
-export const majorTone = (code: string) => MAJOR_TONES[code] ?? 'text-ink-secondary';
+export const majorTone = () => 'text-ink-secondary';
 
 function MajorBadge({ item }: { item: CurriculumItem }) {
   return (
-    <span className={cn('text-[13px] font-semibold', majorTone(item.majorCode))} title={item.majorName}>
+    <span className={cn('font-mono text-[13px] font-semibold', majorTone())} title={item.majorName}>
       {item.majorCode}
     </span>
   );

@@ -144,7 +144,7 @@ export default function MajorsPage({ headerLeft }: { headerLeft?: ReactNode } = 
         onCreate={() => { setEditingMajor(null); setIsModalOpen(true); }}
       />
 
-      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <section className="overflow-hidden rounded-lg border border-line bg-white shadow-2xs">
         <MajorFilterBar
           search={search} onSearchChange={applyFilter(setSearch)} selectedCode={selectedCode}
           codeOptions={codeOptions} onCodeChange={applyFilter(setSelectedCode)} selectedDuration={selectedDuration}
@@ -158,14 +158,14 @@ export default function MajorsPage({ headerLeft }: { headerLeft?: ReactNode } = 
         <div className="admin-fill">
           {isLoading && (
             <div className="space-y-3 px-6 py-10" aria-label="Loading majors">
-              {[0, 1, 2, 3].map((i) => <div key={i} className="h-10 animate-pulse rounded-lg bg-line-soft" />)}
+              {[0, 1, 2, 3].map((i) => <div key={i} className="h-10 animate-pulse rounded-md bg-line-soft" />)}
             </div>
           )}
           {isError && (
             <div className="px-6 py-14 text-center">
               <p className="text-sm font-semibold text-ink-primary">Could not load majors from the server.</p>
               <p className="mt-1 text-[13px] text-ink-muted">Check your connection and try again.</p>
-              <button onClick={() => refresh()} className="mt-4 cursor-pointer rounded-lg bg-line-soft px-4 py-2 text-[13px] font-semibold text-ink-secondary transition-colors hover:bg-line">Retry</button>
+              <button type="button" onClick={() => refresh()} className="mt-4 inline-flex h-9 cursor-pointer items-center rounded-md border border-line bg-white px-3.5 text-[13px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover">Retry</button>
             </div>
           )}
           {!isLoading && !isError && (

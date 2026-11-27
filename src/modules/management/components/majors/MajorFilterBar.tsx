@@ -24,7 +24,7 @@ interface MajorFilterBarProps {
 }
 
 const selectClass =
-  'h-9 w-full appearance-none truncate rounded-lg border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
+  'h-9 w-full appearance-none truncate rounded-md border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
 
 export default function MajorFilterBar(p: MajorFilterBarProps) {
   const { search, onSearchChange, selectedCode, codeOptions, onCodeChange, selectedDuration, durationOptions, onDurationChange, selectedStatus, onStatusChange, onClearContext, selectedCount, totalItems, isSelectingAll = false, onSelectAllMatching, isUpdatingStatus, onClearSelection, onBulkStatus, onDeleteSelected } = p;
@@ -45,7 +45,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
             aria-label="Search majors"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="h-9 w-full rounded-lg border border-line bg-white pl-9 pr-7 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
+            className="h-9 w-full rounded-md border border-line bg-white pl-9 pr-7 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
           />
           {search && (
             <button
@@ -108,7 +108,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
           type="button"
           onClick={onClearContext}
           disabled={!hasFilters}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand hover:text-brand-ink disabled:cursor-default disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-muted"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand hover:text-brand-ink disabled:cursor-default disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-muted"
         >
           <RotateCcw className="size-3.5" /> Reset
         </button>
@@ -121,7 +121,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
           aria-label="Major bulk actions"
         >
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-brand px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
+            <span className="rounded-sm bg-brand px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
               {selectedCount} selected
             </span>
             {onSelectAllMatching && !!totalItems && totalItems > selectedCount && (
@@ -147,7 +147,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
               type="button"
               disabled={isUpdatingStatus}
               onClick={() => onBulkStatus('ACTIVE')}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md bg-emerald-50 px-3 py-1.5 text-[13px] font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50"
             >
               <CheckCircle2 className="size-3.5" /> Set active
             </button>
@@ -155,7 +155,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
               type="button"
               disabled={isUpdatingStatus}
               onClick={() => onBulkStatus('DRAFT')}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-3 py-1.5 text-[13px] font-medium text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md bg-amber-50 px-3 py-1.5 text-[13px] font-medium text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
             >
               <FileEdit className="size-3.5" /> Set draft
             </button>
@@ -163,7 +163,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
               type="button"
               disabled={isUpdatingStatus}
               onClick={() => onBulkStatus('INACTIVE')}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-ink-secondary ring-1 ring-line transition-colors hover:bg-surface-hover disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-[13px] font-medium text-ink-secondary ring-1 ring-line transition-colors hover:bg-surface-hover disabled:opacity-50"
             >
               <CircleOff className="size-3.5" /> Set inactive
             </button>
@@ -171,7 +171,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
               type="button"
               disabled={isUpdatingStatus}
               onClick={onDeleteSelected}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-md bg-red-50 px-3 py-1.5 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100 disabled:opacity-50"
             >
               <Trash2 className="size-3.5" /> Delete selected
             </button>

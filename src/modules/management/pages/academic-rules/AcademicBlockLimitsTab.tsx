@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Clock, FloppyDisk as Save, PencilSimple, Plus, SlidersHorizontal, Trash } from '@phosphor-icons/react';
+import { FloppyDisk as Save, Plus, SlidersHorizontal, SpinnerGap } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { apiErrorMessage } from '@/shared/lib/apiError';
 import {
@@ -10,18 +10,23 @@ import {
   type AcademicBlockItem,
 } from '../../services/academic-block.service';
 import { AcademicBlockModal } from './AcademicBlockModal';
+import { AcademicBlocksTable } from './AcademicBlocksTable';
 
-const TYPE_BADGE: Record<string, string> = {
-  PREP: 'bg-line-soft text-ink-secondary ring-line',
-  MAIN: 'bg-brand-soft text-brand-ink ring-brand/30',
-  FAST: 'bg-line-soft text-ink-secondary ring-line',
-  INTENSIVE: 'bg-amber-50 text-amber-800 ring-amber-200',
-};
+const NUM_INPUT_CLASS =
+  'mt-1 h-9 w-full rounded-md border border-line bg-white px-3 text-[13px] font-semibold tabular-nums ' +
+  'text-ink-primary shadow-2xs transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
 
-const numCls =
-  'mt-1 h-9.5 w-full rounded-lg border border-line bg-white px-3 text-[13px] font-semibold text-ink-primary focus:border-brand focus:outline-none';
+const PRIMARY_BTN_CLASS =
+  'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-brand px-3.5 text-[13px] font-semibold ' +
+  'text-white shadow-2xs transition-colors hover:bg-brand-hover focus-visible:outline-none ' +
+  'focus-visible:ring-2 focus-visible:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-45';
 
-export function AcademicBlockLimitsTab() {
+const SAVE_BTN_CLASS =
+  'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-line bg-white px-3.5 text-[13px] ' +
+  'font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover ' +
+  'disabled:cursor-not-allowed disabled:opacity-45';
+
+export function AcademicBlockLimitsTab({ headerLeft }: { headerLeft?: ReactNode } = {}) {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ACADEMIC_BLOCK_QUERY_KEY,
@@ -83,14 +88,25 @@ export function AcademicBlockLimitsTab() {
 
   return (
     <div className="space-y-4">
-      <section className="rounded-lg border border-line/80 bg-white p-5 shadow-2xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-soft pb-3.5">
-          <div className="flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-brand-soft text-brand">
-              <SlidersHorizontal className="size-4.5" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>{headerLeft}</div>
+        <button
+          type="button"
+          onClick={() => { setEditing(null); setModalOpen(true); }}
+          className={PRIMARY_BTN_CLASS}
+        >
+          <Plus className="size-4" aria-hidden /> Add block
+        </button>
+      </div>
+
+      <section className="rounded-lg border border-line bg-white p-4 shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-soft pb-3">
+          <div className="flex items-center gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-md bg-brand-soft text-brand">
+              <SlidersHorizontal className="size-[18px]" aria-hidden />
             </span>
             <div>
-              <h2 className="text-sm font-bold text-ink-primary">Global Semester Limits</h2>
+              <h2 className="text-sm font-semibold text-ink-primary">Global Semester Limits</h2>
               <p className="text-xs text-ink-muted">Applies across Student Curriculum views and AI Study Roadmap.</p>
             </div>
           </div>
@@ -98,99 +114,59 @@ export function AcademicBlockLimitsTab() {
             type="button"
             disabled={!limitsDirty || saveLimits.isPending}
             onClick={() => saveLimits.mutate()}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand px-4 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-45"
+            className={SAVE_BTN_CLASS}
           >
-            <Save className="size-3.5" />
-            {saveLimits.isPending ? 'Saving…' : 'Save limits'}
+            {saveLimits.isPending
+              ? <SpinnerGap className="size-4 animate-spin text-ink-muted" aria-hidden />
+              : <Save className="size-4 text-ink-muted" aria-hidden />}
+            Save limits
           </button>
         </div>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <div className="mt-3.5 grid gap-3.5 sm:grid-cols-3">
           <div>
-            <label className="block text-xs font-semibold text-ink-secondary">Max Credits / Semester</label>
-            <input type="number" min={6} max={36} value={maxCr} onChange={(e) => setMaxCr(e.target.value)} className={numCls} />
+            <label htmlFor="limit-max-cr" className="block text-xs font-medium text-ink-secondary">
+              Max Credits / Semester
+            </label>
+            <input
+              id="limit-max-cr" type="number" min={6} max={36}
+              value={maxCr} onChange={(e) => setMaxCr(e.target.value)} className={NUM_INPUT_CLASS}
+            />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-ink-secondary">Max Courses / Semester</label>
-            <input type="number" min={1} max={15} value={maxCo} onChange={(e) => setMaxCo(e.target.value)} className={numCls} />
+            <label htmlFor="limit-max-co" className="block text-xs font-medium text-ink-secondary">
+              Max Courses / Semester
+            </label>
+            <input
+              id="limit-max-co" type="number" min={1} max={15}
+              value={maxCo} onChange={(e) => setMaxCo(e.target.value)} className={NUM_INPUT_CLASS}
+            />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-ink-secondary">English Prep Parts / Semester</label>
-            <input type="number" min={1} max={4} value={prepParts} onChange={(e) => setPrepParts(e.target.value)} className={numCls} />
+            <label htmlFor="limit-prep" className="block text-xs font-medium text-ink-secondary">
+              English Prep Parts / Semester
+            </label>
+            <input
+              id="limit-prep" type="number" min={1} max={4}
+              value={prepParts} onChange={(e) => setPrepParts(e.target.value)} className={NUM_INPUT_CLASS}
+            />
           </div>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line-soft px-5 py-4">
-          <div className="flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-line-soft text-ink-secondary">
-              <Clock className="size-4.5" />
-            </span>
-            <div>
-              <h2 className="text-sm font-bold text-ink-primary">Study Blocks ({data?.blocks.length ?? 0})</h2>
-              <p className="text-xs text-ink-muted">Configure FPTU block durations (weeks), max courses, and max credits.</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => { setEditing(null); setModalOpen(true); }}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand px-3.5 text-xs font-semibold text-white hover:bg-brand-hover"
-          >
-            <Plus className="size-3.5" /> Add block
-          </button>
-        </div>
+      <AcademicBlocksTable
+        blocks={data?.blocks ?? []}
+        isLoading={isLoading}
+        isDeleting={removeBlock.isPending}
+        onEdit={(block) => { setEditing(block); setModalOpen(true); }}
+        onDelete={(id) => removeBlock.mutate(id)}
+      />
 
-        <div className="overflow-x-auto">
-          <table className="w-full border-collapse text-left">
-            <thead>
-              <tr className="border-b border-line-soft bg-surface-page/70 text-[11px] font-semibold uppercase tracking-wide text-ink-muted">
-                <th className="py-2.5 pl-5 pr-3">Code</th>
-                <th className="px-3 py-2.5">Block Name</th>
-                <th className="px-3 py-2.5">Type</th>
-                <th className="px-3 py-2.5 text-center">Duration</th>
-                <th className="px-3 py-2.5 text-center">Max Courses</th>
-                <th className="px-3 py-2.5 text-center">Max Credits</th>
-                <th className="px-3 py-2.5">Status</th>
-                <th className="py-2.5 pl-3 pr-5 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line-soft text-[13px]">
-              {isLoading ? (
-                <tr><td colSpan={8} className="py-8 text-center text-xs text-ink-subtle">Loading blocks…</td></tr>
-              ) : (data?.blocks ?? []).map((b) => (
-                <tr key={b.id} className="hover:bg-surface-hover/70">
-                  <td className="py-3 pl-5 pr-3 font-mono text-xs font-bold text-ink-primary">{b.code}</td>
-                  <td className="px-3 py-3">
-                    <p className="font-semibold text-ink-primary">{b.name}</p>
-                    {b.description && <p className="text-[11px] text-ink-muted">{b.description}</p>}
-                  </td>
-                  <td className="px-3 py-3">
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${TYPE_BADGE[b.blockType] ?? 'bg-line-soft text-ink-secondary ring-line'}`}>
-                      {b.blockType}
-                    </span>
-                  </td>
-                  <td className="px-3 py-3 text-center font-mono text-xs font-semibold text-ink-primary">{b.durationWeeks}w</td>
-                  <td className="px-3 py-3 text-center font-mono text-xs font-semibold text-ink-primary">{b.maxCourses}</td>
-                  <td className="px-3 py-3 text-center font-mono text-xs font-semibold text-ink-primary">{b.maxCredits} cr</td>
-                  <td className="px-3 py-3">
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${b.active ? 'bg-emerald-50 text-emerald-700' : 'bg-line-soft text-ink-muted'}`}>
-                      {b.active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td className="py-3 pl-3 pr-5 text-right">
-                    <div className="inline-flex items-center gap-1">
-                      <button type="button" aria-label="Edit block" onClick={() => { setEditing(b); setModalOpen(true); }} className="rounded-lg p-1.5 text-ink-muted hover:bg-brand-soft hover:text-brand-ink"><PencilSimple className="size-4" /></button>
-                      <button type="button" aria-label="Delete block" disabled={removeBlock.isPending} onClick={() => removeBlock.mutate(b.id)} className="rounded-lg p-1.5 text-ink-muted hover:bg-red-50 hover:text-red-600"><Trash className="size-4" /></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-      <AcademicBlockModal open={modalOpen} editing={editing} saving={saveBlock.isPending} onClose={() => { setModalOpen(false); setEditing(null); }} onSubmit={(input) => saveBlock.mutate(input)} />
+      <AcademicBlockModal
+        open={modalOpen} editing={editing} saving={saveBlock.isPending}
+        onClose={() => { setModalOpen(false); setEditing(null); }}
+        onSubmit={(input) => saveBlock.mutate(input)}
+      />
     </div>
   );
 }

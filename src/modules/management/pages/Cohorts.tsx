@@ -85,7 +85,9 @@ export default function CohortsPage() {
     <div className="w-full min-w-0 space-y-4">
       {activeTab === 'curriculum' && cohortId ? (
         <>
-          {tabBar}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>{tabBar}</div>
+          </div>
           <CohortCurriculumWorkspace
             cohortId={cohortId}
             onBackToCohorts={() => setParams({ tab: 'cohorts', cohortId }, { replace: true })}

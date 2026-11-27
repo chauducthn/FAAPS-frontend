@@ -9,18 +9,22 @@ import { useAcademicRuleMutations } from '../../academic/hooks/mutations/useAcad
 import { academicRuleService } from '../services/academic-rule.service';
 import type { AcademicRule, AcademicRuleFilterParams, AcademicRuleStatus } from '../../academic/types/academic-rule';
 import type { CreateAcademicRuleFormValues } from '../../academic/validations/academic-rule.schema';
-import { AcademicRulesFilterBar, AcademicRulesTopBar } from './academic-rules/AcademicRulesHeader';
+import {
+  AcademicRulesFilterBar,
+  AcademicRulesSectionTabs,
+  AcademicRulesTopBar,
+  type AcademicRulesTabKey,
+} from './academic-rules/AcademicRulesHeader';
 import { AcademicRulesEmptyState, AcademicRulesErrorState, AcademicRulesModals } from './academic-rules/AcademicRulesStates';
 import { AcademicRulesBulkBar } from './academic-rules/AcademicRulesBulkBar';
 import { AcademicBlockLimitsTab } from './academic-rules/AcademicBlockLimitsTab';
 
 const PAGE_SIZE = 10;
 type FormMode = 'create' | 'edit' | 'view';
-type PageTab = 'rules' | 'blocks';
 
 export default function AcademicRulesPage() {
   const queryClient = useQueryClient();
-  const [activeTab, setActiveTab] = useState<PageTab>('rules');
+  const [activeTab, setActiveTab] = useState<AcademicRulesTabKey>('rules');
   const [search, setSearch] = useState('');
   const [policyType, setPolicyType] = useState('ALL');
   const [status, setStatus] = useState<'ALL' | AcademicRuleStatus>('ALL');
@@ -108,17 +112,13 @@ export default function AcademicRulesPage() {
     setBulkDeleteTargets([]);
   };
 
+  const sectionTabs = <AcademicRulesSectionTabs activeTab={activeTab} onChange={setActiveTab} />;
+
   return (
     <div className="w-full space-y-4">
-      <div className="inline-flex items-center gap-1 rounded-lg border border-line/80 bg-white p-1 shadow-2xs">
-        {([['rules', 'Academic Rules'], ['blocks', 'Block & Study Limits']] as const).map(([key, label]) => (
-          <button key={key} type="button" onClick={() => setActiveTab(key)} className={`h-8 rounded-lg px-3.5 text-xs font-semibold transition-colors ${activeTab === key ? 'bg-brand text-white shadow-2xs' : 'text-ink-muted hover:bg-line-soft hover:text-ink-primary'}`}>
-            {label}
-          </button>
-        ))}
-      </div>
-      {activeTab === 'blocks' ? <AcademicBlockLimitsTab /> : (<>
+      {activeTab === 'blocks' ? <AcademicBlockLimitsTab headerLeft={sectionTabs} /> : (<>
       <AcademicRulesTopBar
+        headerLeft={sectionTabs}
         totalItems={summaryQuery.data?.total ?? data?.totalItems} isFetching={isFetching}
         pageIndex={pagination.pageIndex} totalPages={data?.totalPages ?? 1}
         activeCount={summaryQuery.data?.active ?? items.filter((r) => r.status === 'ACTIVE').length}
@@ -128,7 +128,7 @@ export default function AcademicRulesPage() {
         onSeedFlm={() => void guard(() => seedFlm())} isSeedingFlm={isSeedingFlm}
       />
 
-      <div className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <div className="overflow-hidden rounded-lg border border-line bg-white shadow-2xs">
         <AcademicRulesFilterBar
           search={search} policyType={policyType} status={status} hasFilters={hasFilters}
           onSearchChange={resetPage(setSearch)} onPolicyTypeChange={resetPage(setPolicyType)}

@@ -1,12 +1,62 @@
-import { Toaster as Sonner, type ToasterProps } from "sonner";
+import type { ReactNode } from 'react';
+import { Toaster as Sonner, type ToasterProps } from 'sonner';
 import {
-  CheckCircle as CircleCheckIcon,
-  Info as InfoIcon,
-  Warning as TriangleAlertIcon,
-  XCircle as OctagonXIcon,
-  SpinnerGap as Loader2Icon,
-} from "@phosphor-icons/react";
-import { useTheme } from "@/shared/stores/useTheme";
+  CheckCircle,
+  Info,
+  SpinnerGap,
+  Warning,
+  XCircle,
+} from '@phosphor-icons/react';
+import { cn } from '@/shared/lib/utils';
+import { useTheme } from '@/shared/stores/useTheme';
+
+function ToastIconTile({ tone, children }: { tone: string; children: ReactNode }) {
+  return (
+    <span
+      className={cn(
+        'flex size-7 shrink-0 items-center justify-center rounded-md ring-1 ring-inset',
+        tone,
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+const TOAST_CLASS = cn(
+  'group toast pointer-events-auto relative flex w-full items-start justify-between gap-3',
+  'overflow-visible !rounded-lg !border !border-line !bg-popover !py-3 !pl-3.5 !pr-11',
+  'font-sans text-sm !text-ink-primary',
+  '!shadow-[0_12px_32px_rgba(15,23,42,0.12)] dark:!shadow-[0_12px_32px_rgba(0,0,0,0.45)]',
+  'transition-all',
+  'data-[swipe=cancel]:translate-x-0',
+  'data-[swipe=end]:translate-x-[var(--toast-swipe-end-x)]',
+  'data-[swipe=move]:translate-x-[var(--toast-swipe-movement-x)]',
+  'data-[swipe=move]:transition-none',
+  'data-[type=success]:!border-emerald-200 dark:data-[type=success]:!border-emerald-500/35',
+  'data-[type=error]:!border-red-200/90 dark:data-[type=error]:!border-red-500/35',
+  'data-[type=warning]:!border-amber-200/90 dark:data-[type=warning]:!border-amber-500/35',
+  'data-[type=loading]:!border-brand/30',
+);
+
+const ACTION_BTN_CLASS = cn(
+  'inline-flex items-center justify-center !rounded-md !bg-brand !px-2.5 !py-1.5',
+  '!text-xs !font-semibold !text-white transition-colors hover:!bg-brand-hover',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
+);
+
+const CANCEL_BTN_CLASS = cn(
+  'inline-flex items-center justify-center !rounded-md !border !border-line !bg-popover',
+  '!px-2.5 !py-1.5 !text-xs !font-semibold !text-ink-secondary transition-colors',
+  'hover:!bg-surface-hover focus-visible:outline-none',
+);
+
+const CLOSE_BTN_CLASS = cn(
+  '!absolute !right-2.5 !top-3 !left-auto !h-7 !w-7 !translate-x-0 !translate-y-0 !transform-none',
+  'inline-flex items-center justify-center !rounded-md !border-0 !bg-transparent !shadow-none',
+  '!text-ink-subtle transition-colors hover:!bg-line-soft hover:!text-ink-primary',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
+);
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const theme = useTheme((s) => s.theme);
@@ -23,43 +73,42 @@ const Toaster = ({ ...props }: ToasterProps) => {
       gap={10}
       icons={{
         success: (
-          <CircleCheckIcon className="size-5 text-emerald-600 shrink-0 mt-0.5" />
+          <ToastIconTile tone="bg-emerald-50 text-emerald-700 ring-emerald-600/15 dark:ring-emerald-400/25">
+            <CheckCircle className="size-4" weight="fill" aria-hidden />
+          </ToastIconTile>
         ),
-        info: <InfoIcon className="size-5 text-sky-600 shrink-0 mt-0.5" />,
+        info: (
+          <ToastIconTile tone="bg-surface-page text-ink-secondary ring-line">
+            <Info className="size-4" weight="fill" aria-hidden />
+          </ToastIconTile>
+        ),
         warning: (
-          <TriangleAlertIcon className="size-5 text-amber-600 shrink-0 mt-0.5" />
+          <ToastIconTile tone="bg-amber-50 text-amber-700 ring-amber-600/15 dark:ring-amber-400/25">
+            <Warning className="size-4" weight="fill" aria-hidden />
+          </ToastIconTile>
         ),
-        error: <OctagonXIcon className="size-5 text-red-600 shrink-0 mt-0.5" />,
+        error: (
+          <ToastIconTile tone="bg-red-50 text-red-700 ring-red-600/15 dark:ring-red-400/25">
+            <XCircle className="size-4" weight="fill" aria-hidden />
+          </ToastIconTile>
+        ),
         loading: (
-          <Loader2Icon className="size-5 text-[#F26F21] animate-spin shrink-0 mt-0.5" />
+          <ToastIconTile tone="bg-brand-soft text-brand ring-brand/20">
+            <SpinnerGap className="size-4 animate-spin" aria-hidden />
+          </ToastIconTile>
         ),
       }}
       toastOptions={{
         unstyled: false,
         classNames: {
-          toast:
-            "group toast pointer-events-auto relative flex w-full items-start justify-between gap-3 overflow-visible rounded-xl border bg-white pl-4 pr-10 py-3.5 text-sm text-gray-900 shadow-[0_8px_24px_rgba(20,32,51,0.08)] font-sans transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--toast-swipe-movement-x)] data-[swipe=move]:transition-none data-[type=success]:border-emerald-200/80 data-[type=error]:border-red-200/80 data-[type=info]:border-sky-200/80 data-[type=warning]:border-amber-200/80 data-[type=loading]:border-[#F26F21]/30",
-          title:
-            "font-semibold text-gray-900 text-[13px] leading-snug tracking-tight",
-          description:
-            "mt-1 text-[12px] leading-relaxed text-gray-500",
-          actionButton:
-            "inline-flex items-center justify-center rounded-md bg-[#F26F21] px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#e05f14] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/40",
-          cancelButton:
-            "inline-flex items-center justify-center rounded-md bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-200 focus:outline-none",
-          closeButton:
-            "!absolute !right-1.5 !top-1.5 !left-auto !h-6 !w-6 !translate-x-0 !translate-y-0 !transform-none inline-flex items-center justify-center rounded-full border border-gray-200 bg-white text-gray-400 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#F26F21]/30",
-          success:
-            "!bg-emerald-50/70 !text-emerald-950 border-emerald-200/80 [&_[data-title]]:text-emerald-900 dark:!bg-emerald-950/90 dark:!text-emerald-100 dark:border-emerald-800/70 dark:[&_[data-title]]:text-emerald-100",
-          error:
-            "!bg-red-50/70 !text-red-950 border-red-200/80 [&_[data-title]]:text-red-900 dark:!bg-red-950/90 dark:!text-red-100 dark:border-red-800/70 dark:[&_[data-title]]:text-red-100",
-          info:
-            "!bg-sky-50/70 !text-sky-950 border-sky-200/80 [&_[data-title]]:text-sky-900 dark:!bg-sky-950/90 dark:!text-sky-100 dark:border-sky-800/70 dark:[&_[data-title]]:text-sky-100",
-          warning:
-            "!bg-amber-50/70 !text-amber-950 border-amber-200/80 [&_[data-title]]:text-amber-900 dark:!bg-amber-950/90 dark:!text-amber-100 dark:border-amber-800/70 dark:[&_[data-title]]:text-amber-100",
-          loading:
-            "!bg-[#fff7ed] !text-[#151c27] border-[#F26F21]/30 [&_[data-title]]:text-[#151c27] dark:!bg-[#1f1610] dark:!text-orange-100 dark:border-[#F26F21]/40 dark:[&_[data-title]]:text-orange-100",
-          content: "flex-1 min-w-0",
+          toast: TOAST_CLASS,
+          icon: '!m-0 !h-7 !w-7 shrink-0 flex items-center justify-center',
+          content: 'min-w-0 flex-1 py-0.5',
+          title: '!text-[13px] !font-semibold !leading-snug !tracking-[-0.01em] !text-ink-primary',
+          description: '!mt-0.5 !text-[12px] !leading-relaxed !text-ink-muted',
+          actionButton: ACTION_BTN_CLASS,
+          cancelButton: CANCEL_BTN_CLASS,
+          closeButton: CLOSE_BTN_CLASS,
         },
       }}
       {...props}

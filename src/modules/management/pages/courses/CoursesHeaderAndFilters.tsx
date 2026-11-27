@@ -1,10 +1,18 @@
-import { BookOpenText as BookOpenCheck, Prohibit as CircleOff, FileXls as FileSpreadsheet, GraduationCap, Stack as Layers, SpinnerGap as Loader2, Plus } from '@phosphor-icons/react';
-
+import {
+  BookOpenText as BookOpenCheck,
+  FileXls as FileSpreadsheet,
+  GraduationCap,
+  Plus,
+  Prohibit as CircleOff,
+  SpinnerGap as Loader2,
+  Stack as Layers,
+} from '@phosphor-icons/react';
+import { AdminStatTile } from '../../components/AdminStatTile';
 import { AdminTabBar } from '../../components/AdminTabBar';
 import { ExampleSheetButton, type ExampleSheet } from '../../components/ImportCheckDialog';
-import { AdminStatTile } from '../../components/AdminStatTile';
 
-const StatTile = AdminStatTile;
+const SECONDARY_ACTION =
+  'inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover';
 
 export function CoursesTopBar({
   totalItems,
@@ -58,12 +66,13 @@ export function CoursesTopBar({
         ]}
         actions={
           <>
-            <ExampleSheetButton
-              examples={examples}
-              className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover"
-            />
-            <label className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover">
-              {importing && !importOpen ? <Loader2 className="size-3.5 animate-spin text-ink-muted" /> : <FileSpreadsheet className="size-3.5 text-ink-muted" aria-hidden />}
+            <ExampleSheetButton examples={examples} className={SECONDARY_ACTION} />
+            <label className={SECONDARY_ACTION}>
+              {importing && !importOpen ? (
+                <Loader2 className="size-4 animate-spin text-ink-muted" />
+              ) : (
+                <FileSpreadsheet className="size-4 text-ink-muted" aria-hidden />
+              )}
               {importing && !importOpen ? 'Reading…' : 'Import Excel'}
               <input
                 type="file"
@@ -80,7 +89,7 @@ export function CoursesTopBar({
             <button
               type="button"
               onClick={onCreate}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
             >
               <Plus className="size-4" /> Create course
             </button>
@@ -89,30 +98,30 @@ export function CoursesTopBar({
       />
 
       <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-        <StatTile
+        <AdminStatTile
           icon={<Layers className="size-4" />}
           label="Total courses"
           value={totalItems !== undefined ? String(totalItems) : '—'}
           meta={isFetching ? 'Refreshing…' : `Page ${pageIndex + 1} / ${Math.max(1, totalPages)}`}
-          tone="slate"
+          tone="neutral"
           active={activeStatus === 'ALL'}
           onClick={onClearStatus}
         />
-        <StatTile
+        <AdminStatTile
           icon={<BookOpenCheck className="size-4" />}
           label="Active on page"
           value={String(activeOnPage)}
           meta={`${shownCount} shown`}
-          tone="emerald"
+          tone="success"
           active={activeStatus === 'ACTIVE'}
           onClick={onToggleActive}
         />
-        <StatTile
+        <AdminStatTile
           icon={<GraduationCap className="size-4" />}
           label="Credits on page"
           value={String(creditsOnPage)}
           meta="sum of credits"
-          tone="orange"
+          tone="brand"
         />
       </div>
     </div>

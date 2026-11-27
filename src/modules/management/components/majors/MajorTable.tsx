@@ -1,5 +1,8 @@
-import { PencilSimple as Pencil, Trash as Trash2 } from '@phosphor-icons/react';
+import { GraduationCap } from '@phosphor-icons/react';
 import { DataTable, type DataTableColumnDef } from '@/shared/components/common/DataTable';
+import { EmptyState } from '@/shared/components/common/EmptyState';
+import { RowActionMenu, type RowAction } from '../RowActionMenu';
+import { StatusBadge } from '../StatusBadge';
 
 export interface MajorItem {
   id: string;
@@ -15,7 +18,7 @@ interface MajorTableProps {
   data: MajorItem[];
   selectedIds: string[];
   onSelectAll: (checked: boolean) => void;
- onSelectRow: (id: string) => void;
+  onSelectRow: (id: string) => void;
   onEditMajor: (item: MajorItem) => void;
   onDeleteMajor: (item: MajorItem) => void;
   page: number;
@@ -23,11 +26,7 @@ interface MajorTableProps {
   totalPages: number;
   onPageChange: (page: number) => void;
 }
-const statusTone = (status: MajorItem['status']) => {
-  if (status === 'ACTIVE') return 'text-emerald-700';
-  if (status === 'DRAFT') return 'text-amber-700';
-  return 'text-ink-muted';
-};
+
 function createMajorColumns(
   onEditMajor: (item: MajorItem) => void,
   onDeleteMajor: (item: MajorItem) => void,
@@ -37,7 +36,7 @@ function createMajorColumns(
       accessorKey: 'code',
       header: 'Code',
       cell: ({ row }) => (
-        <span className="font-semibold text-[var(--ink-primary)] tabular-nums whitespace-nowrap">
+        <span className="font-mono font-semibold text-ink-primary tabular-nums whitespace-nowrap">
           {row.original.code}
         </span>
       ),
@@ -46,7 +45,7 @@ function createMajorColumns(
       accessorKey: 'name',
       header: 'Major name',
       cell: ({ row }) => (
-        <span className="font-medium text-[var(--ink-secondary)]">{row.original.name}</span>
+        <span className="font-medium text-ink-secondary">{row.original.name}</span>
       ),
     },
     {
@@ -54,7 +53,7 @@ function createMajorColumns(
       header: 'Credits',
       meta: { align: 'center' },
       cell: ({ row }) => (
-        <span className="font-semibold text-[var(--ink-primary)] tabular-nums whitespace-nowrap">
+        <span className="font-semibold text-ink-primary tabular-nums whitespace-nowrap">
           {row.original.totalCredits}
         </span>
       ),
@@ -66,7 +65,7 @@ function createMajorColumns(
       cell: ({ row }) => {
         const years = Number(row.original.durationYears);
         return (
-          <span className="text-[var(--ink-secondary)] tabular-nums whitespace-nowrap">
+          <span className="text-ink-secondary tabular-nums whitespace-nowrap">
             {years} {years === 1 ? 'year' : 'years'}
           </span>
         );
@@ -75,41 +74,20 @@ function createMajorColumns(
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => (
-        <span className={`inline-flex items-center text-xs font-semibold ${statusTone(row.original.status)}`}>
-          {row.original.status === 'ACTIVE'
-            ? 'Active'
-            : row.original.status === 'DRAFT'
-              ? 'Draft'
-              : 'Inactive'}
-        </span>
-      ),
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
     },
     {
       id: 'actions',
       header: 'Actions',
       enableSorting: false,
       meta: { align: 'right' },
-      cell: ({ row }) => (
-        <div className="flex items-center justify-end gap-1">
-          <button
-            onClick={() => onEditMajor(row.original)}
-            title={`Edit ${row.original.code}`}
-            aria-label={`Edit ${row.original.code}`}
-            className="p-1.5 rounded-md text-ink-subtle hover:text-[var(--brand)] hover:bg-[var(--brand-soft)] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]"
-          >
-            <Pencil className="size-4" />
-          </button>
-          <button
-            onClick={() => onDeleteMajor(row.original)}
-            title={`Delete ${row.original.code}`}
-            aria-label={`Delete ${row.original.code}`}
-            className="p-1.5 rounded-md text-ink-subtle hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
-          >
-            <Trash2 className="size-4" />
-          </button>
-        </div>
-      ),
+      cell: ({ row }) => {
+        const actions: RowAction[] = [
+          { label: 'Edit details', onSelect: () => onEditMajor(row.original) },
+          { label: 'Delete', onSelect: () => onDeleteMajor(row.original), danger: true },
+        ];
+        return <RowActionMenu label={`Actions for ${row.original.code}`} actions={actions} />;
+      },
     },
   ];
 }
@@ -127,15 +105,12 @@ export default function MajorTable({
 }: MajorTableProps) {
   if (data.length === 0) {
     return (
-      <div className="px-6 py-14 text-center">
-        <div className="mx-auto w-11 h-11 rounded-lg bg-line-soft flex items-center justify-center text-ink-subtle font-bold text-lg">
-          M
-        </div>
-        <p className="mt-4 text-sm font-semibold text-[var(--ink-primary)]">No majors found</p>
-        <p className="mt-1 text-[13px] text-[var(--ink-muted)]">
-          Try a different search, or create a new major to get started.
-        </p>
-      </div>
+      <EmptyState
+        className="h-full justify-center"
+        icon={<GraduationCap aria-hidden />}
+        title="No majors found"
+        description="Try a different search, or use Create major above to get started."
+      />
     );
   }
 

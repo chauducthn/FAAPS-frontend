@@ -22,36 +22,36 @@ export function CurriculumManagerTopBar(props: {
   const stats = (
     <div className="grid flex-1 grid-cols-2 gap-2.5 lg:grid-cols-4">
       <StatItem
-        icon={<Layers className="size-4" />}
+        icon={<Layers className="size-[18px]" />}
         label={`Total ${plural}`}
         value={totalElements !== undefined ? String(totalElements) : '—'}
-        tone="slate"
+        tone="neutral"
         active={!activeStatus}
         onClick={onClearAll}
       />
       <StatItem
-        icon={<BookOpenCheck className="size-4" />}
+        icon={<BookOpenCheck className="size-[18px]" />}
         label="Active"
         value={String(activeOnPage)}
         sub={`of ${shownCount}`}
-        tone="emerald"
+        tone="success"
         active={activeStatus === 'ACTIVE'}
         onClick={() => onSelectStatus(activeStatus === 'ACTIVE' ? '' : 'ACTIVE')}
       />
       <StatItem
-        icon={<CircleOff className="size-4" />}
+        icon={<CircleOff className="size-[18px]" />}
         label="Inactive"
         value={String(inactiveOnPage)}
-        tone="amber"
+        tone="warning"
         active={activeStatus === 'INACTIVE'}
         onClick={() => onSelectStatus(activeStatus === 'INACTIVE' ? '' : 'INACTIVE')}
       />
       <StatItem
-        icon={<GraduationCap className="size-4" />}
+        icon={<GraduationCap className="size-[18px]" />}
         label="Credits"
         value={String(creditsOnPage)}
         sub="shown"
-        tone="orange"
+        tone="brand"
       />
     </div>
   );
@@ -72,16 +72,18 @@ export function CurriculumManagerTopBar(props: {
           />
           <ExampleSheetButton
             examples={cohortExamples}
-            className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover"
+            className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover"
           />
           <button
             type="button"
             disabled={isImportingCohort}
             onClick={() => fileRef.current?.click()}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover disabled:opacity-50"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover disabled:opacity-50"
           >
-            {isImportingCohort ? <Loader2 className="size-3.5 animate-spin text-ink-muted" /> : <FileSpreadsheet className="size-3.5 text-ink-muted" aria-hidden />}
-            {isImportingCohort ? 'Importing…' : 'Import Excel'}
+            {isImportingCohort
+              ? <Loader2 className="size-4 animate-spin text-ink-muted" aria-hidden />
+              : <FileSpreadsheet className="size-4 text-ink-muted" aria-hidden />}
+            Import Excel
           </button>
         </>
       )}
@@ -90,7 +92,7 @@ export function CurriculumManagerTopBar(props: {
           type="button"
           disabled={disableImport}
           onClick={onOpenImport}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white px-3.5 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-line bg-white px-3.5 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
         >
           <FileSpreadsheet className="size-4 text-ink-muted" aria-hidden /> Import Excel
         </button>
@@ -98,7 +100,7 @@ export function CurriculumManagerTopBar(props: {
       <button
         type="button"
         onClick={onOpenCreate}
-        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50"
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
       >
         <Plus className="size-4" aria-hidden /> {createLabel}
       </button>

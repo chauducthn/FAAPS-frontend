@@ -9,7 +9,7 @@ import type { AiConfig, AiPreset } from '../../ai/types/ai-config';
 import type { CreateAiConfigFormValues } from '../../ai/validations/ai-config.schema';
 import { createAiConfigColumns } from './ai/aiConfigColumns';
 import { AiConfigFilterBar, AiConfigTopBar } from './ai/AiConfigHeader';
-import { AiConfigEmptyState, AiConfigErrorState, PresetsPanel } from './ai/AiConfigPanels';
+import { AiConfigEmptyState, AiConfigErrorState, PresetsModal } from './ai/AiConfigPanels';
 
 const PAGE_SIZE = 10;
 type FormMode = 'create' | 'edit' | 'view';
@@ -25,6 +25,7 @@ export default function AiConfigPage() {
   const [formMode, setFormMode] = useState<FormMode>('create');
   const [selected, setSelected] = useState<AiConfig | null>(null);
   const [selectedPreset, setSelectedPreset] = useState<AiPreset | null>(null);
+  const [presetsOpen, setPresetsOpen] = useState(false);
   const [deleting, setDeleting] = useState<AiConfig | null>(null);
 
   const params = useMemo(
@@ -105,10 +106,12 @@ export default function AiConfigPage() {
         onToggleActive={() => resetPage(setStatus)(status === 'ACTIVE' ? 'ALL' : 'ACTIVE')}
         onToggleChat={() => resetPage(setPurpose)(purpose === 'CHAT' ? 'ALL' : 'CHAT')}
         onSelectPurpose={resetPage(setPurpose)}
+        presetCount={(presetsQuery.data ?? []).length}
+        onOpenPresets={() => setPresetsOpen(true)}
         onCreate={() => openCreate()}
       />
 
-      <div className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
         <AiConfigFilterBar
           search={search}
           provider={provider}
@@ -136,6 +139,7 @@ export default function AiConfigPage() {
               )}
               <DataTable
                 className="h-full" manual columns={columns} data={items} searchKey="name" showSearch={false}
+                showPageSizeSelect={false} showPageJump
                 getRowId={(row) => row.id} isLoading={listQuery.isLoading} totalRowCount={totalItems}
                 pagination={pagination} onPaginationChange={setPagination}
                 emptyText={hasFilters ? 'No configurations match your filters.' : 'No configurations yet.'}
@@ -143,52 +147,37 @@ export default function AiConfigPage() {
             </div>
           )}
         </div>
-      </div>
+      </section>
       <style>{`@keyframes slide { 0% { transform: translateX(-100%);} 100% { transform: translateX(300%);} }`}</style>
 
-      <PresetsPanel presets={presetsQuery.data ?? []} isLoading={presetsQuery.isLoading} onSelect={openCreate} />
+      <PresetsModal
+        open={presetsOpen} presets={presetsQuery.data ?? []} isLoading={presetsQuery.isLoading}
+        onClose={() => setPresetsOpen(false)}
+        onSelect={(preset) => { setPresetsOpen(false); openCreate(preset); }}
+      />
 
       <AiConfigForm
-        open={formOpen}
-        mode={formMode}
-        initial={selected}
-        preset={selectedPreset}
-        isLoading={isCreating || isUpdating}
+        open={formOpen} mode={formMode} initial={selected} preset={selectedPreset} isLoading={isCreating || isUpdating}
         onClose={() => setFormOpen(false)}
         onSubmit={async (values: CreateAiConfigFormValues, apiKey?: string) => {
           try {
-            const saved =
-              formMode === 'edit' && selected
-                ? await update({ id: selected.id, body: values })
-                : await create(values);
-            if (apiKey) {
-              await setSecret({ id: saved.id, body: { apiKey } });
-            }
+            const saved = formMode === 'edit' && selected
+              ? await update({ id: selected.id, body: values })
+              : await create(values);
+            if (apiKey) await setSecret({ id: saved.id, body: { apiKey } });
             setFormOpen(false);
             setSelectedPreset(null);
-          } catch {
-            return;
-          }
+          } catch { return; }
         }}
       />
 
       <ConfirmDialog
-        open={!!deleting}
-        title="Delete AI configuration?"
+        open={!!deleting} title="Delete AI configuration?" confirmLabel="Delete" destructive isLoading={isRemoving}
         message={deleting ? `Delete ${deleting.name}? AI features that rely on it will stop working.` : ''}
-        confirmLabel="Delete"
-        destructive
-        isLoading={isRemoving}
         onCancel={() => setDeleting(null)}
         onConfirm={async () => {
           if (!deleting) return;
-          try {
-            await remove(deleting.id);
-          } catch {
-            setDeleting(null);
-            return;
-          }
-          setDeleting(null);
+          try { await remove(deleting.id); } finally { setDeleting(null); }
         }}
       />
     </div>

@@ -1,4 +1,13 @@
-import { CaretDown as ChevronDown, WarningCircle as CircleAlert, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
+import {
+  CaretDown as ChevronDown,
+  WarningCircle as CircleAlert,
+  MagnifyingGlassMinus,
+  ArrowCounterClockwise as RotateCcw,
+  MagnifyingGlass as Search,
+  Users,
+  X,
+} from '@phosphor-icons/react';
+import { EmptyState } from '@/shared/components/common/EmptyState';
 import type { AdminUserRole, AdminUserStatus } from '../../types/admin';
 import { USER_ROLE_LABEL, USER_STATUSES } from './userAccountColumns';
 
@@ -171,5 +180,20 @@ export function UserAccountsErrorState({ onRetry }: { onRetry: () => void }) {
         <RotateCcw className="size-3.5" /> Retry
       </button>
     </div>
+  );
+}
+
+export function UserAccountsEmptyState({ hasFilters }: { hasFilters: boolean }) {
+  return (
+    <EmptyState
+      className="admin-fill justify-center"
+      icon={hasFilters ? <MagnifyingGlassMinus aria-hidden /> : <Users aria-hidden />}
+      title={hasFilters ? 'No accounts match your filters' : 'No accounts yet'}
+      description={
+        hasFilters
+          ? 'Try a different keyword, or clear the role / status filters to see all accounts.'
+          : 'Use Add account or Import above to start adding students and advisors.'
+      }
+    />
   );
 }

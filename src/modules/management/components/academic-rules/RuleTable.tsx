@@ -7,9 +7,10 @@ import { useMemo, type ReactNode } from 'react';
 import { ShieldCheck } from '@phosphor-icons/react';
 import { DataTable, type DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import { RowActionMenu } from '../RowActionMenu';
+import { StatusBadge } from '../StatusBadge';
 import type { PaginationState } from '@tanstack/react-table';
 import type { AcademicRule } from '../../../academic/types/academic-rule';
-import { cn } from '@/shared/lib/utils';
+import { formatRuleCondition } from './formatRuleCondition';
 
 interface Props {
   data: AcademicRule[];
@@ -28,23 +29,8 @@ interface Props {
   bulkActions?: (selectedRows: AcademicRule[]) => ReactNode;
 }
 
-const STATUS_STYLE: Record<string, string> = {
-  ACTIVE: 'text-emerald-700',
-  INACTIVE: 'text-ink-muted',
-  DRAFT: 'text-amber-700',
-};
-
 export function RuleStatusBadge({ status }: { status: string }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center text-xs font-semibold uppercase tracking-[0.02em]',
-        STATUS_STYLE[status] ?? STATUS_STYLE.INACTIVE,
-      )}
-    >
-      {status}
-    </span>
-  );
+  return <StatusBadge status={status} />;
 }
 
 /** One-line human summary of a condition JSON, e.g. `min_gpa = 5 · scope: semester_gpa`. */
@@ -57,12 +43,6 @@ export function summarizeCondition(condition: Record<string, unknown>): string {
   const rest = entries.length > 1 ? ` +${entries.length - 1}` : '';
   const value = typeof firstValue === 'object' ? JSON.stringify(firstValue) : String(firstValue);
   return `${firstKey} = ${value}${rest}`;
-}
-
-/** Formats the numeric boundary of a rule for the Condition/Grade column. */
-function formatGrade(grade: number | null): string | null {
-  if (grade === null) return null;
-  return Number.isInteger(grade) ? String(grade) : grade.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 }
 
 export default function RuleTable({
@@ -91,7 +71,7 @@ export default function RuleTable({
             type="button"
             onClick={() => onView(row.original)}
             title={`View ${row.original.ruleName}`}
-            className="block max-w-[280px] truncate text-left text-[13px] font-bold text-ink-primary transition-colors hover:text-brand"
+            className="block max-w-[280px] truncate text-left text-[13px] font-semibold text-ink-primary transition-colors hover:text-brand"
           >
             {row.original.ruleName}
           </button>
@@ -110,20 +90,17 @@ export default function RuleTable({
       {
         id: 'condition',
         accessorFn: (row) => (row.grade !== null ? String(row.grade).padStart(8, '0') : summarizeCondition(row.condition)),
-        header: 'Condition / Grade',
+        header: 'Trigger / Threshold',
         cell: ({ row }) => {
-          const grade = formatGrade(row.original.grade);
+          const { primary, secondary, tooltip } = formatRuleCondition(row.original);
           return (
-            <div className="flex min-w-0 flex-col gap-0.5">
-              <code
-                title={JSON.stringify(row.original.condition, null, 2)}
-                className="block max-w-[240px] truncate font-mono text-xs font-medium text-brand-ink"
-              >
-                {summarizeCondition(row.original.condition)}
-              </code>
-              {grade && (
-                <span className="text-xs font-semibold tabular-nums text-brand-ink">
-                  Grade {grade}
+            <div title={tooltip} className="flex min-w-0 max-w-[260px] flex-col gap-0.5">
+              <span className="truncate text-[13px] font-semibold tabular-nums text-brand-ink">
+                {primary}
+              </span>
+              {secondary && (
+                <span className="truncate text-xs text-ink-muted">
+                  {secondary}
                 </span>
               )}
             </div>
@@ -174,7 +151,7 @@ export default function RuleTable({
     <div className="relative h-full">
       {isFetching && !isLoading && (
         <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden rounded-full bg-brand-soft-strong">
-          <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-brand" />
+          <div className="h-full w-1/3 rounded-full bg-brand motion-safe:animate-[slide_1s_ease-in-out_infinite]" />
         </div>
       )}
       <DataTable

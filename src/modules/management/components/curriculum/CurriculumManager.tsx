@@ -78,7 +78,7 @@ export default function CurriculumManager({
         onOpenCreate={openCreate}
       />
 
-      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+      <section className="overflow-hidden rounded-lg border border-line bg-white shadow-2xs">
         <CurriculumManagerFilters
           kind={kind} searchPlaceholder={copy.search} search={s.search} majorId={s.majorId} version={s.version}
           startSemesterId={s.startSemesterId} status={s.status} current={s.current} majors={s.majors}
@@ -100,7 +100,7 @@ export default function CurriculumManager({
           <div className="relative flex admin-fill flex-col">
             {isFetching && (
               <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-brand-soft-strong">
-                <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-brand" />
+                <div className="h-full w-1/3 rounded-full bg-brand motion-safe:animate-[slide_1s_ease-in-out_infinite]" />
               </div>
             )}
             <CurriculumTable

@@ -1,6 +1,18 @@
-// Course detail plus prerequisite / replacement relations (add, edit, remove).
-import { BookOpenText, ChartBar, ArrowSquareOut as ExternalLink, GraduationCap, Link as Link2, Scroll as ScrollText, Stack, Target, X } from '@phosphor-icons/react';
+// Course detail modal organized into clean tabs: Overview, Syllabus, Relations, Referenced by.
+import { useEffect, useState } from 'react';
+import {
+  ArrowSquareOut as ExternalLink,
+  BookOpenText,
+  ChartBar,
+  Gauge,
+  Link as Link2,
+  Scroll as ScrollText,
+  Stack,
+  TreeStructure as ListTree,
+} from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '../../../../shared/components/ui/ModalParts';
+import { AdminTabBar } from '../AdminTabBar';
 import { StatusBadge } from '../StatusBadge';
 import { CourseWorkloadCard } from '../../../academic/components/CourseWorkloadCard';
 import type { CourseDetail, WorkloadLevel } from '../../../academic/types/course';
@@ -10,8 +22,11 @@ import {
   CourseDetailSkeleton,
   CourseReferencedBySection,
   CourseStat,
-  CourseSyllabusBlock,
+  CourseSyllabusTab,
 } from './CourseDetailSections';
+import { CourseGradingTab } from './CourseGradingTab';
+
+type DetailTab = 'overview' | 'syllabus' | 'grading' | 'relations' | 'referenced';
 
 interface Props {
   open: boolean;
@@ -27,6 +42,9 @@ interface Props {
   onRemoveRelation: (relationId: string) => Promise<unknown>;
 }
 
+const META_CHIP =
+  'inline-flex items-center gap-1 rounded-sm bg-surface-page px-2 py-0.5 text-[11px] font-medium text-ink-secondary ring-1 ring-inset ring-line';
+
 export default function CourseDetailModal({
   open,
   course,
@@ -40,11 +58,16 @@ export default function CourseDetailModal({
   onUpdateRelation,
   onRemoveRelation,
 }: Props) {
+  const [activeTab, setActiveTab] = useState<DetailTab>('overview');
+
+  useEffect(() => {
+    if (open) setActiveTab('overview');
+  }, [open, course?.id]);
+
   if (!open) return null;
 
   const prereqCount = course ? course.relations.filter((r) => r.kind === 'PREREQUISITE').length : 0;
   const replaceCount = course ? course.relations.filter((r) => r.kind === 'REPLACEMENT').length : 0;
-  const hasSyllabus = !!course && !!(course.description || course.objectives || course.learningOutcomes);
 
   return (
     <Modal open={open} onClose={onClose} title={course ? `Course detail: ${course.code}` : 'Course detail'} className="max-w-3xl">
@@ -52,146 +75,120 @@ export default function CourseDetailModal({
         <CourseDetailSkeleton onClose={onClose} />
       ) : (
         <>
-          <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-white px-6 py-5">
-            <div className="flex min-w-0 items-start gap-3.5">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
-                <BookOpenText className="size-5" />
+          <ModalHeader
+            icon={<BookOpenText aria-hidden />}
+            tone="brand"
+            title={course.name}
+            onClose={onClose}
+          >
+            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span className="rounded-sm bg-ink-primary px-2 py-0.5 font-mono text-xs font-semibold text-surface-page">
+                {course.code}
               </span>
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-md bg-gray-900 px-2 py-0.5 font-mono text-xs font-bold text-white">
-                    {course.code}
-                  </span>
-                  <StatusBadge status={course.status} />
-                  <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-semibold text-gray-600">
-                    {course.categoryCode} · {course.categoryName}
-                  </span>
-                  {course.knowledgeBlock && (
-                    <span className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700 ring-1 ring-sky-200/70">
-                      <Stack className="size-3" /> {course.knowledgeBlock}
-                    </span>
-                  )}
-                  {course.specialization && (
-                    <span className="rounded-md bg-violet-50 px-2 py-0.5 text-[11px] font-semibold text-violet-700 ring-1 ring-violet-200/70">
-                      {course.specialization}
-                    </span>
-                  )}
-                </div>
-                <h2 className="mt-1.5 text-base font-bold leading-snug text-gray-900" title={`${course.code} - ${course.name}`}>
-                  {course.name}
-                </h2>
-                {course.materialLink && (
-                  <a
-                    href={course.materialLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-[#C2410C] hover:underline"
-                  >
-                    Course materials <ExternalLink className="size-3" />
-                  </a>
-                )}
-              </div>
-            </div>
-            <button type="button" onClick={onClose} aria-label="Close" className="shrink-0 rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700">
-              <X className="size-4" />
-            </button>
-          </div>
-
-          <div className="max-h-[65vh] space-y-5 overflow-y-auto bg-gray-50/40 px-6 py-5 text-[13px]">
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-              <CourseStat label="Credits" value={String(course.credits)} accent />
-              <CourseStat label="Prerequisites" value={String(prereqCount)} />
-              <CourseStat label="Replacements" value={String(replaceCount)} />
-              <CourseStat label="In curriculums" value={String(course.usedInCurriculumCount)} />
-            </div>
-
-            <CourseWorkloadCard
-              workload={course.workload}
-              onOverride={!readOnly ? onOverrideWorkload : undefined}
-              isSaving={isSubmitting}
-            />
-
-            {hasSyllabus && (
-              <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
-                <header className="flex items-center gap-2 border-b border-gray-100 px-4 py-2.5">
-                  <ScrollText className="size-4 text-[#F26F21]" />
-                  <h3 className="text-[13px] font-bold text-gray-900">Syllabus overview</h3>
-                </header>
-                <div className="space-y-3.5 p-4">
-                  {course.description && <CourseSyllabusBlock icon={<BookOpenText className="size-3.5" />} title="Description" text={course.description} fallback="" />}
-                  {course.objectives && <CourseSyllabusBlock icon={<Target className="size-3.5" />} title="Objectives & Study Requirements" text={course.objectives} fallback="" />}
-                  {course.learningOutcomes && <CourseSyllabusBlock icon={<GraduationCap className="size-3.5" />} title="Learning outcomes (CLOs)" text={course.learningOutcomes} fallback="" />}
-                </div>
-              </section>
-            )}
-
-            {course.gradingStructure && (
-              <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
-                <header className="flex items-center gap-2 border-b border-gray-100 px-4 py-2.5">
-                  <ChartBar className="size-4 text-[#F26F21]" />
-                  <h3 className="text-[13px] font-bold text-gray-900">Grading structure &amp; pass criteria</h3>
-                </header>
-                <div className="space-y-2 p-4">
-                  {course.gradingStructure.split('\n').map((line, i) => {
-                    const trimmed = line.trim();
-                    if (!trimmed) return null;
-                    if (trimmed.toLowerCase().startsWith('pass criteria')) {
-                      return (
-                        <div key={i} className="inline-flex items-center rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                          {trimmed}
-                        </div>
-                      );
-                    }
-                    return (
-                      <p key={i} className="rounded-lg border border-gray-100 bg-gray-50/60 px-3 py-2 text-xs leading-relaxed text-gray-700">
-                        {trimmed.replace(/^•\s*/, '')}
-                      </p>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-
-            <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
-              <header className="flex items-center justify-between border-b border-gray-100 px-4 py-2.5">
-                <h3 className="flex items-center gap-2 text-[13px] font-bold text-gray-900">
-                  <Link2 className="size-4 text-[#F26F21]" /> Prerequisites &amp; replacements
-                </h3>
-                <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-semibold tabular-nums text-gray-600">
-                  {course.relations.length}
+              <StatusBadge status={course.status} />
+              <span className={META_CHIP}>
+                {course.categoryCode} · {course.categoryName}
+              </span>
+              {course.knowledgeBlock && (
+                <span className={META_CHIP}>
+                  <Stack className="size-3 text-ink-subtle" /> {course.knowledgeBlock}
                 </span>
-              </header>
-              <div className="space-y-3 p-4">
-                {!readOnly && <CourseAddRelationForm course={course} isSubmitting={isSubmitting} onAdd={onAddRelation} />}
-                <CourseRelationsTable
-                  course={course}
-                  isSubmitting={isSubmitting}
-                  onNavigate={onNavigate}
-                  onUpdate={onUpdateRelation}
-                  onRemove={onRemoveRelation}
-                  readOnly={readOnly}
-                />
-                <p className="text-[11px] leading-relaxed text-gray-400">
-                  Same group = alternatives (OR); different groups = all required (AND). Click any code to inspect that course.
-                </p>
-              </div>
-            </section>
+              )}
+              {course.specialization && <span className={META_CHIP}>{course.specialization}</span>}
+              {course.materialLink && (
+                <a
+                  href={course.materialLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-brand-ink hover:underline"
+                >
+                  Course materials <ExternalLink className="size-3" />
+                </a>
+              )}
+            </div>
+          </ModalHeader>
 
-            <CourseReferencedBySection course={course} onNavigate={onNavigate} />
+          <div className="shrink-0 border-b border-line bg-white px-6 py-2.5">
+            <AdminTabBar<DetailTab>
+              ariaLabel="Course detail sections"
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              tabs={[
+                { key: 'overview', label: 'Overview', icon: Gauge },
+                { key: 'syllabus', label: 'Syllabus', icon: ScrollText },
+                { key: 'grading', label: 'Grading', icon: ChartBar },
+                { key: 'relations', label: 'Relations', icon: Link2, count: course.relations.length },
+                { key: 'referenced', label: 'Referenced by', icon: ListTree, count: course.referencedBy.length },
+              ]}
+            />
           </div>
 
-          <div className="flex items-center justify-between gap-3 border-t border-gray-100 bg-white px-6 py-3.5">
-            <p className="text-xs text-gray-400">
-              Updated {new Date(course.updatedAt).toLocaleDateString()} · Created {new Date(course.createdAt).toLocaleDateString()}
-            </p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-semibold text-gray-700 transition-colors hover:bg-gray-50"
-            >
+          <ModalBody className="h-[560px] max-h-[68vh] flex-none space-y-4 bg-surface-page/50 text-[13px]">
+            {activeTab === 'overview' && (
+              <>
+                <div className="grid grid-cols-2 divide-y divide-line overflow-hidden rounded-lg border border-line bg-white sm:grid-cols-4 sm:divide-x sm:divide-y-0">
+                  <CourseStat label="Credits" value={String(course.credits)} accent />
+                  <CourseStat label="Prerequisites" value={String(prereqCount)} />
+                  <CourseStat label="Replacements" value={String(replaceCount)} />
+                  <CourseStat label="In curriculums" value={String(course.usedInCurriculumCount)} />
+                </div>
+
+                <CourseWorkloadCard
+                  workload={course.workload}
+                  onOverride={!readOnly ? onOverrideWorkload : undefined}
+                  isSaving={isSubmitting}
+                />
+              </>
+            )}
+
+            {activeTab === 'syllabus' && <CourseSyllabusTab course={course} />}
+
+            {activeTab === 'grading' && <CourseGradingTab course={course} />}
+
+            {activeTab === 'relations' && (
+              <section className="overflow-hidden rounded-lg border border-line bg-white">
+                <header className="flex items-center justify-between border-b border-line-soft px-4 py-2.5">
+                  <h3 className="flex items-center gap-2 text-[13px] font-semibold text-ink-primary">
+                    <Link2 className="size-4 text-brand" /> Prerequisites &amp; replacements
+                  </h3>
+                  <span className="rounded-sm bg-line-soft px-2 py-0.5 text-[11px] font-semibold tabular-nums text-ink-muted">
+                    {course.relations.length}
+                  </span>
+                </header>
+                <div className="space-y-3 p-4">
+                  {!readOnly && <CourseAddRelationForm course={course} isSubmitting={isSubmitting} onAdd={onAddRelation} />}
+                  <CourseRelationsTable
+                    course={course}
+                    isSubmitting={isSubmitting}
+                    onNavigate={onNavigate}
+                    onUpdate={onUpdateRelation}
+                    onRemove={onRemoveRelation}
+                    readOnly={readOnly}
+                  />
+                  <p className="text-[11px] leading-relaxed text-ink-subtle">
+                    Same group = alternatives (OR); different groups = all required (AND). Click any code to inspect that course.
+                  </p>
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'referenced' && (
+              <CourseReferencedBySection course={course} onNavigate={onNavigate} />
+            )}
+          </ModalBody>
+
+          <ModalFooter
+            start={
+              <span className="text-[11px] tabular-nums text-ink-subtle">
+                Updated {new Date(course.updatedAt).toLocaleDateString()} · Created{' '}
+                {new Date(course.createdAt).toLocaleDateString()}
+              </span>
+            }
+          >
+            <button type="button" onClick={onClose} className={modalButtonClass('secondary')}>
               Close
             </button>
-          </div>
+          </ModalFooter>
         </>
       )}
     </Modal>

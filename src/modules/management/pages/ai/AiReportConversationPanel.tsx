@@ -1,8 +1,9 @@
 import type { RefObject } from 'react';
 import { ArrowLeft, ArrowRight } from '@phosphor-icons/react';
+import { cn } from '@/shared/lib/utils';
+import { InlineAlert } from '../../../../shared/components/ui/InlineAlert';
 import { formatDateTime } from '../../components/AiReportBits';
 import type { AiReportDetail } from '../../types/admin';
-import { cn } from '@/shared/lib/utils';
 
 const MAX_NOTE = 2000;
 const isStudentSender = (sender: string) => /student|user/i.test(sender);
@@ -25,15 +26,17 @@ export function AiReportConversationPanel({
   onNext: () => void;
 }) {
   return (
-    <section className="flex min-h-[420px] flex-col rounded-lg bg-white p-5 shadow-sm">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-ink-primary">Related AI Conversation</h2>
-        <p className="truncate pl-3 text-xs text-ink-muted" title={report.conversationId}>
+    <section className="flex min-h-[420px] flex-col rounded-lg border border-line bg-white p-4 shadow-2xs sm:p-5">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+          Related AI Conversation
+        </h2>
+        <p className="truncate font-mono text-xs text-ink-muted" title={report.conversationId}>
           Session: {report.conversationId.slice(0, 8)}
         </p>
       </div>
       <div ref={listRef} className="relative mt-3 flex max-h-[560px] flex-1 flex-col gap-3 overflow-y-auto pr-1">
-        {messages.length === 0 && <p className="py-8 text-center text-sm text-ink-muted">No messages in this conversation.</p>}
+        {messages.length === 0 && <p className="py-8 text-center text-xs text-ink-muted">No messages in this conversation.</p>}
         {messages.map((m) => {
           const mine = isStudentSender(m.sender);
           const index = flagged.findIndex((f) => f.id === m.id);
@@ -42,18 +45,18 @@ export function AiReportConversationPanel({
             <div key={m.id} data-message-id={m.id} className="flex flex-col gap-1">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-semibold text-ink-primary">{mine ? report.studentName : 'FAAPS Academic Bot'}</span>
-                <span className="text-ink-muted">{formatDateTime(m.createdAt)}</span>
+                <span className="tabular-nums text-ink-muted">{formatDateTime(m.createdAt)}</span>
               </div>
               <div
                 className={cn(
-                  'rounded-lg px-3 py-2 text-sm whitespace-pre-wrap',
+                  'rounded-md px-3 py-2 text-[13px] leading-relaxed whitespace-pre-wrap',
                   mine ? 'bg-surface-page text-ink-primary' : 'border border-line text-ink-primary',
-                  m.reported && 'border-[#fed7aa] bg-brand-soft',
-                  isSelected && 'border-2 border-brand',
+                  m.reported && 'border-brand/30 bg-brand-soft',
+                  isSelected && 'border-brand ring-1 ring-brand',
                 )}
               >
                 {m.reported && (
-                  <span className="mb-1 block text-[11px] font-bold uppercase text-[#b45309]">
+                  <span className="mb-1 block text-[11px] font-semibold uppercase tracking-[0.06em] text-brand-ink">
                     Reported {index + 1}
                     {isSelected ? ' · selected' : ''}
                   </span>
@@ -64,8 +67,8 @@ export function AiReportConversationPanel({
           );
         })}
       </div>
-      <div className="mt-3 flex items-center justify-between border-t border-line pt-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-ink-muted">
+      <div className="mt-3 flex items-center justify-between border-t border-line-soft pt-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] tabular-nums text-ink-subtle">
           Reported response {flagged.length === 0 ? 0 : selected + 1} of {flagged.length}
         </p>
         <div className="flex gap-2">
@@ -73,7 +76,7 @@ export function AiReportConversationPanel({
             type="button"
             disabled={selected === 0}
             onClick={onPrev}
-            className="flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-sm font-semibold text-ink-muted hover:bg-surface-hover disabled:opacity-40"
+            className="inline-flex h-8 items-center gap-1 rounded-md border border-line bg-white px-2.5 text-xs font-semibold text-ink-secondary transition-colors hover:bg-surface-hover disabled:opacity-40"
           >
             <ArrowLeft className="size-3.5" /> Previous
           </button>
@@ -81,7 +84,7 @@ export function AiReportConversationPanel({
             type="button"
             disabled={selected + 1 >= flagged.length}
             onClick={onNext}
-            className="flex items-center gap-1 rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-40"
+            className="inline-flex h-8 items-center gap-1 rounded-md bg-brand px-2.5 text-xs font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-40"
           >
             Next <ArrowRight className="size-3.5" />
           </button>
@@ -105,14 +108,14 @@ export function ResolutionSection({
   onNoteChange: (value: string) => void;
 }) {
   return (
-    <section className="rounded-lg bg-white p-5 shadow-sm sm:p-6">
+    <section className="rounded-lg border border-line bg-white p-4 shadow-2xs sm:p-5">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-ink-primary">4. Resolution note</h2>
-        {pending && <span className="text-xs font-semibold text-[#b91c1c]">* Required</span>}
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-subtle">Resolution note</h2>
+        {pending && <span className="text-xs font-medium text-red-600">* Required</span>}
       </div>
       {pending ? (
         <>
-          <label className="mt-3 block text-[13px] text-ink-muted" htmlFor="resolution-note">
+          <label className="mt-2.5 block text-[13px] font-medium text-ink-secondary" htmlFor="resolution-note">
             Root cause &amp; corrective action log
           </label>
           <textarea
@@ -120,29 +123,31 @@ export function ResolutionSection({
             value={note}
             onChange={(e) => onNoteChange(e.target.value)}
             maxLength={MAX_NOTE}
-            rows={5}
+            rows={4}
             placeholder="Describe what was wrong and what you changed..."
-            className="mt-2 w-full rounded-lg border border-line bg-line-soft/40 p-3 text-sm text-ink-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            className="mt-1.5 w-full rounded-md border border-line bg-white p-3 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
           />
-          <p className="mt-1 text-right text-xs text-[#98a2b3]">
+          <p className="mt-1 text-right text-[11px] tabular-nums text-ink-subtle">
             {note.length}/{MAX_NOTE}
           </p>
         </>
       ) : (
-        <div className="mt-3 flex flex-col gap-3">
-          <p className="text-[13px] text-ink-muted">
+        <div className="mt-2.5 flex flex-col gap-2.5">
+          <p className="text-xs text-ink-muted">
             This report was {report.status === 'RESOLVED' ? 'resolved' : 'dismissed'}
             {report.resolvedAt ? ` on ${formatDateTime(report.resolvedAt)}` : ''}.
           </p>
-          <p className="whitespace-pre-wrap rounded-lg bg-surface-page p-3 text-sm text-ink-primary">
+          <p className="whitespace-pre-wrap rounded-md border border-line-soft bg-surface-page p-3 text-[13px] text-ink-primary">
             {report.resolutionNote || 'No resolution note.'}
           </p>
         </div>
       )}
       {error && (
-        <p role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
-          {error}
-        </p>
+        <div className="mt-3">
+          <InlineAlert tone="error" role="alert">
+            <span className="text-xs">{error}</span>
+          </InlineAlert>
+        </div>
       )}
     </section>
   );
