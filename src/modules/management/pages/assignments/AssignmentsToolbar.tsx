@@ -3,6 +3,7 @@ import type { AssignmentAdvisor, SummaryCohort } from '../../types/admin';
 import { cn } from '@/shared/lib/utils';
 
 export type AssignmentTab = 'advisors' | 'assigned' | 'unassigned';
+export const UNASSIGNED_FILTER = '__NONE__';
 
 export const ASSIGNMENT_TABS: { key: AssignmentTab; label: string; icon: typeof Users }[] = [
   { key: 'advisors', label: 'Advisors', icon: Users },
@@ -140,6 +141,7 @@ export function AssignmentsFilterBar(props: {
       <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[144px]">
         <select value={majorFilter} onChange={(e) => onMajorChange(e.target.value)} aria-label="Filter by major" className={selectClass}>
           <option value="">All majors</option>
+          {tab === 'advisors' && <option value={UNASSIGNED_FILTER}>No major</option>}
           {majors.map((m) => (
             <option key={m} value={m}>{m}</option>
           ))}
@@ -150,6 +152,7 @@ export function AssignmentsFilterBar(props: {
       <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[164px]">
         <select value={cohortFilter} onChange={(e) => onCohortChange(e.target.value)} aria-label="Filter by cohort" className={selectClass}>
           <option value="">All cohorts</option>
+          {tab === 'advisors' && <option value={UNASSIGNED_FILTER}>No cohort</option>}
           {(majorFilter ? advisorCohortOptions : cohorts).map((c) => {
             const countSuffix =
               tab === 'unassigned' ? ` (${c.unassigned})` : tab === 'assigned' ? ` (${c.assigned})` : '';

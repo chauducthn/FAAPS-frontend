@@ -15,7 +15,7 @@ import type { SummaryCohort, UnassignedStudent } from '../../types/admin';
 import type { AdvisoryLimitTarget } from '../../components/AdvisoryLimitModal';
 import type { HistoryStudentTarget } from '../../components/StudentHistoryPanel';
 import type { UnassignAllTarget } from '../../components/UnassignAllModal';
-import { ASSIGNMENT_TABS, type AssignmentTab } from './AssignmentsToolbar';
+import { ASSIGNMENT_TABS, UNASSIGNED_FILTER, type AssignmentTab } from './AssignmentsToolbar';
 import type { AdvisorRowItem } from './AssignmentsTables';
 
 export const OVERVIEW_PAGE_SIZE = 10;
@@ -57,11 +57,14 @@ export function useAssignmentsOverviewState() {
   const autoAssign = useAutoAssignStudents();
   const debouncedSearch = useDebounce(search.trim());
 
+  const realCohortFilter = cohortFilter && cohortFilter !== UNASSIGNED_FILTER ? cohortFilter : undefined;
+  const realMajorFilter = majorFilter && majorFilter !== UNASSIGNED_FILTER ? majorFilter : undefined;
+
   const assigned = useAssignedStudents(
     {
       advisorId: advisorFilter || undefined,
-      cohortId: cohortFilter || undefined,
-      majorCode: majorFilter || undefined,
+      cohortId: realCohortFilter,
+      majorCode: realMajorFilter,
       search: debouncedSearch || undefined,
       page,
       size: OVERVIEW_PAGE_SIZE,
@@ -71,7 +74,7 @@ export function useAssignmentsOverviewState() {
 
   const unassigned = useUnassignedStudents({
     search: tab === 'unassigned' ? debouncedSearch || undefined : undefined,
-    cohortId: tab === 'unassigned' ? cohortFilter || undefined : undefined,
+    cohortId: tab === 'unassigned' ? realCohortFilter : undefined,
     hasPendingRequest: pendingOnly ? true : undefined,
     page: tab === 'unassigned' ? page : 0,
     size: OVERVIEW_PAGE_SIZE,
@@ -101,7 +104,8 @@ export function useAssignmentsOverviewState() {
   };
 
   const majors = useMemo(() => [...new Set(cohorts.map((c) => c.majorCode))].sort(), [cohorts]);
-  const advisorCohortOptions = majorFilter ? cohorts.filter((c) => c.majorCode === majorFilter) : cohorts;
+  const advisorCohortOptions =
+    majorFilter === UNASSIGNED_FILTER ? [] : majorFilter ? cohorts.filter((c) => c.majorCode === majorFilter) : cohorts;
 
   const advisorList = useMemo(() => {
     const map = new Map<string, AdvisorRowItem>();
@@ -112,12 +116,18 @@ export function useAssignmentsOverviewState() {
       }
       map.set(r.advisorId, item);
     });
-    return [...map.values()].filter(
-      (a) =>
-        (a.name.toLowerCase().includes(term) || a.email.toLowerCase().includes(term)) &&
-        (!majorFilter || a.chips.some((c) => c.majorCode === majorFilter)) &&
-        (!cohortFilter || a.chips.some((c) => c.key === cohortFilter)),
-    );
+    return [...map.values()].filter((a) => {
+      const matchesTerm = a.name.toLowerCase().includes(term) || a.email.toLowerCase().includes(term);
+      const matchesMajor =
+        !majorFilter ||
+        (majorFilter === UNASSIGNED_FILTER
+          ? a.chips.length === 0 || a.chips.every((c) => !c.majorCode)
+          : a.chips.some((c) => c.majorCode === majorFilter));
+      const matchesCohort =
+        !cohortFilter ||
+        (cohortFilter === UNASSIGNED_FILTER ? a.chips.length === 0 : a.chips.some((c) => c.key === cohortFilter));
+      return matchesTerm && matchesMajor && matchesCohort;
+    });
   }, [advisorRows.data, term, majorFilter, cohortFilter]);
 
   const poolAdvisorsByCohort = useMemo(() => {
