@@ -35,11 +35,11 @@ export function AppointmentDetailModal({ appointmentId, onClose }: AppointmentDe
   return (
     <Modal open={!!appointmentId} onClose={onClose} title="Appointment Details" className="max-w-[620px]">
       {isLoading || !a ? (
-        <div className="p-8 text-center text-sm text-gray-500">
+        <div className="p-8 text-center text-sm text-ink-muted">
           {isError ? (
             <>
               Could not load this appointment.{' '}
-              <button type="button" onClick={() => refetch()} className="font-semibold text-[#F26F21] hover:underline">
+              <button type="button" onClick={() => refetch()} className="font-semibold text-brand hover:underline">
                 Retry
               </button>
             </>
@@ -49,46 +49,46 @@ export function AppointmentDetailModal({ appointmentId, onClose }: AppointmentDe
         </div>
       ) : (
         <>
-          <div className="flex items-start justify-between gap-4 border-b border-gray-100 p-6">
+          <div className="flex items-start justify-between gap-4 border-b border-line-soft p-6">
             <div className="min-w-0">
-              <h2 className="text-lg font-bold text-gray-900">Appointment Details</h2>
-              <p className="mt-0.5 break-all font-mono text-xs text-gray-400">{a.id}</p>
+              <h2 className="text-lg font-bold text-ink-primary">Appointment Details</h2>
+              <p className="mt-0.5 break-all font-mono text-xs text-ink-subtle">{a.id}</p>
             </div>
             <AppointmentStatusBadge status={a.status} />
           </div>
 
           <div className="flex flex-col gap-4 overflow-y-auto p-6">
-            <div className="flex items-center gap-2 rounded-xl bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900">
-              <CalendarDays className="size-4 shrink-0 text-[#F26F21]" />
+            <div className="flex items-center gap-2 rounded-lg bg-surface-page px-4 py-3 text-sm font-medium text-ink-primary">
+              <CalendarDays className="size-4 shrink-0 text-brand" />
               {formatSlot(a)}
-              {minutes !== null && <span className="text-gray-500">({minutes} min)</span>}
+              {minutes !== null && <span className="text-ink-muted">({minutes} min)</span>}
             </div>
 
-            <div className="grid gap-4 rounded-xl border border-gray-200/80 p-4 sm:grid-cols-2">
+            <div className="grid gap-4 rounded-lg border border-line/80 p-4 sm:grid-cols-2">
               <div>
-                <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                <p className="flex items-center gap-1.5 text-xs font-semibold text-ink-muted">
                   <User className="size-3.5" /> Student
                 </p>
-                <p className="mt-1.5 text-[15px] font-semibold text-gray-900">{a.studentName ?? '—'}</p>
+                <p className="mt-1.5 text-[15px] font-semibold text-ink-primary">{a.studentName ?? '—'}</p>
               </div>
               <div>
-                <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+                <p className="flex items-center gap-1.5 text-xs font-semibold text-ink-muted">
                   <Briefcase className="size-3.5" /> Advisor
                 </p>
-                <p className="mt-1.5 text-[15px] font-semibold text-gray-900">{a.advisorName ?? '—'}</p>
+                <p className="mt-1.5 text-[15px] font-semibold text-ink-primary">{a.advisorName ?? '—'}</p>
               </div>
             </div>
 
             <div>
-              <p className="flex items-center gap-1.5 text-xs font-semibold text-gray-500">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-ink-muted">
                 <MapPin className="size-3.5" /> Location
               </p>
-              <p className="mt-1.5 rounded-xl bg-gray-50 px-4 py-2.5 text-sm text-gray-900">{a.location || '—'}</p>
+              <p className="mt-1.5 rounded-lg bg-surface-page px-4 py-2.5 text-sm text-ink-primary">{a.location || '—'}</p>
             </div>
 
             <div>
-              <p className="text-xs font-semibold text-gray-500">Consultation topic / agenda</p>
-              <p className="mt-1.5 whitespace-pre-wrap rounded-xl bg-gray-50 px-4 py-2.5 text-sm text-gray-900">
+              <p className="text-xs font-semibold text-ink-muted">Consultation topic / agenda</p>
+              <p className="mt-1.5 whitespace-pre-wrap rounded-lg bg-surface-page px-4 py-2.5 text-sm text-ink-primary">
                 {a.agenda || 'No agenda provided.'}
               </p>
             </div>
@@ -98,7 +98,7 @@ export function AppointmentDetailModal({ appointmentId, onClose }: AppointmentDe
                 <p className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
                   <FileText className="size-3.5" /> Consultation summary
                 </p>
-                <p className="mt-1.5 whitespace-pre-wrap rounded-xl border border-emerald-100 bg-emerald-50/50 px-4 py-2.5 text-sm text-gray-900">
+                <p className="mt-1.5 whitespace-pre-wrap rounded-lg border border-emerald-100 bg-emerald-50/50 px-4 py-2.5 text-sm text-ink-primary">
                   {a.consultationSummary}
                 </p>
               </div>
@@ -106,21 +106,25 @@ export function AppointmentDetailModal({ appointmentId, onClose }: AppointmentDe
 
             {a.decisionNote && (
               <div>
-                <p className="text-xs font-semibold text-gray-500">Decision / status note</p>
-                <p className="mt-1.5 whitespace-pre-wrap rounded-xl border border-gray-200/80 bg-gray-50 px-4 py-2.5 text-sm text-gray-700">
+                <p className="text-xs font-semibold text-ink-muted">Decision / status note</p>
+                <p
+                  className={
+                    'mt-1.5 whitespace-pre-wrap rounded-lg border border-line/80 ' +
+                    'bg-surface-page px-4 py-2.5 text-sm text-ink-secondary'
+                  }>
                   {a.decisionNote}
                 </p>
               </div>
             )}
 
             {canAct && (
-              <div className="rounded-xl border border-gray-200/80 bg-gray-50/60 p-4">
-                <p className="text-xs font-bold text-gray-700">Admin status override</p>
+              <div className="rounded-lg border border-line/80 bg-surface-page/60 p-4">
+                <p className="text-xs font-bold text-ink-secondary">Admin status override</p>
                 <input
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Optional note (reason or outcome)…"
-                  className="mt-2 h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+                  className="mt-2 h-9 w-full rounded-lg border border-line bg-white px-3 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
                 />
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
@@ -153,8 +157,8 @@ export function AppointmentDetailModal({ appointmentId, onClose }: AppointmentDe
             )}
           </div>
 
-          <div className="flex items-center justify-end border-t border-gray-100 px-6 py-4">
-            <button type="button" onClick={onClose} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-semibold text-gray-700 hover:bg-gray-50">
+          <div className="flex items-center justify-end border-t border-line-soft px-6 py-4">
+            <button type="button" onClick={onClose} className="h-9 rounded-lg border border-line bg-white px-4 text-[13px] font-semibold text-ink-secondary hover:bg-surface-hover">
               Close
             </button>
           </div>

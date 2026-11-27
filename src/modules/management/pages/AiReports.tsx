@@ -91,7 +91,7 @@ export default function AiReports() {
         />
       </div>
 
-      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
         <AiReportsFilterBar
           search={search}
           status={status}
@@ -108,7 +108,7 @@ export default function AiReports() {
           }}
         />
 
-        <div className="flex h-[calc(100vh-295px)] min-h-[460px] flex-col">
+        <div className="flex admin-fill flex-col">
           <div className="min-h-0 flex-1 overflow-auto">
             <AiReportsTable
               items={items}

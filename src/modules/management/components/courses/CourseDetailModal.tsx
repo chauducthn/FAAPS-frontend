@@ -2,7 +2,8 @@
 import { BookOpenText, ChartBar, ArrowSquareOut as ExternalLink, GraduationCap, Link as Link2, Scroll as ScrollText, Stack, Target, X } from '@phosphor-icons/react';
 import { Modal } from '../../../../shared/components/ui/Modal';
 import { StatusBadge } from '../StatusBadge';
-import type { CourseDetail } from '../../../academic/types/course';
+import { CourseWorkloadCard } from '../../../academic/components/CourseWorkloadCard';
+import type { CourseDetail, WorkloadLevel } from '../../../academic/types/course';
 import { CourseAddRelationForm, type NewCourseRelation } from './CourseAddRelationForm';
 import { CourseRelationsTable } from './CourseRelationsTable';
 import {
@@ -20,6 +21,7 @@ interface Props {
   onClose: () => void;
   onNavigate?: (courseId: string) => void;
   readOnly?: boolean;
+  onOverrideWorkload?: (level: WorkloadLevel | 'AUTO') => Promise<unknown>;
   onAddRelation: (rel: NewCourseRelation) => Promise<unknown>;
   onUpdateRelation: (relationId: string, body: { groupNo: number; minimumScore: number | null }) => Promise<unknown>;
   onRemoveRelation: (relationId: string) => Promise<unknown>;
@@ -33,6 +35,7 @@ export default function CourseDetailModal({
   onClose,
   onNavigate,
   readOnly = false,
+  onOverrideWorkload,
   onAddRelation,
   onUpdateRelation,
   onRemoveRelation,
@@ -101,6 +104,12 @@ export default function CourseDetailModal({
               <CourseStat label="Replacements" value={String(replaceCount)} />
               <CourseStat label="In curriculums" value={String(course.usedInCurriculumCount)} />
             </div>
+
+            <CourseWorkloadCard
+              workload={course.workload}
+              onOverride={!readOnly ? onOverrideWorkload : undefined}
+              isSaving={isSubmitting}
+            />
 
             {hasSyllabus && (
               <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">

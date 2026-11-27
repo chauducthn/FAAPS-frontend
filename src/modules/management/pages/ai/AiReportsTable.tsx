@@ -90,7 +90,7 @@ export function AiReportsTable({
       render: (item) => (
         <Link
           to={`/admin/ai-reports/${item.id}`}
-          className="rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-[#f7f8fa]"
+          className="rounded-lg border border-line px-3 py-1.5 text-[13px] font-semibold text-ink-primary hover:bg-surface-page"
         >
           Report details
         </Link>

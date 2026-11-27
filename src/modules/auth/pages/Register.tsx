@@ -2,46 +2,17 @@ import { Link } from 'react-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { ArrowLeft } from '@phosphor-icons/react';
-import { Logo } from '@/shared/components/common/Logo';
 import { apiErrorMessage } from '@/shared/lib/apiError';
 import { useAuth } from '@/modules/auth/stores/useAuth';
 import { useAuthMutations } from '@/modules/auth/hooks/mutations/useAuthMutations';
 import { authService } from '@/modules/auth/services/authService';
+import { AuthAlert } from '../components/AuthAlert';
+import { AuthField as Field } from '../components/AuthField';
+import { AuthLayout } from '../components/AuthLayout';
 import { DateOfBirthField } from '../components/DateOfBirthField';
+import { AuthDivider, GoogleAuthButton } from '../components/GoogleAuthButton';
+import { authInputClass as inputClass, authPrimaryButtonClass, authTextLinkClass } from '../components/authFormStyles';
 import { registerSchema, type RegisterInput, type RegisterValues } from '../validations/register.schema';
-
-const inputClass =
-  'block h-10 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm transition-all focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500';
-
-function Field({
-  label,
-  htmlFor,
-  required,
-  error,
-  className,
-  children,
-}: {
-  label: string;
-  htmlFor?: string;
-  required?: boolean;
-  error?: string;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className={className}>
-      <div className="mb-1 flex items-center justify-between">
-        <label htmlFor={htmlFor} className="text-xs font-medium text-gray-700">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        {!required && <span className="text-[11px] text-gray-400">Optional</span>}
-      </div>
-      {children}
-      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
-    </div>
-  );
-}
 
 /** Registration page: clean, compact, unified single-page layout. */
 export default function Register() {
@@ -86,108 +57,115 @@ export default function Register() {
   });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
-      <div className="w-full max-w-xl">
-        <Link to="/" className="mb-3 inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 hover:text-orange-600">
-          <ArrowLeft className="size-3.5" />
-          Back to home
-        </Link>
+    <AuthLayout
+      width="wide"
+      photoSide="left"
+      title="Create your student account"
+      description="Set up your FAAPS profile in a minute."
+      back={{ to: '/', label: 'Back to home' }}
+      footer={
+        <>
+          Already have an account?{' '}
+          <Link viewTransition to="/login" className={authTextLinkClass}>
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <GoogleAuthButton label="Sign up with Google" onClick={() => loginGoogle()} />
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="text-center">
-            <Logo className="mb-1.5 justify-center" />
-            <h1 className="text-lg font-bold text-gray-900 sm:text-xl">Create your student account</h1>
-            <p className="mt-0.5 text-xs text-gray-500">Academic Advising & Planning System</p>
-          </div>
+        <AuthDivider label="Or with email" />
 
-          {/* Quick Google Sign up */}
-          <div className="mt-5">
-            <button
-              type="button"
-              onClick={() => loginGoogle()}
-              className="flex h-10 w-full items-center justify-center gap-2.5 rounded-lg border border-gray-300 bg-white px-4 text-xs font-medium text-gray-700 shadow-sm transition-all hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 sm:text-sm"
+        <form noValidate onSubmit={handleSubmit((values) => submit.mutate(values))} className="space-y-5">
+          <div className="grid grid-cols-1 gap-x-4 gap-y-5 sm:grid-cols-6">
+            <Field label="Full name" htmlFor="fullName" required error={errors.fullName?.message} className="sm:col-span-3">
+              <input id="fullName" {...register('fullName')} autoComplete="name" placeholder="Nguyen Van A" className={inputClass} />
+            </Field>
+
+            <Field label="Date of birth" required error={errors.dateOfBirth?.message} className="sm:col-span-3">
+              <Controller
+                control={control}
+                name="dateOfBirth"
+                render={({ field }) => (
+                  <DateOfBirthField value={field.value} onChange={field.onChange} idPrefix="register-dob" />
+                )}
+              />
+            </Field>
+
+            <Field label="Student ID" htmlFor="studentCode" required error={errors.studentCode?.message} className="sm:col-span-2">
+              <input id="studentCode" {...register('studentCode')} maxLength={8} placeholder="SE173012" className={inputClass} />
+            </Field>
+
+            <Field label="Email" htmlFor="email" required error={errors.email?.message} className="sm:col-span-2">
+              <input
+                id="email"
+                type="email"
+                {...register('email')}
+                autoComplete="email"
+                placeholder="name@fpt.edu.vn"
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Phone" htmlFor="phone" required error={errors.phone?.message} className="sm:col-span-2">
+              <input
+                id="phone"
+                {...register('phone')}
+                autoComplete="tel"
+                inputMode="numeric"
+                maxLength={10}
+                placeholder="0901234567"
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Password" htmlFor="password" required error={errors.password?.message} className="sm:col-span-3">
+              <input
+                id="password"
+                type="password"
+                {...register('password')}
+                autoComplete="new-password"
+                placeholder="Min 8 chars"
+                className={inputClass}
+              />
+            </Field>
+
+            <Field
+              label="Confirm password"
+              htmlFor="confirmPassword"
+              required
+              error={errors.confirmPassword?.message}
+              className="sm:col-span-3"
             >
-              <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" className="size-4" />
-              Sign up with Google
-            </button>
+              <input
+                id="confirmPassword"
+                type="password"
+                {...register('confirmPassword')}
+                autoComplete="new-password"
+                placeholder="Repeat your password"
+                className={inputClass}
+              />
+            </Field>
           </div>
 
-          {/* Divider */}
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-200" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-3 font-medium uppercase tracking-wider text-gray-400">
-                or with email
-              </span>
-            </div>
-          </div>
-
-          {/* Direct Email Registration Form */}
-          <form noValidate onSubmit={handleSubmit((values) => submit.mutate(values))} className="space-y-3.5">
-            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-              <Field label="Full name" htmlFor="fullName" required error={errors.fullName?.message}>
-                <input id="fullName" {...register('fullName')} autoComplete="name" placeholder="Nguyen Van A" className={inputClass} />
-              </Field>
-
-              <Field label="Student ID" htmlFor="studentCode" required error={errors.studentCode?.message}>
-                <input id="studentCode" {...register('studentCode')} maxLength={8} placeholder="SE173012" className={inputClass} />
-              </Field>
-
-              <Field label="Email" htmlFor="email" required error={errors.email?.message}>
-                <input id="email" type="email" {...register('email')} autoComplete="email" placeholder="name@fpt.edu.vn" className={inputClass} />
-              </Field>
-
-              <Field label="Phone" htmlFor="phone" required error={errors.phone?.message}>
-                <input id="phone" {...register('phone')} autoComplete="tel" inputMode="numeric" maxLength={10} placeholder="0901234567" className={inputClass} />
-              </Field>
-
-              <Field label="Date of birth" required error={errors.dateOfBirth?.message} className="sm:col-span-2">
-                <Controller
-                  control={control}
-                  name="dateOfBirth"
-                  render={({ field }) => <DateOfBirthField value={field.value} onChange={field.onChange} idPrefix="register-dob" />}
-                />
-              </Field>
-
-              <Field label="Password" htmlFor="password" required error={errors.password?.message}>
-                <input id="password" type="password" {...register('password')} autoComplete="new-password" placeholder="Min 8 chars" className={inputClass} />
-              </Field>
-
-              <Field label="Confirm password" htmlFor="confirmPassword" required error={errors.confirmPassword?.message}>
-                <input id="confirmPassword" type="password" {...register('confirmPassword')} autoComplete="new-password" placeholder="Repeat your password" className={inputClass} />
-              </Field>
-            </div>
-
-            <p className="text-[11px] leading-relaxed text-gray-500">
-              Password: at least 8 characters with an uppercase letter, a lowercase letter, a digit and a special character, and
-              it must not contain your Student ID, name or email. After signing in you can choose your major in your Profile.
-            </p>
-
-            {errors.root?.message && (
-              <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs text-red-700">
-                {errors.root.message}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={submit.isPending}
-              className="mt-2 flex h-10 w-full items-center justify-center rounded-lg bg-orange-600 px-4 text-sm font-medium text-white shadow-sm transition-all hover:bg-orange-700 active:scale-[0.99] disabled:bg-orange-400"
-            >
-              {submit.isPending ? 'Creating account...' : 'Create account'}
-            </button>
-          </form>
-
-          <p className="mt-4 text-center text-xs text-gray-600 sm:text-sm">
-            Already have an account?{' '}
-            <Link to="/login" className="font-semibold text-orange-600 hover:text-orange-700">
-              Sign in
-            </Link>
+          <p className="-mt-1 text-xs leading-relaxed text-ink-subtle">
+            Password: at least 8 characters with an uppercase letter, a lowercase letter, a digit and a special character,
+            and it must not contain your Student ID, name or email. After signing in you can choose your major in your
+            Profile.
           </p>
-        </div>
+
+          {errors.root?.message && (
+            <AuthAlert tone="error" role="alert">
+              {errors.root.message}
+            </AuthAlert>
+          )}
+
+          <button type="submit" disabled={submit.isPending} className={authPrimaryButtonClass}>
+            {submit.isPending ? 'Creating account...' : 'Create account'}
+          </button>
+        </form>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

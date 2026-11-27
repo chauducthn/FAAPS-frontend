@@ -3,7 +3,7 @@ import type { AdminUserRole, AdminUserStatus } from '../../types/admin';
 import { USER_ROLE_LABEL, USER_STATUSES } from './userAccountColumns';
 
 const selectClass =
-  'h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-[13px] font-medium text-gray-700 transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15';
+  'h-9 w-full appearance-none truncate rounded-lg border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
 
 export interface UserAccountsFilterBarProps {
   search: string;
@@ -39,23 +39,23 @@ export function UserAccountsFilterBar({
   onClear,
 }: UserAccountsFilterBarProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3 lg:flex-nowrap">
+    <div className="flex flex-wrap items-center gap-2 border-b border-line-soft bg-surface-page/50 px-4 py-3 lg:flex-nowrap">
       <div className="relative min-w-0 flex-1 basis-full lg:basis-auto">
-        <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+        <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
         <input
           type="search"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Search by ID, name, or email..."
           aria-label="Search accounts"
-          className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+          className="h-9 w-full rounded-lg border border-line bg-white pl-9 pr-7 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
         />
         {search && (
           <button
             type="button"
             onClick={() => onSearchChange('')}
             aria-label="Clear search"
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-ink-subtle hover:text-ink-muted"
           >
             <X className="size-3.5" />
           </button>
@@ -76,7 +76,7 @@ export function UserAccountsFilterBar({
             </option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
       </div>
 
       <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[132px]">
@@ -93,7 +93,7 @@ export function UserAccountsFilterBar({
             </option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
       </div>
 
       <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[158px]">
@@ -108,7 +108,7 @@ export function UserAccountsFilterBar({
             <option key={m.id} value={m.id}>{m.code} — {m.name}</option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
       </div>
 
       <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[146px]">
@@ -119,25 +119,31 @@ export function UserAccountsFilterBar({
           className={selectClass}
         >
           <option value="">All cohorts</option>
-          {cohortOptions
-            .filter((c) => {
-              const selectedMajor = majorId ? majors.find((m) => m.id === majorId) : undefined;
-              return !selectedMajor || c.majorCode === selectedMajor.code;
-            })
-            .map((c) => (
-              <option key={c.cohortId} value={c.cohortId}>
-                {majorId ? `${c.cohort} (${c.students})` : `${c.cohort} · ${c.majorCode} (${c.students})`}
-              </option>
-            ))}
+          {(() => {
+            const selectedMajor = majorId ? majors.find((m) => m.id === majorId) : undefined;
+            const seen = new Set<string>();
+            for (const c of cohortOptions) {
+              if (selectedMajor && c.majorCode !== selectedMajor.code) continue;
+              const label = c.cohort.trim().toUpperCase();
+              if (label) seen.add(label);
+            }
+            return [...seen]
+              .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+              .map((cohort) => (
+                <option key={cohort} value={cohort}>
+                  {cohort}
+                </option>
+              ));
+          })()}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
       </div>
 
       <button
         type="button"
         onClick={onClear}
         disabled={!hasFilters}
-        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-default disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-600"
+        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand hover:text-brand-ink disabled:cursor-default disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-muted"
       >
         <RotateCcw className="size-3.5" /> Reset
       </button>
@@ -148,19 +154,19 @@ export function UserAccountsFilterBar({
 export function UserAccountsErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+      <span className="flex size-12 items-center justify-center rounded-lg bg-red-50 text-red-500">
         <CircleAlert className="size-6" />
       </span>
       <div>
-        <p className="text-sm font-bold text-gray-900">Could not load accounts</p>
-        <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
+        <p className="text-sm font-bold text-ink-primary">Could not load accounts</p>
+        <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-ink-muted">
           The list failed to load. Check your connection, then try again — your filters are kept.
         </p>
       </div>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-gray-700"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-ink-primary px-4 py-2 text-xs font-bold text-surface-page transition-colors hover:bg-ink-secondary"
       >
         <RotateCcw className="size-3.5" /> Retry
       </button>

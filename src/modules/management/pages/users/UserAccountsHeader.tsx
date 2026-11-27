@@ -1,44 +1,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { MENU_PANEL_CLASS, MenuItem, toolbarButtonClass } from '../../../../shared/components/ui/MenuParts';
 import { CheckCircle as CheckCircle2, CaretDown as ChevronDown, DownloadSimple as Download, GraduationCap, SpinnerGap as Loader2, Plus, ShieldSlash as ShieldOff, UploadSimple as Upload, User as UserRound, Users } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { AdminTabBar } from '../../components/AdminTabBar';
 import { ExampleSheetButton, type ExampleSheet } from '../../components/ImportCheckDialog';
 import type { AdminUserRole, AdminUserStatus } from '../../types/admin';
+import { AdminStatTile, type AdminStatTileProps } from '../../components/AdminStatTile';
 
-function StatItem({
-  icon, label, value, sub, tone, active, onClick,
-}: {
-  icon: ReactNode; label: string; value: string; sub?: string;
-  tone: 'slate' | 'orange' | 'indigo' | 'emerald' | 'red'; active?: boolean; onClick?: () => void;
-}) {
-  const iconTone: Record<typeof tone, string> = {
-    slate: 'bg-gray-100 text-gray-700', orange: 'bg-orange-50 text-[#C2410C]',
-    indigo: 'bg-indigo-50 text-indigo-700', emerald: 'bg-emerald-50 text-emerald-700', red: 'bg-red-50 text-red-600',
-  };
-  const activeTone: Record<typeof tone, string> = {
-    slate: 'border-gray-400 bg-gray-50/70', orange: 'border-[#F26F21]/60 bg-orange-50/40',
-    indigo: 'border-indigo-400/70 bg-indigo-50/40', emerald: 'border-emerald-400/70 bg-emerald-50/40', red: 'border-red-300 bg-red-50/40',
-  };
-
-  return (
-    <div
-      onClick={onClick}
-      className={cn(
-        'flex items-center gap-3 rounded-xl border bg-white px-3.5 py-2.5 text-left transition-colors',
-        onClick && 'cursor-pointer',
-        active ? activeTone[tone] : 'border-gray-200/80 hover:border-gray-300',
-      )}
-    >
-      <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg', iconTone[tone])}>{icon}</span>
-      <div className="min-w-0">
-        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
-        <div className="mt-0.5 flex items-baseline gap-1.5">
-          <span className="text-lg font-bold leading-none tabular-nums text-gray-900">{value}</span>
-          {sub && <span className="truncate text-xs text-gray-400">{sub}</span>}
-        </div>
-      </div>
-    </div>
-  );
+/** Local alias kept for call sites that pass `sub`; renders the shared admin tile. */
+function StatItem({ sub, ...rest }: Omit<AdminStatTileProps, 'meta'> & { sub?: ReactNode }) {
+  return <AdminStatTile {...rest} meta={sub} />;
 }
 
 function ImportUsersMenu({
@@ -77,30 +48,20 @@ function ImportUsersMenu({
         aria-expanded={open}
         disabled={isImporting}
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+        className={toolbarButtonClass()}
       >
-        {isImporting ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4 text-gray-500" />}
+        {isImporting ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4 text-ink-subtle" />}
         {isImporting ? 'Importing…' : 'Import Excel'}
-        <ChevronDown className={cn('size-3.5 text-gray-400 transition-transform', open && 'rotate-180')} aria-hidden />
+        <ChevronDown className={cn('size-3.5 text-ink-subtle transition-transform', open && 'rotate-180')} aria-hidden />
       </button>
       {open && (
-        <div className="absolute right-0 z-20 mt-1 w-52 rounded-xl border border-gray-200 bg-white p-1 shadow-lg" role="menu">
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => { setOpen(false); onImportStudents(); }}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#9a3412]"
-          >
-            <GraduationCap className="size-3.5 text-[#F26F21]" /> Import students (.xlsx)
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => { setOpen(false); onImportAdvisors(); }}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#9a3412]"
-          >
-            <UserRound className="size-3.5 text-indigo-600" /> Import advisors (.xlsx)
-          </button>
+        <div className={MENU_PANEL_CLASS} role="menu">
+          <MenuItem icon={<GraduationCap />} onClick={() => { setOpen(false); onImportStudents(); }}>
+            Import students (.xlsx)
+          </MenuItem>
+          <MenuItem icon={<UserRound />} onClick={() => { setOpen(false); onImportAdvisors(); }}>
+            Import advisors (.xlsx)
+          </MenuItem>
         </div>
       )}
     </div>
@@ -151,7 +112,7 @@ export function UserAccountsHeader({
           <>
             <ExampleSheetButton
               examples={importExamples}
-              className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+              className={toolbarButtonClass()}
             />
             <ImportUsersMenu
               isImporting={isImporting}
@@ -162,7 +123,7 @@ export function UserAccountsHeader({
               type="button"
               onClick={onExport}
               disabled={!canExport || isExporting}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className={toolbarButtonClass()}
             >
               {isExporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
               {isExporting ? 'Exporting…' : 'Export CSV'}
@@ -170,7 +131,7 @@ export function UserAccountsHeader({
             <button
               type="button"
               onClick={onCreate}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/50"
+              className={toolbarButtonClass('primary')}
             >
               <Plus className="size-4" /> Create user
             </button>

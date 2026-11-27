@@ -1,19 +1,21 @@
 import type { ReactNode } from 'react';
 import { Warning as AlertTriangle } from '@phosphor-icons/react';
+import { cn } from '@/shared/lib/utils';
 import { userLabelClass } from './createUserSchema';
 
+/** One column of the user form: a small eyebrow label over a single-file stack of fields. */
 export function UserFormSection({
   title,
-  bordered = false,
+  className,
   children,
 }: {
   title?: string;
-  bordered?: boolean;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <section className={bordered ? 'border-t border-gray-100 pt-5' : ''}>
-      {title && <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">{title}</h3>}
+    <section className={className}>
+      {title && <h3 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-subtle">{title}</h3>}
       <div className="space-y-4">{children}</div>
     </section>
   );
@@ -23,25 +25,32 @@ export function UserFormField({
   label,
   required,
   error,
+  hint,
+  className,
   children,
 }: {
   label: string;
   required?: boolean;
   error?: string;
+  /** Quiet one-line note under the control, replaced by the error when there is one. */
+  hint?: ReactNode;
+  className?: string;
   children: ReactNode;
 }) {
   return (
-    <div>
+    <div className={cn('min-w-0', className)}>
       <label className={userLabelClass}>
         {label}
-        {required && <span className="ml-0.5 text-[#F26F21]">*</span>}
+        {required && <span className="ml-0.5 text-brand">*</span>}
       </label>
       {children}
-      {error && (
+      {error ? (
         <p role="alert" className="mt-1.5 flex items-start gap-1 text-xs font-medium leading-snug text-red-600">
           <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
           {error}
         </p>
+      ) : (
+        hint && <p className="mt-1.5 truncate text-xs text-ink-muted">{hint}</p>
       )}
     </div>
   );

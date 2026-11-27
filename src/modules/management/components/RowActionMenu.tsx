@@ -63,7 +63,7 @@ export function RowActionMenu({ label, actions }: { label: string; actions: RowA
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={toggle}
-        className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+        className="rounded-md p-1 text-ink-subtle hover:bg-line-soft hover:text-ink-secondary"
       >
         <MoreHorizontal className="size-4" />
       </button>
@@ -74,7 +74,7 @@ export function RowActionMenu({ label, actions }: { label: string; actions: RowA
             ref={menuRef}
             role="menu"
             style={{ position: 'fixed', top: pos.top, bottom: pos.bottom, right: pos.right }}
-            className="z-[60] w-44 rounded-lg border border-gray-200 bg-white p-1 shadow-xl"
+            className="z-[60] w-44 rounded-lg border border-line bg-white p-1 shadow-xl"
           >
             {actions.map((a) => (
               <button
@@ -88,7 +88,7 @@ export function RowActionMenu({ label, actions }: { label: string; actions: RowA
                 }}
                 className={cn(
                   'block w-full rounded-md px-3 py-2 text-left text-xs font-semibold disabled:opacity-50',
-                  a.danger ? 'text-red-600 hover:bg-red-50' : 'text-gray-700 hover:bg-gray-50',
+                  a.danger ? 'text-red-600 hover:bg-red-50' : 'text-ink-secondary hover:bg-surface-hover',
                 )}
               >
                 {a.label}

@@ -8,6 +8,27 @@
 export type CourseStatus = 'ACTIVE' | 'INACTIVE';
 export type PrerequisiteType = 'PREREQUISITE' | 'REPLACEMENT';
 export type RelationKind = PrerequisiteType;
+export type WorkloadLevel = 'LIGHT' | 'MEDIUM' | 'HEAVY';
+export type WorkloadSource = 'MANUAL' | 'DATA_ADJUSTED' | 'RULE_BASED';
+
+export interface CourseWorkloadStats {
+  sampleSize: number;
+  failRate: number | null;
+  avgScore: number | null;
+  sufficientSample: boolean;
+  dataAdjustment: number;
+}
+
+export interface CourseWorkload {
+  level: WorkloadLevel;
+  score: number;
+  source: WorkloadSource;
+  manualLevel: WorkloadLevel | null;
+  ruleLevel: WorkloadLevel;
+  ruleScore: number;
+  ruleReasons: string[];
+  stats: CourseWorkloadStats;
+}
 
 export interface CourseCategory {
   id: string;
@@ -28,6 +49,7 @@ export interface CourseSummary {
   status: CourseStatus;
   /** Link to the course materials. The backend does not store it yet (see BE_TODO_courses.md). */
   materialLink?: string | null;
+  workload?: CourseWorkload | null;
   prerequisiteCount: number;
   usedInCurriculumCount: number;
   createdAt: string;
@@ -62,6 +84,7 @@ export interface CourseFilterParams {
   status?: CourseStatus | 'ALL';
   /** Filter the catalogue by number of credits (FE-03). */
   credits?: number;
+  workloadLevel?: WorkloadLevel | 'ALL';
   /** FPT narrow specialization (Chuyên ngành hẹp), e.g. "Node.js". Mock-only filter for sem 7-9. */
   specialization?: string;
   page?: number;
@@ -95,6 +118,7 @@ export interface CreateCourseDto {
   learningOutcomes?: string | null;
   status?: CourseStatus;
   materialLink?: string | null;
+  workloadLevel?: WorkloadLevel | 'AUTO' | null;
   /** Saved with the course on create (POST /admin/courses `prerequisites`). */
   prerequisites?: { prerequisiteCourseId: string; groupNo: number; type: PrerequisiteType }[];
 }

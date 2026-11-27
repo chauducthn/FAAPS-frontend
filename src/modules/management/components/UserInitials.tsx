@@ -33,7 +33,8 @@ export function UserInitials({ name, avatarUrl, className }: UserInitialsProps) 
   return (
     <span
       className={cn(
-        'flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-md bg-orange-100 text-sm font-semibold text-orange-700',
+        'flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full ' +
+          'bg-line-soft text-xs font-semibold text-ink-secondary ring-1 ring-inset ring-line',
         className,
       )}
       aria-hidden={!showImage}

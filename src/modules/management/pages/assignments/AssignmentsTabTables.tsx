@@ -21,7 +21,7 @@ export function AssignmentsTabTables({
   if (s.tab === 'assigned') {
     return (
       <DataTable
-        className="h-[calc(100vh-295px)] min-h-[460px]"
+        className="admin-fill"
         manual
         columns={assignedColumns}
         data={s.assignedRows}
@@ -35,8 +35,8 @@ export function AssignmentsTabTables({
           fetchAllPages((page, size) =>
             assignmentService.getAssigned({
               advisorId: s.advisorFilter || undefined,
-              cohortId: s.cohortFilter || undefined,
-              majorCode: s.majorFilter || undefined,
+              cohort: s.cohortFilter && s.cohortFilter !== '__NONE__' ? s.cohortFilter : undefined,
+              majorCode: s.majorFilter && s.majorFilter !== '__NONE__' ? s.majorFilter : undefined,
               search: s.search.trim() || undefined,
               page,
               size,
@@ -45,6 +45,8 @@ export function AssignmentsTabTables({
         }
         pagination={{ pageIndex: s.page, pageSize: OVERVIEW_PAGE_SIZE }}
         onPaginationChange={(next) => s.setPage(next.pageIndex)}
+        showPageSizeSelect={false}
+        showPageJump
         bulkActions={(selectedRows) => (
           <>
             <button
@@ -56,14 +58,14 @@ export function AssignmentsTabTables({
                   })),
                 )
               }
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#e05f14]"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-white px-3 text-[13px] font-medium text-ink-primary ring-1 ring-line transition-colors hover:bg-surface-hover"
             >
               <ArrowsLeftRight className="size-3.5" aria-hidden /> Reassign
             </button>
             <button
               type="button"
               onClick={() => s.setUnassignStudents(selectedRows.map((row) => ({ id: row.id, name: row.fullName })))}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-1.5 text-[13px] font-semibold text-red-700 transition-colors hover:bg-red-50"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-red-50 px-3 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-100"
             >
               <UserMinus className="size-3.5" aria-hidden /> Unassign
             </button>
@@ -76,7 +78,7 @@ export function AssignmentsTabTables({
   if (s.tab === 'unassigned') {
     return (
       <DataTable
-        className="h-[calc(100vh-295px)] min-h-[460px]"
+        className="admin-fill"
         manual
         columns={unassignedColumns}
         data={s.unassignedRows}
@@ -90,7 +92,7 @@ export function AssignmentsTabTables({
           const items = await fetchAllPages((page, size) =>
             assignmentService.getUnassigned({
               search: s.search.trim() || undefined,
-              cohortId: s.cohortFilter || undefined,
+              cohort: s.cohortFilter && s.cohortFilter !== '__NONE__' ? s.cohortFilter : undefined,
               hasPendingRequest: s.pendingOnly ? true : undefined,
               page,
               size,
@@ -100,11 +102,13 @@ export function AssignmentsTabTables({
         }}
         pagination={{ pageIndex: s.page, pageSize: OVERVIEW_PAGE_SIZE }}
         onPaginationChange={(next) => s.setPage(next.pageIndex)}
+        showPageSizeSelect={false}
+        showPageJump
         bulkActions={(selectedRows) => (
           <button
             type="button"
             onClick={() => s.setBulkAssignStudents(selectedRows.map((row) => ({ id: row.id, name: row.fullName, cohortId: row.cohortId })))}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-3 py-1.5 text-[13px] font-semibold text-white transition-colors hover:bg-[#e05f14]"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md bg-white px-3 text-[13px] font-medium text-ink-primary ring-1 ring-line transition-colors hover:bg-surface-hover"
           >
             <UserPlus className="size-3.5" aria-hidden /> Assign to Advisor
           </button>

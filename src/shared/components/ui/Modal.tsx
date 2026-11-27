@@ -10,6 +10,15 @@ interface ModalProps {
   className?: string;
 }
 
+const PANEL_CLASS =
+  'relative flex max-h-[min(88vh,820px)] w-full max-w-[708px] flex-col overflow-hidden rounded-lg border border-line ' +
+  'bg-white shadow-[0_24px_64px_-16px_rgb(0_0_0/0.35)] animate-in fade-in-0 zoom-in-[0.98] duration-150 ' +
+  'motion-reduce:animate-none';
+
+/**
+ * Dialog shell: overlay, focus scope and the panel. Compose the content with ModalHeader, ModalBody and
+ * ModalFooter from `./ModalParts` so every dialog in the product shares one anatomy.
+ */
 export function Modal({ open, onClose, title, children, className }: ModalProps) {
   useEffect(() => {
     if (!open) return;
@@ -26,20 +35,16 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-[#151c27]/50 dark:bg-black/70" onClick={onClose} aria-hidden="true" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className={cn(
-          'relative flex max-h-[90vh] w-full max-w-[708px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 dark:ring-white/10',
-          className,
-        )}
-      >
+        className="absolute inset-0 bg-black/40 animate-in fade-in-0 duration-150 motion-reduce:animate-none"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div role="dialog" aria-modal="true" aria-label={title} className={cn(PANEL_CLASS, className)}>
         {children}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

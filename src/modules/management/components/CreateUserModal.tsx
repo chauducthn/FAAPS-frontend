@@ -3,8 +3,8 @@ import { useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Warning as AlertTriangle } from '@phosphor-icons/react';
 import { Modal } from '../../../shared/components/ui/Modal';
+import { InlineAlert } from '../../../shared/components/ui/InlineAlert';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
 import { useCurriculumsQuery, useSemesterOptions } from '../../academic/hooks/queries/useCurriculumsQuery';
 import { curriculumService } from '../services/curriculum.service';
@@ -146,32 +146,42 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
   };
 
   return (
-    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit user' : 'Create user'} className="max-w-xl">
+    <Modal open={open} onClose={onClose} title={isEdit ? 'Edit user' : 'Create user'} className="max-w-[760px]">
       <form noValidate onSubmit={submit} className="flex min-h-0 flex-col">
-        <CreateUserModalHeader isEdit={isEdit} role={role} onClose={onClose} />
-        <div className="space-y-5 overflow-y-auto px-6 py-5">
-          <CreateUserAccountSection role={role} email={email} emailError={emailError} register={register} errors={errors} onChangeRole={changeRole} />
-          <CreateUserProfileSection
-            role={role}
-            register={register}
-            errors={errors}
-            selectedMajor={placement.selectedMajor}
-            selectedCohort={placement.selectedCohort}
-            majorOptions={placement.majorOptions}
-            cohortOptions={placement.cohortOptions}
-            onMajorChange={placement.onMajorChange}
-            onCohortChange={placement.onCohortChange}
-            curriculumList={placement.visibleCurriculums}
-            semesterList={semesterList}
-            graduationOptions={placement.graduationOptions}
-            identity={placement.identity}
-            graduationConflict={placement.graduationConflict}
-          />
+        <CreateUserModalHeader isEdit={isEdit} role={role} onClose={onClose} onChangeRole={changeRole} />
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+          <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-stretch">
+            <CreateUserAccountSection
+              role={role}
+              email={email}
+              emailError={emailError}
+              identity={placement.identity}
+              register={register}
+              errors={errors}
+            />
+            <CreateUserProfileSection
+              role={role}
+              register={register}
+              errors={errors}
+              selectedMajor={placement.selectedMajor}
+              selectedCohort={placement.selectedCohort}
+              majorOptions={placement.majorOptions}
+              cohortOptions={placement.cohortOptions}
+              onMajorChange={placement.onMajorChange}
+              onCohortChange={placement.onCohortChange}
+              curriculumList={placement.visibleCurriculums}
+              semesterList={semesterList}
+              graduationOptions={placement.graduationOptions}
+              identity={placement.identity}
+              graduationConflict={placement.graduationConflict}
+            />
+          </div>
           {errors.root?.message && (
-            <p role="alert" className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-[12px] font-semibold leading-relaxed text-red-700">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-              {errors.root.message}
-            </p>
+            <div className="mt-5">
+              <InlineAlert tone="error" role="alert">
+                {errors.root.message}
+              </InlineAlert>
+            </div>
           )}
         </div>
         <CreateUserModalFooter

@@ -1,13 +1,22 @@
 import { useState, type FormEvent } from 'react';
-import { Warning as AlertTriangle, Key as KeyRound, SpinnerGap as Loader2, SignOut as LogOut } from '@phosphor-icons/react';
+import { Eye, EyeSlash, Key as KeyRound, SpinnerGap as Loader2, SignOut as LogOut } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { apiErrorMessage } from '@/shared/lib/apiError';
+import { InlineAlert } from '@/shared/components/ui/InlineAlert';
+import { Modal } from '@/shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '@/shared/components/ui/ModalParts';
 import { authService } from '../services/authService';
 import { useAuth } from '../stores/useAuth';
 import { passwordSchema } from '../validations/register.schema';
 
-const inputClass =
-  'h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-orange-100';
+const INPUT_CLASS =
+  'h-9 w-full rounded-md border border-line bg-white pl-3 pr-9 text-[13px] text-ink-primary ' +
+  'placeholder:text-ink-subtle transition-colors hover:border-ink-subtle/50 ' +
+  'focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
+
+const TOGGLE_CLASS =
+  'absolute right-1.5 top-1/2 inline-flex size-7 -translate-y-1/2 items-center justify-center rounded-md ' +
+  'text-ink-subtle transition-colors hover:bg-line-soft hover:text-ink-primary';
 
 export function ForceChangePasswordModal() {
   const user = useAuth((s) => s.user);
@@ -15,6 +24,8 @@ export function ForceChangePasswordModal() {
   const clearAuth = useAuth((s) => s.logout);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -53,86 +64,102 @@ export function ForceChangePasswordModal() {
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-xs"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="force-change-pw-title"
-    >
-      <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-gray-200">
-        <div className="flex items-start gap-3 border-b border-gray-100 px-6 py-5">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
-            <KeyRound className="size-5" />
-          </span>
-          <div>
-            <h2 id="force-change-pw-title" className="text-base font-bold text-gray-900">
-              Change your default password
-            </h2>
-            <p className="mt-0.5 text-xs leading-relaxed text-gray-500">
-              For your security, please set a personal password before using FAAPS for the first time.
-            </p>
-          </div>
-        </div>
+    <Modal open onClose={() => {}} title="Change your default password" className="max-w-md">
+      <form onSubmit={handleSubmit} className="flex min-h-0 flex-col" noValidate>
+        <ModalHeader
+          title="Change your default password"
+          description="Set a personal password before using FAAPS for the first time."
+          icon={<KeyRound />}
+          tone="brand"
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5" noValidate>
+        <ModalBody className="space-y-4">
           <div>
-            <label htmlFor="fcp-new" className="mb-1.5 block text-xs font-semibold text-gray-700">
-              New password
+            <label htmlFor="fcp-new" className="mb-1.5 block text-[13px] font-medium text-ink-secondary">
+              New password <span className="text-brand">*</span>
             </label>
-            <input
-              id="fcp-new"
-              type="password"
-              autoComplete="new-password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="At least 8 chars, upper, lower, digit, symbol"
-              className={inputClass}
-            />
+            <div className="relative">
+              <input
+                id="fcp-new"
+                type={showNew ? 'text' : 'password'}
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  setError(null);
+                }}
+                placeholder="At least 8 chars, upper, lower, digit, symbol"
+                className={INPUT_CLASS}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew((v) => !v)}
+                aria-label={showNew ? 'Hide new password' : 'Show new password'}
+                className={TOGGLE_CLASS}
+              >
+                {showNew ? <EyeSlash className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
+              </button>
+            </div>
           </div>
 
           <div>
-            <label htmlFor="fcp-confirm" className="mb-1.5 block text-xs font-semibold text-gray-700">
-              Confirm new password
+            <label htmlFor="fcp-confirm" className="mb-1.5 block text-[13px] font-medium text-ink-secondary">
+              Confirm new password <span className="text-brand">*</span>
             </label>
-            <input
-              id="fcp-confirm"
-              type="password"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Repeat your new password"
-              className={inputClass}
-            />
+            <div className="relative">
+              <input
+                id="fcp-confirm"
+                type={showConfirm ? 'text' : 'password'}
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  setError(null);
+                }}
+                placeholder="Repeat your new password"
+                className={INPUT_CLASS}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm((v) => !v)}
+                aria-label={showConfirm ? 'Hide confirm password' : 'Show confirm password'}
+                className={TOGGLE_CLASS}
+              >
+                {showConfirm ? <EyeSlash className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
+              </button>
+            </div>
           </div>
 
           {error && (
-            <p role="alert" className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+            <InlineAlert tone="error" role="alert">
               {error}
-            </p>
+            </InlineAlert>
           )}
+        </ModalBody>
 
-          <div className="flex items-center justify-between gap-3 pt-2">
+        <ModalFooter
+          start={
             <button
               type="button"
               onClick={handleSignOut}
               disabled={submitting}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-800 disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-[13px] font-medium text-ink-muted transition-colors hover:bg-surface-hover hover:text-ink-primary disabled:opacity-50"
             >
-              <LogOut className="size-3.5" />
+              <LogOut className="size-4" aria-hidden />
               Sign out
             </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#F26F21] px-4 text-sm font-semibold text-white hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55"
-            >
-              {submitting && <Loader2 className="size-4 animate-spin" />}
-              {submitting ? 'Updating…' : 'Update password'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          }
+        >
+          <button
+            type="submit"
+            disabled={submitting}
+            className={modalButtonClass('primary')}
+          >
+            {submitting && <Loader2 className="size-4 animate-spin" aria-hidden />}
+            Update password
+          </button>
+        </ModalFooter>
+      </form>
+    </Modal>
   );
 }

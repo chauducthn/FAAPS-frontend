@@ -7,11 +7,12 @@ import { toast } from 'sonner';
 import { apiErrorMessage } from '@/shared/lib/apiError';
 import { studentAcademicService } from '@/modules/academic/services/studentAcademicService';
 import { STUDENT_QUERY_KEYS } from '../hooks/queries/useStudentQueries';
+import { formatComboLabels, formatEnglishLabel, formatInstrumentLabel, formatPeLabel } from './flmOptionFormatters';
 
 const selectCls =
   'mt-1.5 h-9.5 w-full rounded-lg border border-gray-200 bg-white px-3 text-[13px] text-gray-900 outline-none transition-colors focus:border-[#F26F21] focus:ring-2 focus:ring-[#F26F21]/15';
 
-export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null }) {
+export function FlmPreferencesCard({ majorCode, compact = false }: { majorCode?: string | null; compact?: boolean }) {
   const queryClient = useQueryClient();
   const prefsQuery = useQuery({
     queryKey: [...STUDENT_QUERY_KEYS.all, 'flm-preferences', majorCode ?? null],
@@ -36,6 +37,7 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
     () => (data?.combos ?? []).find((c) => c.code === comboCode),
     [data, comboCode],
   );
+  const comboLabels = useMemo(() => formatComboLabels(data?.combos ?? []), [data?.combos]);
 
   const dirty =
     !!data &&
@@ -61,7 +63,7 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
 
   return (
     <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
-      <div className="flex items-center justify-between gap-2 border-b border-gray-100 px-6 py-4">
+      <div className={`flex items-center justify-between gap-2 border-b border-gray-100 ${compact ? 'px-4 py-3' : 'px-6 py-4'}`}>
         <div className="flex items-center gap-2.5">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
             <SlidersHorizontal className="size-4.5" aria-hidden />
@@ -78,7 +80,7 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
         )}
       </div>
 
-      <div className="space-y-4 p-6">
+      <div className={compact ? 'space-y-3 p-4' : 'space-y-4 p-6'}>
         <div>
           <label htmlFor="flm-combo" className="block text-xs font-semibold text-gray-700">
             Specialization Combo (Sem 5 – 8)
@@ -91,13 +93,11 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
             className={selectCls}
           >
             <option value="">
-              {(data?.combos?.length ?? 0) === 0
-                ? 'No combos imported from FLM yet'
-                : 'Not selected (keep COM* placeholders)'}
+              {(data?.combos?.length ?? 0) === 0 ? 'No combos available' : 'Select specialization...'}
             </option>
             {(data?.combos ?? []).map((c) => (
               <option key={c.code} value={c.code}>
-                {c.label}
+                {comboLabels.get(c.code) ?? c.code}
               </option>
             ))}
           </select>
@@ -116,7 +116,7 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
           )}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className={compact ? 'grid gap-3 grid-cols-1' : 'grid gap-4 sm:grid-cols-3'}>
           <div>
             <label htmlFor="flm-english" className="block text-xs font-semibold text-gray-700">
               Starting English Level (PEN)
@@ -129,11 +129,11 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
               className={selectCls}
             >
               <option value="">
-                {(data?.englishOptions?.length ?? 0) === 0 ? 'No PEN courses imported yet' : 'Default (PEN)'}
+                {(data?.englishOptions?.length ?? 0) === 0 ? 'Not available' : 'Select level...'}
               </option>
               {(data?.englishOptions ?? []).map((opt) => (
                 <option key={opt.code} value={opt.code}>
-                  {opt.label}
+                  {formatEnglishLabel(opt)}
                 </option>
               ))}
             </select>
@@ -141,7 +141,7 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
 
           <div>
             <label htmlFor="flm-pe" className="block text-xs font-semibold text-gray-700">
-              Physical Education (PHE)
+              Physical Education
             </label>
             <select
               id="flm-pe"
@@ -151,16 +151,16 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
               className={selectCls}
             >
               <option value="">
-                {(data?.physicalEducationOptions?.length ?? 0) === 0 ? 'No PHE combos imported yet' : 'Not selected (PHE_COM*)'}
+                {(data?.physicalEducationOptions?.length ?? 0) === 0 ? 'Not available' : 'Select sport...'}
               </option>
               {(data?.physicalEducationOptions ?? []).map((opt) => (
-                <option key={opt.code} value={opt.code}>{opt.label}</option>
+                <option key={opt.code} value={opt.code}>{formatPeLabel(opt)}</option>
               ))}
             </select>
           </div>
 
           <div>
-            <label htmlFor="flm-instrument" className="block text-xs font-semibold text-gray-700">Instrument (TMI)</label>
+            <label htmlFor="flm-instrument" className="block text-xs font-semibold text-gray-700">Instrument</label>
             <select
               id="flm-instrument"
               value={instrument}
@@ -169,10 +169,10 @@ export function FlmPreferencesCard({ majorCode }: { majorCode?: string | null })
               className={selectCls}
             >
               <option value="">
-                {(data?.instrumentOptions?.length ?? 0) === 0 ? 'No TMI electives imported yet' : 'Not selected (TMI_ELE)'}
+                {(data?.instrumentOptions?.length ?? 0) === 0 ? 'Not available' : 'Select instrument...'}
               </option>
               {(data?.instrumentOptions ?? []).map((opt) => (
-                <option key={opt.code} value={opt.code}>{opt.label}</option>
+                <option key={opt.code} value={opt.code}>{formatInstrumentLabel(opt)}</option>
               ))}
             </select>
           </div>

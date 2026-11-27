@@ -113,17 +113,17 @@ export function CurriculumManagerModals({
       <Modal open={importChooserOpen} onClose={onCloseImportChooser} title="Import curriculum from Excel" className="max-w-lg">
         <div className="space-y-4 p-6">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Import courses into a curriculum</h2>
-            <p className="mt-1 text-sm text-gray-600">
+            <h2 className="text-lg font-bold text-ink-primary">Import courses into a curriculum</h2>
+            <p className="mt-1 text-sm text-ink-muted">
               Choose a curriculum on this page. The Excel file maps course codes to semesters; the system checks every row before import.
             </p>
           </div>
-          <label className="block text-sm font-semibold text-gray-800">
+          <label className="block text-sm font-semibold text-ink-primary">
             Target curriculum
             <select
               value={importTargetId}
               onChange={(event) => onChangeImportTarget(event.target.value)}
-              className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm"
+              className="mt-2 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm"
             >
               {items.map((item) => (
                 <option key={item.id} value={item.id}>
@@ -134,7 +134,7 @@ export function CurriculumManagerModals({
           </label>
           <div className="flex flex-wrap items-center gap-2">
             <ExampleSheetButton examples={[{ label: 'Example sheet', download: onDownloadExample }]} />
-            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-[#F26F21] px-4 py-2.5 text-xs font-bold text-white hover:bg-[#dc6018]">
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-brand px-4 py-2.5 text-xs font-bold text-white hover:bg-[#dc6018]">
               <FileSpreadsheet className="size-4" /> Choose Excel file
               <input
                 type="file"
@@ -147,9 +147,9 @@ export function CurriculumManagerModals({
                 }}
               />
             </label>
-            {isPreviewingImport && <span className="text-xs text-gray-500">Checking file…</span>}
+            {isPreviewingImport && <span className="text-xs text-ink-muted">Checking file…</span>}
           </div>
-          <p className="text-xs text-gray-500">For a new curriculum, create it first, then import its course list.</p>
+          <p className="text-xs text-ink-muted">For a new curriculum, create it first, then import its course list.</p>
         </div>
       </Modal>
 

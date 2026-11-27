@@ -55,7 +55,7 @@ export function AdvisorRowMenu({
   }, [open]);
 
   const itemCls =
-    'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-100/80';
+    'flex w-full items-center gap-2.5 whitespace-nowrap rounded-md px-2.5 py-2 text-left text-[13px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover';
   const run = (handler: () => void) => {
     setOpen(false);
     handler();
@@ -70,7 +70,7 @@ export function AdvisorRowMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={toggle}
-        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+        className="inline-flex size-8 items-center justify-center rounded-md text-ink-subtle transition-colors hover:bg-line-soft hover:text-ink-primary aria-expanded:bg-line-soft aria-expanded:text-ink-primary"
       >
         <MoreHorizontal className="size-4" />
       </button>
@@ -81,18 +81,18 @@ export function AdvisorRowMenu({
             ref={menuRef}
             role="menu"
             style={{ position: 'fixed', top: pos.top, bottom: pos.bottom, right: pos.right }}
-            className="z-[60] w-48 rounded-xl border border-gray-200/80 bg-white p-1.5 shadow-lg ring-1 ring-black/5"
+            className="z-[60] w-max min-w-52 rounded-lg border border-line bg-white p-1 shadow-[0_12px_32px_-12px_rgb(0_0_0/0.25)]"
           >
             <button role="menuitem" className={itemCls} onClick={() => run(onAssignCohort)}>
-              <FolderPlus className="size-4 text-gray-400" aria-hidden />
+              <FolderPlus className="size-4 shrink-0 text-ink-subtle" aria-hidden />
               Assign cohort
             </button>
             <button role="menuitem" className={itemCls} onClick={() => run(onEditLimit)}>
-              <SlidersHorizontal className="size-4 text-gray-400" aria-hidden />
+              <SlidersHorizontal className="size-4 shrink-0 text-ink-subtle" aria-hidden />
               Advisory limit
             </button>
             <button role="menuitem" className={itemCls} onClick={() => run(onOpenDetails)}>
-              <Eye className="size-4 text-gray-400" aria-hidden />
+              <Eye className="size-4 shrink-0 text-ink-subtle" aria-hidden />
               View assigned students
             </button>
           </div>,

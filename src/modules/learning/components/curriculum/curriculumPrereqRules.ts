@@ -3,6 +3,7 @@ import type { EffectiveCurriculumCourse, RegularBlockMeta } from './curriculumBl
 const PE_SEQ_RE = /^(VOV|COV)(\d+)$/i;
 
 export function formatTermShort(sem: number): string {
+  if (sem === 99) return 'Draft';
   return sem < 0 ? `Prep ${-sem}` : sem === 0 ? 'Prep 1' : `Sem ${sem}`;
 }
 
@@ -18,7 +19,7 @@ function blockChronoPhase(blockType: string | undefined): number {
   return 1; // Block 10W (MAIN) and Block 5W (FAST)
 }
 
-function buildEffectivePrereqMap(
+export function buildEffectivePrereqMap(
   allCourses: EffectiveCurriculumCourse[],
   dbPrereqMap: Record<string, string[]> | undefined,
 ): Map<string, Set<string>> {
@@ -62,6 +63,10 @@ export interface PrereqCheckContext {
   allCourses: EffectiveCurriculumCourse[];
   dbPrereqMap: Record<string, string[]> | undefined;
   passedCodes: Set<string>;
+  inProgressCodes?: Set<string>;
+  draftBlockByCode?: Map<string, string>;
+  poolCodes?: Set<string>;
+  currentSem?: number;
   prepCount: number;
   regularBlocks: RegularBlockMeta[];
 }
@@ -77,24 +82,37 @@ export function validatePrerequisiteOrder(
   const courseByCode = new Map(ctx.allCourses.map((c) => [c.code.trim().toUpperCase(), c]));
   const blockTypeByCode = new Map(ctx.regularBlocks.map((b) => [b.code.toUpperCase(), b.blockType]));
   const defaultMainCode = (ctx.regularBlocks.find((b) => b.blockType === 'MAIN') ?? ctx.regularBlocks[0])?.code ?? 'BLOCK_10W';
+  const draftSem = Math.max(1, ctx.currentSem ?? 1);
 
-  const getBlockType = (c: EffectiveCurriculumCourse) =>
-    blockTypeByCode.get((c.placement?.blockCode ?? defaultMainCode).toUpperCase()) ?? 'MAIN';
+  const isSatisfied = (cCode: string) => ctx.passedCodes.has(cCode) || (ctx.inProgressCodes?.has(cCode) ?? false);
+  const getEffectiveSem = (c: EffectiveCurriculumCourse, cCode: string) =>
+    ctx.draftBlockByCode?.has(cCode) ? draftSem : c.semesterNumber;
+  const getBlockType = (c: EffectiveCurriculumCourse, cCode: string) => {
+    const bCode = ctx.draftBlockByCode?.get(cCode) ?? c.placement?.blockCode ?? defaultMainCode;
+    return blockTypeByCode.get(bCode.toUpperCase()) ?? 'MAIN';
+  };
+  const formatSemLabel = (c: EffectiveCurriculumCourse, cCode: string) =>
+    ctx.draftBlockByCode?.has(cCode) ? 'Draft' : formatTermShort(c.semesterNumber);
 
   const targetRank = termChronoRank(targetSem, ctx.prepCount);
   const targetPhase = blockChronoPhase(targetBlock.blockType);
   const targetIsFast = targetBlock.blockType.toUpperCase() === 'FAST';
 
-  // 1. Forward check: all prerequisites of `course` must finish before `course` starts (regardless of pass status)
+  // 1. Forward check: all unpassed prerequisites of `course` must finish before `course` starts
   for (const prereqCode of prereqMap.get(code) ?? []) {
+    if (isSatisfied(prereqCode)) continue;
     const p = courseByCode.get(prereqCode);
     if (!p) continue;
-    const pRank = termChronoRank(p.semesterNumber, ctx.prepCount);
-    const pBlockType = getBlockType(p);
+    if (ctx.poolCodes?.has(prereqCode)) {
+      return `${course.code} requires ${p.code} first (${p.code} is in Course Pool — schedule ${p.code} first).`;
+    }
+    const pSem = getEffectiveSem(p, prereqCode);
+    const pRank = termChronoRank(pSem, ctx.prepCount);
+    const pBlockType = getBlockType(p, prereqCode);
     const pPhase = blockChronoPhase(pBlockType);
 
     if (targetRank < pRank) {
-      return `${course.code} requires ${p.code} first (${p.code} is in ${formatTermShort(p.semesterNumber)}).`;
+      return `${course.code} requires ${p.code} first (${p.code} is in ${formatSemLabel(p, prereqCode)}).`;
     }
     if (targetRank === pRank) {
       const validSameTerm = targetPhase > pPhase || (targetIsFast && pBlockType.toUpperCase() === 'FAST');
@@ -104,17 +122,19 @@ export function validatePrerequisiteOrder(
     }
   }
 
-  // 2. Reverse check: `course` cannot be moved into or after a dependent course's parallel/earlier slot
+  // 2. Reverse check: `course` cannot be moved into or after a scheduled dependent course's parallel/earlier slot
   for (const [depCode, prereqs] of prereqMap.entries()) {
     if (!prereqs.has(code)) continue;
+    if (isSatisfied(depCode) || ctx.poolCodes?.has(depCode)) continue;
     const dep = courseByCode.get(depCode);
     if (!dep) continue;
-    const dRank = termChronoRank(dep.semesterNumber, ctx.prepCount);
-    const dBlockType = getBlockType(dep);
+    const dSem = getEffectiveSem(dep, depCode);
+    const dRank = termChronoRank(dSem, ctx.prepCount);
+    const dBlockType = getBlockType(dep, depCode);
     const dPhase = blockChronoPhase(dBlockType);
 
     if (targetRank > dRank) {
-      return `Cannot move ${course.code} after ${dep.code} (${formatTermShort(dep.semesterNumber)}) because ${dep.code} requires ${course.code}.`;
+      return `Cannot move ${course.code} after ${dep.code} (${formatSemLabel(dep, depCode)}) because ${dep.code} requires ${course.code}.`;
     }
     if (targetRank === dRank) {
       const validSameTerm = targetPhase < dPhase || (targetIsFast && dBlockType.toUpperCase() === 'FAST');

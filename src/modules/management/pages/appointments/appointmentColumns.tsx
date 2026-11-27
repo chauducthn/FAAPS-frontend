@@ -23,7 +23,7 @@ export function createAppointmentColumns(
         return (
           <div className="flex items-center gap-2.5">
             <AppointmentAvatar name={studentName} />
-            <span className="truncate font-semibold text-[#151c27]">{studentName}</span>
+            <span className="truncate font-semibold text-ink-primary">{studentName}</span>
           </div>
         );
       },
@@ -37,7 +37,7 @@ export function createAppointmentColumns(
         return (
           <div className="flex items-center gap-2.5">
             <AppointmentAvatar name={advisorName} kind="advisor" />
-            <span className="truncate text-[#151c27]">{advisorName}</span>
+            <span className="truncate text-ink-primary">{advisorName}</span>
           </div>
         );
       },
@@ -49,10 +49,10 @@ export function createAppointmentColumns(
         <div className="flex items-center gap-2.5">
           <CalendarTile />
           <div className="min-w-0">
-            <p className="whitespace-nowrap text-[13px] font-semibold text-[#151c27]">
+            <p className="whitespace-nowrap text-[13px] font-semibold text-ink-primary">
               {formatSlotDay(row.original.scheduledAt)}
             </p>
-            <p className="whitespace-nowrap text-[12px] tabular-nums text-[#5b6577]">
+            <p className="whitespace-nowrap text-[12px] tabular-nums text-ink-muted">
               {formatSlotTimeRange(row.original)}
             </p>
           </div>

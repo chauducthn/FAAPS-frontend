@@ -108,7 +108,7 @@ export default function AiPerformancePage() {
       {isError && !isLoading ? (
         <AiPerformanceErrorState onRetry={() => refetch()} />
       ) : rangeError ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50/60 px-5 py-10 text-center">
+        <div className="rounded-lg border border-red-200 bg-red-50/60 px-5 py-10 text-center">
           <p className="text-sm font-bold text-red-700">Invalid date range</p>
           <p className="mx-auto mt-1 max-w-sm text-xs text-red-600">
             Swap the dates or pick one of the quick ranges above to see the charts.
@@ -119,7 +119,7 @@ export default function AiPerformancePage() {
           <AiPerformanceKpiStrip isLoading={isLoading} totals={totals} peak={peak} />
 
           {totals.totalFallback > 0 && !isLoading && (
-            <div className="flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
+            <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-800">
               <AlertTriangle className="size-4 shrink-0" />
               <span>
                 <span className="font-bold">{totals.totalFallback.toLocaleString('en-US')} fallback responses</span>{' '}
@@ -128,16 +128,16 @@ export default function AiPerformancePage() {
             </div>
           )}
 
-          <section className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:p-5">
+          <section className="rounded-lg border border-line/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:p-5">
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <h2 className="text-[13px] font-extrabold tracking-tight text-gray-900">Daily usage</h2>
-                <p className="mt-0.5 text-[11px] text-gray-400">
+                <h2 className="text-[13px] font-extrabold tracking-tight text-ink-primary">Daily usage</h2>
+                <p className="mt-0.5 text-[11px] text-ink-subtle">
                   {daily.length > 0 ? `${daily.length} days · ${startDate} → ${endDate}` : 'Requests, latency and tokens per day'}
                 </p>
               </div>
               {isFetching && !isLoading && (
-                <span className="text-[11px] font-bold text-[#9a3412]">Updating…</span>
+                <span className="text-[11px] font-bold text-brand-ink">Updating…</span>
               )}
             </div>
             <AiPerformanceChart data={rangeError ? [] : daily} isLoading={isLoading} />

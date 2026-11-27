@@ -20,6 +20,8 @@ export const useAdminUsers = (params: {
   majorId?: string;
   /** Narrow the list to one cohort (a curriculum version). */
   curriculumVersionId?: string;
+  /** Narrow the list to one cohort code (e.g. K18, K19). */
+  cohort?: string;
   page?: number;
   size?: number;
   sort?: UserSort;

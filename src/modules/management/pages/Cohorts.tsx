@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router';
+import { ADMIN_TAB_LIST_CLASS, adminTabClass } from '../components/AdminTabBar';
 import { BookOpen, FolderOpen, GraduationCap } from '@phosphor-icons/react';
-import { cn } from '@/shared/lib/utils';
 import { useCurriculum } from '../../academic/hooks/queries/useCurriculumsQuery';
 import type { CurriculumItem } from '../../academic/types/curriculum';
 import CurriculumManager from '../components/curriculum/CurriculumManager';
@@ -58,7 +58,7 @@ export default function CohortsPage() {
     <div
       role="tablist"
       aria-label="Academic structure sections"
-      className="inline-flex items-center gap-1 rounded-xl border border-gray-200/80 bg-white p-1 shadow-2xs"
+      className={ADMIN_TAB_LIST_CLASS}
     >
       {tabs.map(({ key, label, icon: Icon, disabled, title }) => {
         const active = activeTab === key;
@@ -71,14 +71,7 @@ export default function CohortsPage() {
             disabled={disabled}
             title={title}
             onClick={() => handleSelect(key)}
-            className={cn(
-              'inline-flex h-8.5 items-center gap-2 rounded-lg px-3.5 text-[13px] font-semibold transition-colors',
-              active
-                ? 'bg-[#F26F21] text-white shadow-2xs'
-                : disabled
-                  ? 'cursor-not-allowed text-gray-300'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900',
-            )}
+            className={adminTabClass(active, disabled)}
           >
             <Icon className="size-4" aria-hidden />
             {label}

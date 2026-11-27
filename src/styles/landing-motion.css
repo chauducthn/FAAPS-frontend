@@ -1,0 +1,103 @@
+/*
+ * Motion primitives for the public landing page.
+ * Every animation is opt-in through `motion-safe:` utilities so users who
+ * prefer reduced motion get a static page.
+ */
+
+@keyframes landing-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes landing-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-media-in {
+  from { opacity: 0; transform: scale(1.12); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes landing-line-up {
+  from { transform: translateY(105%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes landing-nav-in {
+  from { opacity: 0; transform: translateY(-100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes landing-rule {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* First-visit intro. Each element reads its start time from --intro-delay. */
+.landing-intro-media {
+  animation: landing-media-in 1.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.landing-intro-nav {
+  animation: landing-nav-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
+}
+
+/* Mask each headline line; the padding keeps descenders from being clipped. */
+.landing-intro-line {
+  overflow: hidden;
+  padding-bottom: 0.1em;
+  margin-bottom: -0.1em;
+}
+
+.landing-intro-line > span {
+  animation: landing-line-up 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--intro-delay, 0ms) * var(--intro-pace, 1));
+}
+
+.landing-intro-fade {
+  animation: landing-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--intro-delay, 0ms) * var(--intro-pace, 1));
+}
+
+.landing-intro-rule {
+  animation: landing-rule 1.2s cubic-bezier(0.65, 0, 0.35, 1) both;
+  animation-delay: calc(var(--intro-delay, 0ms) * var(--intro-pace, 1));
+}
+
+/*
+ * Returning from another page: the hero photo already morphed into place, so it does
+ * not zoom in again, and the header and copy enter on a shorter schedule.
+ */
+.landing-return {
+  --intro-pace: 0.6;
+}
+
+.landing-return .landing-intro-media {
+  animation: none;
+}
+
+.landing-return .landing-intro-nav {
+  animation-delay: 0.25s;
+}
+
+.landing-progress {
+  transform-origin: left center;
+  animation: landing-progress 6s linear forwards;
+}
+
+.landing-rise {
+  animation: landing-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-progress,
+  .landing-rise,
+  .landing-intro-media,
+  .landing-intro-nav,
+  .landing-intro-line > span,
+  .landing-intro-fade,
+  .landing-intro-rule {
+    animation: none;
+  }
+}

@@ -62,7 +62,7 @@ export function NotificationBell() {
         onClick={() => setOpen((v) => !v)}
         aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
         aria-expanded={open}
-        className="relative rounded-lg p-2 text-[#555f6f] hover:bg-gray-100"
+        className="relative rounded-lg p-2 text-ink-muted hover:bg-line-soft"
       >
         <Bell className="size-5" />
         {unread > 0 && (
@@ -75,9 +75,9 @@ export function NotificationBell() {
         )}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-[#e5e7eb] bg-white shadow-lg">
-          <div className="flex items-center justify-between gap-2 border-b border-[#e5e7eb] px-4 py-3">
-            <p className="flex items-center gap-2 text-sm font-semibold text-[#151c27]">
+        <div className="absolute right-0 top-full z-40 mt-2 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-line bg-white shadow-lg">
+          <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-3">
+            <p className="flex items-center gap-2 text-sm font-semibold text-ink-primary">
               Notifications
               <span
                 data-testid="live-indicator"
@@ -87,7 +87,7 @@ export function NotificationBell() {
             </p>
             <div className="flex items-center gap-3">
               {unread > 0 && (
-                <button type="button" onClick={() => markAll.mutate()} disabled={markAll.isPending} className="text-xs font-semibold text-orange-600 hover:underline disabled:opacity-60">
+                <button type="button" onClick={() => markAll.mutate()} disabled={markAll.isPending} className="text-xs font-semibold text-brand-ink hover:underline disabled:opacity-60">
                   Mark all as read
                 </button>
               )}
@@ -95,14 +95,14 @@ export function NotificationBell() {
                 type="button"
                 onClick={() => { clearAll.mutate(); setPage(0); }}
                 disabled={clearAll.isPending || items.length === 0}
-                className="text-xs font-semibold text-[#555f6f] hover:text-red-600 hover:underline disabled:pointer-events-none disabled:opacity-40"
+                className="text-xs font-semibold text-ink-muted hover:text-red-600 hover:underline disabled:pointer-events-none disabled:opacity-40"
               >
                 Clear all
               </button>
             </div>
           </div>
           {items.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-[#555f6f]">No notifications.</p>
+            <p className="px-4 py-8 text-center text-sm text-ink-muted">No notifications.</p>
           ) : (
             <ul className="max-h-80 overflow-y-auto">
               {items.map((n) => (
@@ -110,13 +110,13 @@ export function NotificationBell() {
                   <button
                     type="button"
                     onClick={() => openItem(n.id, n.isRead, n.type === 'ADVISOR_REQUEST')}
-                    className={cn('flex w-full flex-col gap-0.5 border-b border-[#f1f5f9] px-4 py-3 text-left hover:bg-gray-50', !n.isRead && 'bg-[#fff7ed]/60')}
+                    className={cn('flex w-full flex-col gap-0.5 border-b border-line-soft px-4 py-3 text-left hover:bg-surface-hover', !n.isRead && 'bg-brand-soft/60')}
                   >
                     <span className="flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-semibold text-[#151c27]">{n.title}</span>
+                      <span className="text-[13px] font-semibold text-ink-primary">{n.title}</span>
                       <span className="shrink-0 text-[11px] text-[#98a2b3]">{ago(n.createdAt)}</span>
                     </span>
-                    <span className="text-[13px] text-[#555f6f]">
+                    <span className="text-[13px] text-ink-muted">
                       {n.studentCode ? `${n.studentCode}: ` : ''}
                       {n.message}
                     </span>
@@ -127,7 +127,7 @@ export function NotificationBell() {
             </ul>
           )}
           {total > PAGE_SIZE && (
-            <div className="flex items-center justify-between border-t border-[#e5e7eb] px-4 py-2 text-xs text-[#555f6f]">
+            <div className="flex items-center justify-between border-t border-line px-4 py-2 text-xs text-ink-muted">
               <span>
                 {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
               </span>

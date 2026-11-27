@@ -1,9 +1,11 @@
 // Read-only Academic Search page for curricula and course catalog lookup.
 
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BookOpen, GraduationCap, MagnifyingGlass as Search } from '@phosphor-icons/react';
+import { toast } from 'sonner';
 import { academicLookupService } from '../services/academicLookupService';
+import type { WorkloadLevel } from '../../academic/types/course';
 import type { LookupCourse, LookupCurriculum } from '../types/academic-lookup';
 import { cn } from '@/shared/lib/utils';
 import { AcademicLookupHeader } from '../components/lookup/AcademicLookupHeader';
@@ -21,7 +23,9 @@ export default function AdvisorAcademicLookup() {
   const [category, setCategory] = useState<string>('ALL');
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState<LookupCourse | null>(null);
+  const [savingWorkload, setSavingWorkload] = useState(false);
   const [expandedCurr, setExpandedCurr] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   const curriculaQuery = useQuery({
     queryKey: ['advisor', 'academic-lookup', 'curricula'],
@@ -64,6 +68,21 @@ export default function AdvisorAcademicLookup() {
     const matches = await academicLookupService.getCourses({ search: code });
     const exact = matches.find((c) => c.code === code);
     if (exact) await openCourse(exact);
+  };
+
+  const handleOverrideWorkload = async (level: WorkloadLevel | 'AUTO') => {
+    if (!selected) return;
+    setSavingWorkload(true);
+    try {
+      const updated = await academicLookupService.updateCourseWorkload(selected.id, level);
+      setSelected((prev) => (prev ? { ...prev, workload: updated } : prev));
+      await queryClient.invalidateQueries({ queryKey: ['advisor', 'academic-lookup', 'courses'] });
+      toast.success(level === 'AUTO' ? 'Reset course workload to Auto' : `Workload override set to ${level}`);
+    } catch {
+      toast.error('Failed to update course workload');
+    } finally {
+      setSavingWorkload(false);
+    }
   };
 
   return (
@@ -167,7 +186,10 @@ export default function AdvisorAcademicLookup() {
         </div>
       </section>
 
-      <CourseLookupModal course={selected} onClose={() => setSelected(null)} onOpenCourse={openCourseByCode} />
+      <CourseLookupModal
+        course={selected} onClose={() => setSelected(null)} onOpenCourse={openCourseByCode}
+        onOverrideWorkload={handleOverrideWorkload} isSavingWorkload={savingWorkload}
+      />
     </div>
   );
 }

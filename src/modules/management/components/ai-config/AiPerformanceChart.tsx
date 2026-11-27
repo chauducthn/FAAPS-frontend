@@ -48,11 +48,11 @@ interface ChartTooltipProps {
 function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-lg">
-      <p className="mb-1 text-[11px] font-extrabold uppercase tracking-wide text-gray-400">{label}</p>
+    <div className="rounded-lg border border-line bg-white px-3 py-2 shadow-lg">
+      <p className="mb-1 text-[11px] font-extrabold uppercase tracking-wide text-ink-subtle">{label}</p>
       <div className="space-y-0.5">
         {payload.map((p) => (
-          <p key={String(p.dataKey)} className="flex items-center gap-2 text-xs font-semibold text-gray-700">
+          <p key={String(p.dataKey)} className="flex items-center gap-2 text-xs font-semibold text-ink-secondary">
             <span className="size-2 rounded-full" style={{ background: p.color ?? p.fill }} />
             {p.name}: <span className="font-mono tabular-nums">{fmtInt(p.value ?? 0)}</span>
           </p>
@@ -68,10 +68,10 @@ export default function AiPerformanceChart({ data, isLoading }: Props) {
   if (isLoading) {
     return (
       <div className="grid gap-4 xl:grid-cols-5">
-        <div className="h-72 animate-pulse rounded-2xl bg-gray-100 xl:col-span-3" />
+        <div className="h-72 animate-pulse rounded-lg bg-line-soft xl:col-span-3" />
         <div className="grid gap-4 xl:col-span-2">
-          <div className="h-32 animate-pulse rounded-2xl bg-gray-100" />
-          <div className="h-32 animate-pulse rounded-2xl bg-gray-100" />
+          <div className="h-32 animate-pulse rounded-lg bg-line-soft" />
+          <div className="h-32 animate-pulse rounded-lg bg-line-soft" />
         </div>
       </div>
     );
@@ -80,11 +80,11 @@ export default function AiPerformanceChart({ data, isLoading }: Props) {
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center gap-2 px-6 py-14 text-center">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-[#fff7ed] text-[#F26F21]">
+        <span className="flex size-12 items-center justify-center rounded-lg bg-brand-soft text-brand">
           <BarChart3 className="size-6" />
         </span>
-        <p className="text-sm font-bold text-gray-900">No usage in this period</p>
-        <p className="max-w-sm text-xs leading-relaxed text-gray-500">
+        <p className="text-sm font-bold text-ink-primary">No usage in this period</p>
+        <p className="max-w-sm text-xs leading-relaxed text-ink-muted">
           Try widening the date range or clearing the configuration filter — charts appear as soon as
           requests are logged.
         </p>
@@ -101,13 +101,13 @@ export default function AiPerformanceChart({ data, isLoading }: Props) {
   return (
     <div className="grid gap-4 xl:grid-cols-5">
       {/* Requests — hero chart */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 xl:col-span-3">
+      <div className="rounded-lg border border-line-soft bg-white p-4 xl:col-span-3">
         <div className="mb-1 flex items-center justify-between">
           <div>
-            <h3 className="text-[13px] font-extrabold tracking-tight text-gray-900">Requests &amp; failures</h3>
-            <p className="text-[11px] text-gray-400">Daily volume per selected filter</p>
+            <h3 className="text-[13px] font-extrabold tracking-tight text-ink-primary">Requests &amp; failures</h3>
+            <p className="text-[11px] text-ink-subtle">Daily volume per selected filter</p>
           </div>
-          <span className="rounded-full bg-[#fff7ed] px-2 py-0.5 text-[11px] font-bold text-[#9a3412] ring-1 ring-orange-200">
+          <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-bold text-brand-ink ring-1 ring-brand/30">
             {rows.length} days
           </span>
         </div>
@@ -128,9 +128,9 @@ export default function AiPerformanceChart({ data, isLoading }: Props) {
 
       <div className="grid gap-4 xl:col-span-2">
         {/* Latency */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-4">
-          <h3 className="text-[13px] font-extrabold tracking-tight text-gray-900">Avg latency</h3>
-          <p className="mb-1 text-[11px] text-gray-400">Milliseconds per day</p>
+        <div className="rounded-lg border border-line-soft bg-white p-4">
+          <h3 className="text-[13px] font-extrabold tracking-tight text-ink-primary">Avg latency</h3>
+          <p className="mb-1 text-[11px] text-ink-subtle">Milliseconds per day</p>
           <div className="h-36 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
@@ -145,9 +145,9 @@ export default function AiPerformanceChart({ data, isLoading }: Props) {
         </div>
 
         {/* Tokens */}
-        <div className="rounded-2xl border border-gray-100 bg-white p-4">
-          <h3 className="text-[13px] font-extrabold tracking-tight text-gray-900">Token usage</h3>
-          <p className="mb-1 text-[11px] text-gray-400">Prompt + completion per day</p>
+        <div className="rounded-lg border border-line-soft bg-white p-4">
+          <h3 className="text-[13px] font-extrabold tracking-tight text-ink-primary">Token usage</h3>
+          <p className="mb-1 text-[11px] text-ink-subtle">Prompt + completion per day</p>
           <div className="h-36 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>

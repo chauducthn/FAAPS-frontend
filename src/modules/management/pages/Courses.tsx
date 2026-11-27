@@ -99,9 +99,10 @@ export default function CoursesPage() {
       <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
         <CoursesFilterBar
           search={s.search} status={s.status} categoryId={s.categoryId} credits={s.credits}
-          categories={s.categories} hasFilters={s.hasFilters} onSearchChange={s.resetPage(s.setSearch)}
-          onStatusChange={s.resetPage(s.setStatus)} onCategoryChange={s.resetPage(s.setCategoryId)}
-          onCreditsChange={s.resetPage(s.setCredits)} onClear={s.clearFilters}
+          workloadLevel={s.workloadLevel} categories={s.categories} hasFilters={s.hasFilters}
+          onSearchChange={s.resetPage(s.setSearch)} onStatusChange={s.resetPage(s.setStatus)}
+          onCategoryChange={s.resetPage(s.setCategoryId)} onCreditsChange={s.resetPage(s.setCredits)}
+          onWorkloadChange={s.resetPage(s.setWorkloadLevel)} onClear={s.clearFilters}
         />
 
         <div className="h-[calc(100vh-295px)] min-h-[460px]">
@@ -135,6 +136,7 @@ export default function CoursesPage() {
                       status: s.status === 'ALL' ? undefined : s.status,
                       categoryId: s.categoryId === 'ALL' ? undefined : s.categoryId,
                       credits: s.credits === 'ALL' ? undefined : s.credits,
+                      workloadLevel: s.workloadLevel === 'ALL' ? undefined : s.workloadLevel,
                     }),
                   )
                 }
@@ -168,8 +170,9 @@ export default function CoursesPage() {
         isSavingCourse={mutations.isCreating || mutations.isUpdating} onCloseForm={() => s.setFormOpen(false)} onSubmitForm={handleSubmitForm}
         viewingId={s.viewingId} viewingCourse={(s.viewingQuery.data as CourseDetail | undefined) ?? null}
         isLoadingViewing={s.viewingQuery.isLoading}
-        isSubmittingRelation={mutations.isAddingRelation || mutations.isRemovingRelation || mutations.isUpdatingRelation}
+        isSubmittingRelation={s.workloadSaving || mutations.isAddingRelation || mutations.isRemovingRelation || mutations.isUpdatingRelation}
         onCloseViewing={() => s.setViewingId(null)} onNavigateViewing={s.setViewingId}
+        onOverrideWorkload={s.handleOverrideWorkload}
         onAddRelation={(rel) => mutations.addRelation({ courseId: s.viewingId as string, body: rel })}
         onUpdateRelation={(relationId, body) => mutations.updateRelation({ courseId: s.viewingId as string, relationId, body })}
         onRemoveRelation={(relationId) => mutations.removeRelation({ courseId: s.viewingId as string, relationId })}

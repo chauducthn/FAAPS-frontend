@@ -55,13 +55,13 @@ export function ProfileMenu({ roleLabel, profilePath }: ProfileMenuProps) {
         <button
           type="button"
           onClick={() => setOpen((prev) => !prev)}
-          className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-gray-50"
+          className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-surface-hover"
           aria-expanded={open}
         >
           <UserAvatar
             name={user?.fullName}
             avatarUrl={user?.avatarUrl}
-            className="size-8 ring-1 ring-[#e5e7eb]"
+            className="size-8 ring-1 ring-line"
             textClassName="text-xs font-semibold"
           />
           <span className="hidden text-left sm:block">
@@ -76,11 +76,14 @@ export function ProfileMenu({ roleLabel, profilePath }: ProfileMenuProps) {
         </button>
 
         {open && (
-          <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-[#e5e7eb] bg-white p-1 shadow-md">
+          <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-line bg-white p-1 shadow-md">
             <Link
               to={profilePath}
               onClick={() => setOpen(false)}
-              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-[var(--ink-primary)] hover:bg-gray-50"
+              className={
+                'flex w-full items-center gap-2 rounded-md ' +
+                'px-3 py-2 text-sm font-medium text-[var(--ink-primary)] hover:bg-surface-hover'
+              }
             >
               <UserRound className="size-4 text-[var(--ink-muted)]" />
               My Profile

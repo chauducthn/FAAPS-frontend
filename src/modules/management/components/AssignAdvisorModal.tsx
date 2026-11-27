@@ -1,18 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Warning as AlertTriangle, UserCheck } from '@phosphor-icons/react';
+import { Warning as AlertTriangle, ArrowsLeftRight, SpinnerGap, UserCheck } from '@phosphor-icons/react';
 import { toast } from 'sonner';
+import { InlineAlert } from '../../../shared/components/ui/InlineAlert';
 import { Modal } from '../../../shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '../../../shared/components/ui/ModalParts';
 import { AdvisorPickerList } from './AdvisorPickerList';
 import { LoadBadge } from './LoadBadge';
 import { useAssignStudents, usePreviewAssign } from '../hooks/queries/useAdminAssignments';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
 import type { AssignPreview, AssignmentAdvisor } from '../types/admin';
-import {
-  AssignmentModalFooter,
-  AssignmentModalHeader,
-  assignmentCancelBtn,
-  assignmentPrimaryBtn,
-} from './AssignmentModalChrome';
+import { UserFormField } from './UserFormPrimitives';
 
 interface AssignAdvisorModalProps {
   open: boolean;
@@ -77,48 +74,61 @@ export function AssignAdvisorModal({ open, onClose, students, advisors, excludeA
     }
   };
 
+  const isReassign = !!excludeAdvisorId;
   const cancelling = preview?.appointmentCount ?? 0;
   const subtitle = `${students.length} student${students.length === 1 ? '' : 's'} selected${students.length <= 3 ? `: ${students.map((s) => s.name).join(', ')}` : ''}`;
+  const submitLabel = cancelling > 0 ? `Assign and cancel ${cancelling}` : isReassign ? 'Reassign' : 'Assign';
 
   return (
-    <Modal open={open} onClose={onClose} title="Assign advisor" className="max-w-xl">
-      <AssignmentModalHeader
-        icon={UserCheck}
-        title={excludeAdvisorId ? 'Reassign students' : 'Assign advisor'}
-        subtitle={subtitle}
+    <Modal open={open} onClose={assignMutation.isPending ? () => {} : onClose} title={isReassign ? 'Reassign students' : 'Assign advisor'} className="max-w-lg">
+      <ModalHeader
+        title={isReassign ? 'Reassign students' : 'Assign advisor'}
+        description={subtitle}
+        icon={isReassign ? <ArrowsLeftRight /> : <UserCheck />}
+        tone="brand"
         onClose={onClose}
+        closeDisabled={assignMutation.isPending}
       />
-      <div className="flex flex-col gap-4 overflow-y-auto px-6 py-5">
-        <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Advisor</label>
+
+      <ModalBody className="flex flex-col gap-4">
+        <UserFormField label="Advisor" required>
           {options.length === 0 ? (
-            <p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
-              No other eligible advisor is assigned to this cohort (or selected students belong to different cohorts).
-            </p>
+            <InlineAlert tone="info">
+              <span className="text-xs leading-relaxed">
+                No other eligible advisor is assigned to this cohort (or selected students belong to different cohorts).
+              </span>
+            </InlineAlert>
           ) : (
             <AdvisorPickerList advisors={options} selectedId={advisorId} onSelect={choose} />
           )}
-        </div>
+        </UserFormField>
 
         {advisor && (
-          <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/70 px-3.5 py-2.5 text-xs">
-            <span className="text-gray-600">After this change <strong className="text-gray-900">{advisor.fullName}</strong> will have</span>
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-page px-3.5 py-2.5 ring-1 ring-inset ring-line-soft">
+            <span className="text-xs text-ink-muted">
+              After change · <strong className="font-semibold text-ink-primary">{advisor.fullName}</strong>
+            </span>
             <LoadBadge count={loadAfter} limit={advisor.maxAdvisees} />
           </div>
         )}
+
         {overBy > 0 && (
-          <p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <InlineAlert tone="info">
             This is {overBy} over the advisory limit of {advisor?.maxAdvisees}. The limit is a warning, not a block.
+          </InlineAlert>
+        )}
+
+        {previewMutation.isPending && (
+          <p className="flex items-center gap-1.5 text-xs text-ink-muted">
+            <SpinnerGap className="size-3.5 animate-spin" aria-hidden />
+            Checking upcoming appointments…
           </p>
         )}
 
-        {previewMutation.isPending && <p className="text-xs text-gray-500">Checking appointments...</p>}
         {cancelling > 0 && preview && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs text-red-900">
             <p className="flex items-center gap-1.5 font-semibold">
-              <AlertTriangle className="size-3.5" />
+              <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
               {cancelling} future appointment{cancelling === 1 ? '' : 's'} will be cancelled
             </p>
             <ul className="mt-1.5 flex max-h-36 flex-col gap-1 overflow-y-auto">
@@ -129,19 +139,28 @@ export function AssignAdvisorModal({ open, onClose, students, advisors, excludeA
             <p className="mt-1.5 text-red-700">The students are notified and need to book again with the new advisor.</p>
           </div>
         )}
-        {error && <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>}
-      </div>
-      <AssignmentModalFooter>
-        <button type="button" onClick={onClose} className={assignmentCancelBtn}>Cancel</button>
+
+        {error && (
+          <InlineAlert tone="error" role="alert">
+            {error}
+          </InlineAlert>
+        )}
+      </ModalBody>
+
+      <ModalFooter>
+        <button type="button" disabled={assignMutation.isPending} onClick={onClose} className={modalButtonClass('secondary')}>
+          Cancel
+        </button>
         <button
           type="button"
           disabled={!advisorId || !preview || assignMutation.isPending || students.length === 0}
           onClick={confirm}
-          className={assignmentPrimaryBtn}
+          className={modalButtonClass('primary')}
         >
-          {assignMutation.isPending ? 'Assigning...' : cancelling > 0 ? `Assign and cancel ${cancelling}` : 'Assign'}
+          {assignMutation.isPending && <SpinnerGap className="size-4 animate-spin" aria-hidden />}
+          {submitLabel}
         </button>
-      </AssignmentModalFooter>
+      </ModalFooter>
     </Modal>
   );
 }

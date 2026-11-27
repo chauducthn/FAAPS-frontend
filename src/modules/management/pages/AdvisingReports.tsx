@@ -17,16 +17,16 @@ function ReportStatTile({
   icon: ReactNode; label: string; value: string; meta: string;
   tone: 'orange' | 'emerald' | 'blue' | 'amber'; loading: boolean;
 }) {
-  const iconTone = { orange: 'bg-orange-50 text-[#C2410C]', emerald: 'bg-emerald-50 text-emerald-700', blue: 'bg-blue-50 text-blue-600', amber: 'bg-amber-50 text-amber-700' }[tone];
+  const iconTone = { orange: 'bg-brand-soft text-brand-ink', emerald: 'bg-emerald-50 text-emerald-700', blue: 'bg-line-soft text-ink-secondary', amber: 'bg-amber-50 text-amber-700' }[tone];
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-gray-200/80 bg-white px-3.5 py-2.5 text-left">
+    <div className="flex items-center gap-3 rounded-lg border border-line/80 bg-white px-3.5 py-2.5 text-left">
       <span className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${iconTone}`}>{icon}</span>
       <div className="min-w-0">
-        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
-        {loading ? <div className="mt-1 h-5 w-16 animate-pulse rounded bg-gray-100" /> : (
+        <p className="truncate text-xs font-medium text-ink-muted">{label}</p>
+        {loading ? <div className="mt-1 h-5 w-16 animate-pulse rounded bg-line-soft" /> : (
           <div className="mt-0.5 flex items-baseline gap-1.5">
-            <span className="text-lg font-bold leading-none tabular-nums text-gray-900">{value}</span>
-            <span className="truncate text-xs text-gray-400">{meta}</span>
+            <span className="text-lg font-bold leading-none tabular-nums text-ink-primary">{value}</span>
+            <span className="truncate text-xs text-ink-subtle">{meta}</span>
           </div>
         )}
       </div>
@@ -76,19 +76,19 @@ export default function AdvisingReports() {
     {
       key: 'advisor', header: 'Advisor',
       render: (row) => (
-        <span className="font-semibold text-gray-900">
-          {row.fullName}<span className="block text-xs font-normal text-gray-500">{row.email}</span>
+        <span className="font-semibold text-ink-primary">
+          {row.fullName}<span className="block text-xs font-normal text-ink-muted">{row.email}</span>
         </span>
       ),
     },
     { key: 'assignedStudents', header: 'Assigned Students', align: 'right', render: (r) => <span className="tabular-nums">{r.assignedStudents}</span> },
     { key: 'completedSessions', header: 'Completed Sessions', align: 'right', render: (r) => <span className="font-semibold tabular-nums text-emerald-700">{r.completedSessions}</span> },
     { key: 'emailOutreaches', header: 'Email Outreaches', align: 'right', render: (r) => <span className="tabular-nums">{r.emailOutreaches}</span> },
-    { key: 'pendingRequests', header: 'Pending Requests', align: 'right', render: (r) => <span className={r.pendingRequests > 0 ? 'font-semibold tabular-nums text-amber-700' : 'tabular-nums text-gray-400'}>{r.pendingRequests}</span> },
+    { key: 'pendingRequests', header: 'Pending Requests', align: 'right', render: (r) => <span className={r.pendingRequests > 0 ? 'font-semibold tabular-nums text-amber-700' : 'tabular-nums text-ink-subtle'}>{r.pendingRequests}</span> },
     {
       key: 'actions', header: '', align: 'right',
       render: (r) => (
-        <button type="button" onClick={() => navigate(`/admin/appointments?advisorId=${r.advisorId}`)} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-50">
+        <button type="button" onClick={() => navigate(`/admin/appointments?advisorId=${r.advisorId}`)} className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-soft">
           Sessions <ArrowUpRight className="size-3.5" />
         </button>
       ),
@@ -123,18 +123,18 @@ export default function AdvisingReports() {
         actions={
           <>
             <div className="relative w-[196px]">
-              <select aria-label="Filter by semester" value={semesterId} onChange={(e) => setSemesterId(e.target.value)} className="h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-[13px] font-medium text-gray-700 hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15">
+              <select aria-label="Filter by semester" value={semesterId} onChange={(e) => setSemesterId(e.target.value)} className="h-9 w-full appearance-none truncate rounded-lg border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15">
                 <option value="">All semesters</option>
                 {(semestersQuery.data ?? []).map((sem) => (
                   <option key={sem.id} value={sem.id}>{sem.code} — {sem.name}</option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+              <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
             </div>
-            <button type="button" onClick={() => { overviewQuery.refetch(); advisorsQuery.refetch(); }} disabled={refreshing} aria-label="Refresh report" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs hover:bg-gray-50 disabled:opacity-60">
+            <button type="button" onClick={() => { overviewQuery.refetch(); advisorsQuery.refetch(); }} disabled={refreshing} aria-label="Refresh report" className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs hover:bg-surface-hover disabled:opacity-60">
               <RefreshCw className={refreshing ? 'size-3.5 animate-spin' : 'size-3.5'} />
             </button>
-            <button type="button" onClick={handleExport} disabled={isExporting || overviewQuery.isLoading} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55">
+            <button type="button" onClick={handleExport} disabled={isExporting || overviewQuery.isLoading} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-55">
               {isExporting ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
               {isExporting ? 'Exporting…' : 'Export CSV'}
             </button>
@@ -150,7 +150,7 @@ export default function AdvisingReports() {
       </div>
 
       {overviewQuery.isError && (
-        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
+        <div className="flex items-center justify-between rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
           Could not load advising overview metrics.
           <button type="button" onClick={() => overviewQuery.refetch()} className="font-semibold hover:underline">Retry</button>
         </div>
@@ -158,18 +158,18 @@ export default function AdvisingReports() {
 
       <AdvisingBreakdownPanel overview={overview} loading={overviewQuery.isLoading} />
 
-      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-4 py-3">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line-soft px-4 py-3">
           <div className="flex items-center gap-2">
-            <Users className="size-4 text-[#F26F21]" />
-            <h2 className="text-[13px] font-bold text-gray-900">Advisor effectiveness breakdown</h2>
+            <Users className="size-4 text-brand" />
+            <h2 className="text-[13px] font-bold text-ink-primary">Advisor effectiveness breakdown</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative w-56">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search advisor…" aria-label="Search advisors" className="h-8 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 text-xs text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none" />
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search advisor…" aria-label="Search advisors" className="h-8 w-full rounded-lg border border-line bg-white pl-8 pr-3 text-xs text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none" />
             </div>
-            <select aria-label="Sort advisors" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className="h-8 rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-medium text-gray-700 focus:border-[#F26F21] focus:outline-none">
+            <select aria-label="Sort advisors" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)} className="h-8 rounded-lg border border-line bg-white px-2.5 text-xs font-medium text-ink-secondary focus:border-brand focus:outline-none">
               <option value="completed">Most completed</option>
               <option value="assigned">Most assigned</option>
               <option value="pending">Most pending</option>
@@ -177,7 +177,7 @@ export default function AdvisingReports() {
             </select>
           </div>
         </div>
-        <div className="flex h-[calc(100vh-310px)] min-h-[460px] flex-col">
+        <div className="flex admin-fill flex-col">
           <StaticTable
             stickyHeader className="min-h-0 flex-1 overflow-auto"
             columns={columns} rows={filteredAdvisors}

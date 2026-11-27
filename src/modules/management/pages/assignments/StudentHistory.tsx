@@ -70,9 +70,9 @@ const historyColumns: StaticColumn<AssignmentHistoryRecord>[] = [
 
 function Tile({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-lg bg-[#f7f8fa] px-4 py-3">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#555f6f]">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-[#151c27]">{children}</p>
+    <div className="rounded-lg bg-surface-page px-4 py-3">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-ink-muted">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-ink-primary">{children}</p>
     </div>
   );
 }
@@ -91,19 +91,19 @@ export default function StudentHistory() {
   return (
     <div className="flex w-full flex-col gap-4">
       <div>
-        <Link to={backTarget.to} className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#F26F21]">
+        <Link to={backTarget.to} className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-brand">
           <ChevronLeft className="size-3.5" />
           Back to {backTarget.label}
         </Link>
       </div>
 
       {student && (
-        <section className="rounded-xl border border-gray-200/80 bg-white p-5 shadow-2xs">
-          <div className="flex items-start justify-between gap-4 border-b border-gray-100 pb-4">
+        <section className="rounded-lg border border-line/80 bg-white p-5 shadow-2xs">
+          <div className="flex items-start justify-between gap-4 border-b border-line-soft pb-4">
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-gray-900">{student.fullName}</h2>
-              <p className="mt-0.5 text-xs text-gray-500">
-                <span className="rounded bg-gray-100 px-1.5 py-0.5 font-mono font-medium text-gray-700">{student.userId}</span>
+              <h2 className="text-lg font-bold tracking-tight text-ink-primary">{student.fullName}</h2>
+              <p className="mt-0.5 text-xs text-ink-muted">
+                <span className="rounded bg-line-soft px-1.5 py-0.5 font-mono font-medium text-ink-secondary">{student.userId}</span>
                 {' · '}
                 {student.email}
               </p>
@@ -118,10 +118,10 @@ export default function StudentHistory() {
         </section>
       )}
 
-      <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
-        <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-4 py-3">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500">All assignment records</h2>
-          <p className="text-xs text-gray-500 tabular-nums">{history?.length ?? 0} records · Newest first</p>
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+        <div className="flex items-center justify-between border-b border-line-soft bg-surface-page/50 px-4 py-3">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-ink-muted">All assignment records</h2>
+          <p className="text-xs text-ink-muted tabular-nums">{history?.length ?? 0} records · Newest first</p>
         </div>
         <StaticTable
           columns={historyColumns}

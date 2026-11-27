@@ -26,7 +26,7 @@ interface MajorTableProps {
 const statusTone = (status: MajorItem['status']) => {
   if (status === 'ACTIVE') return 'text-emerald-700';
   if (status === 'DRAFT') return 'text-amber-700';
-  return 'text-gray-500';
+  return 'text-ink-muted';
 };
 function createMajorColumns(
   onEditMajor: (item: MajorItem) => void,
@@ -96,7 +96,7 @@ function createMajorColumns(
             onClick={() => onEditMajor(row.original)}
             title={`Edit ${row.original.code}`}
             aria-label={`Edit ${row.original.code}`}
-            className="p-1.5 rounded-md text-gray-400 hover:text-[var(--brand)] hover:bg-[var(--brand-soft)] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]"
+            className="p-1.5 rounded-md text-ink-subtle hover:text-[var(--brand)] hover:bg-[var(--brand-soft)] transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]"
           >
             <Pencil className="size-4" />
           </button>
@@ -104,7 +104,7 @@ function createMajorColumns(
             onClick={() => onDeleteMajor(row.original)}
             title={`Delete ${row.original.code}`}
             aria-label={`Delete ${row.original.code}`}
-            className="p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
+            className="p-1.5 rounded-md text-ink-subtle hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
           >
             <Trash2 className="size-4" />
           </button>
@@ -128,7 +128,7 @@ export default function MajorTable({
   if (data.length === 0) {
     return (
       <div className="px-6 py-14 text-center">
-        <div className="mx-auto w-11 h-11 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 font-bold text-lg">
+        <div className="mx-auto w-11 h-11 rounded-lg bg-line-soft flex items-center justify-center text-ink-subtle font-bold text-lg">
           M
         </div>
         <p className="mt-4 text-sm font-semibold text-[var(--ink-primary)]">No majors found</p>

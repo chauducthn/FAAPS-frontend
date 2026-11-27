@@ -37,7 +37,7 @@ export default function AiReportDetail() {
   const back = (
     <Link
       to="/admin/ai-reports"
-      className="inline-flex items-center gap-1.5 text-[13px] font-medium text-gray-600 transition-colors hover:text-[#F26F21]"
+      className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-brand"
     >
       <ChevronLeft className="size-4" />
       Back to Reported Responses
@@ -48,7 +48,7 @@ export default function AiReportDetail() {
     return (
       <div className="w-full">
         {back}
-        <div className="mt-6 h-64 animate-pulse rounded-xl bg-white" />
+        <div className="mt-6 h-64 animate-pulse rounded-lg bg-white" />
       </div>
     );
   }
@@ -57,9 +57,9 @@ export default function AiReportDetail() {
     return (
       <div className="w-full">
         {back}
-        <div className="mt-6 rounded-xl bg-white p-8 text-center text-sm text-[#555f6f]">
+        <div className="mt-6 rounded-lg bg-white p-8 text-center text-sm text-ink-muted">
           Could not load this report.{' '}
-          <button type="button" onClick={() => refetch()} className="font-semibold text-orange-600 hover:underline">
+          <button type="button" onClick={() => refetch()} className="font-semibold text-brand-ink hover:underline">
             Retry
           </button>
         </div>
@@ -112,11 +112,11 @@ export default function AiReportDetail() {
       <ResolutionSection report={report} pending={pending} note={note} error={error} onNoteChange={setNote} />
 
       {pending && (
-        <div className="flex flex-col gap-3 rounded-2xl border border-gray-200/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-lg border border-line/80 bg-white p-4 shadow-[0_1px_2px_rgba(16,24,40,0.05)] sm:flex-row sm:items-center sm:justify-between">
           <button
             type="button"
             onClick={() => (note.trim() ? setConfirmDismiss(true) : setError('A resolution note is required.'))}
-            className="text-left text-[13px] font-semibold text-gray-500 transition-colors hover:text-red-600"
+            className="text-left text-[13px] font-semibold text-ink-muted transition-colors hover:text-red-600"
           >
             Dismiss report
           </button>
@@ -124,7 +124,7 @@ export default function AiReportDetail() {
             <button
               type="button"
               onClick={() => navigate('/admin/ai-reports')}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-50"
+              className="h-9 rounded-lg border border-line bg-white px-4 text-[13px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
             >
               Cancel
             </button>
@@ -132,7 +132,7 @@ export default function AiReportDetail() {
               type="button"
               disabled={resolve.isPending}
               onClick={() => submit('RESOLVED')}
-              className="h-9 rounded-lg bg-[#F26F21] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#e05f14] disabled:opacity-60"
+              className="h-9 rounded-lg bg-brand px-4 text-[13px] font-semibold text-white transition-colors hover:bg-brand-hover disabled:opacity-60"
             >
               {resolve.isPending ? 'Saving...' : 'Save & mark as resolved'}
             </button>

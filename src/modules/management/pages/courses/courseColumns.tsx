@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import { StatusBadge } from '../../components/StatusBadge';
 import { RowActionMenu } from '../../components/RowActionMenu';
+import { WorkloadBadge } from '../../../academic/components/WorkloadBadge';
 import type { DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import type { CourseSummary } from '../../../academic/types/course';
 
@@ -74,6 +75,12 @@ export function createCourseColumns(handlers: {
           {row.original.prerequisiteCount}
         </span>
       ),
+    },
+    {
+      id: 'workload',
+      header: 'Workload',
+      enableSorting: false,
+      cell: ({ row }) => <WorkloadBadge workload={row.original.workload} />,
     },
     {
       accessorKey: 'status',

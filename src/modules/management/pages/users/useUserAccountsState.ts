@@ -62,7 +62,7 @@ export function useUserAccountsState() {
     status: status || undefined,
     search: debouncedSearch || undefined,
     majorId: majorId || undefined,
-    curriculumVersionId: cohortId || undefined,
+    cohort: cohortId || undefined,
     page: pagination.pageIndex,
     size: pagination.pageSize,
     sort: toUserSort(sorting),
@@ -165,7 +165,7 @@ export function useUserAccountsState() {
         status: status || undefined,
         search: search.trim() || undefined,
         majorId: majorId || undefined,
-        curriculumVersionId: cohortId || undefined,
+        cohort: cohortId || undefined,
         sort: toUserSort(sorting),
       });
       if (count === 0) toast.info('No accounts to export.');

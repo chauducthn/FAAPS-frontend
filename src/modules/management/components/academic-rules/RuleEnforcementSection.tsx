@@ -47,7 +47,7 @@ export function RuleEnforcementSection({
               aria-label="Decrease priority"
               disabled={disabled}
               onClick={() => setValue('priority', Math.max(0, Number(priority ?? 0) - 1))}
-              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#F26F21] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-line bg-white text-ink-muted transition-colors hover:border-brand hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Minus className="size-3.5" />
             </button>
@@ -68,7 +68,7 @@ export function RuleEnforcementSection({
               aria-label="Increase priority"
               disabled={disabled}
               onClick={() => setValue('priority', Math.min(1000, Number(priority ?? 0) + 1))}
-              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#F26F21] disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-line bg-white text-ink-muted transition-colors hover:border-brand hover:text-brand disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Plus className="size-3.5" />
             </button>
@@ -87,13 +87,13 @@ export function RuleEnforcementSection({
               onClick={() => setValue('approvalRequired', !approvalRequired)}
               className="flex items-center gap-2.5 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <span className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', approvalRequired ? 'bg-[#F26F21]' : 'bg-gray-300')}>
+              <span className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', approvalRequired ? 'bg-brand' : 'bg-ink-subtle/40')}>
                 <span className={cn('absolute top-0.5 size-5 rounded-full bg-white shadow transition-all', approvalRequired ? 'left-[22px]' : 'left-0.5')} />
               </span>
-              <span className="text-[13px] font-semibold text-gray-700">{approvalRequired ? 'Required' : 'Automatic'}</span>
+              <span className="text-[13px] font-semibold text-ink-secondary">{approvalRequired ? 'Required' : 'Automatic'}</span>
             </button>
           </div>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-[11px] text-ink-subtle">
             {approvalRequired ? 'Advisor / dean sign-off needed.' : 'Enforced automatically.'}
           </p>
         </div>
@@ -103,7 +103,7 @@ export function RuleEnforcementSection({
           <div className="flex h-10 items-center">
             {initial ? <RuleStatusBadge status={initial.status} /> : <RuleStatusBadge status="DRAFT" />}
           </div>
-          <p className="mt-1 text-[11px] text-gray-400">
+          <p className="mt-1 text-[11px] text-ink-subtle">
             {isCreate
               ? 'Starts as DRAFT.'
               : initial?.status === 'DRAFT'

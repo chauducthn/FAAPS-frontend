@@ -25,13 +25,13 @@ export default function RoadmapBoard({ semesters, onAdd, onMove, onRemove, onDro
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-200/80 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-        <h2 className="flex items-center gap-2.5 text-sm font-extrabold tracking-tight text-gray-900">
-          <span className="flex size-8 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.35)]">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line/80 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+        <h2 className="flex items-center gap-2.5 text-sm font-extrabold tracking-tight text-ink-primary">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.35)]">
             <ListTree className="size-4" />
           </span>
           Academic Roadmap
-          <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-[11px] font-bold tabular-nums text-gray-600">
+          <span className="rounded-full bg-line-soft px-2.5 py-0.5 text-[11px] font-bold tabular-nums text-ink-muted">
             {totalCourses} courses · {totalCredits} cr
           </span>
         </h2>
@@ -44,7 +44,7 @@ export default function RoadmapBoard({ semesters, onAdd, onMove, onRemove, onDro
       </div>
 
       <div className="roadmap-scroll overflow-x-auto pb-3">
-        <div className="flex items-stretch gap-4 rounded-2xl border border-slate-200/70 bg-slate-50 p-4">
+        <div className="flex items-stretch gap-4 rounded-lg border border-line/70 bg-surface-page p-4">
           {semesters.map((semester) => (
             <RoadmapSemesterColumn
               key={semester.number}
@@ -61,9 +61,9 @@ export default function RoadmapBoard({ semesters, onAdd, onMove, onRemove, onDro
         </div>
       </div>
 
-      <p className="text-[11px] leading-relaxed text-gray-400">
+      <p className="text-[11px] leading-relaxed text-ink-subtle">
         Tip: drag a course card onto another semester column to move it — credits and totals update instantly.
-        Use the <span className="font-semibold text-gray-500">⋯</span> menu on a card for keyboard-friendly moves.
+        Use the <span className="font-semibold text-ink-muted">⋯</span> menu on a card for keyboard-friendly moves.
       </p>
     </section>
   );
@@ -79,7 +79,7 @@ function LegendItem({
 }) {
   if (tone === 'prerequisite') {
     return (
-      <li className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-600">
+      <li className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-muted">
         <Star className="size-3.5 fill-amber-400 text-amber-400" />
         {label}
       </li>
@@ -87,10 +87,10 @@ function LegendItem({
   }
 
   return (
-    <li className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-600">
+    <li className="flex items-center gap-1.5 text-[11px] font-semibold text-ink-muted">
       <span
         aria-hidden="true"
-        className={cn('size-2.5 rounded-full ring-2 ring-offset-1', tone === 'core' ? 'bg-[#F26F21] ring-orange-200' : 'bg-[#7C3AED] ring-violet-200')}
+        className={cn('size-2.5 rounded-full ring-2 ring-offset-1', tone === 'core' ? 'bg-brand ring-brand/30' : 'bg-[#7C3AED] ring-line')}
       />
       {label}
     </li>

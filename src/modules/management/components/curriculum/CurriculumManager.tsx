@@ -78,7 +78,7 @@ export default function CurriculumManager({
         onOpenCreate={openCreate}
       />
 
-      <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
         <CurriculumManagerFilters
           kind={kind} searchPlaceholder={copy.search} search={s.search} majorId={s.majorId} version={s.version}
           startSemesterId={s.startSemesterId} status={s.status} current={s.current} majors={s.majors}
@@ -97,10 +97,10 @@ export default function CurriculumManager({
         ) : s.items.length === 0 ? (
           <CurriculumListEmpty plural={copy.plural} noun={copy.noun} hasFilters={s.hasFilters} onClearFilters={s.clearFilters} />
         ) : (
-          <div className="relative flex h-[calc(100vh-295px)] min-h-[460px] flex-col">
+          <div className="relative flex admin-fill flex-col">
             {isFetching && (
-              <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
-                <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
+              <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-brand-soft-strong">
+                <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-brand" />
               </div>
             )}
             <CurriculumTable

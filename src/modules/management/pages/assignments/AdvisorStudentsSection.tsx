@@ -58,32 +58,32 @@ export function AdvisorStudentsSection({
   onPageChange: (page: number) => void;
 }) {
   return (
-    <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3">
+    <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line-soft bg-surface-page/50 px-4 py-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-gray-500">Assigned students</h2>
-          <span className="rounded-md bg-gray-200/70 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-gray-700">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-ink-muted">Assigned students</h2>
+          <span className="rounded-md bg-line/70 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-ink-secondary">
             {totalFiltered}
           </span>
         </div>
 
         <div className="flex flex-1 items-center justify-end gap-2 sm:max-w-sm">
           <div className="relative flex-1">
-            <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+            <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
             <input
               type="search"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Search by student ID or name..."
               aria-label="Search students"
-              className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-xs text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+              className="h-9 w-full rounded-lg border border-line bg-white pl-9 pr-7 text-xs text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
             />
             {search && (
               <button
                 type="button"
                 onClick={onClearSearch}
                 aria-label="Clear search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-ink-subtle hover:text-ink-muted"
               >
                 <X className="size-3.5" />
               </button>
@@ -93,7 +93,7 @@ export function AdvisorStudentsSection({
             <button
               type="button"
               onClick={onClearSearch}
-              className="inline-flex h-9 items-center gap-1 rounded-lg border border-dashed border-gray-300 bg-white px-2.5 text-xs font-semibold text-gray-600 hover:border-[#F26F21] hover:text-[#C2410C]"
+              className="inline-flex h-9 items-center gap-1 rounded-lg border border-dashed border-line bg-white px-2.5 text-xs font-semibold text-ink-muted hover:border-brand hover:text-brand-ink"
             >
               <RotateCcw className="size-3" /> Reset
             </button>
@@ -102,16 +102,16 @@ export function AdvisorStudentsSection({
       </div>
 
       {selected.size > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-brand/25 bg-brand-soft/70 px-4 py-2.5">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
+            <span className="rounded-md bg-brand px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
               {selected.size} student{selected.size === 1 ? '' : 's'} selected
             </span>
             {onSelectAllFiltered && totalFiltered > selected.size && (
               <button
                 type="button"
                 onClick={onSelectAllFiltered}
-                className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70"
+                className="rounded-md border border-brand/30 bg-white px-2 py-1 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-soft-strong/70"
               >
                 Select all {totalFiltered}
               </button>
@@ -119,7 +119,7 @@ export function AdvisorStudentsSection({
             <button
               type="button"
               onClick={onClearSelection}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-600 hover:bg-orange-100/80 hover:text-gray-900"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ink-muted hover:bg-brand-soft-strong/80 hover:text-ink-primary"
             >
               <X className="size-3.5" aria-hidden /> Clear
             </button>
@@ -128,7 +128,7 @@ export function AdvisorStudentsSection({
             <button
               type="button"
               onClick={onReassignSelected}
-              className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#e05f14]"
+              className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand-hover"
             >
               Reassign
             </button>

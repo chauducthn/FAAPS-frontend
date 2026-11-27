@@ -75,6 +75,8 @@ export const adminService = {
     majorId?: string;
     /** Narrow the list to one cohort: a cohort is one curriculum version of a major. */
     curriculumVersionId?: string;
+    /** Narrow the list to one cohort code (e.g. K18, K19). */
+    cohort?: string;
     page?: number;
     size?: number;
     sort?: UserSort;

@@ -36,8 +36,8 @@ function AttendanceStatTile({
   onClick?: () => void;
 }) {
   const iconTone = {
-    orange: 'bg-orange-50 text-[#C2410C]',
-    indigo: 'bg-indigo-50 text-indigo-700',
+    orange: 'bg-brand-soft text-brand-ink',
+    indigo: 'bg-line-soft text-ink-secondary',
     emerald: 'bg-emerald-50 text-emerald-700',
     amber: 'bg-amber-50 text-amber-700',
   }[tone];
@@ -46,17 +46,17 @@ function AttendanceStatTile({
     <div
       onClick={onClick}
       className={cn(
-        'flex items-center gap-3 rounded-xl border bg-white px-3.5 py-2.5 text-left transition-colors',
+        'flex items-center gap-3 rounded-lg border bg-white px-3.5 py-2.5 text-left transition-colors',
         onClick && 'cursor-pointer',
-        active ? 'border-[#F26F21]/60 bg-orange-50/30' : 'border-gray-200/80 hover:border-gray-300',
+        active ? 'border-brand/60 bg-brand-soft/30' : 'border-line/80 hover:border-ink-subtle/50',
       )}
     >
       <span className={cn('flex size-8 shrink-0 items-center justify-center rounded-lg', iconTone)}>{icon}</span>
       <div className="min-w-0">
-        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
+        <p className="truncate text-xs font-medium text-ink-muted">{label}</p>
         <div className="mt-0.5 flex items-baseline gap-1.5">
-          <span className="text-lg font-bold leading-none tabular-nums text-gray-900">{value}</span>
-          <span className="truncate text-xs text-gray-400">{meta}</span>
+          <span className="text-lg font-bold leading-none tabular-nums text-ink-primary">{value}</span>
+          <span className="truncate text-xs text-ink-subtle">{meta}</span>
         </div>
       </div>
     </div>
@@ -105,13 +105,13 @@ export default function Attendance() {
               <button
                 type="button"
                 onClick={() => downloadAttendanceCsv('attendance-template.csv', attendanceTemplateCsv())}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3.5 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover"
               >
-                <Download className="size-4 text-gray-500" aria-hidden /> Template
+                <Download className="size-4 text-ink-muted" aria-hidden /> Template
               </button>
               <label
                 className={cn(
-                  'inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14]',
+                  'inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-brand-hover',
                   preview.isPending && 'pointer-events-none opacity-60',
                 )}
               >

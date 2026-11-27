@@ -34,8 +34,8 @@ export function CourseRuleModal({ course, rule, saving, onClose, onSave }: Props
     <Modal open onClose={onClose} title={`Attendance condition for ${course.code}`}>
       <div className="flex flex-col gap-4 p-6">
         <div>
-          <h2 className="text-xl font-semibold text-[#151c27]">Attendance condition</h2>
-          <p className="mt-1 text-sm text-[#555f6f]">
+          <h2 className="text-xl font-semibold text-ink-primary">Attendance condition</h2>
+          <p className="mt-1 text-sm text-ink-muted">
             {course.code} · {course.name}
           </p>
         </div>
@@ -46,15 +46,15 @@ export function CourseRuleModal({ course, rule, saving, onClose, onSave }: Props
           </p>
         )}
       </div>
-      <div className="flex justify-end gap-2 border-t border-[#e5e7eb] p-4 sm:px-6">
-        <button type="button" onClick={onClose} className="rounded-lg bg-gray-100 px-5 py-2 text-sm font-semibold text-[#151c27] hover:bg-gray-200">
+      <div className="flex justify-end gap-2 border-t border-line p-4 sm:px-6">
+        <button type="button" onClick={onClose} className="rounded-lg bg-line-soft px-5 py-2 text-sm font-semibold text-ink-primary hover:bg-line">
           Cancel
         </button>
         <button
           type="button"
           onClick={submit}
           disabled={saving}
-          className="rounded-lg bg-[#f37021] px-5 py-2 text-sm font-semibold text-white hover:bg-[#d95f15] disabled:opacity-50"
+          className="rounded-lg bg-brand px-5 py-2 text-sm font-semibold text-white hover:bg-brand-hover disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save'}
         </button>

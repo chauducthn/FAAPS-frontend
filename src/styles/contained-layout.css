@@ -1,0 +1,44 @@
+/*
+ * Contained portal layout (admin).
+ *
+ * The shell is exactly one viewport tall: the sidebar and header never scroll.
+ * A page marks its working area (usually a table) with `.admin-fill`; every
+ * wrapper between <main data-contained-main> and that area becomes a flex
+ * column, so the area takes the remaining height and scrolls on its own while
+ * tabs, stat tiles and filters stay in place. Pages without `.admin-fill`
+ * simply scroll inside <main>.
+ */
+
+/* Wrappers on the path to the fill area stretch to the available height. Grids keep their own layout. */
+[data-contained-main] :is(div, section, article, form):has(.admin-fill):not([class*='grid']) {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+}
+
+/* The page root keeps a usable floor; below it, <main> scrolls instead of crushing the table. */
+[data-contained-main] > :is(div, section, article, form):has(.admin-fill):not([class*='grid']) {
+  min-height: 32rem;
+}
+
+/* Siblings of the fill path (tabs, stat strips, filter bars) keep their natural height. */
+[data-contained-main] :has(.admin-fill) > :not(.admin-fill):not(:has(.admin-fill)) {
+  flex-shrink: 0;
+}
+
+/*
+ * The working area grows into the free height but never drops below a usable floor. When a page has
+ * extra content after it (for example AI presets), <main> scrolls to reveal that content instead.
+ */
+.admin-fill {
+  display: flex;
+  flex: 1 1 0px;
+  flex-direction: column;
+  min-height: 18rem;
+}
+
+/* A lone child (typically <DataTable>) fills the area and owns the scroll. */
+.admin-fill > :only-child {
+  flex: 1 1 0px;
+  min-height: 0;
+}

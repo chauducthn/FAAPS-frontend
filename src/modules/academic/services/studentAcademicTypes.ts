@@ -1,0 +1,73 @@
+import type { CourseWorkload } from '../types/course';
+
+export type AcademicStudentProfile = {
+  id: string; fullName: string; email: string; phone: string | null; accountStatus: string;
+  studentCode: string | null; majorCode: string | null; majorName: string | null;
+  curriculumVersionId: string | null; cohort: string | null; currentSemester: number | null;
+  currentGpa: number | null; totalCreditsEarned: number | null; academicStatus: string | null;
+  dateOfBirth?: string | null;
+};
+export type TranscriptRow = { id: string; courseCode: string; courseName: string; credits: number;
+  semesterCode: string; semesterName: string; finalScore: number | null; status: string;
+  attemptNumber: number; creditsEarned: number };
+export type Progress = { requiredCredits: number; earnedCredits: number; curriculumCourses: number;
+  completedCourses: number; currentGpa: number | null;
+  semesters: { code: string; name: string; creditsEnrolled: number; creditsEarned: number;
+    semesterGpa: number | null; cumulativeGpa: number | null; standing: string }[] };
+export type Course = { id: string; code: string; name: string; credits: number; category: string;
+  description: string | null; objectives: string | null; learningOutcomes: string | null;
+  materialLink?: string | null; knowledgeBlock?: string | null; gradingStructure?: string | null;
+  workload?: CourseWorkload | null };
+export type CourseDetail = { course: Course; prerequisites: { id: string; courseCode: string;
+  courseName: string; groupNo: number; type: string; minimumScore: number | null }[] };
+export type Curriculum = { id: string; version: string; name: string; description: string | null;
+  majorCode: string; majorName: string };
+export type CurriculumCourse = { courseId: string; code: string; name: string; credits: number;
+  semesterNumber: number; mandatory: boolean; groupName: string | null; workload?: CourseWorkload | null };
+export type BlockPlacement = { courseCode: string; semesterNumber: number; blockCode: string;
+  planMode: 'CUSTOM' | 'RETAKE' | 'DEFERRED' | 'EARLY' | 'DRAFT' | 'EXCLUDED'; note: string | null };
+export type StudyJourneyGoal = {
+  expectedGraduationTerm: string | null;
+  expectedGraduationSemesterId: string | null;
+  careerOrientation: 'JOB' | 'ACADEMIC' | 'RESEARCH' | 'ENTREPRENEURIAL';
+  targetJobRole: string | null;
+  targetGpa: number | null;
+};
+export type FlmPreferencesView = {
+  comboCode: string | null;
+  englishPrep: string | null;
+  musicalInstrument: string | null;
+  physicalEducation: string | null;
+  combos: { code: string; label: string; courses: { code: string; name: string; credits: number }[] }[];
+  englishOptions: { code: string; label: string }[];
+  instrumentOptions: { code: string; label: string }[];
+  physicalEducationOptions: { code: string; label: string }[];
+};
+export type ImportRow = { rowNumber: number; courseCode: string; semesterCode: string;
+  finalScore: number | null; status: string; attemptNumber: number; error: string | null };
+export type ImportPreview = { importId: string; rowCount: number; errorCount: number; rows: ImportRow[] };
+export type ImportHistory = { id: string; fileName: string; status: string; rowCount: number;
+  errorCount: number; createdAt: string; confirmedAt: string | null };
+export type Semester = { id: string; code: string; name: string; startDate: string; endDate: string };
+export type CurriculumPlan = {
+  header: {
+    id: string; semesterId: string; semesterCode: string; version: number; status: string;
+    planType: string; totalCredits: number; previousPlanId: string | null;
+    submittedAt: string | null; reviewedByUserId: string | null; reviewedAt: string | null;
+    reviewNotes: string | null; createdAt: string;
+  };
+  courses: { id: string; code: string; name: string; credits: number }[];
+  issues: string[];
+};
+export type LearningTask = { title: string; description: string | null; dueDate: string | null;
+  resourceUrl: string | null };
+export type CoursePlan = { header: { id: string; courseId: string; courseCode: string;
+  courseName: string; learningGoal: string | null; version: number; createdAt: string };
+  tasks: (LearningTask & { id: string; sortOrder: number; completed: boolean; completedAt: string | null })[] };
+export type AssignmentStatus = { advisorId: string | null; pendingRequestId: string | null;
+  canRequestAdvisor: boolean; canRequestAdvising: boolean };
+export type AcademicAdvisingRequest = { id: string; studentId: string; studentName: string;
+  advisorId: string | null; advisorName: string | null; title: string; description: string;
+  requestType: string; status: string; resolutionSummary: string | null; createdAt: string; updatedAt: string };
+export type AcademicAdvisingDetail = { request: AcademicAdvisingRequest; messages: { id: string; senderId: string;
+  senderName: string; content: string; internal: boolean; createdAt: string }[] };

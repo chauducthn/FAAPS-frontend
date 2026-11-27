@@ -35,7 +35,7 @@ export function AcademicRulesBulkBar({
         type="button"
         disabled={busy}
         onClick={() => onBulkStatus(selectedRows, 'INACTIVE')}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-700 ring-1 ring-gray-200 transition-colors hover:bg-gray-50 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-ink-secondary ring-1 ring-line transition-colors hover:bg-surface-hover disabled:opacity-50"
       >
         <CircleOff className="size-3.5" /> Set inactive
       </button>

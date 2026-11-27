@@ -11,17 +11,17 @@ interface StatCardProps {
 
 export function StatCard({ label, value, icon: Icon, iconClassName, isLoading }: StatCardProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-xl bg-white p-6 shadow-sm">
+    <div className="flex flex-col gap-4 rounded-lg bg-white p-6 shadow-sm">
       <div className="flex items-center gap-3">
         <span className={cn('flex size-10 items-center justify-center rounded-full', iconClassName)}>
           <Icon className="size-5" />
         </span>
-        <p className="text-[13px] text-[#555f6f]">{label}</p>
+        <p className="text-[13px] text-ink-muted">{label}</p>
       </div>
       {isLoading ? (
-        <div className="h-10 w-24 animate-pulse rounded bg-gray-100" />
+        <div className="h-10 w-24 animate-pulse rounded bg-line-soft" />
       ) : (
-        <p className="text-[32px] font-bold leading-10 text-[#151c27]">
+        <p className="text-[32px] font-bold leading-10 text-ink-primary">
           {value === undefined ? '—' : value.toLocaleString('en-US')}
         </p>
       )}

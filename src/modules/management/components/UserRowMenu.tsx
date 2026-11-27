@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowsLeftRight as ArrowLeftRight,
-  Briefcase,
   CheckCircle as CheckCircle2,
   Eye,
   Key as KeyRound,
@@ -26,7 +25,6 @@ type Props = {
   onToggle: () => void;
   onRole: () => void;
   onResetPassword: () => void;
-  onAssignments?: () => void;
   onDelete?: () => void;
 };
 
@@ -37,7 +35,6 @@ export function UserRowMenu({
   onToggle,
   onRole,
   onResetPassword,
-  onAssignments,
   onDelete,
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -81,7 +78,8 @@ export function UserRowMenu({
   const suspended = user.status === 'SUSPENDED';
   const canReset = canResetPassword(user);
   const item =
-    'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-[13px] font-medium transition-colors hover:bg-gray-100/80';
+    'flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-[13px] font-medium transition-colors ' +
+    'hover:bg-surface-hover';
   const action = (handler: () => void) => {
     setOpen(false);
     handler();
@@ -96,7 +94,10 @@ export function UserRowMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={toggle}
-        className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+        className={
+          'inline-flex size-8 items-center justify-center rounded-md text-ink-subtle transition-colors hover:bg-line-soft ' +
+          'hover:text-ink-primary aria-expanded:bg-line-soft aria-expanded:text-ink-primary'
+        }
       >
         <MoreHorizontal className="size-4" />
       </button>
@@ -107,25 +108,19 @@ export function UserRowMenu({
             ref={menuRef}
             role="menu"
             style={{ position: 'fixed', top: pos.top, bottom: pos.bottom, right: pos.right }}
-            className="z-[60] w-52 rounded-xl border border-gray-200/80 bg-white p-1.5 shadow-lg ring-1 ring-black/5"
+            className="z-[60] w-52 rounded-lg border border-line bg-white p-1 shadow-[0_12px_32px_-12px_rgb(0_0_0/0.25)]"
           >
-            <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onView)}>
-              <Eye className="size-4 text-gray-400" aria-hidden />
+            <button role="menuitem" className={cn(item, 'text-ink-secondary')} onClick={() => action(onView)}>
+              <Eye className="size-4 text-ink-subtle" aria-hidden />
               View details
             </button>
-            {onAssignments && (
-              <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onAssignments)}>
-                <Briefcase className="size-4 text-gray-400" aria-hidden />
-                View assignments
-              </button>
-            )}
-            <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onRole)}>
-              <ArrowLeftRight className="size-4 text-gray-400" aria-hidden />
+            <button role="menuitem" className={cn(item, 'text-ink-secondary')} onClick={() => action(onRole)}>
+              <ArrowLeftRight className="size-4 text-ink-subtle" aria-hidden />
               Set role
             </button>
             {canReset ? (
-              <button role="menuitem" className={cn(item, 'text-gray-700')} onClick={() => action(onResetPassword)}>
-                <KeyRound className="size-4 text-gray-400" aria-hidden />
+              <button role="menuitem" className={cn(item, 'text-ink-secondary')} onClick={() => action(onResetPassword)}>
+                <KeyRound className="size-4 text-ink-subtle" aria-hidden />
                 Reset password
               </button>
             ) : (
@@ -134,15 +129,15 @@ export function UserRowMenu({
                 disabled
                 title={NO_PASSWORD_REASON}
                 aria-label={`Reset password (unavailable: ${NO_PASSWORD_REASON})`}
-                className={cn(item, 'cursor-not-allowed text-gray-400 hover:bg-transparent')}
+                className={cn(item, 'cursor-not-allowed text-ink-subtle hover:bg-transparent')}
               >
-                <KeyRound className="size-4 text-gray-300" aria-hidden />
+                <KeyRound className="size-4 text-ink-subtle" aria-hidden />
                 Reset password
               </button>
             )}
             {(user.status === 'ACTIVE' || suspended) && (
               <>
-                <div className="my-1 border-t border-gray-100" role="separator" />
+                <div className="-mx-1 my-1 border-t border-line" role="separator" />
                 <button
                   role="menuitem"
                   disabled={isSelf && !suspended}

@@ -1,8 +1,9 @@
 // Assign 1 major + 1 cohort to one or multiple advisors (manual or auto-distribute, without assigning students).
 import { useEffect, useMemo, useState } from 'react';
-import { FolderOpen } from '@phosphor-icons/react';
+import { FolderOpen, SpinnerGap } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
+import { ModalFooter, ModalHeader, modalButtonClass } from '../../../shared/components/ui/ModalParts';
 import {
   useAutoAssignAdvisorCohorts,
   useBulkAssignAdvisorCohorts,
@@ -10,12 +11,6 @@ import {
 } from '../hooks/queries/useAdminAssignments';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
 import type { AssignmentAdvisor, SummaryCohort } from '../types/admin';
-import {
-  AssignmentModalFooter,
-  AssignmentModalHeader,
-  assignmentCancelBtn,
-  assignmentPrimaryBtn,
-} from './AssignmentModalChrome';
 import { CohortAssignModalBody } from './CohortAssignModalBody';
 
 interface CohortAssignModalProps {
@@ -106,11 +101,17 @@ export function CohortAssignModal({
     ? idleCount === 0 || cohortsNeedingPool === 0
     : (isBulk && !cohortId) || (!!majorCode && !cohortId));
 
+  const submitLabel = isBulk && mode === 'auto' ? 'Auto-assign cohorts' : cohortId ? 'Save assignment' : 'Clear cohort';
+
   return (
     <Modal open={open} onClose={() => !pending && onClose()} title="Assign cohort to advisor" className="max-w-lg">
-      <AssignmentModalHeader
-        icon={FolderOpen} title={title}
-        subtitle="1 major & 1 cohort per advisor. Students are not assigned yet." onClose={onClose}
+      <ModalHeader
+        title={title}
+        description="1 major & 1 cohort per advisor. Students are not assigned yet."
+        icon={<FolderOpen />}
+        tone="brand"
+        onClose={onClose}
+        closeDisabled={pending}
       />
       <CohortAssignModalBody
         isBulk={isBulk} bulkCount={bulkAdvisors?.length ?? 0} mode={mode}
@@ -124,12 +125,15 @@ export function CohortAssignModal({
         }}
         onCohortChange={(next) => { setCohortId(next); setError(null); }}
       />
-      <AssignmentModalFooter>
-        <button type="button" disabled={pending} onClick={onClose} className={assignmentCancelBtn}>Cancel</button>
-        <button type="button" disabled={submitDisabled} onClick={() => void save()} className={assignmentPrimaryBtn}>
-          {pending ? 'Saving...' : isBulk && mode === 'auto' ? 'Auto-assign cohorts' : cohortId ? 'Save assignment' : 'Clear cohort'}
+      <ModalFooter>
+        <button type="button" disabled={pending} onClick={onClose} className={modalButtonClass('secondary')}>
+          Cancel
         </button>
-      </AssignmentModalFooter>
+        <button type="button" disabled={submitDisabled} onClick={() => void save()} className={modalButtonClass('primary')}>
+          {pending && <SpinnerGap className="size-4 animate-spin" aria-hidden />}
+          {submitLabel}
+        </button>
+      </ModalFooter>
     </Modal>
   );
 }

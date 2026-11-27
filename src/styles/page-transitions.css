@@ -1,0 +1,146 @@
+/*
+ * Route transitions between the landing page and the auth pages.
+ * Links opt in with React Router's `viewTransition` prop; browsers without the
+ * View Transitions API simply navigate without animation.
+ *
+ * Named elements morph between pages:
+ *   brand-logo   - the header logo
+ *   campus-frame - the landing hero photo <-> the auth side photo
+ *   auth-panel   - the auth form column; Login and Register keep the photo on
+ *                  opposite sides, so the photo and the form trade places
+ *   landing-nav  - the landing header
+ *   hero-copy    - the landing hero text, buttons and slide controls
+ */
+
+@keyframes page-fade-out {
+  to { opacity: 0; transform: translateY(-6px); }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+}
+
+@keyframes auth-enter {
+  from { opacity: 0; transform: translateY(12px); }
+}
+
+::view-transition-old(root) {
+  animation: page-fade-out 220ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: page-fade-in 480ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
+}
+
+::view-transition-group(brand-logo),
+::view-transition-group(campus-frame),
+::view-transition-group(auth-panel) {
+  animation-duration: 700ms;
+  animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* The photo slides above the form it crosses. */
+::view-transition-group(campus-frame) {
+  z-index: 2;
+}
+
+/*
+ * The landing header and hero copy ride above the photo, so they can enter while it grows.
+ * Their new snapshots are live: what shows is the page's own staggered entrance
+ * (landing-motion.css), not a cross-fade. Leaving the landing page they fade out quickly.
+ */
+::view-transition-group(landing-nav),
+::view-transition-group(hero-copy) {
+  z-index: 3;
+}
+
+::view-transition-group(brand-logo) {
+  z-index: 4;
+}
+
+::view-transition-new(landing-nav),
+::view-transition-new(hero-copy) {
+  animation: none;
+}
+
+::view-transition-old(landing-nav),
+::view-transition-old(hero-copy) {
+  animation-duration: 200ms;
+}
+
+/*
+ * Both snapshots are clipped to the frame's rounded corners, so the square corners
+ * of the snapshot underneath never show. Into the full-bleed landing hero
+ * (view-transition-class: hero-photo) the corners straighten as the frame grows.
+ */
+::view-transition-image-pair(campus-frame) {
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+
+::view-transition-image-pair(*.hero-photo) {
+  animation: frame-corners-out 700ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+@keyframes frame-corners-out {
+  to { border-radius: 0; }
+}
+
+/* Snapshots keep their aspect ratio while the frame resizes. */
+::view-transition-old(campus-frame),
+::view-transition-new(campus-frame) {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+/*
+ * The old photo stays put underneath while the new one fades in on top within the
+ * first moments of the move, so captions never ghost and a different photo never pops.
+ */
+::view-transition-old(campus-frame) {
+  animation: none;
+}
+
+::view-transition-new(campus-frame) {
+  animation: frame-fade-in 220ms ease-out both;
+}
+
+@keyframes frame-fade-in {
+  from { opacity: 0; }
+}
+
+/* Form snapshots are never stretched; they simply cross-fade. */
+::view-transition-old(auth-panel),
+::view-transition-new(auth-panel) {
+  height: 100%;
+  width: 100%;
+  object-fit: none;
+  object-position: 50% 0;
+}
+
+::view-transition-old(auth-panel) {
+  animation-duration: 250ms;
+}
+
+::view-transition-new(auth-panel) {
+  animation-duration: 400ms;
+  animation-delay: 300ms;
+}
+
+/* First paint of an auth page (direct visit or reload). */
+.auth-enter {
+  animation: auth-enter 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+
+  .auth-enter {
+    animation: none;
+  }
+}

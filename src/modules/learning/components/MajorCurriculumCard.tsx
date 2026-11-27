@@ -22,7 +22,7 @@ function saveErrorMessage(error: unknown): string {
   return apiErrorMessage(error);
 }
 
-export function MajorCurriculumCard({ profile }: { profile: StudentProfile }) {
+export function MajorCurriculumCard({ profile, compact = false }: { profile: StudentProfile; compact?: boolean }) {
   const queryClient = useQueryClient();
   const choices = useCurriculumChoices();
   const current = profile.curriculumVersionId ?? '';
@@ -69,7 +69,7 @@ export function MajorCurriculumCard({ profile }: { profile: StudentProfile }) {
 
   return (
     <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-6 py-4">
+      <div className={`flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 ${compact ? 'px-4 py-3' : 'px-6 py-4'}`}>
         <div className="flex items-center gap-2.5">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21]">
             <GraduationCap className="size-4.5" aria-hidden />
@@ -86,7 +86,7 @@ export function MajorCurriculumCard({ profile }: { profile: StudentProfile }) {
         )}
       </div>
 
-      <div className="space-y-4 p-6">
+      <div className={compact ? 'space-y-3 p-4' : 'space-y-4 p-6'}>
         {!isSet && (
           <p
             role="note"
@@ -114,19 +114,15 @@ export function MajorCurriculumCard({ profile }: { profile: StudentProfile }) {
             <option value="">
               {choices.isLoading
                 ? 'Loading...'
-                : detectedCohort
-                  ? `Select your ${detectedCohort} major / curriculum...`
-                  : 'Select your major and cohort...'}
+                : 'Select major...'}
             </option>
-            {groups.map((group) => (
-              <optgroup key={group.label} label={group.label}>
-                {group.items.map((item) => (
-                  <option key={item.id} value={item.id}>
-                    {item.version} - {item.name}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
+            {groups.map((group) =>
+              group.items.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {detectedCohort ? item.name : `${item.name} (${item.version})`}
+                </option>
+              )),
+            )}
           </select>
           <p className="mt-1.5 text-xs text-gray-400">
             {detectedCohort

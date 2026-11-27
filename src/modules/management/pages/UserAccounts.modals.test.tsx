@@ -136,7 +136,7 @@ describe('UserAccounts modals', () => {
       expect(screen.getByLabelText('Select row 2')).toBeDisabled();
     });
 
-    it('lists the accounts in the confirmation and gates the reset on the checkbox', async () => {
+    it('lists the accounts and default password in the confirmation dialog', async () => {
       const user = userEvent.setup();
       twoUsers();
       renderPage();
@@ -145,15 +145,15 @@ describe('UserAccounts modals', () => {
       await user.click(screen.getByLabelText('Select row 1'));
       await user.click(screen.getByRole('button', { name: /reset password/i }));
 
-      // The confirmation names the account that is about to be reset.
+      // The confirmation names the account and masks the default password until revealed.
       const dialog = await screen.findByRole('dialog', { name: /reset this password/i });
       expect(within(dialog).getByText('a@fpt.edu.vn')).toBeInTheDocument();
       expect(within(dialog).getByText('Nguyen Van A')).toBeInTheDocument();
+      expect(within(dialog).queryByText('FPTUniversity@2026')).not.toBeInTheDocument();
+      await user.click(within(dialog).getByRole('button', { name: /show default password/i }));
+      expect(within(dialog).getByText('FPTUniversity@2026')).toBeInTheDocument();
 
       const confirm = within(dialog).getByRole('button', { name: /^reset password$/i });
-      expect(confirm).toBeDisabled();
-
-      await user.click(within(dialog).getByRole('checkbox', { name: /Tôi hiểu password chỉ hiện 1 lần/i }));
       expect(confirm).toBeEnabled();
     });
 
@@ -179,7 +179,6 @@ describe('UserAccounts modals', () => {
         'button',
         { name: /^reset password$/i },
       );
-      await user.click(within(screen.getByRole('dialog')).getByRole('checkbox', { name: /Tôi hiểu/i }));
       await user.click(confirm);
 
       // The result dialog opens with the warning and the new password.
@@ -208,7 +207,6 @@ describe('UserAccounts modals', () => {
         'button',
         { name: /^reset password$/i },
       );
-      await user.click(within(screen.getByRole('dialog')).getByRole('checkbox', { name: /Tôi hiểu/i }));
       await user.click(confirm);
 
       const result = await screen.findByRole('dialog', { name: /password reset results/i });
@@ -271,7 +269,8 @@ describe('UserAccounts modals', () => {
       await screen.findByText('Nguyen Van A');
 
       await user.click(screen.getByRole('button', { name: /create user/i }));
-      await user.selectOptions(await screen.findByLabelText('Role'), 'ADVISOR');
+      const roleTabs = await screen.findByRole('tablist', { name: 'Role' });
+      await user.click(within(roleTabs).getByRole('tab', { name: 'Advisor' }));
       await user.type(screen.getByLabelText('Email'), 'advisor@fpt.edu.vn');
 
       expect(await screen.findByText(/Advisor accounts must use an @fe\.edu\.vn/)).toBeInTheDocument();
@@ -292,7 +291,7 @@ describe('UserAccounts modals', () => {
       expect(screen.getByLabelText('Expected graduation semester')).toBeInTheDocument();
       expect(screen.queryByLabelText('Max advisees')).not.toBeInTheDocument();
 
-      await user.selectOptions(screen.getByLabelText('Role'), 'ADVISOR');
+      await user.click(within(screen.getByRole('tablist', { name: 'Role' })).getByRole('tab', { name: 'Advisor' }));
 
       await waitFor(() => {
         expect(screen.queryByLabelText('Student ID')).not.toBeInTheDocument();
@@ -360,7 +359,8 @@ describe('UserAccounts modals', () => {
       await screen.findByText('Nguyen Van A');
 
       await user.click(screen.getByRole('button', { name: /create user/i }));
-      await user.selectOptions(await screen.findByLabelText('Role'), 'ADVISOR');
+      const roleTabs = await screen.findByRole('tablist', { name: 'Role' });
+      await user.click(within(roleTabs).getByRole('tab', { name: 'Advisor' }));
       await user.type(screen.getByLabelText('Full name'), 'Tran Advisor');
       await user.type(screen.getByLabelText('Email'), 'advisor@fe.edu.vn');
       await user.type(screen.getByLabelText('Max advisees'), '12');

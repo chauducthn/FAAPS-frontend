@@ -32,7 +32,7 @@ interface CTAButtonProps extends VariantProps<typeof ctaVariants> {
 /** Shared navigation button. Landing only links to /login and never handles OAuth. */
 export function CTAButton({ to = '/login', variant, size, className, children, onClick }: CTAButtonProps) {
   return (
-    <Link to={to} onClick={onClick} className={cn(ctaVariants({ variant, size }), className)}>
+    <Link to={to} onClick={onClick} viewTransition className={cn(ctaVariants({ variant, size }), className)}>
       {children}
     </Link>
   );

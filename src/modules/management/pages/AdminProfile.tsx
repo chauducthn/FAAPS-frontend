@@ -24,7 +24,7 @@ export default function AdminProfile() {
       />
 
       {profileQuery.isError ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800">
           Unable to load your profile.{' '}
           <button type="button" onClick={() => profileQuery.refetch()} className="font-bold underline">
             Retry
@@ -32,8 +32,8 @@ export default function AdminProfile() {
         </div>
       ) : profileQuery.isLoading || !data ? (
         <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-          <div className="h-64 animate-pulse rounded-2xl bg-white shadow-sm" />
-          <div className="h-64 animate-pulse rounded-2xl bg-white shadow-sm" />
+          <div className="h-64 animate-pulse rounded-lg bg-white shadow-sm" />
+          <div className="h-64 animate-pulse rounded-lg bg-white shadow-sm" />
         </div>
       ) : (
         <div className="grid items-start gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">

@@ -73,16 +73,17 @@ describe('AdvisorSidebar', () => {
     });
   });
 
-  it('marks the current page active with the FPT orange treatment', () => {
+  it('marks the current page active with the FPT orange indicator', () => {
     renderSidebar('/advisor/advising-requests');
     const nav = screen.getByRole('navigation', { name: /portal navigation/i });
 
     const active = nav.querySelector('a[aria-current="page"]');
     expect(active).not.toBeNull();
     expect(active?.textContent).toContain('Advising Requests');
-    expect(active?.className).toContain('text-[var(--brand)]');
-    expect(active?.className).toContain('bg-[var(--brand-soft)]');
-    expect(active?.className).toContain('border-[var(--brand)]');
+    expect(active?.className).toContain('text-ink-primary');
+    expect(active?.className).toContain('bg-line-soft');
+    expect(active?.className).toContain('[&>svg]:!text-brand');
+    expect(active?.className).toContain('before:bg-brand');
   });
 
   it('keeps Overview inactive on a sub-route', () => {
@@ -105,7 +106,7 @@ describe('AdvisorSidebar', () => {
     const nav = screen.getByRole('navigation', { name: /portal navigation/i });
     const label = within(nav).getByText('ADVISING');
 
-    expect(label.className).toContain('text-[var(--ink-subtle)]');
+    expect(label.className).toContain('text-ink-subtle');
     expect(label.className).toContain('uppercase');
   });
 });

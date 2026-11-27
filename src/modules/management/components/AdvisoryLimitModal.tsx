@@ -1,17 +1,15 @@
 // Quick modal to update an advisor's maximum advisee limit.
 import { useEffect, useState } from 'react';
-import { Warning as AlertTriangle, SlidersHorizontal } from '@phosphor-icons/react';
+import { SlidersHorizontal, SpinnerGap } from '@phosphor-icons/react';
 import { toast } from 'sonner';
+import { InlineAlert } from '../../../shared/components/ui/InlineAlert';
 import { Modal } from '../../../shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '../../../shared/components/ui/ModalParts';
 import { LoadBadge } from './LoadBadge';
 import { useUpdateAdvisorLimit } from '../hooks/queries/useAdminAssignments';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
-import {
-  AssignmentModalFooter,
-  AssignmentModalHeader,
-  assignmentCancelBtn,
-  assignmentPrimaryBtn,
-} from './AssignmentModalChrome';
+import { userFieldClass } from './createUserSchema';
+import { UserFormField } from './UserFormPrimitives';
 
 export interface AdvisoryLimitTarget {
   id: string;
@@ -60,22 +58,24 @@ export function AdvisoryLimitModal({
 
   return (
     <Modal open={!!target} onClose={() => !updateLimit.isPending && onClose()} title="Advisory limit" className="max-w-md">
-      <AssignmentModalHeader
-        icon={SlidersHorizontal}
+      <ModalHeader
         title="Advisory limit"
-        subtitle={`Set the maximum recommended advisees for ${target.name}.`}
+        description={`Set the maximum recommended advisees for ${target.name}.`}
+        icon={<SlidersHorizontal />}
+        tone="brand"
         onClose={onClose}
+        closeDisabled={updateLimit.isPending}
       />
-      <div className="flex flex-col gap-4 px-6 py-5">
-        <div className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50/70 px-3.5 py-2.5 text-xs">
-          <span className="text-gray-600">Current workload</span>
+
+      <ModalBody className="flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-page px-3.5 py-2.5 ring-1 ring-inset ring-line-soft">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+            Current workload
+          </span>
           <LoadBadge count={target.activeStudents} limit={target.limit} />
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-[13px] font-medium text-gray-700">
-            Maximum advisees
-          </label>
+        <UserFormField label="Maximum advisees" required>
           <input
             type="number"
             min={1}
@@ -86,31 +86,32 @@ export function AdvisoryLimitModal({
             }}
             aria-label="Maximum advisees"
             placeholder="e.g. 30"
-            className="h-10 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 shadow-2xs focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+            className={userFieldClass(!!error)}
           />
-        </div>
+        </UserFormField>
 
         {overBy > 0 && (
-          <p className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-            <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+          <InlineAlert tone="info">
             {target.name} currently has {target.activeStudents} students ({overBy} over this limit). The limit is a warning, not a block.
-          </p>
+          </InlineAlert>
         )}
 
         {error && (
-          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+          <InlineAlert tone="error" role="alert">
             {error}
-          </p>
+          </InlineAlert>
         )}
-      </div>
-      <AssignmentModalFooter>
-        <button type="button" disabled={updateLimit.isPending} onClick={onClose} className={assignmentCancelBtn}>
+      </ModalBody>
+
+      <ModalFooter>
+        <button type="button" disabled={updateLimit.isPending} onClick={onClose} className={modalButtonClass('secondary')}>
           Cancel
         </button>
-        <button type="button" disabled={updateLimit.isPending || !valid} onClick={() => void save()} className={assignmentPrimaryBtn}>
-          {updateLimit.isPending ? 'Saving...' : 'Save limit'}
+        <button type="button" disabled={updateLimit.isPending || !valid} onClick={() => void save()} className={modalButtonClass('primary')}>
+          {updateLimit.isPending && <SpinnerGap className="size-4 animate-spin" aria-hidden />}
+          Save limit
         </button>
-      </AssignmentModalFooter>
+      </ModalFooter>
     </Modal>
   );
 }

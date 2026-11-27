@@ -1,6 +1,8 @@
 // Types cho trang Academic Search của Advisor.
 // Shape bám theo contract API read-only của advisor (xem ghi chú endpoint ở service).
 
+import type { CourseWorkload } from '../../academic/types/course';
+
 /** Một điều kiện tiên quyết của môn học. */
 export interface LookupPrerequisite {
   courseCode: string;
@@ -31,6 +33,7 @@ export interface LookupCourse {
   prerequisites: LookupPrerequisite[];
   /** Backend chưa có dữ liệu tuần học — có thể rỗng. */
   syllabus: SyllabusWeek[];
+  workload?: CourseWorkload | null;
 }
 
 /** Một học phần trong chương trình đào tạo. */

@@ -1,12 +1,13 @@
 import { Navigate } from 'react-router';
 import { useAuth } from '../stores/useAuth';
+import { AuthStatusScreen } from '../components/AuthStatusScreen';
 
 /** Landing page of the Google redirect. The backend already set the session cookie; this routes by role. */
 export default function AuthCallback() {
   const { user, isCheckingAuth } = useAuth();
 
   if (isCheckingAuth) {
-    return <div className="flex h-screen items-center justify-center text-gray-600">Finishing sign-in...</div>;
+    return <AuthStatusScreen message="Finishing sign-in..." busy />;
   }
 
   if (!user) {

@@ -19,7 +19,7 @@ const RESULT_STYLE: Record<AttendanceResult, { label: string; className: string 
 
 export function ImportSummaryChip({ label, value, className }: { label: string; value: number; className?: string }) {
  return (
-    <span className={cn('rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-[var(--ink-muted)]', className)}>
+    <span className={cn('rounded-full bg-line-soft px-3 py-1 text-xs font-semibold text-[var(--ink-muted)]', className)}>
       {label}: {value}
     </span>
   );

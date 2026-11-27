@@ -1,33 +1,62 @@
+import type { ReactNode } from 'react';
 import { Link } from 'react-router';
-import { CalendarBlank, DownloadSimple as Download, Flag, FolderOpen, GraduationCap, UserMinus, User as UserRound } from '@phosphor-icons/react';
+import {
+  CalendarBlank,
+  DownloadSimple as Download,
+  Flag,
+  FolderOpen,
+  GraduationCap,
+  UserMinus,
+  User as UserRound,
+} from '@phosphor-icons/react';
+import { cn } from '@/shared/lib/utils';
+import type { AdminStatTone } from './AdminStatTile';
 
-function DashboardStatTile({
-  icon, label, value, sub, isLoading, tone, to,
-}: {
-  icon: React.ReactNode; label: string; value?: number; sub?: string;
-  isLoading: boolean; tone: 'blue' | 'orange' | 'emerald' | 'amber' | 'violet' | 'rose'; to: string;
-}) {
-  const iconTone = {
-    blue: 'bg-blue-50 text-blue-600', orange: 'bg-orange-50 text-[#C2410C]', emerald: 'bg-emerald-50 text-emerald-700',
-    amber: 'bg-amber-50 text-amber-700', violet: 'bg-violet-50 text-violet-700', rose: 'bg-rose-50 text-rose-700',
-  }[tone];
+const EXPORT_BUTTON_CLASS =
+  'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border border-line bg-white px-3 text-[13px] ' +
+  'font-medium text-ink-secondary transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50';
 
+const CELL_CLASS =
+  'group flex min-w-0 flex-col gap-1 bg-white px-4 py-3 transition-colors hover:bg-surface-hover ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand/40';
+
+const ICON_TONE: Record<AdminStatTone, string> = {
+  neutral: 'text-ink-subtle',
+  brand: 'text-brand',
+  success: 'text-emerald-600',
+  warning: 'text-amber-600',
+  danger: 'text-red-600',
+};
+
+interface SummaryCellProps {
+  icon: ReactNode;
+  label: string;
+  value?: number;
+  meta?: string;
+  isLoading: boolean;
+  tone?: AdminStatTone;
+  to: string;
+}
+
+/** One cell of the dashboard summary bar; links to the page where the metric can be acted on. */
+function SummaryCell({ icon, label, value, meta, isLoading, tone = 'neutral', to }: SummaryCellProps) {
   return (
-    <Link to={to} className="flex items-center gap-3 rounded-xl border border-gray-200/80 bg-white px-3.5 py-2.5 text-left transition-colors hover:border-gray-300 hover:bg-gray-50/40">
-      <span className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${iconTone}`}>{icon}</span>
-      <div className="min-w-0">
-        <p className="truncate text-xs font-medium text-gray-500">{label}</p>
-        {isLoading ? (
-          <div className="mt-1 h-5 w-12 animate-pulse rounded bg-gray-100" />
-        ) : (
-          <div className="mt-0.5 flex items-baseline gap-1.5">
-            <span className="text-lg font-bold leading-none tabular-nums text-gray-900">
-              {value !== undefined ? value.toLocaleString('en-US') : '—'}
-            </span>
-            {sub && <span className="truncate text-[11px] text-gray-400">{sub}</span>}
-          </div>
-        )}
-      </div>
+    <Link
+      to={to}
+      className={CELL_CLASS}
+    >
+      <span className="flex min-w-0 items-center gap-1.5 text-xs font-medium text-ink-muted">
+        <span className={cn('shrink-0 [&_svg]:size-4', ICON_TONE[tone])}>{icon}</span>
+        <span className="truncate">{label}</span>
+      </span>
+      {isLoading ? (
+        <span className="my-1 block h-5 w-14 animate-pulse rounded-sm bg-line-soft" />
+      ) : (
+        <span className="text-xl font-semibold leading-tight tracking-tight text-ink-primary tabular-nums">
+          {value !== undefined ? value.toLocaleString('en-US') : '—'}
+        </span>
+      )}
+      <span className="truncate text-[11px] text-ink-subtle">{meta ?? ' '}</span>
     </Link>
   );
 }
@@ -40,21 +69,73 @@ export function DashboardKpiStrip(props: {
   isLoading: boolean; assignmentLoading: boolean; appointmentLoading: boolean;
   aiReportsLoading: boolean; exportDisabled: boolean; onExport: () => void;
 }) {
+  const unassignedTone: AdminStatTone = (props.unassigned ?? 0) > 0 ? 'warning' : 'neutral';
+  const reportsTone: AdminStatTone = props.pendingReports > 0 ? 'danger' : 'neutral';
+  const courses = (props.coursesCount ?? 0).toLocaleString('en-US');
+  const cohortMeta = props.majorsCount != null ? `${props.majorsCount} majors · ${courses} courses` : undefined;
+
   return (
-    <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-      <div className="grid flex-1 grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-6">
-        <DashboardStatTile icon={<GraduationCap className="size-4" />} label="Students" value={props.students} sub={props.hasAssignment ? `${props.coveragePct}% assigned` : undefined} isLoading={props.isLoading} tone="blue" to="/admin/users?role=STUDENT" />
-        <DashboardStatTile icon={<UserRound className="size-4" />} label="Advisors" value={props.advisors} sub={props.hasAdvisors ? `${props.idleAdvisors} idle` : undefined} isLoading={props.isLoading} tone="orange" to="/admin/assignments" />
-        <DashboardStatTile icon={<UserMinus className="size-4" />} label="Unassigned" value={props.unassigned} sub={props.hasAssignment ? `${props.pendingRequests ?? 0} req` : undefined} isLoading={props.assignmentLoading} tone="amber" to="/admin/assignments?tab=unassigned" />
-        <DashboardStatTile icon={<FolderOpen className="size-4" />} label="Cohorts" value={props.cohorts} sub={props.majorsCount != null ? `${props.majorsCount}M · ${props.coursesCount ?? 0}C` : undefined} isLoading={props.isLoading} tone="emerald" to="/admin/cohorts" />
-        <DashboardStatTile icon={<CalendarBlank className="size-4" />} label="Appointments" value={props.appointmentsTotal} sub={props.appointmentsScheduled != null ? `${props.appointmentsScheduled} upcoming` : undefined} isLoading={props.appointmentLoading} tone="violet" to="/admin/appointments" />
-        <DashboardStatTile icon={<Flag className="size-4" />} label="AI Reports" value={props.pendingReports} sub={props.activeRules != null ? `${props.activeRules} active rules` : 'pending'} isLoading={props.aiReportsLoading} tone="rose" to="/admin/ai-reports" />
-      </div>
-      <div className="flex shrink-0 items-center justify-end">
-        <button type="button" onClick={props.onExport} disabled={props.exportDisabled} className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3.5 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50">
+    <section aria-label="Key metrics" className="flex flex-col gap-2.5">
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-subtle">System Overview</h2>
+        <button type="button" onClick={props.onExport} disabled={props.exportDisabled} className={EXPORT_BUTTON_CLASS}>
           <Download className="size-4" /> Export report
         </button>
       </div>
-    </div>
+
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3 xl:grid-cols-6">
+        <SummaryCell
+          icon={<GraduationCap />}
+          label="Students"
+          value={props.students}
+          meta={props.hasAssignment ? `${props.coveragePct}% assigned` : undefined}
+          isLoading={props.isLoading}
+          tone="brand"
+          to="/admin/users?role=STUDENT"
+        />
+        <SummaryCell
+          icon={<UserRound />}
+          label="Advisors"
+          value={props.advisors}
+          meta={props.hasAdvisors ? `${props.idleAdvisors} idle` : undefined}
+          isLoading={props.isLoading}
+          to="/admin/assignments"
+        />
+        <SummaryCell
+          icon={<UserMinus />}
+          label="Unassigned"
+          value={props.unassigned}
+          meta={props.hasAssignment ? `${props.pendingRequests ?? 0} pending requests` : undefined}
+          isLoading={props.assignmentLoading}
+          tone={unassignedTone}
+          to="/admin/assignments?tab=unassigned"
+        />
+        <SummaryCell
+          icon={<FolderOpen />}
+          label="Cohorts"
+          value={props.cohorts}
+          meta={cohortMeta}
+          isLoading={props.isLoading}
+          to="/admin/cohorts"
+        />
+        <SummaryCell
+          icon={<CalendarBlank />}
+          label="Appointments"
+          value={props.appointmentsTotal}
+          meta={props.appointmentsScheduled != null ? `${props.appointmentsScheduled} upcoming` : undefined}
+          isLoading={props.appointmentLoading}
+          to="/admin/appointments"
+        />
+        <SummaryCell
+          icon={<Flag />}
+          label="AI reports"
+          value={props.pendingReports}
+          meta={props.activeRules != null ? `${props.activeRules} active rules` : 'pending review'}
+          isLoading={props.aiReportsLoading}
+          tone={reportsTone}
+          to="/admin/ai-reports"
+        />
+      </div>
+    </section>
   );
 }

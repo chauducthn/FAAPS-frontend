@@ -1,8 +1,10 @@
 // Step 2 of the password reset: the results.
 import { useEffect, useMemo, useState } from 'react';
-import { Check, Copy, DownloadSimple as Download, Warning as TriangleAlert, X } from '@phosphor-icons/react';
+import { Check, Copy, DownloadSimple as Download, Key as KeyRound } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
+import { InlineAlert } from '../../../shared/components/ui/InlineAlert';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '../../../shared/components/ui/ModalParts';
 import { buildResetCsv, copyToClipboard, downloadResetCsv } from '../utils/passwordReset';
 import type { PasswordResetEntry } from '../types/admin';
 import { ResetPasswordResultsTable } from './ResetPasswordResultsTable';
@@ -74,46 +76,32 @@ export function ResetPasswordResultModal({ open, results, onClose }: Props) {
 
   return (
     <Modal open={open} onClose={() => {}} title="Password reset results" className="max-w-3xl">
-      <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-6 pb-4 pt-5">
-        <div className="min-w-0">
-          <h2 className="text-[15px] font-bold leading-snug text-[#111827]">Password reset results</h2>
-          <p className="mt-1 text-[12.5px] font-medium text-gray-500">
-            {issued.length} of {results.length} account{results.length === 1 ? '' : 's'} received a new password.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close and discard the passwords"
-          title="Close — the passwords are discarded"
-          className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40"
-        >
-          <X className="size-4" aria-hidden />
-        </button>
-      </div>
+      <ModalHeader
+        title="Password reset results"
+        description={`${issued.length} of ${results.length} account${results.length === 1 ? '' : 's'} received a new password.`}
+        icon={<KeyRound />}
+        tone="warning"
+        onClose={onClose}
+        closeLabel="Close and discard the passwords"
+        closeTitle="Close — the passwords are discarded"
+      />
 
-      <div className="flex flex-col gap-4 p-6">
-        <div className="flex items-start gap-3 rounded-xl border border-red-300 bg-red-50 px-4 py-3.5">
-          <TriangleAlert className="mt-0.5 size-5 shrink-0 text-red-600" aria-hidden />
-          <div className="min-w-0">
-            <p className="text-[13px] font-extrabold text-red-800">Lưu ngay kẻo mất</p>
-            <p className="mt-1 text-[12.5px] font-medium leading-relaxed text-red-700">
-              Mật khẩu chỉ hiển thị đúng một lần. Copy hoặc tải CSV xuống ngay — đóng cửa sổ này là mất vĩnh viễn.
-            </p>
-          </div>
-        </div>
+      <ModalBody className="flex flex-col gap-4">
+        <InlineAlert tone="error" title="Lưu ngay kẻo mất">
+          Mật khẩu chỉ hiển thị đúng một lần. Copy hoặc tải CSV xuống ngay — đóng cửa sổ này là mất vĩnh viễn.
+        </InlineAlert>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[12px] font-bold text-emerald-700 ring-1 ring-inset ring-emerald-200">
+          <span className="inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700">
             {issued.length} reset
           </span>
           {skipped.length > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-[12px] font-bold text-gray-600 ring-1 ring-inset ring-gray-200">
+            <span className="inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium bg-line-soft text-ink-muted">
               {skipped.length} skipped
             </span>
           )}
           {failed.length > 0 && (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-2.5 py-1 text-[12px] font-bold text-red-700 ring-1 ring-inset ring-red-200">
+            <span className="inline-flex items-center rounded-sm px-2 py-0.5 text-xs font-medium bg-red-50 text-red-700">
               {failed.length} failed
             </span>
           )}
@@ -128,41 +116,30 @@ export function ResetPasswordResultModal({ open, results, onClose }: Props) {
         />
 
         {issued.length === 0 && (
-          <p className="rounded-lg bg-gray-50 px-3 py-2 text-[13px] font-medium text-gray-600">
+          <p className="rounded-md bg-surface-page px-3 py-2 text-[13px] text-ink-muted">
             No password was issued. Nothing to copy — check the skipped and failed rows above.
           </p>
         )}
-      </div>
+      </ModalBody>
 
-      <div className="flex flex-col gap-3 border-t border-[#e5e7eb] p-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p className="text-[12px] font-medium text-gray-500">Đóng cửa sổ này là mất vĩnh viễn các mật khẩu này.</p>
-        <div className="flex flex-col-reverse gap-2 sm:flex-row">
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-[#555f6f] transition-colors hover:bg-gray-50 hover:text-[#151c27] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40"
-          >
-            Đóng lại
-          </button>
-          <button
-            type="button"
-            onClick={exportCsv}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-[#151c27] transition-colors hover:bg-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40"
-          >
-            <Download className="size-4" aria-hidden />
-            Download CSV
-          </button>
-          <button
-            type="button"
-            disabled={issued.length === 0}
-            onClick={() => void copyEverything()}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-[#C2410C] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#9a3412] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40"
-          >
-            {copiedAll ? <Check className="size-4" aria-hidden /> : <Copy className="size-4" aria-hidden />}
-            {copiedAll ? 'Copied' : 'Copy All'}
-          </button>
-        </div>
-      </div>
+      <ModalFooter start={<p className="text-xs text-ink-muted">Đóng cửa sổ này là mất vĩnh viễn các mật khẩu này.</p>}>
+        <button type="button" onClick={onClose} className={modalButtonClass('secondary')}>
+          Đóng lại
+        </button>
+        <button type="button" onClick={exportCsv} className={modalButtonClass('secondary')}>
+          <Download className="size-4" aria-hidden />
+          Download CSV
+        </button>
+        <button
+          type="button"
+          disabled={issued.length === 0}
+          onClick={() => void copyEverything()}
+          className={modalButtonClass('primary')}
+        >
+          {copiedAll ? <Check className="size-4" aria-hidden /> : <Copy className="size-4" aria-hidden />}
+          {copiedAll ? 'Copied' : 'Copy All'}
+        </button>
+      </ModalFooter>
     </Modal>
   );
 }

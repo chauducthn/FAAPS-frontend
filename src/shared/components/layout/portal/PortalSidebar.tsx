@@ -31,7 +31,7 @@ export function PortalSidebar({ navSections, collapsed = false, onNavigate }: Po
           {section.title && !collapsed && (
             <p
               className={cn(
-                'px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-[var(--ink-subtle)]',
+                'px-3 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-ink-subtle',
                 idx === 0 ? 'pt-1' : 'pt-4',
               )}
             >
@@ -39,7 +39,7 @@ export function PortalSidebar({ navSections, collapsed = false, onNavigate }: Po
             </p>
           )}
           {collapsed && idx > 0 && (
-            <div className="my-2 border-t border-[var(--line-soft)]" aria-hidden />
+            <div className="my-2 border-t border-line" aria-hidden />
           )}
           <div className="space-y-0.5">
             {section.items.map(({ label, to, icon: Icon, end, badge }) =>
@@ -53,14 +53,13 @@ export function PortalSidebar({ navSections, collapsed = false, onNavigate }: Po
                   aria-label={collapsed ? label : undefined}
                   className={({ isActive }) =>
                     cn(
-                      'group relative flex items-center text-[13px] font-medium text-[var(--ink-muted)] transition-colors',
-                      'hover:bg-[var(--surface-hover)] hover:text-[var(--ink-primary)]',
-                      collapsed
-                        ? 'justify-center rounded-lg px-0 py-2.5'
-                        : 'gap-2.5 rounded-r-lg border-l-[3px] border-transparent py-2 pl-3 pr-3',
+                      'group relative flex items-center rounded-md text-[13px] font-medium text-ink-muted transition-colors',
+                      'hover:bg-surface-hover hover:text-ink-primary [&>svg]:text-ink-subtle hover:[&>svg]:text-ink-secondary',
+                      collapsed ? 'justify-center px-0 py-2.5' : 'gap-2.5 px-3 py-2',
+                      isActive && 'bg-line-soft font-semibold text-ink-primary hover:bg-line-soft [&>svg]:!text-brand',
                       isActive &&
-                        'bg-[var(--brand-soft)] font-semibold text-[var(--brand)] hover:bg-[var(--brand-soft)]',
-                      isActive && !collapsed && 'border-[var(--brand)]',
+                        !collapsed &&
+                        'before:absolute before:inset-y-2 before:-left-px before:w-0.5 before:rounded-full before:bg-brand',
                     )
                   }
                 >
@@ -74,7 +73,7 @@ export function PortalSidebar({ navSections, collapsed = false, onNavigate }: Po
                       />
                     ) : (
                       <span
-                        className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-[var(--brand)] px-1.5 text-[11px] font-bold tabular-nums text-white"
+                        className="inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-sm bg-brand px-1.5 text-[11px] font-semibold tabular-nums text-white"
                         aria-label={`${badge} pending`}
                       >
                         {badge > 99 ? '99+' : badge}
@@ -88,10 +87,8 @@ export function PortalSidebar({ navSections, collapsed = false, onNavigate }: Po
                   aria-disabled="true"
                   title={collapsed ? `${label} (Coming soon)` : 'Coming soon'}
                   className={cn(
-                    'flex cursor-not-allowed items-center text-[13px] font-medium text-[var(--ink-muted)]/50',
-                    collapsed
-                      ? 'justify-center rounded-lg px-0 py-2.5'
-                      : 'gap-2.5 rounded-r-lg border-l-[3px] border-transparent py-2 pl-3 pr-3',
+                    'flex cursor-not-allowed items-center text-[13px] font-medium text-ink-subtle',
+                    collapsed ? 'justify-center rounded-md px-0 py-2.5' : 'gap-2.5 rounded-md px-3 py-2',
                   )}
                 >
                   <Icon className="size-4 shrink-0" aria-hidden />

@@ -14,12 +14,14 @@ interface CurriculumCourseTableProps {
   transcriptByCode: Map<string, TranscriptRow>;
   attemptHistoryByCode: Map<string, AttemptSummary>;
   showSemester: boolean;
+  allowDrag?: boolean;
   draggingCourse: EffectiveCurriculumCourse | null;
   validatePlacement: (course: EffectiveCurriculumCourse, targetSem: number, block: RegularBlockMeta) => EligibilityResult;
   onSelect: (course: EffectiveCurriculumCourse) => void;
   onDragStartCourse: (course: EffectiveCurriculumCourse) => void;
   onDragEndCourse: () => void;
   onDropToBlock: (course: EffectiveCurriculumCourse, block: RegularBlockMeta) => void;
+  onRemoveFromDraft?: (course: EffectiveCurriculumCourse) => void;
 }
 
 export function CurriculumCourseTable({
@@ -30,12 +32,14 @@ export function CurriculumCourseTable({
   transcriptByCode,
   attemptHistoryByCode,
   showSemester,
+  allowDrag = true,
   draggingCourse,
   validatePlacement,
   onSelect,
   onDragStartCourse,
   onDragEndCourse,
   onDropToBlock,
+  onRemoveFromDraft,
 }: CurriculumCourseTableProps) {
   const [statusFilter, setStatusFilter] = useState<'ALL' | CourseStatusKind>('ALL');
   const [expandedEmpty, setExpandedEmpty] = useState<Set<string>>(new Set());
@@ -58,7 +62,9 @@ export function CurriculumCourseTable({
 
   const matchesFilter = (course: EffectiveCurriculumCourse) =>
     statusFilter === 'ALL' || classifyStatus(transcriptByCode.get(course.code.trim().toUpperCase())) === statusFilter;
-  if (courses.length === 0) return <div className="py-12 text-center text-sm text-gray-500">No courses found.</div>;
+  if (courses.length === 0 && (!sections || sections.length === 0)) {
+    return <div className="py-12 text-center text-sm text-gray-500">No courses found.</div>;
+  }
 
   const renderCard = (item: PlannedCourseRow) => {
     const upper = item.course.code.trim().toUpperCase();
@@ -72,12 +78,14 @@ export function CurriculumCourseTable({
         isSelected={selectedKey === cardKey}
         isDragging={draggingCourse?.code === item.course.code}
         showSemester={showSemester}
+        allowDrag={allowDrag}
         onSelect={onSelect}
         onDragStart={onDragStartCourse}
         onDragEnd={() => {
           setDragOverId(null);
           onDragEndCourse();
         }}
+        onRemoveFromDraft={onRemoveFromDraft}
       />
     );
   };
@@ -140,7 +148,8 @@ export function CurriculumCourseTable({
                 statusFilter={statusFilter}
                 isExpandedEmpty={expandedEmpty.has(sec.id)}
                 isOver={dragOverId === sec.id}
-                draggingCourse={draggingCourse}
+                allowDrag={allowDrag}
+                draggingCourse={allowDrag ? draggingCourse : null}
                 eligibility={eligibility}
                 transcriptByCode={transcriptByCode}
                 renderCard={renderCard}

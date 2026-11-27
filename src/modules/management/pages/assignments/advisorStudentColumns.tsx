@@ -7,7 +7,7 @@ import { cn } from '@/shared/lib/utils';
 import type { AdvisorStudentRow } from './AdvisorStudentsSection';
 
 export const advisorStudentBtn =
-  'rounded-lg border border-[#e5e7eb] px-3 py-1.5 text-[13px] font-semibold text-[#151c27] hover:bg-gray-50';
+  'rounded-lg border border-line px-3 py-1.5 text-[13px] font-semibold text-ink-primary hover:bg-surface-hover';
 
 export function buildAdvisorStudentColumns(actions: {
   advisorId?: string;

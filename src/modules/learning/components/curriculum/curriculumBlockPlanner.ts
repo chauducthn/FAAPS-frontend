@@ -72,11 +72,12 @@ function buildRegularBlockSections(
       };
     });
     const isSecondary = b.blockType !== 'MAIN';
+    const hasDuration = new RegExp(`\\b${b.durationWeeks}w\\b`, 'i').test(b.shortName);
     return {
       id: `${semKey}-${b.code.toLowerCase()}`,
       blockCode: b.code,
       blockType: b.blockType,
-      title: `${b.shortName} · ${b.durationWeeks}w`,
+      title: hasDuration ? b.shortName : `${b.shortName} · ${b.durationWeeks}w`,
       subtitle: `${rows.length}/${b.maxCourses} courses`,
       maxSlots: b.maxCourses,
       maxCredits: b.maxCredits,

@@ -63,7 +63,7 @@ export function useAssignmentsOverviewState() {
   const assigned = useAssignedStudents(
     {
       advisorId: advisorFilter || undefined,
-      cohortId: realCohortFilter,
+      cohort: realCohortFilter,
       majorCode: realMajorFilter,
       search: debouncedSearch || undefined,
       page,
@@ -74,7 +74,7 @@ export function useAssignmentsOverviewState() {
 
   const unassigned = useUnassignedStudents({
     search: tab === 'unassigned' ? debouncedSearch || undefined : undefined,
-    cohortId: tab === 'unassigned' ? realCohortFilter : undefined,
+    cohort: tab === 'unassigned' ? realCohortFilter : undefined,
     hasPendingRequest: pendingOnly ? true : undefined,
     page: tab === 'unassigned' ? page : 0,
     size: OVERVIEW_PAGE_SIZE,
@@ -125,7 +125,9 @@ export function useAssignmentsOverviewState() {
           : a.chips.some((c) => c.majorCode === majorFilter));
       const matchesCohort =
         !cohortFilter ||
-        (cohortFilter === UNASSIGNED_FILTER ? a.chips.length === 0 : a.chips.some((c) => c.key === cohortFilter));
+        (cohortFilter === UNASSIGNED_FILTER
+          ? a.chips.length === 0
+          : a.chips.some((c) => c.cohort.trim().toUpperCase() === cohortFilter));
       return matchesTerm && matchesMajor && matchesCohort;
     });
   }, [advisorRows.data, term, majorFilter, cohortFilter]);

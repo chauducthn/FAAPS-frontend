@@ -9,9 +9,9 @@ export function createUnassignedColumns(
   return [
     {
       accessorKey: 'studentCode',
-      header: 'Student ID',
+      header: 'Identifier',
       cell: ({ row }) => (
-        <span className="font-mono text-[13px] font-medium text-gray-700">
+        <span className="font-mono text-[12.5px] text-ink-secondary">
           {row.original.studentCode}
         </span>
       ),
@@ -20,12 +20,12 @@ export function createUnassignedColumns(
       accessorKey: 'fullName',
       header: 'Full Name',
       cell: ({ row }) => (
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex max-w-[260px] min-w-0 items-center gap-2.5">
           <UserInitials name={row.original.fullName} avatarUrl={row.original.avatarUrl} />
           <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate font-semibold text-gray-900">{row.original.fullName}</span>
+            <span title={row.original.fullName} className="truncate font-medium text-ink-primary">{row.original.fullName}</span>
             {row.original.hasPendingRequest && (
-              <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-[#C2410C]">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-brand-soft px-1.5 py-0.5 text-[11px] font-medium text-brand-ink">
                 <Bell className="size-3" aria-hidden />
                 Requested
               </span>
@@ -37,28 +37,35 @@ export function createUnassignedColumns(
     {
       accessorKey: 'majorCode',
       header: 'Major',
-      cell: ({ row }) => <span className="text-gray-600">{row.original.majorCode}</span>,
+      cell: ({ row }) =>
+        row.original.majorCode ? (
+          <span className="font-mono text-[12.5px] text-ink-secondary">{row.original.majorCode}</span>
+        ) : (
+          <span className="text-ink-subtle">—</span>
+        ),
     },
     {
       accessorKey: 'cohort',
       header: 'Cohort',
-      cell: ({ row }) => (
-        <span className="text-[13px] font-medium text-gray-700">
-          {row.original.cohort}
-        </span>
-      ),
+      cell: ({ row }) =>
+        row.original.cohort ? (
+          <span className="font-mono text-[12.5px] text-ink-secondary">{row.original.cohort}</span>
+        ) : (
+          <span className="text-ink-subtle">—</span>
+        ),
     },
     {
       id: 'actions',
-      header: () => <span className="block text-right">Actions</span>,
+      header: 'Actions',
       enableSorting: false,
+      meta: { align: 'right' },
       cell: ({ row }) => (
         <div className="flex justify-end">
           <button
             type="button"
             onClick={() => onAssignOne({ id: row.original.id, name: row.original.fullName, cohortId: row.original.cohortId })}
             aria-label={`Assign advisor to ${row.original.fullName}`}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50/60 px-2.5 text-xs font-semibold text-[#C2410C] transition-colors hover:border-[#F26F21] hover:bg-[#F26F21] hover:text-white"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-brand/30 bg-brand-soft/60 px-2.5 text-xs font-medium text-brand-ink transition-colors hover:border-brand hover:bg-brand hover:text-white"
           >
             <UserPlus className="size-3.5" aria-hidden />
             Assign advisor

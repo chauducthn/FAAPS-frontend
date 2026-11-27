@@ -1,6 +1,13 @@
+import type { ReactNode } from 'react';
+import { CheckCircle, SpinnerGap, Warning } from '@phosphor-icons/react';
 import { Modal } from '../../../shared/components/ui/Modal';
-import { cn } from '@/shared/lib/utils';
-import { Warning as AlertTriangle } from '@phosphor-icons/react';
+import {
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  modalButtonClass,
+  type ModalTone,
+} from '../../../shared/components/ui/ModalParts';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -8,54 +15,92 @@ interface ConfirmDialogProps {
   message: string;
   confirmLabel: string;
   destructive?: boolean;
+  tone?: ModalTone;
+  icon?: ReactNode;
+  targetLabel?: string;
+  targetHeading?: string;
+  metaHeading?: string;
+  metaValue?: ReactNode;
+  note?: string;
   isLoading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
-export function ConfirmDialog({ open, title, message, confirmLabel, destructive, isLoading, onConfirm, onCancel }: ConfirmDialogProps) {
-  return (
-    <Modal open={open} onClose={onCancel} title={title} className="max-w-md">
-      <div className="p-6">
-        <div className="flex items-start gap-3.5">
-          <div
-            className={cn(
-              'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center',
-              destructive ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-[#F26F21]'
-            )}
-          >
-            <AlertTriangle className="size-5" />
-          </div>
-          <div className="min-w-0 pt-0.5">
-            <h2 className="text-[15px] font-bold text-[#111827] leading-snug">{title}</h2>
-            <p className="mt-1.5 text-[13px] text-gray-600 leading-relaxed">{message}</p>
-          </div>
-        </div>
+export function ConfirmDialog({
+  open,
+  title,
+  message,
+  confirmLabel,
+  destructive,
+  tone,
+  icon,
+  targetLabel,
+  targetHeading = 'Target',
+  metaHeading,
+  metaValue,
+  note,
+  isLoading,
+  onConfirm,
+  onCancel,
+}: ConfirmDialogProps) {
+  const resolvedTone: ModalTone = tone ?? (destructive ? 'danger' : 'brand');
+  const resolvedIcon = icon ?? (destructive ? <Warning /> : <CheckCircle />);
+  const hasSummary = !!targetLabel || !!metaValue;
+  const hasBody = hasSummary || !!note;
 
-        <div className="mt-6 flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isLoading}
-            className="px-4 py-2.5 text-[13px] font-semibold text-gray-600 hover:text-[#111827] hover:bg-gray-100 disabled:opacity-50 rounded-lg transition-colors cursor-pointer"
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={isLoading}
-            className={cn(
-              'px-4 py-2.5 text-[13px] font-semibold text-white rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
-              destructive
-                ? 'bg-[#b91c1c] hover:bg-[#991b1b] focus-visible:ring-red-500/40 shadow-[0_1px_2px_rgba(185,28,28,0.4)]'
-                : 'bg-[#F26F21] hover:bg-[#d95e13] focus-visible:ring-[#F26F21]/40 shadow-[0_1px_2px_rgba(242,111,33,0.4)]'
-            )}
-          >
-            {isLoading ? 'Deleting...' : confirmLabel}
-          </button>
-        </div>
-      </div>
+  return (
+    <Modal open={open} onClose={isLoading ? () => {} : onCancel} title={title} className="max-w-md">
+      <ModalHeader
+        title={title}
+        description={message}
+        icon={resolvedIcon}
+        tone={resolvedTone}
+        onClose={onCancel}
+        closeDisabled={isLoading}
+        divided={hasBody}
+      />
+      {hasBody && (
+        <ModalBody className="flex flex-col gap-3">
+          {hasSummary && (
+            <div className="divide-y divide-line-soft overflow-hidden rounded-lg bg-surface-page ring-1 ring-inset ring-line-soft">
+              {targetLabel && (
+                <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+                    {targetHeading}
+                  </span>
+                  <span className="min-w-0 truncate text-[13px] font-semibold text-ink-primary">
+                    {targetLabel}
+                  </span>
+                </div>
+              )}
+              {metaValue && (
+                <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+                    {metaHeading}
+                  </span>
+                  <span className="text-[12.5px] font-semibold text-ink-primary">{metaValue}</span>
+                </div>
+              )}
+            </div>
+          )}
+          {note && <p className="text-xs leading-relaxed text-ink-muted">{note}</p>}
+        </ModalBody>
+      )}
+      <ModalFooter>
+        <button type="button" onClick={onCancel} disabled={isLoading} className={modalButtonClass('secondary')}>
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={onConfirm}
+          disabled={isLoading}
+          className={modalButtonClass(destructive ? 'danger' : 'primary')}
+        >
+          {isLoading && <SpinnerGap className="size-4 animate-spin" aria-hidden />}
+          {confirmLabel}
+        </button>
+      </ModalFooter>
     </Modal>
   );
 }

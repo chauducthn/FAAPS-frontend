@@ -5,8 +5,6 @@ import { ProfileHero } from '@/shared/components/profile/ProfileHero';
 import { useIdentityProfile } from '@/shared/hooks/useIdentityProfile';
 import { useProfileSave } from '@/shared/hooks/useProfileSave';
 import { useAuth } from '../../auth/stores/useAuth';
-import { FlmPreferencesCard } from '../components/FlmPreferencesCard';
-import { MajorCurriculumCard } from '../components/MajorCurriculumCard';
 import { useMyProfile } from '../hooks/queries/useStudentQueries';
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
@@ -100,21 +98,15 @@ export default function StudentProfile() {
           </div>
 
           <div className="grid items-start gap-5 lg:grid-cols-2">
-            <div className="space-y-5">
-              <PersonalInfoForm
-                email={identity.email}
-                dateOfBirth={identity.dateOfBirth}
-                initialValues={{ fullName: identity.fullName, phone: identity.phone ?? '' }}
-                editableEmailAndDob
-                isSaving={save.isPending}
-                onSave={(values) => save.mutate(values)}
-              />
-              <ChangePasswordCard authProvider={identity.authProvider} />
-            </div>
-            <div className="space-y-5">
-              <MajorCurriculumCard profile={data} />
-              <FlmPreferencesCard majorCode={data.majorCode} />
-            </div>
+            <PersonalInfoForm
+              email={identity.email}
+              dateOfBirth={identity.dateOfBirth}
+              initialValues={{ fullName: identity.fullName, phone: identity.phone ?? '' }}
+              editableEmailAndDob
+              isSaving={save.isPending}
+              onSave={(values) => save.mutate(values)}
+            />
+            <ChangePasswordCard authProvider={identity.authProvider} />
           </div>
         </>
       )}

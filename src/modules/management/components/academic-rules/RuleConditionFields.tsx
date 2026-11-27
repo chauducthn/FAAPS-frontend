@@ -76,7 +76,7 @@ export function RuleConditionFields({ policyType, cond, set, errors, readOnly }:
           <RuleFormField label="Grade" required error={errors.maxCredits} hint="e.g. 24">
             <input {...numProps('maxCredits')} min={1} max={60} placeholder="24" aria-label="Grade" />
           </RuleFormField>
-          <div className="rounded-xl bg-orange-50 px-4 py-3 text-[11px] leading-relaxed text-[#7C2D12] ring-1 ring-orange-100 sm:mt-[26px] sm:self-start">
+          <div className="rounded-lg bg-brand-soft px-4 py-3 text-[11px] leading-relaxed text-brand-ink ring-1 ring-brand/30 sm:mt-[26px] sm:self-start">
             Registrations above this number are blocked automatically.
           </div>
         </div>
@@ -96,7 +96,7 @@ export function RuleConditionFields({ policyType, cond, set, errors, readOnly }:
           <RuleFormField label="Grade" required error={errors.maxRepeats} hint="e.g. 2">
             <input {...numProps('maxRepeats')} min={1} max={10} placeholder="2" aria-label="Grade" />
           </RuleFormField>
-          <div className="rounded-xl bg-orange-50 px-4 py-3 text-[11px] leading-relaxed text-[#7C2D12] ring-1 ring-orange-100 sm:mt-[26px] sm:self-start">
+          <div className="rounded-lg bg-brand-soft px-4 py-3 text-[11px] leading-relaxed text-brand-ink ring-1 ring-brand/30 sm:mt-[26px] sm:self-start">
             Further attempts need dean approval (toggle below).
           </div>
         </div>
@@ -132,7 +132,7 @@ export function RuleConditionFields({ policyType, cond, set, errors, readOnly }:
     default:
       return (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1" role="radiogroup" aria-label="Rule kind">
+          <div className="grid grid-cols-2 gap-1 rounded-lg bg-line-soft p-1" role="radiogroup" aria-label="Rule kind">
             {([{ v: 'attendance', label: 'Attendance gate' }, { v: 'milestone', label: 'Credit milestone' }] as const).map((o) => (
               <button
                 key={o.v}
@@ -143,7 +143,9 @@ export function RuleConditionFields({ policyType, cond, set, errors, readOnly }:
                 onClick={() => set('otherKind', o.v)}
                 className={cn(
                   'rounded-lg px-3 py-2 text-center text-xs font-bold transition-all disabled:cursor-not-allowed disabled:opacity-60',
-                  cond.otherKind === o.v ? 'bg-white text-[#9A3412] shadow-xs ring-1 ring-orange-200' : 'text-gray-400 hover:text-gray-600',
+                  cond.otherKind === o.v
+                    ? 'bg-white text-brand-ink shadow-xs ring-1 ring-brand/30'
+                    : 'text-ink-subtle hover:text-ink-muted',
                 )}
               >
                 {o.label}

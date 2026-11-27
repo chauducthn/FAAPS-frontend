@@ -7,13 +7,22 @@ import { HowItWorks } from '@/modules/landing/components/HowItWorks';
 import { FaqSection } from '@/modules/landing/components/FaqSection';
 import { CTASection } from '@/modules/landing/components/CTASection';
 import { Footer } from '@/modules/landing/components/Footer';
+import { useLandingEntrance } from '@/modules/landing/hooks/useLandingEntrance';
+import { cn } from '@/shared/lib/utils';
 
 export default function LandingPage() {
+  const entrance = useLandingEntrance();
+
   return (
-    <div className="min-h-screen overflow-x-hidden bg-white text-ink-primary">
-      <Navbar />
+    <div
+      className={cn(
+        'min-h-screen overflow-x-clip bg-white text-ink-primary antialiased',
+        entrance === 'return' && 'landing-return',
+      )}
+    >
+      <Navbar intro />
       <main>
-        <Hero />
+        <Hero intro />
         <PlatformHighlights />
         <Features />
         <RoleShowcase />

@@ -1,24 +1,38 @@
 import { FeatureCard } from './FeatureCard';
+import { SectionHeading } from './SectionHeading';
 import { FEATURES } from './content';
+
+/** Bento layout on a 6-column grid: rows of 4+2, 2+4, and 3+3. */
+const BENTO_SPANS = ['lg:col-span-4', 'lg:col-span-2', 'lg:col-span-2', 'lg:col-span-4', 'lg:col-span-3', 'lg:col-span-3'];
+const WIDE_SPANS = new Set(['lg:col-span-4']);
+const DESCRIPTION =
+  'Designed around real university workflows—from tracking graduation credits to AI-guided study plans and ' +
+  'proactive advisor support.';
 
 export function Features() {
   return (
-    <section id="features" className="scroll-mt-16 bg-white">
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto mb-12 max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-wider text-brand">Core Capabilities</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink-primary sm:text-3xl">
-            Everything you need for academic planning and advising
-          </h2>
-          <p className="mt-3 text-base text-ink-muted">
-            Designed around real university workflows—from tracking graduation credits to AI-guided study plans and
-            proactive advisor support.
-          </p>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((feature) => (
-            <FeatureCard key={feature.title} {...feature} />
-          ))}
+    <section id="features" className="scroll-mt-24 bg-surface-page">
+      <div className="mx-auto max-w-6xl px-4 pb-24 pt-28 sm:px-6 sm:pb-32 sm:pt-32">
+        <SectionHeading
+          align="split"
+          eyebrow="Core Capabilities"
+          title="Everything you need for academic planning and advising"
+          description={DESCRIPTION}
+          className="mb-14"
+        />
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-6">
+          {FEATURES.map((feature, index) => {
+            const span = BENTO_SPANS[index] ?? 'lg:col-span-2';
+            return (
+              <FeatureCard
+                key={feature.title}
+                {...feature}
+                index={index}
+                wide={WIDE_SPANS.has(span)}
+                className={span}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

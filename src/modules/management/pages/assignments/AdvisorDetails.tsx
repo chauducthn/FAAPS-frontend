@@ -16,7 +16,7 @@ export default function AdvisorDetails() {
   const { data, isLoading, isError, refetch } = s.assignmentQuery;
 
   const back = (
-    <Link to={backTarget.to} className="inline-flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-[#F26F21]">
+    <Link to={backTarget.to} className="inline-flex items-center gap-1 text-xs font-medium text-ink-muted hover:text-brand">
       <ChevronLeft className="size-3.5" />
       Back to {backTarget.label}
     </Link>
@@ -26,7 +26,7 @@ export default function AdvisorDetails() {
     return (
       <div className="w-full">
         {back}
-        <div className="mt-6 h-40 animate-pulse rounded-xl bg-white" />
+        <div className="mt-6 h-40 animate-pulse rounded-lg bg-white" />
       </div>
     );
   }
@@ -35,9 +35,9 @@ export default function AdvisorDetails() {
     return (
       <div className="w-full">
         {back}
-        <div className="mt-6 rounded-xl bg-white p-8 text-center text-sm text-[#555f6f]">
+        <div className="mt-6 rounded-lg bg-white p-8 text-center text-sm text-ink-muted">
           Could not load this advisor. They may be inactive or no longer exist.{' '}
-          <button type="button" onClick={() => refetch()} className="font-semibold text-orange-600 hover:underline">
+          <button type="button" onClick={() => refetch()} className="font-semibold text-brand-ink hover:underline">
             Retry
           </button>
         </div>

@@ -20,7 +20,7 @@ export const fromDraft = (d: RuleDraft): AttendanceRule => ({
 });
 
 const inputClass =
-  'h-10 w-full rounded-lg border border-[#e5e7eb] px-3 text-sm text-[#151c27] focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 disabled:bg-gray-50';
+  'h-10 w-full rounded-lg border border-line px-3 text-sm text-ink-primary focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:bg-surface-page';
 
 interface Props {
   draft: RuleDraft;
@@ -37,7 +37,7 @@ export function AttendanceRuleFields({ draft, onChange, disabled, idPrefix }: Pr
 
   const field = (key: keyof RuleDraft, label: string, hint: string, props: { min: number; max?: number; step?: number }) => (
     <div>
-      <label htmlFor={`${idPrefix}-${key}`} className="mb-1 block text-xs font-semibold text-[#151c27]">
+      <label htmlFor={`${idPrefix}-${key}`} className="mb-1 block text-xs font-semibold text-ink-primary">
         {label}
       </label>
       <input
@@ -50,7 +50,7 @@ export function AttendanceRuleFields({ draft, onChange, disabled, idPrefix }: Pr
         className={inputClass}
         {...props}
       />
-      <p className="mt-1 text-[11px] text-[#555f6f]">{hint}</p>
+      <p className="mt-1 text-[11px] text-ink-muted">{hint}</p>
     </div>
   );
 
@@ -61,12 +61,12 @@ export function AttendanceRuleFields({ draft, onChange, disabled, idPrefix }: Pr
         {field('minAttendancePercent', 'Minimum attendance (%)', 'e.g. 80', { min: 1, max: 100 })}
         {field('warnAbsentSessions', 'Warn at (absences)', 'Warn the student from this many absences', { min: 1 })}
       </div>
-      <p className="rounded-lg bg-[#f7f8fa] px-3 py-2 text-[13px] text-[#555f6f]">
+      <p className="rounded-lg bg-surface-page px-3 py-2 text-[13px] text-ink-muted">
         {maxAbsent === null ? (
           'Fill in the sessions and the minimum attendance to see how many absences are allowed.'
         ) : (
           <>
-            A student may miss up to <strong className="text-[#151c27]">{maxAbsent}</strong> session{maxAbsent === 1 ? '' : 's'}. Missing more fails the
+            A student may miss up to <strong className="text-ink-primary">{maxAbsent}</strong> session{maxAbsent === 1 ? '' : 's'}. Missing more fails the
             attendance condition.
           </>
         )}

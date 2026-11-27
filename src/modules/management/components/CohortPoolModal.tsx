@@ -69,15 +69,15 @@ export function CohortPoolModal({ open, cohort, advisors, currentIds, onClose, o
         onClose={onClose}
       />
       <div className="flex flex-col gap-3 overflow-y-auto px-6 py-5">
-        <ul className="flex max-h-72 flex-col gap-1 overflow-y-auto rounded-lg border border-gray-100 p-1.5">
+        <ul className="flex max-h-72 flex-col gap-1 overflow-y-auto rounded-lg border border-line-soft p-1.5">
           {advisors.map((a) => (
             <li key={a.id}>
-              <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 hover:bg-gray-50">
-                <input type="checkbox" checked={selected.has(a.id)} onChange={() => toggle(a.id)} className="size-4 accent-[#F26F21]" />
-                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-gray-900">
-                  {a.fullName} <span className="font-normal text-gray-500">· {a.email}</span>
+              <label className="flex cursor-pointer items-center gap-3 rounded-lg px-2.5 py-2 hover:bg-surface-hover">
+                <input type="checkbox" checked={selected.has(a.id)} onChange={() => toggle(a.id)} className="size-4 accent-brand" />
+                <span className="min-w-0 flex-1 truncate text-xs font-semibold text-ink-primary">
+                  {a.fullName} <span className="font-normal text-ink-muted">· {a.email}</span>
                 </span>
-                <span className="shrink-0 text-xs text-gray-500 tabular-nums">
+                <span className="shrink-0 text-xs text-ink-muted tabular-nums">
                   {a.activeStudents} / {a.maxAdvisees ?? 'no limit'}
                 </span>
               </label>

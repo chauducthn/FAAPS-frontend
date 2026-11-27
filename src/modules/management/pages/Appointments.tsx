@@ -104,7 +104,7 @@ export default function Appointments() {
               type="button"
               onClick={() => void exportCsv()}
               disabled={isExporting || (list.data?.totalElements ?? 0) === 0}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isExporting ? <Loader2 className="size-3.5 animate-spin" /> : <Download className="size-3.5" />}
               <span className="hidden sm:inline">Export CSV</span>
@@ -114,7 +114,7 @@ export default function Appointments() {
               onClick={() => { summary.refetch(); list.refetch(); }}
               disabled={refreshing}
               aria-label="Refresh appointments"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:opacity-60"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover disabled:opacity-60"
             >
               <RefreshCw className={refreshing ? 'size-3.5 animate-spin' : 'size-3.5'} aria-hidden />
               <span className="hidden sm:inline">Refresh</span>
@@ -124,7 +124,7 @@ export default function Appointments() {
       />
 
       {summary.isError ? (
-        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
+        <div className="flex items-center justify-between rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
           Could not load appointment totals.
           <button type="button" onClick={() => summary.refetch()} className="font-semibold hover:underline">Retry</button>
         </div>
@@ -149,13 +149,13 @@ export default function Appointments() {
       )}
 
       {list.isError && !list.data && (
-        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
+        <div className="flex items-center justify-between rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
           Could not load appointments.{' '}
           <button type="button" onClick={() => list.refetch()} className="font-semibold hover:underline">Retry</button>
         </div>
       )}
 
-      <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
         <AppointmentFilters
           search={search} status={status} advisorId={advisorId} advisors={advisors}
           fromDate={fromDate} toDate={toDate} hasFilters={hasFilters}
@@ -166,7 +166,7 @@ export default function Appointments() {
 
         {view === 'table' ? (
           <DataTable
-            className="h-[calc(100vh-295px)] min-h-[460px]"
+            className="admin-fill"
             manual
             columns={columns}
             data={items}
@@ -180,7 +180,7 @@ export default function Appointments() {
             onPaginationChange={setPagination}
           />
         ) : (
-          <div className="h-[calc(100vh-295px)] min-h-[460px] overflow-y-auto p-4 sm:p-5">
+          <div className="admin-fill overflow-y-auto p-4 sm:p-5">
             <AppointmentTimeline items={items} isLoading={list.isLoading} onOpen={setOpenId} />
           </div>
         )}

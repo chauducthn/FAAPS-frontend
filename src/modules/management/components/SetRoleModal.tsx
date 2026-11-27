@@ -1,19 +1,29 @@
-// Change the role (and matching email when needed) of one account.
-import { useEffect, useMemo, useState } from 'react';
-import { Warning as AlertTriangle, CheckCircle as CheckCircle2, CaretDown as ChevronDown, GraduationCap, SpinnerGap as Loader2, User as UserRound, X } from '@phosphor-icons/react';
+// Change the role (and matching email / academic placement when needed) of one account.
+import { useEffect, useState } from 'react';
+import { Warning as AlertTriangle, CheckCircle as CheckCircle2, GraduationCap, SpinnerGap as Loader2, User as UserRound } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
+import { InlineAlert } from '../../../shared/components/ui/InlineAlert';
+import { ModalFooter, ModalHeader, modalButtonClass } from '../../../shared/components/ui/ModalParts';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
-import { useCurriculumsQuery } from '../../academic/hooks/queries/useCurriculumsQuery';
+import { cn } from '@/shared/lib/utils';
 import { useChangeUserRole } from '../hooks/queries/useAdminUsers';
 import {
-  STUDENT_ID_ERROR_MESSAGE, STUDENT_ID_PATTERN,
-  emailMatchesRole, emailRoleErrorMessage, parseStudentId, suggestRoleEmail,
+  STUDENT_ID_ERROR_MESSAGE, STUDENT_ID_PATTERN, STUDENT_ID_PLACEHOLDER,
+  emailMatchesRole, emailRoleErrorMessage, suggestRoleEmail,
 } from '../utils/accountRules';
 import type { AdminUserRole, AdminUserSummary } from '../types/admin';
-import { userFieldClass, userLabelClass } from './createUserSchema';
+import { ADMIN_TAB_LIST_CLASS, adminTabClass } from './AdminTabBar';
+import { userFieldClass } from './createUserSchema';
 import { SetRoleStudentFields } from './SetRoleStudentFields';
+import { useSetRolePlacement } from './useSetRolePlacement';
+import { UserFormField, UserFormSection } from './UserFormPrimitives';
 import { useSingleEmailAvailability } from './useRoleEmailCheck';
+
+const ROLE_TABS: { key: AdminUserRole; label: string; icon: typeof GraduationCap }[] = [
+  { key: 'STUDENT', label: 'Student', icon: GraduationCap },
+  { key: 'ADVISOR', label: 'Advisor', icon: UserRound },
+];
 
 interface Props {
   open: boolean;
@@ -24,12 +34,11 @@ interface Props {
 
 export function SetRoleModal({ open, user, onClose, onDone }: Props) {
   const changeRole = useChangeUserRole();
-  const curriculums = useCurriculumsQuery('curriculum', { status: 'ACTIVE', page: 0, size: 100 });
   const [target, setTarget] = useState<AdminUserRole>('ADVISOR');
   const [email, setEmail] = useState('');
   const [studentCode, setStudentCode] = useState('');
-  const [curriculumId, setCurriculumId] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const p = useSetRolePlacement(open, target, studentCode);
 
   useEffect(() => {
     if (!open || !user) return;
@@ -37,8 +46,9 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
     setTarget(nextRole);
     setEmail(emailMatchesRole(user.email, nextRole) ? user.email : suggestRoleEmail(user.email, nextRole));
     setStudentCode(user.role === 'STUDENT' ? user.userId : '');
-    setCurriculumId('');
+    p.resetPlacement();
     setError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user]);
 
   const trimmedEmail = email.trim().toLowerCase();
@@ -48,22 +58,14 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
     open, user?.id, trimmedEmail, emailChanged && emailValidDomain,
   );
 
-  const curriculumList = useMemo(() => curriculums.data?.items ?? [], [curriculums.data]);
-  const identity = useMemo(() => parseStudentId(studentCode), [studentCode]);
-  const visibleCurriculums = useMemo(
-    () => (identity ? curriculumList.filter((c) => c.version === identity.cohort) : curriculumList),
-    [curriculumList, identity],
-  );
-
   if (!user) return null;
 
+  const isStudent = target === 'STUDENT';
   const sameRole = target === user.role;
   const emailTaken = emailChanged && emailAvailable === false;
-  const studentCodeInvalid = target === 'STUDENT' && !STUDENT_ID_PATTERN.test(studentCode.trim().toUpperCase());
-  const selectedCurriculum = curriculumList.find((item) => item.id === curriculumId);
-  const cohortMismatch =
-    target === 'STUDENT' && !!identity && !!selectedCurriculum && selectedCurriculum.version !== identity.cohort;
-  const blocked = sameRole || !emailValidDomain || emailTaken || checkingEmail || studentCodeInvalid || cohortMismatch;
+  const studentCodeInvalid = isStudent && !STUDENT_ID_PATTERN.test(studentCode.trim().toUpperCase());
+  const cohortMismatch = isStudent && !!p.identity && !!p.selectedCurriculum && p.selectedCurriculum.version !== p.identity.cohort;
+  const blocked = sameRole || !emailValidDomain || emailTaken || checkingEmail || studentCodeInvalid || cohortMismatch || p.graduationConflict;
 
   const handleTargetChange = (nextRole: AdminUserRole) => {
     setTarget(nextRole);
@@ -74,23 +76,25 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
   const submit = async () => {
     if (!emailValidDomain) return setError(emailRoleErrorMessage(target));
     if (emailTaken) return setError('This email is already in use by another account.');
-    const curriculum = target === 'STUDENT' ? curriculumList.find((item) => item.id === curriculumId) : undefined;
-    if (target === 'STUDENT' && studentCodeInvalid) return setError(STUDENT_ID_ERROR_MESSAGE);
-    if (target === 'STUDENT' && !curriculum) return setError('Select the curriculum the student follows.');
-    if (target === 'STUDENT' && identity && curriculum && curriculum.version !== identity.cohort) {
-      return setError(`Student ID cohort must match ${curriculum.version}.`);
-    }
+    if (isStudent && studentCodeInvalid) return setError(STUDENT_ID_ERROR_MESSAGE);
+    if (isStudent && !p.selectedCurriculum) return setError('Select the curriculum the student follows.');
+    if (isStudent && cohortMismatch && p.selectedCurriculum) return setError(`Student ID cohort must match ${p.selectedCurriculum.version}.`);
+    if (isStudent && p.graduationConflict) return setError('The graduation semester must come after the enrollment semester.');
     setError(null);
     try {
       await changeRole.mutateAsync({
         id: user.id,
         role: target,
         email: emailChanged ? trimmedEmail : undefined,
-        ...(target === 'STUDENT' && curriculum
-          ? { studentCode: studentCode.trim().toUpperCase(), curriculumVersionId: curriculum.id, enrollmentSemesterId: curriculum.effectiveFromSemesterId }
+        ...(isStudent && p.selectedCurriculum
+          ? {
+              studentCode: studentCode.trim().toUpperCase(),
+              curriculumVersionId: p.selectedCurriculum.id,
+              enrollmentSemesterId: p.enrollmentSemesterId || p.selectedCurriculum.effectiveFromSemesterId || undefined,
+            }
           : {}),
       });
-      toast.success(`${user.fullName} is now ${target === 'STUDENT' ? 'a Student' : 'an Advisor'}.`);
+      toast.success(`${user.fullName} is now ${isStudent ? 'a Student' : 'an Advisor'}.`);
       onDone?.();
       onClose();
     } catch (cause) {
@@ -98,98 +102,92 @@ export function SetRoleModal({ open, user, onClose, onDone }: Props) {
     }
   };
 
+  const identityHint = p.identity
+    ? `${p.identity.campusName} (${p.identity.campusCode}) · ${p.identity.groupName} (${p.identity.groupCode}) · Cohort ${p.identity.cohort}`
+    : undefined;
+
   return (
-    <Modal open={open} onClose={() => !changeRole.isPending && onClose()} title="Set role" className="max-w-lg">
-      <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
-        <div className="flex items-center gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
-            {target === 'STUDENT' ? <GraduationCap className="size-4.5" /> : <UserRound className="size-4.5" />}
-          </span>
-          <div>
-            <h2 className="text-base font-bold text-gray-900">Set role</h2>
-            <p className="text-xs text-gray-500">
-              {user.fullName} · currently {user.role === 'STUDENT' ? 'Student' : 'Advisor'}
-            </p>
+    <Modal open={open} onClose={() => !changeRole.isPending && onClose()} title="Set role" className={isStudent ? 'max-w-[760px]' : 'max-w-lg'}>
+      <ModalHeader
+        title="Set role"
+        description={`${user.fullName} · currently ${user.role === 'STUDENT' ? 'Student' : 'Advisor'}`}
+        icon={isStudent ? <GraduationCap /> : <UserRound />}
+        tone={isStudent ? 'brand' : 'neutral'}
+        onClose={onClose}
+        closeDisabled={changeRole.isPending}
+        actions={
+          <div role="tablist" aria-label="New role" className={ADMIN_TAB_LIST_CLASS}>
+            {ROLE_TABS.map(({ key, label, icon: Icon }) => (
+              <button key={key} type="button" role="tab" aria-selected={target === key} onClick={() => handleTargetChange(key)} className={adminTabClass(target === key)}>
+                <Icon className="size-4" aria-hidden />
+                {label}
+              </button>
+            ))}
           </div>
+        }
+      />
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <div className={cn(isStudent ? 'grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] md:items-stretch' : 'space-y-4')}>
+          <UserFormSection title="Account" className={isStudent ? 'md:py-4' : undefined}>
+            {isStudent && (
+              <UserFormField label="Student ID" required error={studentCode.length > 0 && studentCodeInvalid ? STUDENT_ID_ERROR_MESSAGE : undefined} hint={identityHint}>
+                <input
+                  value={studentCode}
+                  onChange={(e) => { setStudentCode(e.target.value.toUpperCase()); setError(null); }}
+                  maxLength={8}
+                  placeholder={STUDENT_ID_PLACEHOLDER}
+                  aria-label="Student ID"
+                  className={cn(userFieldClass(studentCode.length > 0 && studentCodeInvalid), 'font-mono uppercase tracking-wide')}
+                />
+              </UserFormField>
+            )}
+            <UserFormField label="Account email" required error={!emailValidDomain ? emailRoleErrorMessage(target) : emailTaken ? 'This email is already in use by another account.' : undefined}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(null); }}
+                aria-label="Account email"
+                placeholder={isStudent ? 'name@fpt.edu.vn' : 'name@fe.edu.vn'}
+                className={userFieldClass(!emailValidDomain || emailTaken)}
+              />
+              {emailValidDomain && checkingEmail && (
+                <p className="mt-1.5 flex items-center gap-1 text-xs text-ink-muted"><Loader2 className="size-3 animate-spin" /> Checking availability…</p>
+              )}
+              {emailValidDomain && !checkingEmail && emailChanged && emailAvailable === true && (
+                <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-emerald-700"><CheckCircle2 className="size-3.5 shrink-0" /> Email is available</p>
+              )}
+              {!emailValidDomain && email.trim().length === 0 && (
+                <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-red-600"><AlertTriangle className="size-3.5 shrink-0" /> Email is required</p>
+              )}
+            </UserFormField>
+          </UserFormSection>
+
+          {isStudent && (
+            <SetRoleStudentFields
+              selectedMajor={p.selectedMajor} selectedCohort={p.selectedCohort}
+              majorOptions={p.majorOptions} cohortOptions={p.cohortOptions}
+              curriculumId={p.curriculumId} curriculumList={p.visibleCurriculums}
+              enrollmentSemesterId={p.enrollmentSemesterId} semesterList={p.semesterList}
+              currentSemester={p.currentSemester} expectedGraduationSemesterId={p.expectedGraduationSemesterId}
+              graduationOptions={p.graduationOptions} identity={p.identity} graduationConflict={p.graduationConflict}
+              onMajorChange={p.onMajorChange} onCohortChange={p.onCohortChange}
+              onCurriculumChange={p.onCurriculumChange} onEnrollmentChange={p.onEnrollmentChange}
+              onCurrentSemesterChange={p.onCurrentSemesterChange} onGraduationChange={p.onGraduationChange}
+            />
+          )}
         </div>
-        <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
-          <X className="size-4" />
-        </button>
+
+        {error && <div className="mt-5"><InlineAlert tone="error" role="alert">{error}</InlineAlert></div>}
       </div>
 
-      <div className="space-y-4 overflow-y-auto px-6 py-5">
-        <div>
-          <label className={userLabelClass}>New role</label>
-          <div className="relative">
-            <select value={target} onChange={(e) => handleTargetChange(e.target.value as AdminUserRole)} aria-label="New role" className={`${userFieldClass(false)} appearance-none pr-9 font-medium`}>
-              <option value="STUDENT">Student</option>
-              <option value="ADVISOR">Advisor</option>
-            </select>
-            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
-          </div>
-        </div>
-
-        <div>
-          <label className={userLabelClass}>Account email <span className="text-[#F26F21]">*</span></label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              setError(null);
-            }}
-            aria-label="Account email"
-            placeholder={target === 'STUDENT' ? 'name@fpt.edu.vn' : 'name@fe.edu.vn'}
-            className={userFieldClass(!emailValidDomain || emailTaken)}
-          />
-          {!emailValidDomain && (
-            <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-red-600">
-              <AlertTriangle className="size-3.5 shrink-0" /> {emailRoleErrorMessage(target)}
-            </p>
-          )}
-          {emailValidDomain && checkingEmail && (
-            <p className="mt-1.5 flex items-center gap-1 text-xs text-gray-500">
-              <Loader2 className="size-3 animate-spin" /> Checking availability…
-            </p>
-          )}
-          {emailValidDomain && !checkingEmail && emailChanged && emailAvailable === true && (
-            <p className="mt-1.5 flex items-center gap-1 text-xs font-medium text-emerald-700">
-              <CheckCircle2 className="size-3.5 shrink-0" /> Email is available
-            </p>
-          )}
-          {emailTaken && (
-            <p role="alert" className="mt-1.5 flex items-center gap-1 text-xs font-medium text-red-600">
-              <AlertTriangle className="size-3.5 shrink-0" /> This email is already in use by another account.
-            </p>
-          )}
-        </div>
-
-        {target === 'STUDENT' && (
-          <SetRoleStudentFields
-            studentCode={studentCode}
-            curriculumId={curriculumId}
-            curriculumList={visibleCurriculums}
-            identity={identity}
-            fieldClass={userFieldClass(false)}
-            onStudentCodeChange={setStudentCode}
-            onCurriculumChange={setCurriculumId}
-          />
-        )}
-
-        {error && (
-          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>
-        )}
-      </div>
-
-      <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/70 px-6 py-3.5">
-        <button type="button" disabled={changeRole.isPending} onClick={onClose} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50">
-          Cancel
-        </button>
-        <button type="button" disabled={changeRole.isPending || blocked} onClick={submit} className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#F26F21] px-4 text-sm font-semibold text-white hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55">
+      <ModalFooter>
+        <button type="button" disabled={changeRole.isPending} onClick={onClose} className={modalButtonClass('secondary')}>Cancel</button>
+        <button type="button" disabled={changeRole.isPending || blocked} onClick={submit} className={modalButtonClass('primary')}>
           {changeRole.isPending && <Loader2 className="size-4 animate-spin" />}
           {changeRole.isPending ? 'Saving…' : 'Confirm role change'}
         </button>
-      </div>
+      </ModalFooter>
     </Modal>
   );
 }

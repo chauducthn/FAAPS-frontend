@@ -22,6 +22,7 @@ import type {
   CourseImportPreview,
   CourseStatus,
   CourseSummary,
+  WorkloadLevel,
 } from '../../../academic/types/course';
 import {
   COURSE_PAGE_SIZE,
@@ -35,6 +36,8 @@ export function useCoursesState() {
   const [status, setStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   const [categoryId, setCategoryId] = useState('ALL');
   const [credits, setCredits] = useState<number | 'ALL'>('ALL');
+  const [workloadLevel, setWorkloadLevel] = useState<WorkloadLevel | 'ALL'>('ALL');
+  const [workloadSaving, setWorkloadSaving] = useState(false);
   const [pagination, setPagination] = useState<PaginationState>({ pageIndex: 0, pageSize: COURSE_PAGE_SIZE });
   const [sorting, setSorting] = useState<SortingState>([]);
 
@@ -59,11 +62,12 @@ export function useCoursesState() {
       status: status === 'ALL' ? undefined : status,
       categoryId: categoryId === 'ALL' ? undefined : categoryId,
       credits: credits === 'ALL' ? undefined : credits,
+      workloadLevel: workloadLevel === 'ALL' ? undefined : workloadLevel,
       page: pagination.pageIndex,
       size: pagination.pageSize,
       sort: toCourseSort(sorting),
     }),
-    [search, status, categoryId, credits, pagination.pageIndex, pagination.pageSize, sorting],
+    [search, status, categoryId, credits, workloadLevel, pagination.pageIndex, pagination.pageSize, sorting],
   );
 
   const query = useCoursesQuery(params);
@@ -75,7 +79,8 @@ export function useCoursesState() {
   const visibleItems = useMemo(() => query.data?.items ?? [], [query.data]);
   const totalItems = query.data?.totalItems ?? 0;
   const categories = categoriesQuery.data ?? [];
-  const hasFilters = search !== '' || status !== 'ALL' || categoryId !== 'ALL' || credits !== 'ALL';
+  const hasFilters = search !== '' || status !== 'ALL' || categoryId !== 'ALL'
+    || credits !== 'ALL' || workloadLevel !== 'ALL';
 
   const resetPage = <T,>(setter: (value: T) => void) => (value: T) => {
     setter(value);
@@ -87,6 +92,7 @@ export function useCoursesState() {
     setStatus('ALL');
     setCategoryId('ALL');
     setCredits('ALL');
+    setWorkloadLevel('ALL');
     setPagination((p) => ({ ...p, pageIndex: 0 }));
   };
 
@@ -162,8 +168,23 @@ export function useCoursesState() {
     }
   };
 
+  const handleOverrideWorkload = async (level: WorkloadLevel | 'AUTO') => {
+    if (!viewingId) return;
+    setWorkloadSaving(true);
+    try {
+      await courseService.updateWorkload(viewingId, level);
+      await queryClient.invalidateQueries({ queryKey: COURSE_QUERY_KEYS.all });
+      toast.success(level === 'AUTO' ? 'Reset course workload to Auto' : `Workload override set to ${level}`);
+    } catch {
+      toast.error('Failed to update course workload');
+    } finally {
+      setWorkloadSaving(false);
+    }
+  };
+
   return {
     search, setSearch, status, setStatus, categoryId, setCategoryId, credits, setCredits,
+    workloadLevel, setWorkloadLevel, workloadSaving, handleOverrideWorkload,
     pagination, setPagination, sorting, setSorting,
     formOpen, setFormOpen, editing, setEditing, deleting, setDeleting,
     bulkTargets, setBulkTargets, bulkDeleting, setBulkDeleting,

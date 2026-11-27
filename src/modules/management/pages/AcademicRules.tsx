@@ -110,9 +110,9 @@ export default function AcademicRulesPage() {
 
   return (
     <div className="w-full space-y-4">
-      <div className="inline-flex items-center gap-1 rounded-xl border border-gray-200/80 bg-white p-1 shadow-2xs">
+      <div className="inline-flex items-center gap-1 rounded-lg border border-line/80 bg-white p-1 shadow-2xs">
         {([['rules', 'Academic Rules'], ['blocks', 'Block & Study Limits']] as const).map(([key, label]) => (
-          <button key={key} type="button" onClick={() => setActiveTab(key)} className={`h-8 rounded-lg px-3.5 text-xs font-semibold transition-colors ${activeTab === key ? 'bg-[#F26F21] text-white shadow-2xs' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'}`}>
+          <button key={key} type="button" onClick={() => setActiveTab(key)} className={`h-8 rounded-lg px-3.5 text-xs font-semibold transition-colors ${activeTab === key ? 'bg-brand text-white shadow-2xs' : 'text-ink-muted hover:bg-line-soft hover:text-ink-primary'}`}>
             {label}
           </button>
         ))}
@@ -128,14 +128,14 @@ export default function AcademicRulesPage() {
         onSeedFlm={() => void guard(() => seedFlm())} isSeedingFlm={isSeedingFlm}
       />
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <div className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
         <AcademicRulesFilterBar
           search={search} policyType={policyType} status={status} hasFilters={hasFilters}
           onSearchChange={resetPage(setSearch)} onPolicyTypeChange={resetPage(setPolicyType)}
           onStatusChange={resetPage(setStatus)} onClear={clearFilters}
         />
 
-        <div className="h-[calc(100vh-295px)] min-h-[460px]">
+        <div className="admin-fill">
           {isError ? (
             <AcademicRulesErrorState onRetry={() => refetch()} />
           ) : !isLoading && items.length === 0 ? (

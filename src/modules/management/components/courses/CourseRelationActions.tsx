@@ -35,7 +35,7 @@ export function createRelationActionsColumn(
             <button
               type="button"
               onClick={handlers.onCancelRemove}
-              className="rounded-lg border border-gray-200 px-2.5 py-1 text-[10px] font-bold text-gray-600 hover:bg-gray-50"
+              className="rounded-lg border border-line px-2.5 py-1 text-[10px] font-bold text-ink-muted hover:bg-surface-hover"
             >
               Keep
             </button>
@@ -59,7 +59,7 @@ export function createRelationActionsColumn(
               type="button"
               onClick={handlers.onCancelEdit}
               aria-label="Cancel edit"
-              className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100"
+              className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-line-soft"
             >
               <X className="size-3.5" />
             </button>
@@ -74,7 +74,7 @@ export function createRelationActionsColumn(
               type="button"
               onClick={() => handlers.onStartEdit(r)}
               aria-label={`Edit ${r.otherCourseCode}`}
-              className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900"
+              className="rounded-lg p-1.5 text-ink-muted transition-colors hover:bg-line-soft hover:text-ink-primary"
             >
               <Pencil className="size-3.5" />
             </button>

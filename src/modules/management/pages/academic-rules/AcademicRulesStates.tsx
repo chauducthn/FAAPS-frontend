@@ -8,19 +8,19 @@ import type { CreateAcademicRuleFormValues } from '../../../academic/validations
 export function AcademicRulesErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+      <span className="flex size-12 items-center justify-center rounded-lg bg-red-50 text-red-500">
         <CircleAlert className="size-6" />
       </span>
       <div>
-        <p className="text-sm font-bold text-gray-900">Could not load rules</p>
-        <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
+        <p className="text-sm font-bold text-ink-primary">Could not load rules</p>
+        <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-ink-muted">
           The rule list failed to load. Check your connection, then try again — your filters are kept.
         </p>
       </div>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center gap-1.5 rounded-xl bg-gray-900 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-gray-700"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-ink-primary px-4 py-2 text-xs font-bold text-surface-page transition-colors hover:bg-ink-secondary"
       >
         <RotateCcw className="size-3.5" /> Retry
       </button>
@@ -39,14 +39,14 @@ export function AcademicRulesEmptyState({
 }) {
   return (
     <div className="flex flex-col items-center gap-3 px-6 py-16 text-center">
-      <span className="flex size-12 items-center justify-center rounded-2xl bg-[#FFF7ED] text-[#F37021]">
+      <span className="flex size-12 items-center justify-center rounded-lg bg-brand-soft text-brand">
         <SearchX className="size-6" />
       </span>
       <div>
-        <p className="text-sm font-bold text-gray-900">
+        <p className="text-sm font-bold text-ink-primary">
           {hasFilters ? 'No rules match your filters' : 'No academic rules yet'}
         </p>
-        <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-gray-500">
+        <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-ink-muted">
           {hasFilters
             ? 'Try a different keyword, or clear the type / status filters to see the full list.'
             : 'Create the first rule (e.g. Semester GPA warning below 5.0) to start enforcing academic policies.'}
@@ -57,7 +57,7 @@ export function AcademicRulesEmptyState({
           <button
             type="button"
             onClick={onClear}
-            className="rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50"
+            className="rounded-lg border border-line px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:bg-surface-hover"
           >
             Clear filters
           </button>
@@ -65,7 +65,7 @@ export function AcademicRulesEmptyState({
         <button
           type="button"
           onClick={onCreate}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-[#F37021] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#D9601A]"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#D9601A]"
         >
           <Plus className="size-3.5" /> Create rule
         </button>

@@ -29,10 +29,14 @@ export interface TermTab {
 }
 
 const ENGLISH_PREP_RE = /^(PEN|TRS|LUK)\d+/i;
-const PE_COURSE_RE = /^(VOV|COV)\d+|^PHE_/i;
+const PREP_LEVEL_RE = /^(?:PEN|TRS|LUK)([1-6])\d*$/i;
 
-function isPeCourse(c: EffectiveCurriculumCourse): boolean {
-  return (c.groupName ?? '').toLowerCase() === 'physical education' || PE_COURSE_RE.test(c.code.trim());
+function englishAliasesFor(code: string): string[] {
+  const upper = code.trim().toUpperCase();
+  const m = PREP_LEVEL_RE.exec(upper);
+  if (!m) return [upper];
+  const lvl = m[1];
+  return Array.from(new Set([upper, `PEN${lvl}01`, `LUK${lvl}`, `TRS${lvl}01`]));
 }
 
 export function statusRank(status: string): number {
@@ -52,29 +56,44 @@ export function classifyStatus(row?: TranscriptRow): CourseStatusKind {
   return 'NOT_TAKEN';
 }
 
-export function buildTranscriptMap(rows: TranscriptRow[] | undefined): Map<string, TranscriptRow> {
+function allKeysFor(code: string, equivalents?: Record<string, string[]>): string[] {
+  const keys = new Set(englishAliasesFor(code));
+  const upper = code.trim().toUpperCase();
+  for (const eq of equivalents?.[upper] ?? []) keys.add(eq.toUpperCase());
+  return [...keys];
+}
+
+export function buildTranscriptMap(
+  rows: TranscriptRow[] | undefined,
+  equivalents?: Record<string, string[]>,
+): Map<string, TranscriptRow> {
   const map = new Map<string, TranscriptRow>();
   for (const row of rows ?? []) {
-    const key = row.courseCode.trim().toUpperCase();
-    const prev = map.get(key);
-    if (
-      !prev ||
-      statusRank(row.status) > statusRank(prev.status) ||
-      (statusRank(row.status) === statusRank(prev.status) && row.attemptNumber > prev.attemptNumber)
-    ) {
-      map.set(key, row);
+    for (const key of allKeysFor(row.courseCode, equivalents)) {
+      const prev = map.get(key);
+      if (
+        !prev ||
+        statusRank(row.status) > statusRank(prev.status) ||
+        (statusRank(row.status) === statusRank(prev.status) && row.attemptNumber > prev.attemptNumber)
+      ) {
+        map.set(key, row);
+      }
     }
   }
   return map;
 }
 
-export function buildAttemptHistoryMap(rows: TranscriptRow[] | undefined): Map<string, AttemptSummary> {
+export function buildAttemptHistoryMap(
+  rows: TranscriptRow[] | undefined,
+  equivalents?: Record<string, string[]>,
+): Map<string, AttemptSummary> {
   const grouped = new Map<string, TranscriptRow[]>();
   for (const row of rows ?? []) {
-    const key = row.courseCode.trim().toUpperCase();
-    const list = grouped.get(key) ?? [];
-    list.push(row);
-    grouped.set(key, list);
+    for (const key of allKeysFor(row.courseCode, equivalents)) {
+      const list = grouped.get(key) ?? [];
+      list.push(row);
+      grouped.set(key, list);
+    }
   }
   const map = new Map<string, AttemptSummary>();
   for (const [key, list] of grouped.entries()) {
@@ -112,13 +131,16 @@ export function buildTermTabs(
   courses: EffectiveCurriculumCourse[],
   transcriptByCode: Map<string, TranscriptRow>,
   prepCount = 0,
+  excludeCodes?: Set<string>,
 ): TermTab[] {
   const bySem = new Map<number, EffectiveCurriculumCourse[]>();
   let maxPrep = prepCount;
   for (const c of courses) {
     if (c.semesterNumber < 0) maxPrep = Math.max(maxPrep, -c.semesterNumber);
     const list = bySem.get(c.semesterNumber) ?? [];
-    list.push(c);
+    if (!excludeCodes || !excludeCodes.has(c.code.trim().toUpperCase())) {
+      list.push(c);
+    }
     bySem.set(c.semesterNumber, list);
   }
 
@@ -145,41 +167,29 @@ export function buildCurriculumCourseDetail(
   if (!selected) return base;
   if (base) {
     if (base.code.toUpperCase() !== selected.code.toUpperCase()) {
+      const isEnglishAlias = englishAliasesFor(base.code).includes(selected.code.trim().toUpperCase());
+      if (isEnglishAlias) {
+        return {
+          ...base, code: selected.code, name: selected.name, credits: selected.credits,
+          categoryName: selected.groupName ?? base.categoryName, workload: base.workload ?? selected.workload ?? null,
+        };
+      }
       return {
-        ...base,
-        code: selected.code,
-        name: selected.name,
-        credits: selected.credits,
-        categoryName: selected.groupName ?? base.categoryName,
-        materialLink: null,
-        description: null,
-        objectives: null,
-        learningOutcomes: null,
-        relations: [],
-        referencedBy: [],
+        ...base, code: selected.code, name: selected.name, credits: selected.credits,
+        categoryName: selected.groupName ?? base.categoryName, materialLink: null, description: null,
+        objectives: null, learningOutcomes: null, workload: selected.workload ?? null, relations: [], referencedBy: [],
       };
     }
-    return base;
+    return { ...base, workload: base.workload ?? selected.workload ?? null };
   }
   if (!isError) return null;
   return {
-    id: selected.courseId,
-    code: selected.code,
-    name: selected.name,
-    credits: selected.credits,
-    categoryId: selected.groupName ?? '',
-    categoryCode: selected.groupName ?? '',
+    id: selected.courseId, code: selected.code, name: selected.name, credits: selected.credits,
+    categoryId: selected.groupName ?? '', categoryCode: selected.groupName ?? '',
     categoryName: selected.groupName ?? (selected.mandatory ? 'Mandatory' : 'Elective'),
-    specialization: selected.groupName,
-    status: 'ACTIVE',
-    prerequisiteCount: 0,
-    usedInCurriculumCount: 1,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    description: null,
-    objectives: null,
-    learningOutcomes: null,
-    relations: [],
-    referencedBy: [],
+    specialization: selected.groupName, status: 'ACTIVE', prerequisiteCount: 0, usedInCurriculumCount: 1,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    description: null, objectives: null, learningOutcomes: null,
+    workload: selected.workload ?? null, relations: [], referencedBy: [],
   };
 }

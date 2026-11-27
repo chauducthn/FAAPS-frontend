@@ -1,6 +1,7 @@
 // DataTable columns, detail adapter, and skeleton for StudentCourses.
 
 import { Eye } from '@phosphor-icons/react';
+import { WorkloadBadge } from '../../../academic/components/WorkloadBadge';
 import type { DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import type {
   Course as StudentCourse,
@@ -31,6 +32,7 @@ export function adaptStudentCourseDetail(data: StudentCourseDetail | undefined):
     materialLink: course.materialLink ?? null,
     knowledgeBlock: course.knowledgeBlock ?? null,
     gradingStructure: course.gradingStructure ?? null,
+    workload: course.workload ?? null,
     relations: prerequisites.map((p) => ({
       relationId: p.id,
       kind: p.type === 'REPLACEMENT' ? 'REPLACEMENT' : 'PREREQUISITE',
@@ -93,6 +95,12 @@ export function buildStudentCourseColumns(
           {row.original.category || '—'}
         </span>
       ),
+    },
+    {
+      id: 'workload',
+      header: 'Workload',
+      enableSorting: false,
+      cell: ({ row }) => <WorkloadBadge workload={row.original.workload} />,
     },
     {
       id: 'actions',

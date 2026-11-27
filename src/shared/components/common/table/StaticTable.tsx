@@ -116,19 +116,19 @@ export function StaticTable<TData>(props: StaticTableProps<TData>) {
                     type="button"
                     onClick={() => toggleSort(column.key)}
                     className={cn(
-                      'group inline-flex items-center gap-1 uppercase tracking-inherit transition-colors hover:text-gray-900',
-                      activeDir ? 'text-[#C2410C]' : 'text-inherit',
+                      'group inline-flex items-center gap-1 uppercase tracking-inherit transition-colors hover:text-ink-primary',
+                      activeDir ? 'text-brand-ink' : 'text-inherit',
                       column.align === 'right' && 'ml-auto flex-row-reverse',
                       column.align === 'center' && 'mx-auto',
                     )}
                   >
                     <span>{column.header}</span>
                     {activeDir === 'asc' ? (
-                      <CaretUp weight="fill" className="size-3 shrink-0 text-[#F26F21]" aria-hidden />
+                      <CaretUp weight="fill" className="size-3 shrink-0 text-brand" aria-hidden />
                     ) : activeDir === 'desc' ? (
-                      <CaretDown weight="fill" className="size-3 shrink-0 text-[#F26F21]" aria-hidden />
+                      <CaretDown weight="fill" className="size-3 shrink-0 text-brand" aria-hidden />
                     ) : (
-                      <CaretUpDown className="size-3 shrink-0 text-gray-400 opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />
+                      <CaretUpDown className="size-3 shrink-0 text-ink-subtle opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />
                     )}
                   </button>
                 ) : (

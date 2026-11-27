@@ -102,12 +102,12 @@ export function AppointmentStatusBadge({
 }
 
 const STUDENT_TONES = [
-  'bg-orange-100 text-orange-700',
+  'bg-brand-soft-strong text-brand-ink',
   'bg-amber-100 text-amber-700',
-  'bg-rose-100 text-rose-700',
+  'bg-red-100 text-red-700',
   'bg-emerald-100 text-emerald-700',
-  'bg-sky-100 text-sky-700',
-  'bg-violet-100 text-violet-700',
+  'bg-line-soft text-ink-secondary',
+  'bg-line-soft text-ink-secondary',
 ];
 
 function hashName(name: string | null | undefined) {
@@ -131,7 +131,7 @@ export function AppointmentAvatar({
   const initials = initialsOf(name);
   const tone =
     kind === 'advisor'
-      ? 'bg-[#eef2ff] text-[#4338ca]'
+      ? 'bg-line-soft text-ink-secondary'
       : STUDENT_TONES[hashName(name) % STUDENT_TONES.length];
 
   return (
@@ -154,7 +154,7 @@ export function CalendarTile({ className }: { className?: string }) {
     <span
       aria-hidden
       className={cn(
-        'flex size-9 shrink-0 items-center justify-center rounded-lg bg-[#fff7ed] text-[#f37021] ring-1 ring-inset ring-[#f37021]/15',
+        'flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand ring-1 ring-inset ring-brand/15',
         className,
       )}
     >

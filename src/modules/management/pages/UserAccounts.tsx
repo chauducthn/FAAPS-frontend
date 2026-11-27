@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { NO_PASSWORD_REASON } from '../components/UserRowMenu';
 import { canResetPassword } from '../utils/passwordReset';
@@ -15,7 +14,6 @@ import { useUserAccountsState } from './users/useUserAccountsState';
 import { useUserImport } from './users/useUserImport';
 
 export default function UserAccounts() {
-  const navigate = useNavigate();
   const s = useUserAccountsState();
   const imp = useUserImport();
   const { usersQuery } = s;
@@ -27,7 +25,6 @@ export default function UserAccounts() {
         onView: s.setDetailId,
         onRole: s.setRoleChange,
         onResetPassword: (user) => s.askReset([user]),
-        onAssignments: (path, state) => navigate(path, { state }),
         onToggle: (user) =>
           s.setConfirm({
             ids: [user.id],
@@ -36,7 +33,7 @@ export default function UserAccounts() {
           }),
         onDelete: (user) => s.askDelete([user]),
       }),
-    [navigate, s.me?.id],
+    [s.me?.id],
   );
 
   const handleCreated = async (name: string) => {
@@ -77,7 +74,7 @@ export default function UserAccounts() {
         importExamples={imp.examples}
       />
 
-      <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
         <UserAccountsFilterBar
           search={s.search}
           role={s.role}
@@ -105,12 +102,12 @@ export default function UserAccounts() {
         ) : (
           <div className="relative">
             {usersQuery.isFetching && !usersQuery.isLoading && (
-              <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
-                <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
+              <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-brand-soft-strong">
+                <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-brand" />
               </div>
             )}
             <DataTable
-              className="h-[calc(100vh-295px)] min-h-[460px]"
+              className="admin-fill"
               manual
               columns={columns}
               data={s.items}
@@ -129,7 +126,7 @@ export default function UserAccounts() {
                     role: s.role || undefined,
                     status: s.status || undefined,
                     majorId: s.majorId || undefined,
-                    curriculumVersionId: s.cohortId || undefined,
+                    cohort: s.cohortId || undefined,
                     sort: toUserSort(s.sorting),
                   }),
                 );
@@ -146,7 +143,6 @@ export default function UserAccounts() {
               bulkActions={(selectedRows) => (
                 <UserBulkActions
                   selectedRows={selectedRows}
-                  onSetRole={s.setBulkRoleTargets}
                   onResetPassword={s.askReset}
                   onActivate={(rows) => s.askBulk(rows, 'ACTIVE')}
                   onSuspend={(rows) => s.askBulk(rows, 'SUSPENDED')}

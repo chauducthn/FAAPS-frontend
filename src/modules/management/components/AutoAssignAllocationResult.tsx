@@ -46,7 +46,7 @@ export function AutoAssignAllocationResult({ phase, response, poolById }: Props)
           {(row.atRiskAssigned ?? 0) > 0 && (
             <span
               title="High-risk students balanced to this advisor"
-              className="inline-flex items-center gap-0.5 rounded-full bg-rose-50 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 ring-1 ring-inset ring-rose-200/80"
+              className="inline-flex items-center gap-0.5 rounded-full bg-red-50 px-1.5 py-0.5 text-[10px] font-semibold text-red-700 ring-1 ring-inset ring-red-200/80"
             >
               <ShieldAlert className="size-2.5" />
               {row.atRiskAssigned}
@@ -68,13 +68,13 @@ export function AutoAssignAllocationResult({ phase, response, poolById }: Props)
             <LoadBadge count={row.totalAfter} limit={limit} />
             {pct !== null && (
               <div className="flex items-center gap-1.5">
-                <div className="h-1.5 w-14 overflow-hidden rounded-full bg-gray-100">
+                <div className="h-1.5 w-14 overflow-hidden rounded-full bg-line-soft">
                   <div
                     className={`h-full rounded-full ${pct > 100 ? 'bg-red-500' : pct >= 85 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                     style={{ width: `${Math.min(100, pct)}%` }}
                   />
                 </div>
-                <span className="text-[11px] tabular-nums text-gray-500">{pct}%</span>
+                <span className="text-[11px] tabular-nums text-ink-muted">{pct}%</span>
               </div>
             )}
           </div>
@@ -96,7 +96,7 @@ export function AutoAssignAllocationResult({ phase, response, poolById }: Props)
           <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[var(--ink-muted)]">
             At-Risk balanced
           </p>
-          <p className="mt-0.5 text-xl font-bold tabular-nums text-rose-700">{atRiskTotal}</p>
+          <p className="mt-0.5 text-xl font-bold tabular-nums text-red-700">{atRiskTotal}</p>
         </div>
         <div className="rounded-lg bg-[var(--surface-page)] px-3.5 py-2.5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[var(--ink-muted)]">

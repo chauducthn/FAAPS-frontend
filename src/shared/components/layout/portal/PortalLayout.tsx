@@ -6,10 +6,15 @@ import { cn } from '@/shared/lib/utils';
 import { ForceChangePasswordModal } from '@/modules/auth/components/ForceChangePasswordModal';
 import { PortalHeader } from './PortalHeader';
 import { PortalSidebar, type PortalNavItem, type PortalNavSection } from './PortalSidebar';
+import { usePortalLogoFlip } from './usePortalLogoFlip';
 
 export { PortalSidebar, type PortalNavItem, type PortalNavSection };
 
 const SIDEBAR_STORAGE_KEY = 'faaps-sidebar-collapsed';
+
+const TOGGLE_CLASS =
+  'inline-flex size-8 shrink-0 items-center justify-center rounded-md text-ink-subtle transition-colors ' +
+  'hover:bg-line-soft hover:text-ink-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40';
 
 function readCollapsedState(): boolean {
   if (typeof window === 'undefined') return false;
@@ -40,6 +45,11 @@ interface PortalLayoutProps {
   roleLabel: string;
   profilePath?: string;
   headerExtra?: React.ReactNode;
+  /**
+   * Keep the shell exactly one viewport tall and scroll inside the page area only.
+   * Pages mark their working region with `.admin-fill` to make it take the remaining height.
+   */
+  contained?: boolean;
 }
 
 export default function PortalLayout({
@@ -48,6 +58,7 @@ export default function PortalLayout({
   roleLabel,
   profilePath,
   headerExtra,
+  contained = false,
 }: PortalLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [collapsed, setCollapsed] = useState<boolean>(readCollapsedState);
@@ -55,7 +66,10 @@ export default function PortalLayout({
   const resolvedProfilePath = profilePath ?? `${homePath}/profile`;
   const activeItem = useMemo(() => findActiveNavItem(navSections, pathname), [navSections, pathname]);
 
+  const { logoRef, capture: captureLogo } = usePortalLogoFlip(collapsed);
+
   const toggleCollapsed = () => {
+    captureLogo();
     setCollapsed((prev) => {
       const next = !prev;
       window.localStorage.setItem(SIDEBAR_STORAGE_KEY, next ? '1' : '0');
@@ -64,27 +78,26 @@ export default function PortalLayout({
   };
 
   return (
-    <div className="flex min-h-screen bg-[var(--surface-page)] font-sans">
+    <div className={cn('flex bg-surface-page font-sans', contained ? 'h-svh overflow-hidden' : 'min-h-screen')}>
       <aside
         className={cn(
-          'sticky top-0 hidden h-screen shrink-0 flex-col border-r border-[#e5e7eb] bg-white',
-          'transition-[width] duration-200 lg:flex',
+          'sticky top-0 z-40 hidden h-screen shrink-0 flex-col border-r border-line bg-white',
+          'motion-safe:transition-[width] motion-safe:duration-200 lg:flex',
           collapsed ? 'w-[72px]' : 'w-[248px]',
         )}
       >
-        <div
-          className={cn(
-            'flex h-16 shrink-0 items-center border-b border-[#e5e7eb]',
-            collapsed ? 'justify-center px-2' : 'justify-between gap-2 px-4',
+        <div className="relative flex h-16 shrink-0 items-center justify-end border-b border-line pr-5">
+          {!collapsed && (
+            <div ref={logoRef} className="absolute inset-y-0 left-4 flex w-max items-center">
+              <Logo to={homePath} />
+            </div>
           )}
-        >
-          {!collapsed && <Logo to={homePath} />}
           <button
             type="button"
             onClick={toggleCollapsed}
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
+            className={TOGGLE_CLASS}
           >
             {collapsed ? (
               <PanelLeftOpen className="size-4" aria-hidden />
@@ -93,17 +106,20 @@ export default function PortalLayout({
             )}
           </button>
         </div>
-        <div className={cn('flex-1 overflow-y-auto', collapsed ? 'p-2.5' : 'p-4')}>
+        <div className={cn('flex-1 overflow-y-auto', collapsed ? 'p-2.5' : 'px-3 py-4')}>
           <PortalSidebar navSections={navSections} homePath={homePath} collapsed={collapsed} />
         </div>
       </aside>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className={cn('flex min-w-0 flex-1 flex-col', contained && 'min-h-0')}>
         <PortalHeader
           roleLabel={roleLabel}
           profilePath={resolvedProfilePath}
           activeItem={activeItem}
           headerExtra={headerExtra}
+          homePath={homePath}
+          showLogo={collapsed}
+          logoRef={logoRef}
           onOpenMenu={() => setMenuOpen(true)}
         />
 
@@ -115,7 +131,7 @@ export default function PortalLayout({
                 <Logo to={homePath} />
                 <button
                   type="button"
-                  className="rounded-md p-2 text-gray-700 hover:bg-gray-100"
+                  className="rounded-md p-2 text-ink-secondary hover:bg-line-soft"
                   aria-label="Close menu"
                   onClick={() => setMenuOpen(false)}
                 >
@@ -131,8 +147,14 @@ export default function PortalLayout({
           </div>
         )}
 
-        <main className="min-w-0 flex-1 p-4 sm:p-8">
-          <Suspense fallback={<p className="text-sm text-gray-500">Loading page...</p>}>
+        <main
+          data-contained-main={contained || undefined}
+          className={cn(
+            'min-w-0 flex-1 px-4 py-6 sm:px-8 sm:py-7',
+            contained && 'flex min-h-0 flex-col overflow-y-auto overscroll-contain',
+          )}
+        >
+          <Suspense fallback={<p className="text-sm text-ink-subtle">Loading page...</p>}>
             <Outlet />
           </Suspense>
         </main>

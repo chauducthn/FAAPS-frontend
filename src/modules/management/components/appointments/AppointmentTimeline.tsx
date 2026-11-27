@@ -43,7 +43,7 @@ export function AppointmentTimeline({ items, isLoading = false, onOpen }: Appoin
         {Array.from({ length: 4 }).map((_, index) => (
           <div
             key={index}
-            className="h-20 animate-pulse rounded-xl bg-[#f1f5f9]"
+            className="h-20 animate-pulse rounded-lg bg-line-soft"
           />
         ))}
       </div>
@@ -52,12 +52,12 @@ export function AppointmentTimeline({ items, isLoading = false, onOpen }: Appoin
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-[#e5e7eb] py-16 text-center">
-        <span className="flex size-11 items-center justify-center rounded-xl bg-[#f7f8fa] text-[#5b6577]">
+      <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-line py-16 text-center">
+        <span className="flex size-11 items-center justify-center rounded-lg bg-surface-page text-ink-muted">
           <CalendarDays className="size-5" aria-hidden />
         </span>
-        <p className="text-sm font-semibold text-[#151c27]">No appointments to schedule</p>
-        <p className="text-[13px] text-[#555f6f]">
+        <p className="text-sm font-semibold text-ink-primary">No appointments to schedule</p>
+        <p className="text-[13px] text-ink-muted">
           Adjust the filters or pick another date range to see the schedule.
         </p>
       </div>
@@ -69,9 +69,9 @@ export function AppointmentTimeline({ items, isLoading = false, onOpen }: Appoin
       {groupByDay(items).map(({ day, appointments }) => (
         <section key={day}>
           <div className="mb-2.5 flex items-baseline gap-2">
-            <h3 className="text-[13px] font-semibold text-[#151c27]">{formatWeekday(day)}</h3>
-            <span className="text-[12px] text-[#5b6577]">{formatSlotDay(day)}</span>
-            <span className="ml-auto text-[11px] font-medium text-[#5b6577]">
+            <h3 className="text-[13px] font-semibold text-ink-primary">{formatWeekday(day)}</h3>
+            <span className="text-[12px] text-ink-muted">{formatSlotDay(day)}</span>
+            <span className="ml-auto text-[11px] font-medium text-ink-muted">
               {appointments.length} session{appointments.length === 1 ? '' : 's'}
             </span>
           </div>
@@ -87,35 +87,35 @@ export function AppointmentTimeline({ items, isLoading = false, onOpen }: Appoin
                     type="button"
                     onClick={() => onOpen(appointment.id)}
                     className={cn(
-                      'group flex w-full items-center gap-3 rounded-xl border border-[#e5e7eb] bg-white p-3 text-left',
+                      'group flex w-full items-center gap-3 rounded-lg border border-line bg-white p-3 text-left',
                       'transition-[box-shadow,border-color] duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]',
-                      'hover:border-[#f37021]/40 hover:shadow-[0_6px_16px_rgba(20,32,51,0.07)]',
-                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021]/40',
+                      'hover:border-brand/40 hover:shadow-[0_6px_16px_rgba(20,32,51,0.07)]',
+                      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
                     )}
                   >
                     <AppointmentAvatar name={appointment.studentName} />
 
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="text-[13px] font-semibold text-[#151c27]">
+                        <span className="text-[13px] font-semibold text-ink-primary">
                           {appointment.studentName ?? '—'}
                         </span>
-                        <span className="text-[12px] text-[#5b6577]">with</span>
-                        <span className="text-[13px] text-[#555f6f]">
+                        <span className="text-[12px] text-ink-muted">with</span>
+                        <span className="text-[13px] text-ink-muted">
                           {appointment.advisorName ?? '—'}
                         </span>
                       </div>
-                      <p className="mt-1 truncate text-[12px] text-[#555f6f]">
+                      <p className="mt-1 truncate text-[12px] text-ink-muted">
                         {appointment.agenda || 'No agenda provided.'}
                       </p>
                     </div>
 
-                    <div className="hidden shrink-0 items-center gap-1.5 text-[12px] text-[#5b6577] sm:flex">
+                    <div className="hidden shrink-0 items-center gap-1.5 text-[12px] text-ink-muted sm:flex">
                       <MapPin className="size-3.5" aria-hidden />
                       {appointment.location || '—'}
                     </div>
 
-                    <span className="shrink-0 whitespace-nowrap text-[12px] font-semibold tabular-nums text-[#151c27]">
+                    <span className="shrink-0 whitespace-nowrap text-[12px] font-semibold tabular-nums text-ink-primary">
                       {formatSlotTimeRange(appointment)}
                     </span>
 

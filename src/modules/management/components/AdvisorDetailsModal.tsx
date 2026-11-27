@@ -39,17 +39,17 @@ export function AdvisorDetailsModal({
 
   return (
     <Modal open={!!advisorId} onClose={onClose} title="Advisor details & history" className="max-w-6xl">
-      <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-5 py-3.5">
+      <div className="flex items-center justify-between gap-4 border-b border-line-soft bg-white px-5 py-3.5">
         <div className="flex min-w-0 items-center gap-3">
           {advisor && <UserInitials name={advisor.fullName} className="size-9 shrink-0" />}
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="truncate text-[15px] font-bold text-gray-900">
+              <h2 className="truncate text-[15px] font-bold text-ink-primary">
                 {advisor ? advisor.fullName : 'Advisor details & history'}
               </h2>
               {data?.status && <StatusBadge status={data.status as AdminUserStatus} />}
             </div>
-            <p className="truncate text-xs text-gray-500">{data?.email ?? advisor?.email ?? 'Loading…'}</p>
+            <p className="truncate text-xs text-ink-muted">{data?.email ?? advisor?.email ?? 'Loading…'}</p>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-3">
@@ -58,20 +58,20 @@ export function AdvisorDetailsModal({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+            className="rounded-lg p-1.5 text-ink-subtle transition-colors hover:bg-line-soft hover:text-ink-secondary"
           >
             <X className="size-4" />
           </button>
         </div>
       </div>
 
-      <div className="max-h-[82vh] space-y-3 overflow-y-auto bg-gray-50/50 p-5">
-        {isLoading && <div className="h-48 animate-pulse rounded-xl bg-white" />}
+      <div className="max-h-[82vh] space-y-3 overflow-y-auto bg-surface-page/50 p-5">
+        {isLoading && <div className="h-48 animate-pulse rounded-lg bg-white" />}
 
         {!isLoading && (isError || !data || !advisor) && (
-          <div className="rounded-xl border border-gray-200/80 bg-white p-8 text-center text-sm text-gray-600">
+          <div className="rounded-lg border border-line/80 bg-white p-8 text-center text-sm text-ink-muted">
             Could not load this advisor.{' '}
-            <button type="button" onClick={() => refetch()} className="font-semibold text-[#F26F21] hover:underline">
+            <button type="button" onClick={() => refetch()} className="font-semibold text-brand hover:underline">
               Retry
             </button>
           </div>
@@ -79,30 +79,30 @@ export function AdvisorDetailsModal({
 
         {!isLoading && data && advisor && (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200/80 bg-white px-4 py-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line/80 bg-white px-4 py-2.5">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="mr-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                <span className="mr-1 text-[11px] font-semibold uppercase tracking-wide text-ink-subtle">
                   Cohorts
                 </span>
                 {s.myCohorts.length === 0 ? (
-                  <span className="text-xs text-gray-400">None</span>
+                  <span className="text-xs text-ink-subtle">None</span>
                 ) : (
                   s.myCohorts.map((c) => (
                     <Link
                       key={c.cohortId}
                       to={`/admin/assignments/cohorts/${c.cohortId}`}
                       onClick={onClose}
-                      className="inline-flex items-center gap-1 rounded-md bg-orange-50 px-2 py-0.5 text-xs font-medium text-[#9a3412] ring-1 ring-inset ring-orange-200/70 transition-colors hover:bg-orange-100"
+                      className="inline-flex items-center gap-1 rounded-md bg-brand-soft px-2 py-0.5 text-xs font-medium text-brand-ink ring-1 ring-inset ring-brand/25 transition-colors hover:bg-brand-soft-strong"
                     >
                       {c.label}
-                      <span className="text-[11px] text-[#C2410C]/80 tabular-nums">· {c.students}</span>
+                      <span className="text-[11px] text-brand-ink/80 tabular-nums">· {c.students}</span>
                     </Link>
                   ))
                 )}
               </div>
 
               <div className="flex items-center gap-1.5">
-                <label className="text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                <label className="text-[11px] font-semibold uppercase tracking-wide text-ink-subtle">
                   Start date
                 </label>
                 <input
@@ -110,12 +110,12 @@ export function AdvisorDetailsModal({
                   aria-label="Start date"
                   value={s.assignmentStartDate}
                   onChange={(e) => s.setAssignmentStartDate(e.target.value)}
-                  className="h-8 rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-900 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+                  className="h-8 rounded-lg border border-line bg-white px-2 text-xs text-ink-primary focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
                 />
                 <button
                   type="button"
                   onClick={s.saveDate}
-                  className="h-8 rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50"
+                  className="h-8 rounded-lg border border-line bg-white px-2.5 text-xs font-semibold text-ink-secondary transition-colors hover:bg-surface-hover"
                 >
                   Save
                 </button>

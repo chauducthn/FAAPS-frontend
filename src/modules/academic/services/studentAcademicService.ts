@@ -1,80 +1,19 @@
 import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
 import type { PaginatedData } from '../../../shared/types/api';
+import type {
+  AcademicAdvisingDetail, AcademicAdvisingRequest, AcademicStudentProfile, AssignmentStatus,
+  BlockPlacement, Course, CourseDetail, CoursePlan, Curriculum, CurriculumCourse, CurriculumPlan,
+  FlmPreferencesView, ImportHistory, ImportPreview, LearningTask, Progress, Semester,
+  StudyJourneyGoal, TranscriptRow,
+} from './studentAcademicTypes';
 
-export type AcademicStudentProfile = {
-  id: string; fullName: string; email: string; phone: string | null; accountStatus: string;
-  studentCode: string | null; majorCode: string | null; majorName: string | null;
-  curriculumVersionId: string | null; cohort: string | null; currentSemester: number | null;
-  currentGpa: number | null; totalCreditsEarned: number | null; academicStatus: string | null;
-  dateOfBirth?: string | null;
-};
-export type TranscriptRow = { id: string; courseCode: string; courseName: string; credits: number;
-  semesterCode: string; semesterName: string; finalScore: number | null; status: string;
-  attemptNumber: number; creditsEarned: number };
-  export type Progress = { requiredCredits: number; earnedCredits: number; curriculumCourses: number;
-  completedCourses: number; currentGpa: number | null;
-  semesters: { code: string; name: string; creditsEnrolled: number; creditsEarned: number;
-    /** The API may omit the GPA values; renderers must fall back to a placeholder. */
-    semesterGpa: number | null; cumulativeGpa: number | null; standing: string }[] };
-export type Course = { id: string; code: string; name: string; credits: number; category: string;
-  description: string | null; objectives: string | null; learningOutcomes: string | null;
-  materialLink?: string | null; knowledgeBlock?: string | null; gradingStructure?: string | null };
-export type CourseDetail = { course: Course; prerequisites: { id: string; courseCode: string;
-  courseName: string; groupNo: number; type: string; minimumScore: number | null }[] };
-export type Curriculum = { id: string; version: string; name: string; description: string | null;
-  majorCode: string; majorName: string };
-export type CurriculumCourse = { courseId: string; code: string; name: string; credits: number;
-  semesterNumber: number; mandatory: boolean; groupName: string | null };
-export type BlockPlacement = { courseCode: string; semesterNumber: number; blockCode: string;
-  planMode: 'CUSTOM' | 'RETAKE' | 'DEFERRED' | 'EARLY'; note: string | null };
-export type FlmPreferencesView = {
-  comboCode: string | null;
-  englishPrep: string | null;
-  musicalInstrument: string | null;
-  physicalEducation: string | null;
-  combos: { code: string; label: string; courses: { code: string; name: string; credits: number }[] }[];
-  englishOptions: { code: string; label: string }[];
-  instrumentOptions: { code: string; label: string }[];
-  physicalEducationOptions: { code: string; label: string }[];
-};
-export type ImportRow = { rowNumber: number; courseCode: string; semesterCode: string;
-  finalScore: number | null; status: string; attemptNumber: number; error: string | null };
-export type ImportPreview = { importId: string; rowCount: number; errorCount: number; rows: ImportRow[] };
-export type ImportHistory = { id: string; fileName: string; status: string; rowCount: number;
-  errorCount: number; createdAt: string; confirmedAt: string | null };
-export type Semester = { id: string; code: string; name: string; startDate: string; endDate: string };
-export type CurriculumPlan = {
-  header: {
-    id: string;
-    semesterId: string;
-    semesterCode: string;
-    version: number;
-    status: string;
-    planType: string;
-    totalCredits: number;
-    previousPlanId: string | null;
-    submittedAt: string | null;
-    reviewedByUserId: string | null;
-    reviewedAt: string | null;
-    reviewNotes: string | null;
-    createdAt: string;
-  };
-  courses: { id: string; code: string; name: string; credits: number }[];
-  issues: string[];
-};
-export type LearningTask = { title: string; description: string | null; dueDate: string | null;
-  resourceUrl: string | null };
-export type CoursePlan = { header: { id: string; courseId: string; courseCode: string;
-  courseName: string; learningGoal: string | null; version: number; createdAt: string };
-  tasks: (LearningTask & { id: string; sortOrder: number; completed: boolean; completedAt: string | null })[] };
-export type AssignmentStatus = { advisorId: string | null; pendingRequestId: string | null;
-  canRequestAdvisor: boolean; canRequestAdvising: boolean };
-export type AcademicAdvisingRequest = { id: string; studentId: string; studentName: string;
-  advisorId: string | null; advisorName: string | null; title: string; description: string;
-  requestType: string; status: string; resolutionSummary: string | null; createdAt: string; updatedAt: string };
-export type AcademicAdvisingDetail = { request: AcademicAdvisingRequest; messages: { id: string; senderId: string;
-  senderName: string; content: string; internal: boolean; createdAt: string }[] };
+export type {
+  AcademicAdvisingDetail, AcademicAdvisingRequest, AcademicStudentProfile, AssignmentStatus,
+  BlockPlacement, Course, CourseDetail, CoursePlan, Curriculum, CurriculumCourse, CurriculumPlan,
+  FlmPreferencesView, ImportHistory, ImportPreview, ImportRow, LearningTask, Progress, Semester,
+  StudyJourneyGoal, TranscriptRow,
+} from './studentAcademicTypes';
 
 const get = async <T>(path: string, params?: object): Promise<T> =>
   (await apiClient.get<T>(`/student${path}`, { params })).data;
@@ -129,6 +68,7 @@ export const studentAcademicService = {
   curriculumCourses: () => get<CurriculumCourse[]>('/curriculum/courses'),
   blockPlacements: () => get<BlockPlacement[]>('/curriculum/block-plan'),
   curriculumPrerequisites: () => get<Record<string, string[]>>('/curriculum/block-plan/prerequisites'),
+  curriculumEquivalents: () => get<Record<string, string[]>>('/curriculum/block-plan/equivalents'),
   saveBlockPlacement: async (body: {
     courseCode: string;
     semesterNumber: number;
@@ -137,12 +77,26 @@ export const studentAcademicService = {
     note?: string | null;
   }) =>
     (await apiClient.put<BlockPlacement[]>('/student/curriculum/block-plan', body, { headers: await getCsrfHeaders() })).data,
+  batchBlockPlacements: async (body: {
+    upserts?: {
+      courseCode: string;
+      semesterNumber: number;
+      blockCode: string;
+      planMode?: BlockPlacement['planMode'];
+      note?: string | null;
+    }[];
+    removeCodes?: string[];
+  }) =>
+    (await apiClient.put<BlockPlacement[]>('/student/curriculum/block-plan/batch', body, { headers: await getCsrfHeaders() })).data,
   removeBlockPlacement: async (courseCode: string) =>
     (await apiClient.delete<BlockPlacement[]>(`/student/curriculum/block-plan/${encodeURIComponent(courseCode)}`, {
       headers: await getCsrfHeaders(),
     })).data,
   resetBlockPlacements: async () =>
     (await apiClient.delete<BlockPlacement[]>('/student/curriculum/block-plan', { headers: await getCsrfHeaders() })).data,
+  studyJourneyGoal: () => get<StudyJourneyGoal>('/study-journey'),
+  saveStudyJourneyGoal: async (body: StudyJourneyGoal) =>
+    (await apiClient.put<StudyJourneyGoal>('/student/study-journey', body, { headers: await getCsrfHeaders() })).data,
   importPreview: async (file: File) => {
     const body = new FormData();
     body.append('file', file);
@@ -155,9 +109,21 @@ export const studentAcademicService = {
     return (await apiClient.post<ImportPreview>('/student/transcript/imports/ocr-preview', body,
       { headers: { ...(await getCsrfHeaders()), 'Content-Type': 'multipart/form-data' } })).data;
   },
-  confirmImport: (id: string) => post<{ importId: string; importedCount: number; status: string }>(`/transcript/imports/${id}/confirm`),
+  confirmImport: (id: string, skipErrors = false) =>
+    post<{ importId: string; importedCount: number; status: string }>(
+      `/transcript/imports/${id}/confirm${skipErrors ? '?skipErrors=true' : ''}`,
+    ),
+  activateImport: (id: string) =>
+    post<{ importId: string; importedCount: number; status: string }>(`/transcript/imports/${id}/activate`),
+  deleteImport: async (id: string) => {
+    await apiClient.delete(`/student/transcript/imports/${encodeURIComponent(id)}`, {
+      headers: await getCsrfHeaders(),
+    });
+  },
   importHistory: () => get<ImportHistory[]>('/transcript/imports'),
   importDetail: (id: string) => get<ImportPreview>(`/transcript/imports/${id}`),
+  downloadImportTemplate: async (): Promise<Blob> =>
+    (await apiClient.get('/student/transcript/imports/template.xlsx', { responseType: 'blob' })).data as Blob,
   downloadImportErrors: async (id: string): Promise<Blob> =>
     (await apiClient.get(`/student/transcript/imports/${id}/errors.xlsx`, { responseType: 'blob' })).data as Blob,
   semesters: () => get<Semester[]>('/semesters'),

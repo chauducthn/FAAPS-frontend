@@ -25,6 +25,7 @@ const EMPTY_DEFAULTS: CreateCourseFormValues = {
   credits: Number.NaN,
   categoryId: '',
   status: 'ACTIVE',
+  workloadLevel: 'AUTO',
   materialLink: '',
   prerequisiteIds: [],
 };
@@ -63,6 +64,7 @@ export default function CourseFormModal({
         credits: initial.credits,
         categoryId: initial.categoryId,
         status: initial.status,
+        workloadLevel: initial.workload?.manualLevel ?? 'AUTO',
         materialLink: initial.materialLink ?? '',
         prerequisiteIds: initial.relations
           .filter((r) => r.kind === 'PREREQUISITE')

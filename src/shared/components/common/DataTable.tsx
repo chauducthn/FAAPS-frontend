@@ -15,7 +15,8 @@ import { cn } from '@/shared/lib/utils';
 import { TableShell } from './table/TablePrimitives';
 import { DataTableBody } from './data-table/DataTableBody';
 import { DataTableHeader } from './data-table/DataTableHeader';
-import { DataTableBulkBar, DataTablePagination } from './data-table/DataTablePagination';
+import { DataTableBulkBar } from './data-table/DataTableBulkBar';
+import { DataTablePagination } from './data-table/DataTablePagination';
 import type { DataTableProps } from './data-table/DataTableTypes';
 import { useDataTable } from './data-table/useDataTable';
 
@@ -96,7 +97,7 @@ export function DataTable<TData extends RowData, TValue = unknown>(
         {showSearch ? (
           <div className="relative w-full sm:w-72">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle"
               aria-hidden
             />
             <input
@@ -106,9 +107,9 @@ export function DataTable<TData extends RowData, TValue = unknown>(
               placeholder={searchPlaceholder}
               aria-label={searchPlaceholder}
               className={cn(
-                'h-10 w-full rounded-lg border border-slate-200 bg-white pl-9 pr-3 text-sm text-[#151c27]',
-                'outline-none transition-colors placeholder:text-slate-400',
-                'focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/40',
+                'h-10 w-full rounded-lg border border-line bg-white pl-9 pr-3 text-sm text-ink-primary',
+                'outline-none transition-colors placeholder:text-ink-subtle',
+                'focus:border-brand focus:ring-1 focus:ring-brand/40',
               )}
             />
           </div>

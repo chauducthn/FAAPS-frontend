@@ -39,14 +39,14 @@ export function MajorCodeCreator({ open, existingCodes, onClose, onAdd }: Props)
   };
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3.5">
+    <div className="rounded-lg border border-line bg-surface-page/70 p-3.5">
       <div className="mb-2.5 flex items-center justify-between gap-2">
-        <span className="text-xs font-semibold text-gray-800">New major code</span>
+        <span className="text-xs font-semibold text-ink-primary">New major code</span>
         <button
           type="button"
           onClick={resetAndClose}
           aria-label="Close new major code form"
-          className="rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-200/70 hover:text-gray-700"
+          className="rounded-md p-1 text-ink-subtle transition-colors hover:bg-line/70 hover:text-ink-secondary"
         >
           <X className="size-3.5" />
         </button>
@@ -64,23 +64,23 @@ export function MajorCodeCreator({ open, existingCodes, onClose, onAdd }: Props)
             setDraft(e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase());
           }}
           className={cn(
-            'h-9 w-full rounded-lg border bg-white px-3 text-[13px] uppercase text-gray-900 placeholder:normal-case placeholder:text-gray-400 focus:outline-none focus:ring-2',
+            'h-9 w-full rounded-lg border bg-white px-3 text-[13px] uppercase text-ink-primary placeholder:normal-case placeholder:text-ink-subtle focus:outline-none focus:ring-2',
             error
               ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
-              : 'border-gray-200 focus:border-[#F26F21] focus:ring-[#F26F21]/15',
+              : 'border-line focus:border-brand focus:ring-brand/15',
           )}
         />
         <button
           type="button"
           onClick={resetAndClose}
-          className="h-9 shrink-0 rounded-lg border border-gray-200 bg-white px-3 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          className="h-9 shrink-0 rounded-lg border border-line bg-white px-3 text-xs font-medium text-ink-secondary transition-colors hover:bg-surface-hover"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={handleAdd}
-          className="h-9 shrink-0 rounded-lg bg-[#F26F21] px-3 text-xs font-semibold text-white transition-colors hover:bg-[#e05f14]"
+          className="h-9 shrink-0 rounded-lg bg-brand px-3 text-xs font-semibold text-white transition-colors hover:bg-brand-hover"
         >
           Add code
         </button>

@@ -53,7 +53,7 @@ export function BulkSetRoleTable({
   const isStudent = targetRole === 'STUDENT';
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-gray-200">
+    <div className="overflow-x-auto rounded-lg border border-line">
       <TableShell>
         <thead>
           <tr>
@@ -80,7 +80,7 @@ export function BulkSetRoleTable({
                     onChange={(e) => onUpdateRow(row.userId, { email: e.target.value })}
                     aria-label={`Email for ${row.fullName}`}
                     className={cn(
-                      'h-8 w-52 rounded-lg border border-gray-200 px-2.5 text-xs text-gray-900',
+                      'h-8 w-52 rounded-lg border border-line px-2.5 text-xs text-ink-primary',
                       'focus:border-[var(--brand)] focus:outline-none focus:ring-1 focus:ring-[var(--brand)]/30',
                     )}
                   />
@@ -96,8 +96,8 @@ export function BulkSetRoleTable({
                       }
                       aria-label={`Student ID for ${row.fullName}`}
                       className={cn(
-                        'h-8 w-28 rounded-lg border border-gray-200 px-2.5 font-mono text-xs uppercase',
-                        'text-gray-900 focus:border-[var(--brand)] focus:outline-none',
+                        'h-8 w-28 rounded-lg border border-line px-2.5 font-mono text-xs uppercase',
+                        'text-ink-primary focus:border-[var(--brand)] focus:outline-none',
                       )}
                     />
                   </TableCell>
@@ -109,7 +109,7 @@ export function BulkSetRoleTable({
                       onChange={(e) => onUpdateRow(row.userId, { curriculumId: e.target.value })}
                       aria-label={`Curriculum for ${row.fullName}`}
                       className={cn(
-                        'h-8 w-44 rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-800',
+                        'h-8 w-44 rounded-lg border border-line bg-white px-2 text-xs text-ink-primary',
                         'focus:border-[var(--brand)] focus:outline-none',
                       )}
                     >

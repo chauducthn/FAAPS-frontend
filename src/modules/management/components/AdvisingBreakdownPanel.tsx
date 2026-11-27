@@ -7,7 +7,7 @@ export function AdvisingBreakdownPanel({ overview, loading }: { overview?: Schoo
     return (
       <div className="grid gap-3 lg:grid-cols-3">
         {[0, 1, 2].map((i) => (
-          <div key={i} className="h-28 animate-pulse rounded-2xl border border-gray-200/80 bg-white" />
+          <div key={i} className="h-28 animate-pulse rounded-lg border border-line/80 bg-white" />
         ))}
       </div>
     );
@@ -23,47 +23,47 @@ export function AdvisingBreakdownPanel({ overview, loading }: { overview?: Schoo
 
   return (
     <div className="grid gap-3 lg:grid-cols-3">
-      <div className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-2xs">
+      <div className="rounded-lg border border-line/80 bg-white p-4 shadow-2xs">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">At-risk outreach</p>
-          <span className="text-sm font-bold tabular-nums text-[#C2410C]">{overview.coverageRate}%</span>
+          <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">At-risk outreach</p>
+          <span className="text-sm font-bold tabular-nums text-brand-ink">{overview.coverageRate}%</span>
         </div>
-        <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
-          <div className="h-full rounded-full bg-[#F26F21] transition-all" style={{ width: `${Math.min(100, overview.coverageRate)}%` }} />
+        <div className="mt-2.5 h-2.5 w-full overflow-hidden rounded-full bg-line-soft">
+          <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${Math.min(100, overview.coverageRate)}%` }} />
         </div>
-        <p className="mt-2 text-xs text-gray-500">
-          <span className="font-semibold text-gray-800">{overview.contactedAtRisk}</span> contacted ·{' '}
-          <span className={uncontacted > 0 ? 'font-semibold text-red-600' : 'text-gray-600'}>{uncontacted} remaining</span>
+        <p className="mt-2 text-xs text-ink-muted">
+          <span className="font-semibold text-ink-primary">{overview.contactedAtRisk}</span> contacted ·{' '}
+          <span className={uncontacted > 0 ? 'font-semibold text-red-600' : 'text-ink-muted'}>{uncontacted} remaining</span>
         </p>
       </div>
 
-      <div className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-2xs">
+      <div className="rounded-lg border border-line/80 bg-white p-4 shadow-2xs">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">Session channels</p>
-          <span className="text-xs font-semibold tabular-nums text-gray-500">{overview.totalSessions} total</span>
+          <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Session channels</p>
+          <span className="text-xs font-semibold tabular-nums text-ink-muted">{overview.totalSessions} total</span>
         </div>
-        <div className="mt-2.5 flex h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className="mt-2.5 flex h-2.5 w-full overflow-hidden rounded-full bg-line-soft">
           <div className="bg-blue-500" style={{ width: `${onlinePct}%` }} />
           <div className="bg-emerald-500" style={{ width: `${offlinePct}%` }} />
           <div className="bg-amber-400" style={{ width: `${emailPct}%` }} />
         </div>
-        <div className="mt-2 flex flex-wrap gap-3 text-xs text-gray-600">
+        <div className="mt-2 flex flex-wrap gap-3 text-xs text-ink-muted">
           <span className="inline-flex items-center gap-1"><i className="size-2 rounded-full bg-blue-500" /> Online {onlinePct}%</span>
           <span className="inline-flex items-center gap-1"><i className="size-2 rounded-full bg-emerald-500" /> Offline {offlinePct}%</span>
           <span className="inline-flex items-center gap-1"><i className="size-2 rounded-full bg-amber-400" /> Email {emailPct}%</span>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200/80 bg-white p-4 shadow-2xs">
+      <div className="rounded-lg border border-line/80 bg-white p-4 shadow-2xs">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">Session outcomes</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">Session outcomes</p>
           <span className="text-sm font-bold tabular-nums text-emerald-700">{completionPct}% done</span>
         </div>
-        <div className="mt-2.5 flex h-2.5 w-full overflow-hidden rounded-full bg-gray-100">
+        <div className="mt-2.5 flex h-2.5 w-full overflow-hidden rounded-full bg-line-soft">
           <div className="bg-emerald-500" style={{ width: `${completionPct}%` }} />
           <div className="bg-red-400" style={{ width: `${noShowPct}%` }} />
         </div>
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-ink-muted">
           <span className="font-semibold text-emerald-700">{overview.completedSessions} completed</span> ·{' '}
           <span className="font-semibold text-red-600">{overview.noShowSessions} no-show</span> ({noShowPct}%)
         </p>

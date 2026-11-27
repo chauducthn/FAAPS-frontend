@@ -1,70 +1,42 @@
 import { useState, type ReactNode } from 'react';
 import { ArrowSquareOut, BookOpen, CaretDown, GitBranch, GraduationCap, Info } from '@phosphor-icons/react';
+import { CourseWorkloadCard } from '../../../academic/components/CourseWorkloadCard';
 import type { TranscriptRow } from '../../../academic/services/studentAcademicService';
 import type { CourseDetail } from '../../../academic/types/course';
-import type { EffectiveCurriculumCourse, EligibilityResult, RegularBlockMeta } from './curriculumBlockRules';
+import type { EffectiveCurriculumCourse } from './curriculumBlockRules';
 import { classifyStatus, type AttemptSummary } from './curriculumCourseHelpers';
-import { CourseJourneySection } from './CourseJourneySection';
 import { CourseRelationsContent } from './CourseRelationsContent';
 import { FormattedCourseText } from './FormattedCourseText';
 
 interface Props {
   selected: EffectiveCurriculumCourse | null;
   termLabel?: string;
-  activeSem?: number;
   detail: CourseDetail | null;
+  curriculumCodes?: Set<string>;
   transcriptRow?: TranscriptRow;
   attemptHistory?: AttemptSummary;
-  regularBlocks: RegularBlockMeta[];
-  availableTerms: { sem: number; label: string }[];
   isLoading: boolean;
-  isSavingSchedule: boolean;
-  validatePlacement: (course: EffectiveCurriculumCourse, targetSem: number, block: RegularBlockMeta) => EligibilityResult;
   onNavigate: (code: string) => void;
-  onSchedule: (course: EffectiveCurriculumCourse, targetSem: number, targetBlock: RegularBlockMeta) => void;
-  onScheduleToTerm: (course: EffectiveCurriculumCourse, targetSem: number) => void;
-  onResetCourse: (courseCode: string) => void;
 }
 
 function StatusPill({ row }: { row?: TranscriptRow }) {
   const kind = classifyStatus(row);
-  const score = row?.finalScore != null ? ` · ${row.finalScore.toFixed(1)}` : '';
-  if (kind === 'PASSED') return <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">Passed{score}</span>;
+  if (kind === 'PASSED') return <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">Passed</span>;
   if (kind === 'IN_PROGRESS') return <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">Studying</span>;
-  if (kind === 'FAILED') return <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700">Failed{score}</span>;
+  if (kind === 'FAILED') return <span className="rounded-full bg-red-50 px-2.5 py-0.5 text-xs font-semibold text-red-700">Failed</span>;
   return <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">Not taken</span>;
 }
 
-function DetailAccordion({
-  title,
-  icon,
-  badge,
-  defaultOpen = false,
-  children,
-}: {
-  title: string;
-  icon?: ReactNode;
-  badge?: string | number;
-  defaultOpen?: boolean;
-  children: ReactNode;
+function DetailAccordion({ title, icon, badge, defaultOpen = false, children }: {
+  title: string; icon?: ReactNode; badge?: string | number; defaultOpen?: boolean; children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200/80 bg-gray-50/30">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-gray-50"
-      >
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-gray-50">
         <span className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-gray-600">
-          {icon}
-          {title}
-          {badge !== undefined && (
-            <span className="rounded-full bg-gray-200/70 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-gray-700">
-              {badge}
-            </span>
-          )}
+          {icon}{title}
+          {badge !== undefined && <span className="rounded-full bg-gray-200/70 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-gray-700">{badge}</span>}
         </span>
         <CaretDown className={`size-3.5 shrink-0 text-gray-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
@@ -75,9 +47,8 @@ function DetailAccordion({
 
 export function CurriculumCourseDetailPanel(props: Props) {
   const {
-    selected, termLabel, activeSem, detail, transcriptRow, attemptHistory,
-    regularBlocks, availableTerms, isLoading, isSavingSchedule,
-    validatePlacement, onNavigate, onSchedule, onScheduleToTerm, onResetCourse,
+    selected, termLabel, detail, curriculumCodes, transcriptRow, attemptHistory,
+    isLoading, onNavigate,
   } = props;
   if (!selected) {
     return (
@@ -93,9 +64,12 @@ export function CurriculumCourseDetailPanel(props: Props) {
     );
   }
 
-  const prereqs = (detail?.relations ?? []).filter((r) => r.kind === 'PREREQUISITE');
+  const inCurriculum = (code: string) => !curriculumCodes || curriculumCodes.has(code.trim().toUpperCase());
+  const prereqs = (detail?.relations ?? []).filter((r) => r.kind === 'PREREQUISITE' && inCurriculum(r.otherCourseCode));
   const replacements = (detail?.relations ?? []).filter((r) => r.kind === 'REPLACEMENT');
-  const referencedBy = detail?.referencedBy ?? [];
+  const referencedBy = (detail?.referencedBy ?? []).filter((r) => inCurriculum(r.courseCode));
+  const attempts = attemptHistory?.attempts ?? [];
+  const workload = detail?.workload ?? selected.workload ?? null;
 
   return (
     <aside className="flex flex-col overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs lg:h-full">
@@ -106,9 +80,49 @@ export function CurriculumCourseDetailPanel(props: Props) {
             <span className="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-xs font-semibold text-gray-700">
               {termLabel ?? `Sem ${selected.semesterNumber}`}
             </span>
-            <span className="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-xs font-semibold text-gray-700">{detail?.credits ?? selected.credits} cr</span>
+            <span className="rounded-md bg-gray-100 px-2 py-0.5 font-mono text-xs font-semibold text-gray-700">
+              {(detail?.credits ?? selected.credits)} {(detail?.credits ?? selected.credits) === 1 ? 'credit' : 'credits'}
+            </span>
           </div>
-          <StatusPill row={transcriptRow} />
+          {attempts.length > 0 ? (
+            <div className="flex flex-wrap items-center justify-end gap-1.5">
+              {attempts.map((a) => {
+                const kind = classifyStatus(a);
+                const dotCls = kind === 'PASSED' ? 'bg-emerald-500' : kind === 'FAILED' ? 'bg-red-500' : 'bg-blue-500';
+                const pillCls =
+                  kind === 'PASSED'
+                    ? 'border-emerald-200/80 bg-emerald-50/70 text-emerald-700'
+                    : kind === 'FAILED'
+                      ? 'border-red-200/80 bg-red-50/70 text-red-700'
+                      : 'border-blue-200/80 bg-blue-50/60 text-blue-700';
+                const detailLabel =
+                  a.finalScore != null
+                    ? a.finalScore.toFixed(1)
+                    : kind === 'PASSED'
+                      ? 'Pass/Fail'
+                      : kind === 'FAILED'
+                        ? 'Failed'
+                        : 'Studying';
+                const isEquiv = a.courseCode.trim().toUpperCase() !== selected.code.trim().toUpperCase();
+                return (
+                  <span
+                    key={`${a.id}-${a.attemptNumber}`}
+                    title={`Try #${a.attemptNumber}${isEquiv ? ` (${a.courseCode})` : ''}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-semibold ${pillCls}`}
+                  >
+                    <span className={`size-1.5 rounded-full ${dotCls}`} />
+                    <span>{a.semesterCode || a.semesterName}</span>
+                    {attempts.length > 1 && <span className="opacity-70">#{a.attemptNumber}</span>}
+                    {isEquiv && <span className="opacity-80">({a.courseCode})</span>}
+                    <span className="opacity-50">·</span>
+                    <span>{detailLabel}</span>
+                  </span>
+                );
+              })}
+            </div>
+          ) : (
+            <StatusPill row={transcriptRow} />
+          )}
         </div>
 
         <div className="mt-2.5 flex items-start justify-between gap-2">
@@ -148,18 +162,7 @@ export function CurriculumCourseDetailPanel(props: Props) {
           </div>
         )}
 
-        <CourseJourneySection
-          course={selected}
-          activeSem={activeSem}
-          history={attemptHistory}
-          regularBlocks={regularBlocks}
-          availableTerms={availableTerms}
-          isSaving={isSavingSchedule}
-          validatePlacement={validatePlacement}
-          onSchedule={onSchedule}
-          onScheduleToTerm={onScheduleToTerm}
-          onResetCourse={onResetCourse}
-        />
+        {workload && <CourseWorkloadCard workload={workload} compact />}
 
         {(prereqs.length > 0 || replacements.length > 0 || referencedBy.length > 0) && (
           <DetailAccordion

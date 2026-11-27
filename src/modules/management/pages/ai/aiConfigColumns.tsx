@@ -23,11 +23,11 @@ export function createAiConfigColumns(handlers: {
             type="button"
             onClick={() => handlers.onView(row.original)}
             title={`View ${row.original.name}`}
-            className="block max-w-[260px] truncate text-left font-semibold text-gray-900 transition-colors hover:text-[#C2410C] hover:underline"
+            className="block max-w-[260px] truncate text-left font-semibold text-ink-primary transition-colors hover:text-brand-ink hover:underline"
           >
             {row.original.name}
           </button>
-          <p className="mt-0.5 truncate text-[11px] font-medium text-gray-400">
+          <p className="mt-0.5 truncate text-[11px] font-medium text-ink-subtle">
             {providerLabel(row.original.provider)} · {row.original.purpose}
           </p>
         </div>
@@ -37,7 +37,7 @@ export function createAiConfigColumns(handlers: {
       accessorKey: 'modelName',
       header: 'Model',
       cell: ({ row }) => (
-        <code className="inline-block max-w-[210px] truncate font-mono text-[13px] font-semibold text-gray-900">
+        <code className="inline-block max-w-[210px] truncate font-mono text-[13px] font-semibold text-ink-primary">
           {row.original.modelName}
         </code>
       ),
@@ -63,7 +63,7 @@ export function createAiConfigColumns(handlers: {
       header: 'Temp',
       meta: { align: 'center' },
       cell: ({ row }) => (
-        <span className="font-mono text-[13px] font-semibold tabular-nums text-gray-700">
+        <span className="font-mono text-[13px] font-semibold tabular-nums text-ink-secondary">
           {row.original.temperature.toFixed(2)}
         </span>
       ),
@@ -73,7 +73,7 @@ export function createAiConfigColumns(handlers: {
       header: 'Max tokens',
       meta: { align: 'right' },
       cell: ({ row }) => (
-        <span className="font-mono text-[13px] font-semibold tabular-nums text-[#C2410C]">
+        <span className="font-mono text-[13px] font-semibold tabular-nums text-brand-ink">
           {row.original.maxTokens.toLocaleString('en-US')}
         </span>
       ),
@@ -85,7 +85,7 @@ export function createAiConfigColumns(handlers: {
         <span
           className={cn(
             'inline-flex items-center text-xs font-semibold uppercase tracking-[0.02em]',
-            row.original.isActive ? 'text-emerald-700' : 'text-gray-500',
+            row.original.isActive ? 'text-emerald-700' : 'text-ink-muted',
           )}
         >
           {row.original.isActive ? 'Active' : 'Inactive'}

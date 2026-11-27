@@ -79,7 +79,7 @@ export function CourseRelationsTable({
     : [...createRelationColumns(handlers), createRelationActionsColumn(handlers)];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200">
+    <div className="overflow-hidden rounded-lg border border-line">
       <StaticTable
         columns={columns}
         rows={course.relations}

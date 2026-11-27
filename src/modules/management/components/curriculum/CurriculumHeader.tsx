@@ -37,7 +37,7 @@ interface Props {
 }
 
 const secondaryBtn =
-  'inline-flex h-9 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 shadow-2xs transition-colors hover:bg-gray-50';
+  'inline-flex h-9 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary shadow-2xs transition-colors hover:bg-surface-hover';
 
 export default function CurriculumHeader({
   curriculum,
@@ -54,31 +54,31 @@ export default function CurriculumHeader({
   onPublish,
 }: Props) {
   return (
-    <header className="rounded-xl border border-gray-200/80 bg-white px-5 py-4 shadow-2xs">
+    <header className="rounded-lg border border-line/80 bg-white px-5 py-4 shadow-2xs">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="truncate text-lg font-bold tracking-tight text-gray-900">{curriculum.name}</h1>
+            <h1 className="truncate text-lg font-bold tracking-tight text-ink-primary">{curriculum.name}</h1>
             <StatusBadge status={curriculum.status} />
             {curriculum.isCurrent && (
-              <span className="rounded-full bg-orange-50 px-2 py-0.5 text-[11px] font-semibold text-[#C2410C] ring-1 ring-inset ring-orange-200/80">
+              <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand-ink ring-1 ring-inset ring-brand/25">
                 Current
               </span>
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-            <span className="rounded-md bg-orange-50 px-2 py-0.5 font-semibold text-[#9a3412] ring-1 ring-inset ring-orange-200/70">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-ink-muted">
+            <span className="rounded-md bg-brand-soft px-2 py-0.5 font-semibold text-brand-ink ring-1 ring-inset ring-brand/25">
               {curriculum.majorCode}
             </span>
-            <span className="rounded-md bg-gray-100 px-2 py-0.5 font-mono font-semibold text-gray-800">
+            <span className="rounded-md bg-line-soft px-2 py-0.5 font-mono font-semibold text-ink-primary">
               {curriculum.version}
             </span>
             <span className="inline-flex items-center gap-1">
-              <CalendarDays className="size-3.5 text-gray-400" />
+              <CalendarDays className="size-3.5 text-ink-subtle" />
               Start {curriculum.effectiveFromSemesterCode}
             </span>
-            <span className="text-gray-300">·</span>
+            <span className="text-ink-subtle">·</span>
             <Stat icon={<Layers className="size-3.5" />} label={`${courseCount} courses`} />
             <Stat icon={<BookOpenCheck className="size-3.5" />} label={`${totalCredits} credits`} accent />
             <Stat icon={<CalendarDays className="size-3.5" />} label={`${usedSemesters} semesters`} />
@@ -87,14 +87,14 @@ export default function CurriculumHeader({
 
         <div className="flex flex-wrap items-center gap-2">
           <button type="button" onClick={onEdit} className={secondaryBtn}>
-            <Pencil className="size-3.5 text-gray-500" /> Edit
+            <Pencil className="size-3.5 text-ink-muted" /> Edit
           </button>
           <ExampleSheetButton
             examples={[{ label: 'Template', download: onDownloadExample }]}
             className={secondaryBtn}
           />
           <label className={cn(secondaryBtn, 'cursor-pointer', isPreviewingImport && 'pointer-events-none opacity-60')}>
-            {isPreviewingImport ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5 text-gray-500" />}
+            {isPreviewingImport ? <Loader2 className="size-3.5 animate-spin" /> : <Upload className="size-3.5 text-ink-muted" />}
             {isPreviewingImport ? 'Reading…' : 'Import XLSX'}
             <input
               type="file"
@@ -121,7 +121,7 @@ export default function CurriculumHeader({
               type="button"
               disabled={isUpdatingStatus}
               onClick={onPublish}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-[#e05f14] disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand px-3.5 text-[13px] font-semibold text-white shadow-2xs transition-colors hover:bg-brand-hover disabled:opacity-50"
             >
               {isUpdatingStatus ? <Loader2 className="size-3.5 animate-spin" /> : <>Publish <ArrowUpRight className="size-3.5" /></>}
             </button>
@@ -134,7 +134,7 @@ export default function CurriculumHeader({
 
 function Stat({ icon, label, accent }: { icon: ReactNode; label: string; accent?: boolean }) {
   return (
-    <span className={cn('inline-flex items-center gap-1 font-medium tabular-nums', accent ? 'text-[#C2410C]' : 'text-gray-600')}>
+    <span className={cn('inline-flex items-center gap-1 font-medium tabular-nums', accent ? 'text-brand-ink' : 'text-ink-muted')}>
       {icon}
       {label}
     </span>

@@ -1,3 +1,4 @@
+import { CheckCircle, ShieldSlash, Trash } from '@phosphor-icons/react';
 import { UserDetailModal } from '../../components/UserDetailModal';
 import { CreateUserModal } from '../../components/CreateUserModal';
 import { ConfirmDialog } from '../../components/ConfirmDialog';
@@ -111,12 +112,28 @@ export function UserAccountsModals({
 
       <ConfirmDialog
         open={!!confirm}
-        title={confirm?.status === 'SUSPENDED' ? 'Suspend accounts?' : 'Activate accounts?'}
+        title={
+          confirm?.status === 'SUSPENDED'
+            ? confirm.ids.length > 1 ? 'Suspend accounts?' : 'Suspend account?'
+            : confirm && confirm.ids.length > 1 ? 'Activate accounts?' : 'Activate account?'
+        }
         message={
           confirm?.status === 'SUSPENDED'
-            ? `${confirm.label} will lose access to FAAPS immediately.`
-            : `${confirm?.label ?? ''} will be able to sign in again.`
+            ? 'Suspended users lose access to FAAPS immediately until reactivated.'
+            : 'Activated users will be able to sign in to FAAPS again.'
         }
+        targetHeading={confirm && confirm.ids.length > 1 ? 'Selected accounts' : 'Account'}
+        targetLabel={confirm?.label}
+        metaHeading="New status"
+        metaValue={
+          confirm?.status === 'SUSPENDED' ? (
+            <span className="rounded-sm bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">Suspended</span>
+          ) : (
+            <span className="rounded-sm bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">Active</span>
+          )
+        }
+        icon={confirm?.status === 'SUSPENDED' ? <ShieldSlash /> : <CheckCircle />}
+        tone={confirm?.status === 'SUSPENDED' ? 'warning' : 'brand'}
         confirmLabel={confirm?.status === 'SUSPENDED' ? 'Suspend' : 'Activate'}
         destructive={confirm?.status === 'SUSPENDED'}
         isLoading={changeStatusPending}
@@ -127,7 +144,11 @@ export function UserAccountsModals({
       <ConfirmDialog
         open={!!deleteTargets}
         title={deleteTargets && deleteTargets.ids.length > 1 ? 'Delete accounts?' : 'Delete account?'}
-        message={`Permanently delete ${deleteTargets?.label ?? ''}? Accounts with existing academic or advising records cannot be deleted.`}
+        message="This action permanently removes the selected account and cannot be undone."
+        targetHeading={deleteTargets && deleteTargets.ids.length > 1 ? 'Selected accounts' : 'Account'}
+        targetLabel={deleteTargets?.label}
+        icon={<Trash />}
+        tone="danger"
         confirmLabel="Delete"
         destructive
         isLoading={deletePending}

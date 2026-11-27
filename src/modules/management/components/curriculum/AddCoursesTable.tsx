@@ -49,8 +49,8 @@ export function AddCoursesTable({
                 'mx-auto flex size-5 items-center justify-center rounded-md border-2 transition-all',
                 checked
                   ? 'border-[var(--brand)] bg-[var(--brand)] text-white'
-                  : 'border-gray-300 bg-white text-transparent',
-                locked && 'border-gray-200 bg-gray-100',
+                  : 'border-line bg-white text-transparent',
+                locked && 'border-line bg-line-soft',
               )}
             >
               <Check className="size-3.5" />
@@ -77,12 +77,12 @@ export function AddCoursesTable({
             <span
               className={cn(
                 'rounded-md px-1.5 py-0.5 font-mono text-[12px] font-bold',
-                locked ? 'bg-gray-200 text-gray-400' : 'bg-gray-900 text-white',
+                locked ? 'bg-line text-ink-subtle' : 'bg-ink-primary text-surface-page',
               )}
             >
               {course.code}
             </span>
-            <span className={cn('ml-2 font-semibold', locked ? 'text-gray-400' : 'text-gray-900')}>
+            <span className={cn('ml-2 font-semibold', locked ? 'text-ink-subtle' : 'text-ink-primary')}>
               {course.name}
             </span>
           </>
@@ -95,13 +95,13 @@ export function AddCoursesTable({
       render: (course) => {
         const locked = placedCourses.get(course.id) !== undefined;
         if (!course.specialization) {
-          return <span className="text-[11px] font-medium text-gray-400">Foundation</span>;
+          return <span className="text-[11px] font-medium text-ink-subtle">Foundation</span>;
         }
         return (
           <span
             className={cn(
               'inline-block rounded-full px-2.5 py-1 text-[11px] font-bold',
-              locked ? 'bg-gray-100 text-gray-400' : 'bg-violet-100 text-violet-800',
+              locked ? 'bg-line-soft text-ink-subtle' : 'bg-line-soft text-ink-secondary',
             )}
           >
             {course.specialization}
@@ -116,7 +116,7 @@ export function AddCoursesTable({
       render: (course) => {
         const locked = placedCourses.get(course.id) !== undefined;
         return (
-          <span className={cn('font-mono font-bold tabular-nums', locked ? 'text-gray-300' : 'text-gray-900')}>
+          <span className={cn('font-mono font-bold tabular-nums', locked ? 'text-ink-subtle' : 'text-ink-primary')}>
             {course.credits} cr
           </span>
         );
@@ -130,7 +130,7 @@ export function AddCoursesTable({
         const placed = placedCourses.get(course.id);
         if (placed !== undefined) {
           return (
-            <span className="inline-block rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-bold text-gray-400">
+            <span className="inline-block rounded-full bg-line-soft px-2.5 py-1 text-[11px] font-bold text-ink-subtle">
               Sem {placed}
             </span>
           );
@@ -143,7 +143,7 @@ export function AddCoursesTable({
           );
         }
         return (
-          <span className="inline-block rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-bold text-gray-400">
+          <span className="inline-block rounded-full bg-line-soft px-2.5 py-1 text-[11px] font-bold text-ink-subtle">
             —
           </span>
         );
@@ -152,8 +152,8 @@ export function AddCoursesTable({
   ];
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200">
-      <div className="flex items-center gap-3 border-b border-gray-100 px-3 py-2.5">
+    <div className="overflow-hidden rounded-lg border border-line">
+      <div className="flex items-center gap-3 border-b border-line-soft px-3 py-2.5">
         <input
           type="checkbox"
           checked={allOnPageSelected}
@@ -162,7 +162,7 @@ export function AddCoursesTable({
           aria-label="Select all on this page"
           className="size-4 accent-[var(--brand)]"
         />
-        <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-gray-500">
+        <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-muted">
           Select all on this page
         </span>
       </div>

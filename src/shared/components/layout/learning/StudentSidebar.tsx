@@ -1,13 +1,11 @@
 // Student portal navigation sidebar organized around Study Setup/Plan and AI-assisted Advising.
 import {
-  BookOpenText as BookOpenCheck,
   Robot as BotMessageSquare,
   CalendarDot as CalendarClock,
   FileText,
   GraduationCap,
   SquaresFour as LayoutDashboard,
   ListChecks,
-  MapTrifold as Map,
   ChatCircleText as MessageSquareText,
   Path as Route,
   Target,
@@ -45,34 +43,16 @@ export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
         description: 'Configure major, specialization & electives, import transcript, and view curriculum courses.',
       },
       {
-        label: 'Study Goals',
-        to: '/student/study-goals',
+        label: 'Study Journey',
+        to: '/student/study-journey',
         icon: Target,
-        description: 'Define your graduation timeline, GPA target, and career orientation.',
-      },
-      {
-        label: 'Transcript & Import',
-        to: '/student/transcript',
-        icon: FileText,
-        description: 'Upload your FPTU transcript and review completed courses and grades.',
+        description: 'Set your expected graduation semester, career orientation, and target GPA.',
       },
       {
         label: 'AI Study Roadmap',
         to: '/student/ai-roadmap',
         icon: Route,
         description: 'Generate a personalized semester-by-semester study roadmap with AI.',
-      },
-      {
-        label: 'Study Plan Board',
-        to: '/student/study-plan',
-        icon: Map,
-        description: 'Organize and track your planned courses across upcoming semesters.',
-      },
-      {
-        label: 'Courses',
-        to: '/student/courses',
-        icon: BookOpenCheck,
-        description: 'Browse course details, credits, and prerequisite chains.',
       },
       {
         label: 'Learning Tasks',
@@ -96,6 +76,17 @@ export const STUDENT_NAV_SECTIONS: PortalNavSection[] = [
         to: '/student/advising-requests',
         icon: MessageSquareText,
         description: 'Send academic questions and follow up on responses from your advisor.',
+      },
+    ],
+  },
+  {
+    title: 'RECORDS',
+    items: [
+      {
+        label: 'Academic Transcript',
+        to: '/student/transcript',
+        icon: FileText,
+        description: 'Review your GPA, semester summary, course grades, and import transcript versions.',
       },
     ],
   },

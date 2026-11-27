@@ -29,13 +29,13 @@ export function CurriculumTermsPanel({
   }
 
   return (
-    <section className="flex h-[640px] flex-col overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
-      <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/60 px-4 py-3">
+    <section className="flex h-[640px] flex-col overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+      <div className="flex items-center justify-between border-b border-line-soft bg-surface-page/60 px-4 py-3">
         <div>
-          <h3 className="text-sm font-semibold text-gray-900">Curriculum roadmap (Term 0 – Term 9)</h3>
-          <p className="text-xs text-gray-500">Click a term header to set it as the target term for adding courses.</p>
+          <h3 className="text-sm font-semibold text-ink-primary">Curriculum roadmap (Term 0 – Term 9)</h3>
+          <p className="text-xs text-ink-muted">Click a term header to set it as the target term for adding courses.</p>
         </div>
-        <span className="text-xs font-semibold tabular-nums text-gray-600">
+        <span className="text-xs font-semibold tabular-nums text-ink-muted">
           {courses.length} courses · {courses.reduce((s, c) => s + c.credits, 0)} credits
         </span>
       </div>
@@ -49,8 +49,8 @@ export function CurriculumTermsPanel({
             <div
               key={term}
               className={cn(
-                'overflow-hidden rounded-xl border transition-colors',
-                isTarget ? 'border-[#F26F21]/60 bg-orange-50/15' : 'border-gray-200/80 bg-white',
+                'overflow-hidden rounded-lg border transition-colors',
+                isTarget ? 'border-brand/60 bg-brand-soft/15' : 'border-line/80 bg-white',
               )}
             >
               <button
@@ -58,39 +58,39 @@ export function CurriculumTermsPanel({
                 onClick={() => onSelectTerm(term)}
                 className={cn(
                   'flex w-full items-center justify-between px-3.5 py-2 text-left transition-colors',
-                  isTarget ? 'bg-orange-50/60' : 'bg-gray-50/70 hover:bg-gray-100/70',
+                  isTarget ? 'bg-brand-soft/60' : 'bg-surface-page/70 hover:bg-line-soft/70',
                 )}
               >
                 <div className="flex items-center gap-2">
-                  <span className={cn('text-xs font-bold', isTarget ? 'text-[#C2410C]' : 'text-gray-800')}>
+                  <span className={cn('text-xs font-bold', isTarget ? 'text-brand-ink' : 'text-ink-primary')}>
                     Term {term}
                   </span>
                   {term === 0 && (
-                    <span className="text-[11px] font-medium text-gray-400">Preparation</span>
+                    <span className="text-[11px] font-medium text-ink-subtle">Preparation</span>
                   )}
                   {isTarget && (
-                    <span className="text-[11px] font-semibold text-[#C2410C]">· Adding here</span>
+                    <span className="text-[11px] font-semibold text-brand-ink">· Adding here</span>
                   )}
                 </div>
-                <span className="text-xs tabular-nums text-gray-500">
+                <span className="text-xs tabular-nums text-ink-muted">
                   {termCourses.length} {termCourses.length === 1 ? 'course' : 'courses'} · {termCredits}
                 </span>
               </button>
 
               {termCourses.length === 0 ? (
-                <div className="px-3.5 py-2.5 text-xs text-gray-400">No courses assigned to Term {term}.</div>
+                <div className="px-3.5 py-2.5 text-xs text-ink-subtle">No courses assigned to Term {term}.</div>
               ) : (
-                <div className="divide-y divide-gray-100">
+                <div className="divide-y divide-line-soft">
                   {termCourses.map((course) => {
                     const isBusy = busyCourseId === course.courseId;
                     return (
                       <div key={course.id} className="flex items-center justify-between gap-3 px-3.5 py-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-semibold text-gray-900">{course.courseCode}</span>
-                            <span className="text-xs tabular-nums text-gray-400">{course.credits}</span>
+                            <span className="font-mono text-xs font-semibold text-ink-primary">{course.courseCode}</span>
+                            <span className="text-xs tabular-nums text-ink-subtle">{course.credits}</span>
                           </div>
-                          <p className="truncate text-xs text-gray-600" title={course.courseName}>{course.courseName}</p>
+                          <p className="truncate text-xs text-ink-muted" title={course.courseName}>{course.courseName}</p>
                         </div>
 
                         <div className="flex shrink-0 items-center gap-1.5">
@@ -100,13 +100,17 @@ export function CurriculumTermsPanel({
                               disabled={isBusy}
                               aria-label={`Move ${course.courseCode} to term`}
                               onChange={(e) => onMoveCourse(course.courseId, Number(e.target.value))}
-                              className="h-7.5 appearance-none rounded-md border border-gray-200 bg-white pl-2 pr-6 text-xs font-medium text-gray-700 focus:border-[#F26F21] focus:outline-none disabled:opacity-50"
+                              className="h-7.5 appearance-none rounded-md border border-line bg-white pl-2 pr-6 text-xs font-medium text-ink-secondary focus:border-brand focus:outline-none disabled:opacity-50"
                             >
                               {TERMS.map((t) => (
                                 <option key={t} value={t}>Term {t}</option>
                               ))}
                             </select>
-                            <ChevronDown className="pointer-events-none absolute right-1.5 top-1/2 size-3 -translate-y-1/2 text-gray-400" />
+                            <ChevronDown
+                              className={
+                                'pointer-events-none absolute right-1.5 ' +
+                                'top-1/2 size-3 -translate-y-1/2 text-ink-subtle'
+                              } />
                           </div>
                           <button
                             type="button"
@@ -114,7 +118,7 @@ export function CurriculumTermsPanel({
                             onClick={() => onRemoveCourse(course.courseId)}
                             title={`Remove ${course.courseCode}`}
                             aria-label={`Remove ${course.courseCode}`}
-                            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                            className="rounded-md p-1.5 text-ink-subtle transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
                           >
                             <Trash2 className="size-3.5" aria-hidden />
                           </button>

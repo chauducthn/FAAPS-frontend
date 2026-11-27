@@ -111,7 +111,7 @@ export function PendingReportsTable() {
   const columns = useMemo(() => createPendingReportColumns(), []);
 
   return (
-    <section className="flex flex-col gap-5 rounded-xl bg-white p-4 shadow-sm sm:p-6">
+    <section className="flex flex-col gap-5 rounded-lg bg-white p-4 shadow-sm sm:p-6">
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-[var(--ink-primary)]">Pending AI Responses</h2>
         <span className="rounded-full bg-[#fef2f2] px-2 py-0.5 text-[11px] font-bold uppercase tracking-[0.05em] text-[#b91c1c]">
@@ -134,7 +134,7 @@ export function PendingReportsTable() {
       </label>
 
       {isError && !data ? (
-        <div className="rounded-xl border border-[var(--line)] px-4 py-10 text-center text-sm text-[var(--ink-muted)]">
+        <div className="rounded-lg border border-[var(--line)] px-4 py-10 text-center text-sm text-[var(--ink-muted)]">
           Could not load reports.{' '}
           <button
             type="button"

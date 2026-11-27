@@ -91,24 +91,19 @@ export function CourseFormFields({
       </Field>
 
       <div className="grid items-start gap-4 sm:grid-cols-2">
-        <Field label="Status" error={errors.status?.message}>
-          <div className="grid h-10 grid-cols-2 gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1" role="radiogroup" aria-label="Status">
-            {(['ACTIVE', 'INACTIVE'] as const).map((s) => (
-              <label
-                key={s}
-                className={cn(
-                  'flex cursor-pointer items-center justify-center rounded-md text-[13px] font-medium transition-colors',
-                  status === s
-                    ? s === 'ACTIVE'
-                      ? 'bg-white font-semibold text-emerald-700 shadow-2xs ring-1 ring-emerald-200'
-                      : 'bg-white font-semibold text-gray-700 shadow-2xs ring-1 ring-gray-200'
-                    : 'text-gray-500 hover:text-gray-700',
-                )}
-              >
-                <input type="radio" value={s} {...register('status')} className="sr-only" />
-                {s === 'ACTIVE' ? 'Active' : 'Inactive'}
-              </label>
-            ))}
+        <Field label="Workload override" optional error={errors.workloadLevel?.message}>
+          <div className="relative">
+            <select
+              {...register('workloadLevel')}
+              aria-label="Workload override"
+              className={cn(inputClass(!!errors.workloadLevel), 'appearance-none pr-9')}
+            >
+              <option value="AUTO">Auto (Rule + Historical data)</option>
+              <option value="LIGHT">Light</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="HEAVY">Heavy</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
           </div>
         </Field>
 
@@ -122,6 +117,27 @@ export function CourseFormFields({
           />
         </Field>
       </div>
+
+      <Field label="Status" error={errors.status?.message}>
+        <div className="grid h-10 grid-cols-2 gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1" role="radiogroup" aria-label="Status">
+          {(['ACTIVE', 'INACTIVE'] as const).map((s) => (
+            <label
+              key={s}
+              className={cn(
+                'flex cursor-pointer items-center justify-center rounded-md text-[13px] font-medium transition-colors',
+                status === s
+                  ? s === 'ACTIVE'
+                    ? 'bg-white font-semibold text-emerald-700 shadow-2xs ring-1 ring-emerald-200'
+                    : 'bg-white font-semibold text-gray-700 shadow-2xs ring-1 ring-gray-200'
+                  : 'text-gray-500 hover:text-gray-700',
+              )}
+            >
+              <input type="radio" value={s} {...register('status')} className="sr-only" />
+              {s === 'ACTIVE' ? 'Active' : 'Inactive'}
+            </label>
+          ))}
+        </div>
+      </Field>
 
       <Field label="Prerequisites" optional>
         <Controller

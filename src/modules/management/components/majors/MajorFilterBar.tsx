@@ -24,7 +24,7 @@ interface MajorFilterBarProps {
 }
 
 const selectClass =
-  'h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-[13px] font-medium text-gray-700 transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15';
+  'h-9 w-full appearance-none truncate rounded-lg border border-line bg-white pl-3 pr-7 text-[13px] font-medium text-ink-secondary transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
 
 export default function MajorFilterBar(p: MajorFilterBarProps) {
   const { search, onSearchChange, selectedCode, codeOptions, onCodeChange, selectedDuration, durationOptions, onDurationChange, selectedStatus, onStatusChange, onClearContext, selectedCount, totalItems, isSelectingAll = false, onSelectAllMatching, isUpdatingStatus, onClearSelection, onBulkStatus, onDeleteSelected } = p;
@@ -36,23 +36,23 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3 lg:flex-nowrap">
+      <div className="flex flex-wrap items-center gap-2 border-b border-line-soft bg-surface-page/50 px-4 py-3 lg:flex-nowrap">
         <div className="relative min-w-0 flex-1 basis-full lg:basis-auto">
-          <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
           <input
             type="search"
             placeholder="Search by code, major name, credits, or duration..."
             aria-label="Search majors"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+            className="h-9 w-full rounded-lg border border-line bg-white pl-9 pr-7 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
           />
           {search && (
             <button
               type="button"
               onClick={() => onSearchChange('')}
               aria-label="Clear search"
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-ink-subtle hover:text-ink-muted"
             >
               <X className="size-3.5" />
             </button>
@@ -71,7 +71,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
               <option key={c} value={c}>{c}</option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
         </div>
 
         <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[144px]">
@@ -86,7 +86,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
               <option key={d} value={String(d)}>{d} {d === 1 ? 'year' : 'years'}</option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
         </div>
 
         <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[132px]">
@@ -101,14 +101,14 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
             <option value="DRAFT">Draft</option>
             <option value="INACTIVE">Inactive</option>
           </select>
-          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
         </div>
 
         <button
           type="button"
           onClick={onClearContext}
           disabled={!hasFilters}
-          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-default disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-600"
+          className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand hover:text-brand-ink disabled:cursor-default disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-muted"
         >
           <RotateCcw className="size-3.5" /> Reset
         </button>
@@ -116,12 +116,12 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
 
       {selectedCount > 0 && (
         <div
-          className="flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5"
+          className="flex flex-wrap items-center justify-between gap-2.5 border-b border-brand/25 bg-brand-soft/70 px-4 py-2.5"
           role="toolbar"
           aria-label="Major bulk actions"
         >
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
+            <span className="rounded-md bg-brand px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
               {selectedCount} selected
             </span>
             {onSelectAllMatching && !!totalItems && totalItems > selectedCount && (
@@ -129,7 +129,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
                 type="button"
                 disabled={isSelectingAll}
                 onClick={onSelectAllMatching}
-                className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70 disabled:opacity-50"
+                className="rounded-md border border-brand/30 bg-white px-2 py-1 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-soft-strong/70 disabled:opacity-50"
               >
                 {isSelectingAll ? 'Selecting…' : `Select all ${totalItems}`}
               </button>
@@ -137,7 +137,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
             <button
               type="button"
               onClick={onClearSelection}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-600 hover:bg-orange-100/80 hover:text-gray-900"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ink-muted hover:bg-brand-soft-strong/80 hover:text-ink-primary"
             >
               <X className="size-3.5" aria-hidden /> Clear
             </button>
@@ -163,7 +163,7 @@ export default function MajorFilterBar(p: MajorFilterBarProps) {
               type="button"
               disabled={isUpdatingStatus}
               onClick={() => onBulkStatus('INACTIVE')}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-700 ring-1 ring-gray-200 transition-colors hover:bg-gray-50 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-ink-secondary ring-1 ring-line transition-colors hover:bg-surface-hover disabled:opacity-50"
             >
               <CircleOff className="size-3.5" /> Set inactive
             </button>

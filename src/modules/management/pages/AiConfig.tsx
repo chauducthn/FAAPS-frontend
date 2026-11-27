@@ -108,7 +108,7 @@ export default function AiConfigPage() {
         onCreate={() => openCreate()}
       />
 
-      <div className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <div className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
         <AiConfigFilterBar
           search={search}
           provider={provider}
@@ -122,7 +122,7 @@ export default function AiConfigPage() {
           onClear={clearFilters}
         />
 
-        <div className="h-[calc(100vh-295px)] min-h-[460px]">
+        <div className="admin-fill">
           {listQuery.isError ? (
             <AiConfigErrorState onRetry={() => listQuery.refetch()} />
           ) : !listQuery.isLoading && items.length === 0 ? (
@@ -130,8 +130,8 @@ export default function AiConfigPage() {
           ) : (
             <div className="relative h-full">
               {listQuery.isFetching && !listQuery.isLoading && (
-                <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-orange-100">
-                  <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F26F21]" />
+                <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden bg-brand-soft-strong">
+                  <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-brand" />
                 </div>
               )}
               <DataTable

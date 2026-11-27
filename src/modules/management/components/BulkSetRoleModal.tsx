@@ -1,8 +1,10 @@
 // Bulk role-change modal with auto-suggested emails, live uniqueness checks, and inline edits.
 import { useEffect, useMemo, useState } from 'react';
-import { ArrowsLeftRight as ArrowLeftRight, CaretDown as ChevronDown, SpinnerGap as Loader2, X } from '@phosphor-icons/react';
+import { ArrowsLeftRight as ArrowLeftRight, CaretDown as ChevronDown, SpinnerGap as Loader2 } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { Modal } from '../../../shared/components/ui/Modal';
+import { InlineAlert } from '../../../shared/components/ui/InlineAlert';
+import { ModalFooter, ModalHeader, modalButtonClass } from '../../../shared/components/ui/ModalParts';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
 import { useCurriculumsQuery } from '../../academic/hooks/queries/useCurriculumsQuery';
 import { adminService } from '../services/adminService';
@@ -107,42 +109,36 @@ export function BulkSetRoleModal({ targets, onClose, onDone }: Props) {
 
   return (
     <Modal open={open} onClose={() => !submitting && onClose()} title="Bulk set role" className="max-w-3xl">
-      <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
-        <div className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
-            <ArrowLeftRight className="size-4.5" />
-          </span>
-          <div>
-            <h2 className="text-base font-bold text-gray-900">Bulk set role</h2>
-            <p className="text-xs text-gray-500">
-              Review target emails for {targets.length} selected account{targets.length === 1 ? '' : 's'}.
-            </p>
-          </div>
-        </div>
-        <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
-          <X className="size-4" />
-        </button>
-      </div>
+      <ModalHeader
+        title="Bulk set role"
+        description={`Review target emails for ${targets.length} selected account${targets.length === 1 ? '' : 's'}.`}
+        icon={<ArrowLeftRight />}
+        onClose={onClose}
+        closeDisabled={submitting}
+      />
 
-      <div className="max-h-[65vh] space-y-4 overflow-y-auto px-6 py-5">
+      <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-6 py-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <span className="text-[13px] font-medium text-gray-700">Target role:</span>
+            <span className="text-[13px] font-medium text-ink-secondary">Target role:</span>
             <div className="relative">
               <select
                 value={targetRole}
                 onChange={(e) => handleRoleChange(e.target.value as AdminUserRole)}
                 aria-label="Bulk target role"
-                className="h-9 appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 text-[13px] font-medium text-gray-800 focus:border-[#F26F21] focus:outline-none"
+                className={
+                  'h-9 appearance-none rounded-md border border-line bg-white pl-3 pr-8 text-[13px] font-medium ' +
+                  'text-ink-primary focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15'
+                }
               >
                 <option value="ADVISOR">Advisor (@fe.edu.vn)</option>
                 <option value="STUDENT">Student (@fpt.edu.vn)</option>
               </select>
-              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+              <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
             </div>
           </div>
           {checking && (
-            <span className="inline-flex items-center gap-1.5 text-xs text-gray-500">
+            <span className="inline-flex items-center gap-1.5 text-xs text-ink-muted">
               <Loader2 className="size-3.5 animate-spin" /> Checking email uniqueness…
             </span>
           )}
@@ -158,24 +154,26 @@ export function BulkSetRoleModal({ targets, onClose, onDone }: Props) {
         />
 
         {error && (
-          <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">{error}</p>
+          <InlineAlert tone="error" role="alert">
+            {error}
+          </InlineAlert>
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/70 px-6 py-3.5">
-        <button type="button" disabled={submitting} onClick={onClose} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 hover:bg-gray-50">
+      <ModalFooter>
+        <button type="button" disabled={submitting} onClick={onClose} className={modalButtonClass('secondary')}>
           Cancel
         </button>
         <button
           type="button"
           disabled={submitting || checking || hasIssues}
           onClick={() => void submit()}
-          className="inline-flex h-9 items-center gap-2 rounded-lg bg-[#F26F21] px-4 text-sm font-semibold text-white hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55"
+          className={modalButtonClass('primary')}
         >
           {submitting && <Loader2 className="size-4 animate-spin" />}
           {submitting ? 'Updating…' : `Apply to ${targets.length} account${targets.length === 1 ? '' : 's'}`}
         </button>
-      </div>
+      </ModalFooter>
     </Modal>
   );
 }

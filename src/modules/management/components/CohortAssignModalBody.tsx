@@ -1,6 +1,11 @@
 import { CaretDown as ChevronDown, MagicWand as WandSparkles } from '@phosphor-icons/react';
+import { cn } from '@/shared/lib/utils';
+import { InlineAlert } from '../../../shared/components/ui/InlineAlert';
+import { ModalBody } from '../../../shared/components/ui/ModalParts';
 import type { SummaryCohort } from '../types/admin';
-import { assignmentSelectClass } from './AssignmentModalChrome';
+import { ADMIN_TAB_LIST_CLASS, adminTabClass } from './AdminTabBar';
+import { userFieldClass } from './createUserSchema';
+import { UserFormField } from './UserFormPrimitives';
 
 export function CohortAssignModalBody({
   isBulk,
@@ -36,76 +41,101 @@ export function CohortAssignModalBody({
   onCohortChange: (next: string) => void;
 }) {
   return (
-    <div className="flex flex-col gap-4 px-6 py-5">
+    <ModalBody className="flex flex-col gap-4">
       {isBulk && (
-        <div className="grid grid-cols-2 gap-1.5 rounded-xl bg-gray-100 p-1" role="tablist" aria-label="Assignment mode">
+        <div role="tablist" aria-label="Assignment mode" className={cn(ADMIN_TAB_LIST_CLASS, 'grid w-full grid-cols-2')}>
           <button
-            type="button" role="tab" aria-selected={mode === 'manual'} onClick={() => onModeChange('manual')}
-            className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${mode === 'manual' ? 'bg-white text-gray-900 shadow-2xs' : 'text-gray-600 hover:text-gray-900'}`}
+            type="button"
+            role="tab"
+            aria-selected={mode === 'manual'}
+            onClick={() => onModeChange('manual')}
+            className={cn(adminTabClass(mode === 'manual'), 'justify-center')}
           >
             Manual
           </button>
           <button
-            type="button" role="tab" aria-selected={mode === 'auto'} onClick={() => onModeChange('auto')}
-            className={`inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${mode === 'auto' ? 'bg-white text-gray-900 shadow-2xs' : 'text-gray-600 hover:text-gray-900'}`}
+            type="button"
+            role="tab"
+            aria-selected={mode === 'auto'}
+            onClick={() => onModeChange('auto')}
+            className={cn(adminTabClass(mode === 'auto'), 'justify-center')}
           >
-            <WandSparkles className="size-3.5 text-[#F26F21]" aria-hidden /> Auto-distribute
+            <WandSparkles className="size-4" aria-hidden /> Auto-distribute
           </button>
         </div>
       )}
 
       {isBulk && mode === 'auto' ? (
-        <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50/70 px-3.5 py-3 text-xs text-gray-700">
-          <div className="flex flex-wrap items-center justify-between gap-2 font-semibold text-gray-900">
-            <span>
-              {idleCount} idle advisor{idleCount === 1 ? '' : 's'} ready
-              {alreadyAssignedCount > 0 ? ` · ${alreadyAssignedCount} skipped` : ''}
+        <div className="divide-y divide-line-soft overflow-hidden rounded-lg bg-surface-page ring-1 ring-inset ring-line-soft">
+          <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+              Ready advisors
             </span>
-            <span className="text-[#C2410C]">
-              {cohortsNeedingPool} cohort{cohortsNeedingPool === 1 ? '' : 's'} need capacity
+            <span className="text-[13px] font-semibold tabular-nums text-ink-primary">
+              {idleCount} idle{alreadyAssignedCount > 0 ? ` · ${alreadyAssignedCount} skipped` : ''}
             </span>
           </div>
-          <p className="text-gray-500">
+          <div className="flex items-center justify-between gap-3 px-3.5 py-2.5">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+              Cohorts needing pool
+            </span>
+            <span className="text-[13px] font-semibold tabular-nums text-brand-ink">
+              {cohortsNeedingPool} cohort{cohortsNeedingPool === 1 ? '' : 's'}
+            </span>
+          </div>
+          <p className="px-3.5 py-2.5 text-xs leading-relaxed text-ink-muted">
             Distributes idle advisors to cohorts with unassigned students. Already-assigned advisors are left untouched.
           </p>
         </div>
       ) : (
-        <>
+        <div className="space-y-3 rounded-lg bg-surface-page p-4 ring-1 ring-inset ring-line-soft">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Major</label>
+            <UserFormField label="Major">
               <div className="relative">
-                <select value={majorCode} disabled={!!fixedCohortId} aria-label="Major" onChange={(e) => onMajorChange(e.target.value)} className={assignmentSelectClass}>
-                  <option value="">Choose a major...</option>
+                <select
+                  value={majorCode}
+                  disabled={!!fixedCohortId}
+                  aria-label="Major"
+                  onChange={(e) => onMajorChange(e.target.value)}
+                  className={cn(userFieldClass(false), 'appearance-none pr-9')}
+                >
+                  <option value="">Choose a major…</option>
                   {majors.map((m) => <option key={m} value={m}>{m}</option>)}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
               </div>
-            </div>
-            <div>
-              <label className="mb-1.5 block text-[13px] font-medium text-gray-700">Cohort</label>
+            </UserFormField>
+            <UserFormField label="Cohort">
               <div className="relative">
-                <select value={cohortId} disabled={!!fixedCohortId || !majorCode} aria-label="Cohort" onChange={(e) => onCohortChange(e.target.value)} className={assignmentSelectClass}>
-                  <option value="">{majorCode ? 'Choose a cohort...' : 'Select a major first...'}</option>
-                  {cohortOptions.map((c) => <option key={c.cohortId} value={c.cohortId}>{c.cohort} ({c.total} students)</option>)}
+                <select
+                  value={cohortId}
+                  disabled={!!fixedCohortId || !majorCode}
+                  aria-label="Cohort"
+                  onChange={(e) => onCohortChange(e.target.value)}
+                  className={cn(userFieldClass(false), 'appearance-none pr-9')}
+                >
+                  <option value="">{majorCode ? 'Choose a cohort…' : 'Select a major first…'}</option>
+                  {cohortOptions.map((c) => (
+                    <option key={c.cohortId} value={c.cohortId}>{c.cohort} ({c.total} students)</option>
+                  ))}
                 </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
               </div>
-            </div>
+            </UserFormField>
           </div>
           {isBulk && (
-            <p className="rounded-lg border border-gray-100 bg-gray-50/70 px-3 py-2 text-xs text-gray-600">
+            <p className="text-xs text-ink-muted">
               Replaces any previous cohort for all {bulkCount} selected advisor{bulkCount === 1 ? '' : 's'}.
             </p>
           )}
-        </>
+        </div>
       )}
 
       {error && (
-        <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+        <InlineAlert tone="error" role="alert">
           {error}
-        </p>
+        </InlineAlert>
       )}
-    </div>
+    </ModalBody>
   );
 }

@@ -49,8 +49,8 @@ export function createRelationColumns(
             className={cn(
               'rounded-full px-2.5 py-1 text-[10px] font-extrabold ring-1',
               replacement
-                ? 'bg-blue-50 text-blue-700 ring-blue-200'
-                : 'bg-orange-50 text-orange-700 ring-orange-200',
+                ? 'bg-line-soft text-ink-secondary ring-line'
+                : 'bg-brand-soft text-brand-ink ring-brand/30',
             )}
           >
             {replacement ? 'Replacement' : 'Prerequisite'}
@@ -69,16 +69,16 @@ export function createRelationColumns(
             title={`View detail of ${r.otherCourseCode}`}
             className="group text-left"
           >
-            <span className="rounded bg-gray-900 px-1.5 py-0.5 font-mono text-[11px] font-bold text-white transition-colors group-hover:bg-[var(--brand)]">
+            <span className="rounded bg-ink-primary px-1.5 py-0.5 font-mono text-[11px] font-bold text-surface-page transition-colors group-hover:bg-[var(--brand)]">
               {r.otherCourseCode}
             </span>{' '}
-            <span className="font-semibold text-gray-700 group-hover:text-[var(--brand-ink)] group-hover:underline">
+            <span className="font-semibold text-ink-secondary group-hover:text-[var(--brand-ink)] group-hover:underline">
               - {r.otherCourseName}
             </span>
           </button>
         ) : (
-          <span className="text-gray-700">
-            <span className="font-mono font-bold text-gray-900">{r.otherCourseCode}</span>{' '}
+          <span className="text-ink-secondary">
+            <span className="font-mono font-bold text-ink-primary">{r.otherCourseCode}</span>{' '}
             <span>- {r.otherCourseName}</span>
           </span>
         ),
@@ -103,7 +103,7 @@ export function createRelationColumns(
             />
           );
         }
-        return <span className="font-bold text-gray-900">{r.groupNo}</span>;
+        return <span className="font-bold text-ink-primary">{r.groupNo}</span>;
       },
     },
     {
@@ -127,7 +127,7 @@ export function createRelationColumns(
             />
           );
         }
-        return <span className="font-semibold text-gray-700">{r.minimumScore ?? '—'}</span>;
+        return <span className="font-semibold text-ink-secondary">{r.minimumScore ?? '—'}</span>;
       },
     },
   ];

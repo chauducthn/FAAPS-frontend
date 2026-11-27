@@ -2,117 +2,146 @@ import { useEffect, useState } from 'react';
 import { ArrowRight } from '@phosphor-icons/react';
 import { CTAButton } from '@/shared/components/common/CTAButton';
 import { useAuth } from '@/modules/auth/stores/useAuth';
-import campus1 from '@/assets/hero/campus-1.jpg';
-import campus2 from '@/assets/hero/campus-2.jpg';
-import campus3 from '@/assets/hero/campus-3.jpg';
-import campus4 from '@/assets/hero/campus-4.jpg';
+import { cn } from '@/shared/lib/utils';
+import { useScrolledPast } from '../hooks/useScrolledPast';
+import { HERO_BACKGROUNDS, HeroSlideControls, introDelay } from './HeroSlideControls';
+import { Eyebrow } from './SectionHeading';
 import { getPortalLabel, getPortalPath } from './content';
 
-const HERO_BACKGROUNDS = [
-  { src: campus1, label: 'FPT University Campus Courtyard at Sunset' },
-  { src: campus2, label: 'FPT University Hoa Lac Campus & Lake' },
-  { src: campus3, label: 'FPT University Green Campus Courtyard' },
-  { src: campus4, label: 'FPT University Campus Aerial View' },
-];
-
 const SLIDE_INTERVAL_MS = 6000;
+const HEADLINE_LINES = ['Plan every ', 'semester with '];
+/** The hero photo and copy only take part in the route morph while the hero is still mostly on screen. */
+const morphLimit = (viewportHeight: number) => viewportHeight * 0.5;
 
-export function Hero() {
-  const user = useAuth((s) => s.user);
-  const isAuthenticated = useAuth((s) => s.isAuthenticated);
-  const [activeSlide, setActiveSlide] = useState(0);
+function prefersReducedMotion(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
 
-  useEffect(() => {
-    const prefersReducedMotion =
-      typeof window !== 'undefined' &&
-      typeof window.matchMedia === 'function' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+interface HeroBackdropProps {
+  activeSlide: number;
+  intro: boolean;
+  morphs: boolean;
+}
 
-    if (prefersReducedMotion) return;
-
-    const timer = window.setInterval(() => {
-      setActiveSlide((prev) => (prev + 1) % HERO_BACKGROUNDS.length);
-    }, SLIDE_INTERVAL_MS);
-
-    return () => window.clearInterval(timer);
-  }, []);
-
+function HeroBackdrop({ activeSlide, intro, morphs }: HeroBackdropProps) {
   return (
-    <section
-      id="about"
-      className="relative scroll-mt-16 overflow-hidden border-b border-line bg-ink-primary"
+    <div
+      className={cn(
+        'pointer-events-none absolute inset-0 -z-10',
+        intro && 'landing-intro-media',
+        morphs && '[view-transition-name:campus-frame] [view-transition-class:hero-photo]',
+      )}
+      aria-hidden="true"
     >
-      {/* Cross-fading campus background images with high-contrast dark scrim */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        {HERO_BACKGROUNDS.map((bg, index) => (
+      {HERO_BACKGROUNDS.map((bg, index) => (
+        <div
+          key={bg.label}
+          className={cn(
+            'absolute inset-0 transition-opacity duration-[1400ms] ease-out',
+            index === activeSlide ? 'opacity-100' : 'opacity-0',
+          )}
+        >
           <img
-            key={bg.label}
             src={bg.src}
             alt=""
             loading={index === 0 ? 'eager' : 'lazy'}
-            className={`absolute inset-0 size-full object-cover object-center transition-opacity duration-1000 ${
-              index === activeSlide ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={cn(
+              'size-full object-cover object-center transition-transform duration-[7000ms] ease-out',
+              index === activeSlide ? 'scale-100' : 'scale-105',
+            )}
           />
-        ))}
-        <div className="absolute inset-0 bg-ink-primary/80" />
-      </div>
+        </div>
+      ))}
+      <div className="absolute inset-0 bg-black/30" />
+      <div className="absolute inset-x-0 top-0 h-40 bg-linear-to-b from-black/50 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-[78%] bg-linear-to-t from-[#0b0b0b] via-[#0b0b0b]/75 to-transparent" />
+    </div>
+  );
+}
 
-      <div className="relative z-10 mx-auto max-w-3xl px-4 py-24 text-center sm:px-6 sm:py-32">
-        <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3.5 py-1 text-xs font-semibold tracking-wide text-white backdrop-blur-sm">
-          FPT University · Academic Advising &amp; Planning
-        </span>
+function HeadlineLine({ children, delay, intro }: { children: React.ReactNode; delay: number; intro: boolean }) {
+  return (
+    <span className={cn('block', intro && 'landing-intro-line')}>
+      <span className="block" style={introDelay(delay)}>
+        {children}
+      </span>
+    </span>
+  );
+}
 
-        <h1 className="mt-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl sm:leading-[1.12]">
-          Plan every semester with <span className="text-brand">clarity</span>
-        </h1>
+export function Hero({ intro = false }: { intro?: boolean }) {
+  const user = useAuth((s) => s.user);
+  const isAuthenticated = useAuth((s) => s.isAuthenticated);
+  const [activeSlide, setActiveSlide] = useState(0);
+  const morphs = !useScrolledPast(morphLimit);
+  const fade = intro ? 'landing-intro-fade' : undefined;
 
-        <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
-          Track graduation progress, build AI-guided study roadmaps, and connect directly with your
-          academic advisor in one place.
-        </p>
+  useEffect(() => {
+    if (prefersReducedMotion()) return;
+    const timer = window.setTimeout(() => {
+      setActiveSlide((prev) => (prev + 1) % HERO_BACKGROUNDS.length);
+    }, SLIDE_INTERVAL_MS);
+    return () => window.clearTimeout(timer);
+  }, [activeSlide]);
 
-        <div className="mt-9 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">
-          {isAuthenticated && user ? (
-            <CTAButton to={getPortalPath(user.role)} size="lg">
-              {getPortalLabel(user.role)}
-              <ArrowRight className="size-5" aria-hidden />
-            </CTAButton>
-          ) : (
-            <>
-              <CTAButton to="/register" size="lg">
-                Get Started
-                <ArrowRight className="size-5" aria-hidden />
-              </CTAButton>
-              <CTAButton size="lg" variant="outlineLight">
-                Sign in
-              </CTAButton>
-            </>
-          )}
+  return (
+    <section id="about" className="relative isolate scroll-mt-20 overflow-hidden bg-[#0b0b0b] text-white">
+      <HeroBackdrop activeSlide={activeSlide} intro={intro} morphs={morphs} />
+
+      <div
+        className={cn(
+          'mx-auto flex min-h-[100svh] max-w-6xl flex-col justify-end px-4 pb-8 pt-32 sm:px-6',
+          morphs && '[view-transition-name:hero-copy]',
+        )}
+      >
+        <div className={fade} style={introDelay(250)}>
+          <Eyebrow className="text-white/70">FPT University · Academic Advising &amp; Planning</Eyebrow>
         </div>
 
-        {/* Minimal background slide indicator */}
-        <div
-          className="mt-12 flex items-center justify-center gap-2"
-          role="group"
-          aria-label="Campus background switcher"
-        >
-          {HERO_BACKGROUNDS.map((bg, index) => {
-            const isActive = index === activeSlide;
-            return (
-              <button
-                key={bg.label}
-                type="button"
-                onClick={() => setActiveSlide(index)}
-                aria-label={`Show background ${index + 1}: ${bg.label}`}
-                aria-pressed={isActive}
-                className={`h-1.5 rounded-full transition-all ${
-                  isActive ? 'w-7 bg-brand' : 'w-2 bg-white/40 hover:bg-white/70'
-                }`}
-              />
-            );
-          })}
+        <div className="mt-6 grid gap-10 lg:grid-cols-12 lg:items-end">
+          <h1
+            className={cn(
+              'text-[2.75rem] font-semibold leading-[0.98] tracking-[-0.045em]',
+              'sm:text-7xl lg:col-span-8 lg:text-[5.75rem]',
+            )}
+          >
+            {HEADLINE_LINES.map((line, index) => (
+              <HeadlineLine key={line} delay={350 + index * 120} intro={intro}>
+                {line}
+              </HeadlineLine>
+            ))}
+            <HeadlineLine delay={590} intro={intro}>
+              <span className="text-brand">clarity</span>.
+            </HeadlineLine>
+          </h1>
+
+          <div className={cn('lg:col-span-4 lg:pb-2', fade)} style={introDelay(800)}>
+            <p className="text-base leading-relaxed text-white/75">
+              Track graduation progress, build AI-guided study roadmaps, and connect directly with your academic
+              advisor in one place.
+            </p>
+            <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+              {isAuthenticated && user ? (
+                <CTAButton to={getPortalPath(user.role)} size="lg" className="rounded-md">
+                  {getPortalLabel(user.role)}
+                  <ArrowRight className="size-5" aria-hidden />
+                </CTAButton>
+              ) : (
+                <>
+                  <CTAButton to="/register" size="lg" className="group rounded-md">
+                    Get Started
+                    <ArrowRight className="size-5 transition-transform group-hover:translate-x-0.5" aria-hidden />
+                  </CTAButton>
+                  <CTAButton size="lg" variant="outlineLight" className="rounded-md">
+                    Sign in
+                  </CTAButton>
+                </>
+              )}
+            </div>
+          </div>
         </div>
+
+        <HeroSlideControls activeSlide={activeSlide} onSelect={setActiveSlide} intro={intro} />
       </div>
     </section>
   );

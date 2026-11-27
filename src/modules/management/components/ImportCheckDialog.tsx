@@ -1,8 +1,10 @@
 // Shown when an import file fails the check made before upload: lists what to fix
 // and offers the example sheets, so the admin can correct the file and upload again.
 import { useEffect, useRef, useState } from 'react';
-import { Warning as AlertTriangle, CaretDown as ChevronDown, DownloadSimple as Download, X } from '@phosphor-icons/react';
+import { Warning as AlertTriangle, CaretDown as ChevronDown, DownloadSimple as Download, FileXls } from '@phosphor-icons/react';
+import { MENU_PANEL_CLASS, MenuItem, toolbarButtonClass } from '../../../shared/components/ui/MenuParts';
 import { Modal } from '../../../shared/components/ui/Modal';
+import { ModalBody, ModalFooter, ModalHeader, modalButtonClass } from '../../../shared/components/ui/ModalParts';
 import type { ImportProblem } from '../utils/importChecks';
 
 export interface ExampleSheet {
@@ -26,7 +28,7 @@ export function ExampleSheetButton({ examples, className }: { examples: ExampleS
   const rootRef = useRef<HTMLDivElement>(null);
   const base =
     className ??
-    'inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-700 shadow-xs transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-[#9a3412]';
+    toolbarButtonClass();
 
   useEffect(() => {
     if (!open) return;
@@ -47,7 +49,7 @@ export function ExampleSheetButton({ examples, className }: { examples: ExampleS
   if (examples.length === 1) {
     return (
       <button type="button" onClick={examples[0].download} className={base}>
-        <Download className="size-3.5" /> Example sheet
+        <Download className="size-4 text-ink-subtle" /> Example sheet
       </button>
     );
   }
@@ -60,24 +62,22 @@ export function ExampleSheetButton({ examples, className }: { examples: ExampleS
         onClick={() => setOpen((v) => !v)}
         className={base}
       >
-        <Download className="size-3.5 text-gray-500" aria-hidden /> Example sheet
-        <ChevronDown className={`size-3.5 text-gray-400 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
+        <Download className="size-4 text-ink-subtle" aria-hidden /> Example sheet
+        <ChevronDown className={`size-3.5 text-ink-subtle transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
       </button>
       {open && (
-        <div className="absolute right-0 z-20 mt-1 w-60 rounded-xl border border-gray-200 bg-white p-1 shadow-lg" role="menu">
+        <div className={MENU_PANEL_CLASS} role="menu">
           {examples.map((e) => (
-            <button
+            <MenuItem
               key={e.label}
-              type="button"
-              role="menuitem"
+              icon={<FileXls />}
               onClick={() => {
                 e.download();
                 setOpen(false);
               }}
-              className="block w-full rounded-lg px-3 py-2 text-left text-xs font-semibold text-gray-700 hover:bg-orange-50 hover:text-[#9a3412]"
             >
               {e.label}
-            </button>
+            </MenuItem>
           ))}
         </div>
       )}
@@ -87,54 +87,46 @@ export function ExampleSheetButton({ examples, className }: { examples: ExampleS
 
 export function ImportCheckDialog({ open, fileName, problems, examples, onClose }: Props) {
   const shown = problems.slice(0, MAX_SHOWN);
+  const exampleButtons = examples.map((e) => (
+    <button key={e.label} type="button" onClick={e.download} className={modalButtonClass('secondary', 'min-w-0 px-3')}>
+      <Download className="size-4" /> {e.label}
+    </button>
+  ));
+
   return (
     <Modal open={open} onClose={onClose} title="Fix the import file" className="max-w-xl">
-      <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-red-50 px-6 py-5">
-        <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
-            <AlertTriangle className="size-5" />
-          </span>
-          <div className="min-w-0">
-            <h2 className="text-base font-extrabold tracking-tight text-gray-900">The file was not uploaded</h2>
-            <p className="mt-0.5 truncate text-xs text-gray-500">
-              {fileName} has {problems.length} problem{problems.length === 1 ? '' : 's'}. Fix them and upload the file again.
-            </p>
-          </div>
-        </div>
-        <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700">
-          <X className="size-4" />
-        </button>
-      </div>
+      <ModalHeader
+        title="The file was not uploaded"
+        description={`${fileName} has ${problems.length} problem${problems.length === 1 ? '' : 's'}. Fix them and upload the file again.`}
+        icon={<AlertTriangle />}
+        tone="danger"
+        onClose={onClose}
+      />
 
-      <ul className="min-h-0 space-y-1.5 overflow-y-auto px-6 py-4 text-[13px]" aria-label="Problems in the file">
-        {shown.map((p, i) => (
-          <li key={i} className="flex gap-2 rounded-lg bg-red-50/60 px-3 py-2 text-red-700">
-            <span className="shrink-0 font-mono text-[11px] font-bold text-red-500">{p.row === null ? 'File' : `Row ${p.row}`}</span>
-            <span>{p.message}</span>
-          </li>
-        ))}
-        {problems.length > MAX_SHOWN && (
-          <li className="px-3 text-xs text-gray-500">…and {problems.length - MAX_SHOWN} more.</li>
-        )}
-      </ul>
-
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 bg-gray-50/60 px-6 py-4">
-        <div className="flex flex-wrap gap-2">
-          {examples.map((e) => (
-            <button
-              key={e.label}
-              type="button"
-              onClick={e.download}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50"
-            >
-              <Download className="size-3.5" /> {e.label}
-            </button>
+      <ModalBody>
+        <ul
+          className="divide-y divide-line overflow-hidden rounded-md border border-line text-[13px]"
+          aria-label="Problems in the file"
+        >
+          {shown.map((p, i) => (
+            <li key={i} className="flex items-baseline gap-3 px-3 py-2.5">
+              <span className="w-14 shrink-0 font-mono text-[11px] font-semibold text-red-600">
+                {p.row === null ? 'File' : `Row ${p.row}`}
+              </span>
+              <span className="min-w-0 text-ink-secondary">{p.message}</span>
+            </li>
           ))}
-        </div>
-        <button type="button" onClick={onClose} className="rounded-xl bg-gray-900 px-4 py-2 text-xs font-bold text-white hover:bg-gray-700">
+          {problems.length > MAX_SHOWN && (
+            <li className="bg-surface-page px-3 py-2 text-xs text-ink-muted">…and {problems.length - MAX_SHOWN} more.</li>
+          )}
+        </ul>
+      </ModalBody>
+
+      <ModalFooter start={exampleButtons.length > 0 ? exampleButtons : undefined}>
+        <button type="button" onClick={onClose} className={modalButtonClass('primary')}>
           OK
         </button>
-      </div>
+      </ModalFooter>
     </Modal>
   );
 }

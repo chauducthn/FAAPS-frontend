@@ -14,7 +14,7 @@ export function LoadBadge({ count, limit, className }: LoadBadgeProps) {
     <span
       className={cn(
         'whitespace-nowrap text-[13px] font-semibold tabular-nums',
-        over ? 'text-red-600' : nearOrFull ? 'text-amber-700' : 'text-gray-700',
+        over ? 'text-red-600' : nearOrFull ? 'text-amber-700' : 'text-ink-secondary',
         className,
       )}
       title={over ? `Over the limit by ${count - (limit as number)}` : nearOrFull ? 'Near or at the limit' : undefined}

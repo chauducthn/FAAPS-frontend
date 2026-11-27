@@ -15,14 +15,14 @@ export function AiPerformanceSummaryTable({
       key: 'config',
       header: 'Configuration',
       render: (row) => (
-        <span className="text-[13px] font-bold text-gray-900">{row.configName}</span>
+        <span className="text-[13px] font-bold text-ink-primary">{row.configName}</span>
       ),
     },
     {
       key: 'purpose',
       header: 'Purpose',
       render: (row) => (
-        <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+        <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
           {row.purpose}
         </span>
       ),
@@ -32,7 +32,7 @@ export function AiPerformanceSummaryTable({
       header: 'Requests',
       align: 'right',
       render: (row) => (
-        <span className="font-mono text-[12px] font-bold tabular-nums text-gray-900">
+        <span className="font-mono text-[12px] font-bold tabular-nums text-ink-primary">
           {row.totalRequests.toLocaleString('en-US')}
         </span>
       ),
@@ -46,7 +46,7 @@ export function AiPerformanceSummaryTable({
         return (
           <>
             <span className="text-[12px] font-bold text-emerald-700">{rate.toFixed(1)}%</span>
-            <span className="ml-1 font-mono text-[11px] tabular-nums text-gray-400">
+            <span className="ml-1 font-mono text-[11px] tabular-nums text-ink-subtle">
               ({row.successRequests.toLocaleString('en-US')})
             </span>
           </>
@@ -78,7 +78,7 @@ export function AiPerformanceSummaryTable({
       header: 'Avg latency',
       align: 'right',
       render: (row) => (
-        <span className="font-mono text-[12px] font-semibold tabular-nums text-gray-500">
+        <span className="font-mono text-[12px] font-semibold tabular-nums text-ink-muted">
           {Math.round(row.averageLatencyMs).toLocaleString('en-US')} ms
         </span>
       ),
@@ -88,7 +88,7 @@ export function AiPerformanceSummaryTable({
       header: 'Tokens (P / C)',
       align: 'right',
       render: (row) => (
-        <span className="font-mono text-[12px] tabular-nums text-gray-500">
+        <span className="font-mono text-[12px] tabular-nums text-ink-muted">
           {row.totalPromptTokens.toLocaleString('en-US')} / {row.totalCompletionTokens.toLocaleString('en-US')}
         </span>
       ),
@@ -96,15 +96,15 @@ export function AiPerformanceSummaryTable({
   ];
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-      <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+    <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+      <div className="flex items-center justify-between border-b border-line-soft px-5 py-4">
         <div>
-          <h2 className="text-[13px] font-extrabold tracking-tight text-gray-900">
+          <h2 className="text-[13px] font-extrabold tracking-tight text-ink-primary">
             Per-configuration summary
           </h2>
-          <p className="mt-0.5 text-[11px] text-gray-400">Totals within the selected period</p>
+          <p className="mt-0.5 text-[11px] text-ink-subtle">Totals within the selected period</p>
         </div>
-        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-500">
+        <span className="rounded-full bg-line-soft px-2 py-0.5 text-[11px] font-bold text-ink-muted">
           {isLoading ? '…' : `${summary.length} configs`}
         </span>
       </div>

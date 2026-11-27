@@ -25,7 +25,7 @@ export function ViewToggle({
     <div
       role="group"
       aria-label="Appointment view"
-      className="inline-flex items-center gap-0.5 rounded-lg border border-[#e5e7eb] bg-[#f7f8fa] p-0.5"
+      className="inline-flex items-center gap-0.5 rounded-lg border border-line bg-surface-page p-0.5"
     >
       {OPTIONS.map((option) => {
         const active = option.id === value;
@@ -39,10 +39,10 @@ export function ViewToggle({
             title={`${option.label} view`}
             className={cn(
               'inline-flex h-8 items-center gap-1.5 rounded-[7px] px-2.5 text-[13px] font-semibold transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021]/40',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
               active
-                ? 'bg-white text-[#151c27] shadow-[0_1px_2px_rgba(20,32,51,0.08)]'
-                : 'text-[#555f6f] hover:text-[#151c27]',
+                ? 'bg-white text-ink-primary shadow-[0_1px_2px_rgba(20,32,51,0.08)]'
+                : 'text-ink-muted hover:text-ink-primary',
             )}
           >
             <Icon className="size-4" aria-hidden />

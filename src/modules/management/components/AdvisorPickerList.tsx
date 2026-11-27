@@ -31,21 +31,21 @@ export function AdvisorPickerList({
   return (
     <div className="space-y-2">
       <div className="relative">
-        <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+        <Search aria-hidden className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search advisor by name or email..."
           aria-label="Search advisor"
-          className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-8 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+          className="h-9 w-full rounded-lg border border-line bg-white pl-9 pr-8 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
         />
         {query && (
           <button
             type="button"
             onClick={() => setQuery('')}
             aria-label="Clear search"
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-ink-subtle hover:text-ink-muted"
           >
             <X className="size-3.5" />
           </button>
@@ -55,10 +55,10 @@ export function AdvisorPickerList({
       <div
         role="listbox"
         aria-label="Advisors"
-        className="max-h-56 divide-y divide-gray-100 overflow-y-auto rounded-lg border border-gray-200 bg-white"
+        className="max-h-56 divide-y divide-line-soft overflow-y-auto rounded-lg border border-line bg-white"
       >
         {filtered.length === 0 ? (
-          <p className="px-3.5 py-6 text-center text-xs text-gray-500">{emptyText}</p>
+          <p className="px-3.5 py-6 text-center text-xs text-ink-muted">{emptyText}</p>
         ) : (
           filtered.map((a) => {
             const active = a.id === selectedId;
@@ -71,22 +71,22 @@ export function AdvisorPickerList({
                 onClick={() => onSelect(a.id)}
                 className={cn(
                   'flex w-full items-center justify-between gap-3 px-3 py-2 text-left transition-colors',
-                  active ? 'bg-orange-50/80' : 'hover:bg-gray-50',
+                  active ? 'bg-brand-soft/80' : 'hover:bg-surface-hover',
                 )}
               >
                 <div className="flex min-w-0 items-center gap-2.5">
                   <UserInitials name={a.fullName} className="size-7 shrink-0 text-[11px]" />
                   <div className="min-w-0">
-                    <p className={cn('truncate text-[13px] font-semibold', active ? 'text-[#C2410C]' : 'text-gray-900')}>
+                    <p className={cn('truncate text-[13px] font-semibold', active ? 'text-brand-ink' : 'text-ink-primary')}>
                       {a.fullName}
                     </p>
-                    <p className="truncate text-xs text-gray-500">{a.email}</p>
+                    <p className="truncate text-xs text-ink-muted">{a.email}</p>
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <LoadBadge count={a.activeStudents} limit={a.maxAdvisees} />
                   {active && (
-                    <span className="flex size-5 items-center justify-center rounded-full bg-[#F26F21] text-white">
+                    <span className="flex size-5 items-center justify-center rounded-full bg-brand text-white">
                       <Check className="size-3" weight="bold" aria-hidden />
                     </span>
                   )}

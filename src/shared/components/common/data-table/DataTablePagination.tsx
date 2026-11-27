@@ -1,7 +1,6 @@
-// Pagination footer and floating bulk-action bar for DataTable.
+// Pagination footer for DataTable: row summary, page size, numbered pages and an optional page jump.
 
-import type { ReactNode } from 'react';
-import { CaretLeft as ChevronLeft, CaretRight as ChevronRight, X } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import { PageJumpInput } from './DataTableControls';
 
@@ -23,6 +22,29 @@ interface DataTablePaginationProps {
   onNextPage: () => void;
 }
 
+type PageSlot = number | 'gap-start' | 'gap-end';
+
+/** First, last and the pages around the current one; a gap of a single page shows that page instead of "…". */
+export function pageWindow(pageIndex: number, totalPages: number): PageSlot[] {
+  const wanted = new Set([0, totalPages - 1, pageIndex - 1, pageIndex, pageIndex + 1]);
+  if (pageIndex <= 2) [1, 2, 3].forEach((p) => wanted.add(p));
+  if (pageIndex >= totalPages - 3) [totalPages - 2, totalPages - 3, totalPages - 4].forEach((p) => wanted.add(p));
+  const pages = [...wanted].filter((p) => p >= 0 && p < totalPages).sort((a, b) => a - b);
+
+  const slots: PageSlot[] = [];
+  pages.forEach((page, i) => {
+    const prev = pages[i - 1];
+    if (prev !== undefined && page - prev === 2) slots.push(prev + 1);
+    if (prev !== undefined && page - prev > 2) slots.push(page < pageIndex ? 'gap-start' : 'gap-end');
+    slots.push(page);
+  });
+  return slots;
+}
+
+const SQUARE_BUTTON =
+  'inline-flex size-8 items-center justify-center rounded-md text-[13px] tabular-nums transition-colors ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:pointer-events-none';
+
 export function DataTablePagination({
   totalRows,
   firstRow,
@@ -40,140 +62,86 @@ export function DataTablePagination({
   onPreviousPage,
   onNextPage,
 }: DataTablePaginationProps) {
+  const summary =
+    totalRows === 0 ? 'No rows' : `${firstRow}–${lastRow} of ${totalRows.toLocaleString('en-US')} rows`;
+
   return (
-    <div className="flex shrink-0 flex-col gap-2.5 border-t border-gray-100 bg-gray-50/50 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-[13px] text-gray-500">
-        {totalRows === 0 ? 'No rows' : `Showing ${firstRow}–${lastRow} of ${totalRows} rows`}
-      </p>
-
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="flex shrink-0 flex-col gap-2.5 border-t border-line bg-white px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-3 text-[13px] text-ink-muted">
+        <span className="tabular-nums">{summary}</span>
         {showPageSizeSelect && (
-          <label className="flex items-center gap-2 text-[13px] text-gray-500">
-            Rows per page
-            <select
-              value={pageSize}
-              onChange={(event) => onPageSizeChange(Number(event.target.value))}
-              aria-label="Rows per page"
-              className={cn(
-                'h-8 rounded-lg border border-gray-200 bg-white px-2 text-xs font-medium text-gray-800',
-                'outline-none focus:border-[#F26F21] focus:ring-1 focus:ring-[#F26F21]/30',
-              )}
-            >
-              {pageSizes.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </label>
+          <select
+            value={pageSize}
+            onChange={(event) => onPageSizeChange(Number(event.target.value))}
+            aria-label="Rows per page"
+            className={cn(
+              'h-8 rounded-md border border-line bg-white px-2 text-[13px] text-ink-secondary',
+              'outline-none focus:border-brand focus:ring-2 focus:ring-brand/15',
+            )}
+          >
+            {pageSizes.map((size) => (
+              <option key={size} value={size}>
+                {size} / page
+              </option>
+            ))}
+          </select>
         )}
+      </div>
 
-        <span className="text-xs font-semibold text-gray-600 tabular-nums">
+      <nav aria-label="Pagination" className="flex items-center gap-1">
+        <span className="mr-2 text-xs text-ink-subtle tabular-nums">
           Page {pageIndex + 1} of {totalPages}
         </span>
-
-        {showPageJump ? (
-          <PageJumpInput pageIndex={pageIndex} totalPages={totalPages} onJump={onPageIndexChange} />
-        ) : null}
-
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            onClick={onPreviousPage}
-            disabled={!canPreviousPage}
-            className={cn(
-              'inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-gray-600',
-              'transition-colors hover:bg-gray-100 hover:text-gray-900',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/30',
-              'disabled:pointer-events-none disabled:opacity-40',
-            )}
-          >
-            <ChevronLeft className="size-3.5" aria-hidden />
-            Previous
-          </button>
-          <button
-            type="button"
-            onClick={onNextPage}
-            disabled={!canNextPage}
-            className={cn(
-              'inline-flex h-8 items-center gap-1 rounded-lg px-2.5 text-xs font-semibold text-gray-600',
-              'transition-colors hover:bg-gray-100 hover:text-gray-900',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/30',
-              'disabled:pointer-events-none disabled:opacity-40',
-            )}
-          >
-            Next
-            <ChevronRight className="size-3.5" aria-hidden />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-interface DataTableBulkBarProps<TData> {
-  selectedRows: TData[];
-  totalRows?: number;
-  loadingAll?: boolean;
-  allRowsSelected?: boolean;
-  onSelectAll?: () => void;
-  bulkActions?: (selectedRows: TData[]) => ReactNode;
-  onClearSelection: () => void;
-}
-
-export function DataTableBulkBar<TData>({
-  selectedRows,
-  totalRows,
-  loadingAll = false,
-  allRowsSelected = false,
-  onSelectAll,
-  bulkActions,
-  onClearSelection,
-}: DataTableBulkBarProps<TData>) {
-  const selectedCount = selectedRows.length;
-  if (selectedCount === 0) return null;
-  const canSelectAll = !allRowsSelected && !!onSelectAll && !!totalRows && totalRows > selectedCount;
-
-  return (
-    <div
-      role="region"
-      aria-label="Bulk actions"
-      className={cn(
-        'flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5',
-        'animate-in fade-in duration-150',
-      )}
-    >
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-md bg-[var(--brand)] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
-          {selectedCount} row{selectedCount === 1 ? '' : 's'} selected
-        </span>
-        {canSelectAll && (
-          <button
-            type="button"
-            disabled={loadingAll}
-            onClick={onSelectAll}
-            className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70 disabled:opacity-50"
-          >
-            {loadingAll ? 'Selecting…' : `Select all ${totalRows}`}
-          </button>
-        )}
         <button
           type="button"
-          onClick={onClearSelection}
-          aria-label="Clear selection"
-          className={cn(
-            'inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-slate-600',
-            'transition-colors hover:bg-orange-100/80 hover:text-slate-900',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
-          )}
+          onClick={onPreviousPage}
+          disabled={!canPreviousPage}
+          aria-label="Previous page"
+          className={cn(SQUARE_BUTTON, 'text-ink-muted hover:bg-line-soft hover:text-ink-primary disabled:opacity-35')}
         >
-          <X className="size-3.5" aria-hidden />
-          Clear
+          <CaretLeft className="size-4" aria-hidden />
         </button>
-      </div>
-      {bulkActions ? (
-        <div className="flex flex-wrap items-center gap-2">{bulkActions(selectedRows)}</div>
-      ) : null}
+        <div className="hidden items-center gap-1 sm:flex">
+          {pageWindow(pageIndex, totalPages).map((slot) =>
+            typeof slot === 'number' ? (
+              <button
+                key={slot}
+                type="button"
+                onClick={() => onPageIndexChange(slot)}
+                aria-label={`Page ${slot + 1}`}
+                aria-current={slot === pageIndex ? 'page' : undefined}
+                className={cn(
+                  SQUARE_BUTTON,
+                  'min-w-8 px-1.5',
+                  slot === pageIndex
+                    ? 'bg-brand-soft font-semibold text-brand-ink ring-1 ring-inset ring-brand/25'
+                    : 'text-ink-muted hover:bg-line-soft hover:text-ink-primary',
+                )}
+              >
+                {slot + 1}
+              </button>
+            ) : (
+              <span key={slot} className="inline-flex size-8 items-center justify-center text-ink-subtle" aria-hidden>
+                …
+              </span>
+            ),
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={onNextPage}
+          disabled={!canNextPage}
+          aria-label="Next page"
+          className={cn(SQUARE_BUTTON, 'text-ink-muted hover:bg-line-soft hover:text-ink-primary disabled:opacity-35')}
+        >
+          <CaretRight className="size-4" aria-hidden />
+        </button>
+        {showPageJump ? (
+          <div className="ml-2 border-l border-line pl-3">
+            <PageJumpInput pageIndex={pageIndex} totalPages={totalPages} onJump={onPageIndexChange} />
+          </div>
+        ) : null}
+      </nav>
     </div>
   );
 }

@@ -22,9 +22,9 @@ export function createAssignedColumns(actions: {
   return [
     {
       accessorKey: 'studentCode',
-      header: 'Student ID',
+      header: 'Identifier',
       cell: ({ row }) => (
-        <span className="font-mono text-[13px] font-medium text-gray-700">
+        <span className="font-mono text-[12.5px] text-ink-secondary">
           {row.original.studentCode}
         </span>
       ),
@@ -33,23 +33,31 @@ export function createAssignedColumns(actions: {
       accessorKey: 'fullName',
       header: 'Full Name',
       cell: ({ row }) => (
-        <div className="flex min-w-0 items-center gap-2.5">
+        <div className="flex max-w-[220px] min-w-0 items-center gap-2.5">
           <UserInitials name={row.original.fullName} avatarUrl={row.original.avatarUrl} />
-          <span className="truncate font-semibold text-gray-900">{row.original.fullName}</span>
+          <span title={row.original.fullName} className="truncate font-medium text-ink-primary">{row.original.fullName}</span>
         </div>
       ),
     },
     {
       accessorKey: 'majorCode',
       header: 'Major',
-      cell: ({ row }) => <span className="text-gray-600">{row.original.majorCode}</span>,
+      cell: ({ row }) =>
+        row.original.majorCode ? (
+          <span className="font-mono text-[12.5px] text-ink-secondary">{row.original.majorCode}</span>
+        ) : (
+          <span className="text-ink-subtle">—</span>
+        ),
     },
     {
       accessorKey: 'cohort',
       header: 'Cohort',
-      cell: ({ row }) => (
-        <span className="text-[13px] font-medium text-gray-700">{row.original.cohort}</span>
-      ),
+      cell: ({ row }) =>
+        row.original.cohort ? (
+          <span className="font-mono text-[12.5px] text-ink-secondary">{row.original.cohort}</span>
+        ) : (
+          <span className="text-ink-subtle">—</span>
+        ),
     },
     {
       accessorKey: 'advisorName',
@@ -60,27 +68,28 @@ export function createAssignedColumns(actions: {
             type="button"
             onClick={() => actions.onFilterAdvisor(row.original.advisorId as string)}
             title={`Filter assigned students by ${row.original.advisorName}`}
-            className="truncate text-left text-[13px] font-semibold text-[#C2410C] transition-colors hover:underline"
+            className="truncate text-left font-medium text-brand-ink transition-colors hover:underline"
           >
             {row.original.advisorName}
           </button>
         ) : (
-          <span className="text-xs text-gray-400">—</span>
+          <span className="text-ink-subtle">—</span>
         ),
     },
     {
       accessorKey: 'assignedDate',
       header: 'Assigned Date',
       cell: ({ row }) => (
-        <span className="text-[13px] text-gray-600 tabular-nums">
+        <span className="text-ink-muted tabular-nums">
           {formatAssignedDate(row.original.assignedDate)}
         </span>
       ),
     },
     {
       id: 'actions',
-      header: () => <span className="block text-right">Actions</span>,
+      header: 'Actions',
       enableSorting: false,
+      meta: { align: 'right' },
       cell: ({ row }) => (
         <div className="flex items-center justify-end gap-1">
           <button
@@ -94,7 +103,7 @@ export function createAssignedColumns(actions: {
             }
             title="Assignment history"
             aria-label={`View history for ${row.original.fullName}`}
-            className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-200 bg-white px-2 text-xs font-medium text-gray-600 transition-colors hover:border-gray-300 hover:bg-gray-50 hover:text-gray-900"
+            className="inline-flex h-8 items-center gap-1 rounded-md border border-line bg-white px-2 text-xs font-medium text-ink-muted transition-colors hover:border-ink-subtle/50 hover:bg-surface-hover hover:text-ink-primary"
           >
             <ClockCounterClockwise className="size-3.5" aria-hidden />
             History
@@ -111,7 +120,7 @@ export function createAssignedColumns(actions: {
             }
             title="Reassign advisor"
             aria-label={`Reassign ${row.original.fullName}`}
-            className="inline-flex h-8 items-center gap-1 rounded-lg border border-orange-200 bg-orange-50/60 px-2 text-xs font-semibold text-[#C2410C] transition-colors hover:border-[#F26F21] hover:bg-[#F26F21] hover:text-white"
+            className="inline-flex h-8 items-center gap-1 rounded-md border border-brand/30 bg-brand-soft/60 px-2 text-xs font-medium text-brand-ink transition-colors hover:border-brand hover:bg-brand hover:text-white"
           >
             <ArrowsLeftRight className="size-3.5" aria-hidden />
             Reassign
@@ -121,7 +130,7 @@ export function createAssignedColumns(actions: {
             onClick={() => actions.onUnassign({ id: row.original.id, name: row.original.fullName })}
             title="Unassign advisor"
             aria-label={`Unassign ${row.original.fullName}`}
-            className="inline-flex h-8 items-center justify-center rounded-lg border border-red-200 bg-white px-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
+            className="inline-flex h-8 items-center justify-center rounded-md border border-red-200 bg-white px-2 text-xs font-medium text-red-600 transition-colors hover:bg-red-50"
           >
             <UserMinus className="size-3.5" aria-hidden />
           </button>

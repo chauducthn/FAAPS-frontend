@@ -12,17 +12,17 @@ const importHistoryColumns: StaticColumn<AttendanceImportHistoryItem>[] = [
   {
     key: 'fileName', header: 'File',
     render: (record) => (
-      <span className="inline-flex items-center gap-2 font-semibold text-gray-900">
-        <FileSpreadsheet className="size-4 shrink-0 text-[#F26F21]" aria-hidden />
+      <span className="inline-flex items-center gap-2 font-semibold text-ink-primary">
+        <FileSpreadsheet className="size-4 shrink-0 text-brand" aria-hidden />
         {record.fileName}
       </span>
     ),
   },
-  { key: 'rowCount', header: 'Rows', align: 'right', render: (r) => <span className="font-medium tabular-nums text-gray-700">{r.rowCount}</span> },
+  { key: 'rowCount', header: 'Rows', align: 'right', render: (r) => <span className="font-medium tabular-nums text-ink-secondary">{r.rowCount}</span> },
   {
     key: 'warningCount', header: 'Warnings', align: 'right',
     render: (r) => (
-      <span className={cn('inline-flex rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums', r.warningCount > 0 ? 'bg-amber-50 text-amber-700' : 'text-gray-400')}>
+      <span className={cn('inline-flex rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums', r.warningCount > 0 ? 'bg-amber-50 text-amber-700' : 'text-ink-subtle')}>
         {r.warningCount}
       </span>
     ),
@@ -30,14 +30,14 @@ const importHistoryColumns: StaticColumn<AttendanceImportHistoryItem>[] = [
   {
     key: 'failCount', header: 'Attendance fails', align: 'right',
     render: (r) => (
-      <span className={cn('inline-flex rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums', r.failCount > 0 ? 'bg-red-50 text-red-600' : 'text-gray-400')}>
+      <span className={cn('inline-flex rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums', r.failCount > 0 ? 'bg-red-50 text-red-600' : 'text-ink-subtle')}>
         {r.failCount}
       </span>
     ),
   },
   {
     key: 'confirmedAt', header: 'Imported at',
-    render: (r) => <span className="tabular-nums text-gray-500">{new Date(r.confirmedAt).toLocaleString('en-GB')}</span>,
+    render: (r) => <span className="tabular-nums text-ink-muted">{new Date(r.confirmedAt).toLocaleString('en-GB')}</span>,
   },
 ];
 
@@ -77,16 +77,16 @@ export function AttendanceImportTab({
   return (
     <div className="flex flex-col gap-4">
       {error && (
-        <p role="alert" className="rounded-xl border border-red-200/80 bg-red-50 px-4 py-2.5 text-[13px] font-medium text-red-700">
+        <p role="alert" className="rounded-lg border border-red-200/80 bg-red-50 px-4 py-2.5 text-[13px] font-medium text-red-700">
           {error}
         </p>
       )}
 
       {current && (
-        <section className="flex flex-col gap-3 rounded-2xl border border-gray-200/80 bg-white p-4 shadow-2xs">
+        <section className="flex flex-col gap-3 rounded-lg border border-line/80 bg-white p-4 shadow-2xs">
           <div className="flex flex-wrap items-center gap-2">
-            <FileSpreadsheet className="size-4 text-[#F26F21]" aria-hidden />
-            <span className="text-sm font-semibold text-gray-900">{current.fileName}</span>
+            <FileSpreadsheet className="size-4 text-brand" aria-hidden />
+            <span className="text-sm font-semibold text-ink-primary">{current.fileName}</span>
             <ImportSummaryChip label="Rows" value={current.rows.length} />
             <ImportSummaryChip label="Valid" value={current.validRows} className="bg-emerald-50 text-emerald-700" />
             {current.errorRows > 0 && <ImportSummaryChip label="Errors" value={current.errorRows} className="bg-red-50 text-red-600" />}
@@ -95,27 +95,27 @@ export function AttendanceImportTab({
           </div>
           <AttendanceImportPreviewTable rows={current.rows} />
           <div className="flex flex-col-reverse justify-end gap-2 sm:flex-row">
-            <button type="button" onClick={onClearCurrent} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-semibold text-gray-700 hover:bg-gray-50">
+            <button type="button" onClick={onClearCurrent} className="h-9 rounded-lg border border-line bg-white px-4 text-[13px] font-semibold text-ink-secondary hover:bg-surface-hover">
               Cancel
             </button>
             {current.errorRows > 0 && (
-              <button type="button" onClick={() => downloadAttendanceCsv('attendance-errors.csv', attendanceErrorsCsv(current))} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-semibold text-gray-700 hover:bg-gray-50">
+              <button type="button" onClick={() => downloadAttendanceCsv('attendance-errors.csv', attendanceErrorsCsv(current))} className="h-9 rounded-lg border border-line bg-white px-4 text-[13px] font-semibold text-ink-secondary hover:bg-surface-hover">
                 Download errors
               </button>
             )}
-            <button type="button" onClick={runConfirm} disabled={current.validRows === 0 || isConfirming} className="h-9 rounded-lg bg-[#F26F21] px-4 text-[13px] font-semibold text-white hover:bg-[#e05f14] disabled:opacity-50">
+            <button type="button" onClick={runConfirm} disabled={current.validRows === 0 || isConfirming} className="h-9 rounded-lg bg-brand px-4 text-[13px] font-semibold text-white hover:bg-brand-hover disabled:opacity-50">
               {isConfirming ? 'Importing…' : `Import ${current.validRows} valid row${current.validRows === 1 ? '' : 's'}`}
             </button>
           </div>
         </section>
       )}
 
-      <section aria-labelledby="history" className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
-        <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-3.5">
-          <Clock className="size-4 text-[#F26F21]" aria-hidden />
-          <h2 id="history" className="text-sm font-bold text-gray-900">Import history</h2>
+      <section aria-labelledby="history" className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+        <div className="flex items-center gap-2 border-b border-line-soft px-5 py-3.5">
+          <Clock className="size-4 text-brand" aria-hidden />
+          <h2 id="history" className="text-sm font-bold text-ink-primary">Import history</h2>
         </div>
-        <div className="flex h-[calc(100vh-330px)] min-h-[420px] flex-col">
+        <div className="flex admin-fill flex-col">
           <StaticTable
             stickyHeader
             className="min-h-0 flex-1 overflow-auto"

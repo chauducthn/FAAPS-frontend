@@ -1,6 +1,7 @@
 // Courses catalog table view for AdvisorAcademicLookup.
 
 import { BookBookmark as BookMarked, Stack as Layers } from '@phosphor-icons/react';
+import { WorkloadBadge } from '../../../academic/components/WorkloadBadge';
 import { Pagination } from '../../../management/components/Pagination';
 import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
 import type { LookupCourse } from '../../types/academic-lookup';
@@ -84,6 +85,11 @@ export function CoursesLookupView({
       header: 'Credits',
       align: 'right',
       render: (course) => <span className="font-bold tabular-nums">{course.credits}</span>,
+    },
+    {
+      key: 'workload',
+      header: 'Workload',
+      render: (course) => <WorkloadBadge workload={course.workload} />,
     },
     {
       key: 'detail',

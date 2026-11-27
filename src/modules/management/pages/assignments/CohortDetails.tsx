@@ -121,14 +121,14 @@ export default function CohortDetails() {
       />
 
       {summary.isSuccess && !cohort && (
-        <div className="rounded-xl border border-gray-200/80 bg-white p-8 text-center text-sm text-gray-500">
+        <div className="rounded-lg border border-line/80 bg-white p-8 text-center text-sm text-ink-muted">
           This cohort does not exist.
         </div>
       )}
 
       <CohortPoolSection cohortId={cohortId} title={title} isLoading={pool.isLoading} pool={pool.data ?? []} advisors={advisors.data ?? []} />
 
-      <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
         <CohortStudentsFilterBar
           search={search} unassignedOnly={unassignedOnly} pendingOnly={pendingOnly} hasFilters={hasFilters}
           onSearchChange={(val) => { setSearch(val); setPage(0); }}

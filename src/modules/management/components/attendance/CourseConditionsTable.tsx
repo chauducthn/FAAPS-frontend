@@ -75,7 +75,7 @@ export function CourseConditionsTable({
         <span
           className={cn(
             'rounded-full px-2.5 py-0.5 text-xs font-semibold',
-            row.custom ? 'bg-[var(--brand-soft)] text-[var(--brand-ink)]' : 'bg-gray-100 text-[var(--ink-muted)]',
+            row.custom ? 'bg-[var(--brand-soft)] text-[var(--brand-ink)]' : 'bg-line-soft text-[var(--ink-muted)]',
           )}
         >
           {row.custom ? 'Custom' : 'Default'}

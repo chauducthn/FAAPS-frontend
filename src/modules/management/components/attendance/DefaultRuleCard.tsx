@@ -33,14 +33,14 @@ export function DefaultRuleCard({ rule }: { rule: AttendanceRule | undefined }) 
   };
 
   return (
-    <section aria-labelledby="default-rule" className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-2xs">
-      <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-3.5">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21]">
+    <section aria-labelledby="default-rule" className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
+      <div className="flex items-center gap-3 border-b border-line-soft px-5 py-3.5">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand">
           <ShieldCheck className="size-4" aria-hidden />
         </span>
         <div>
-          <h2 id="default-rule" className="text-sm font-bold text-gray-900">Default condition</h2>
-          <p className="text-xs text-gray-500">Used by every course that has no custom attendance override.</p>
+          <h2 id="default-rule" className="text-sm font-bold text-ink-primary">Default condition</h2>
+          <p className="text-xs text-ink-muted">Used by every course that has no custom attendance override.</p>
         </div>
       </div>
 
@@ -48,10 +48,10 @@ export function DefaultRuleCard({ rule }: { rule: AttendanceRule | undefined }) 
         {draft ? (
           <AttendanceRuleFields draft={draft} onChange={setDraft} idPrefix="default-rule" disabled={saveDefault.isPending} />
         ) : (
-          <div className="h-24 animate-pulse rounded-xl bg-gray-100" />
+          <div className="h-24 animate-pulse rounded-lg bg-line-soft" />
         )}
         {error && (
-          <p role="alert" className="rounded-xl border border-red-200/80 bg-red-50 px-3.5 py-2.5 text-[13px] font-medium text-red-700">
+          <p role="alert" className="rounded-lg border border-red-200/80 bg-red-50 px-3.5 py-2.5 text-[13px] font-medium text-red-700">
             {error}
           </p>
         )}
@@ -60,7 +60,10 @@ export function DefaultRuleCard({ rule }: { rule: AttendanceRule | undefined }) 
             <button
               type="button"
               onClick={() => rule && setDraft(toDraft(rule))}
-              className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-semibold text-gray-700 hover:bg-gray-50"
+              className={
+                'h-9 rounded-lg border border-line bg-white ' +
+                'px-4 text-[13px] font-semibold text-ink-secondary hover:bg-surface-hover'
+              }
             >
               Discard
             </button>
@@ -69,7 +72,7 @@ export function DefaultRuleCard({ rule }: { rule: AttendanceRule | undefined }) 
             type="button"
             onClick={save}
             disabled={!dirty || saveDefault.isPending}
-            className="h-9 rounded-lg bg-[#F26F21] px-4 text-[13px] font-semibold text-white shadow-2xs hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-9 rounded-lg bg-brand px-4 text-[13px] font-semibold text-white shadow-2xs hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
             {saveDefault.isPending ? 'Saving…' : 'Save default'}
           </button>

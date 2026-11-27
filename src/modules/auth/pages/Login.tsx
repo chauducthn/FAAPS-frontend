@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { Logo } from '@/shared/components/common/Logo';
-import { WarningCircle as AlertCircle, ArrowLeft, Info, X } from '@phosphor-icons/react';
 import { loginNoticeFromParam } from '@/shared/lib/authErrors';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, LoginFormValues } from '../validations/auth.schema';
 import { useAuthMutations } from '@/modules/auth/hooks/mutations/useAuthMutations';
+import { AuthAlert } from '../components/AuthAlert';
+import { AuthField } from '../components/AuthField';
+import { AuthLayout } from '../components/AuthLayout';
+import { AuthDivider, GoogleAuthButton } from '../components/GoogleAuthButton';
+import { authInputClass, authPrimaryButtonClass, authTextLinkClass } from '../components/authFormStyles';
 
 export default function Login() {
   const { login, loginGoogle, isLoginLoading, loginNotice, resetLoginError } = useAuthMutations();
@@ -55,111 +58,67 @@ export default function Login() {
   });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 font-sans">
-      <div className="w-full max-w-md">
-        <Link
-          to="/"
-          className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-orange-600"
-        >
-          <ArrowLeft className="size-4" />
-          Back to home
-        </Link>
-      <div className="w-full max-w-md space-y-8 rounded-2xl bg-white p-10 shadow-sm border border-gray-200">
-        <div className="text-center">
-          <Logo className="mb-2 justify-center" />
-          <p className="mt-2 text-sm text-gray-500">Academic Advising & Planning System</p>
-        </div>
-
+    <AuthLayout
+      title="Welcome back"
+      description="Sign in to continue planning your semesters with FAAPS."
+      back={{ to: '/', label: 'Back to home' }}
+      footer={
+        <>
+          New student?{' '}
+          <Link viewTransition to="/register" className={authTextLinkClass}>
+            Create an account
+          </Link>
+        </>
+      }
+    >
+      <div className="space-y-6">
         {notice && (
-          <div
-            role="alert"
-            data-testid="login-notice"
-            className={`flex items-start gap-3 rounded-lg border p-3 text-left text-sm ${
-              notice.tone === 'info' ? 'border-blue-100 bg-blue-50 text-blue-800' : 'border-red-100 bg-red-50 text-red-700'
-            }`}
-          >
-            {notice.tone === 'info' ? <Info className="mt-0.5 size-4 shrink-0" /> : <AlertCircle className="mt-0.5 size-4 shrink-0" />}
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold">{notice.title}</p>
-              <p className="mt-0.5">{notice.message}</p>
-            </div>
-            <button type="button" onClick={dismiss} aria-label="Dismiss message" className="shrink-0 rounded p-0.5 opacity-70 hover:opacity-100">
-              <X className="size-4" />
-            </button>
-          </div>
+          <AuthAlert tone={notice.tone} title={notice.title} role="alert" testId="login-notice" onDismiss={dismiss}>
+            {notice.message}
+          </AuthAlert>
         )}
 
-        <div className="mt-8">
-          <button
-            type="button"
-            onClick={() => loginGoogle()}
-            className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
-          >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="h-5 w-5" />
-            Sign in with Google
-          </button>
-        </div>
+        <GoogleAuthButton label="Sign in with Google" onClick={() => loginGoogle()} />
 
-        <div className="relative mt-8">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-4 text-xs font-medium text-gray-400 uppercase tracking-wider">
-              Or sign in with email
-            </span>
-          </div>
-        </div>
+        <AuthDivider label="Or sign in with email" />
 
-        <form noValidate onSubmit={handleSubmit((data) => login(data))} className="mt-8 space-y-5">
-          <div>
-            <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+        <form noValidate onSubmit={handleSubmit((data) => login(data))} className="space-y-5">
+          <AuthField label="Email" htmlFor="login-email" error={errors.email?.message}>
             <input
               id="login-email"
               type="email"
               autoComplete="email"
               {...register('email')}
-              className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 sm:text-sm transition-all"
+              className={authInputClass}
               placeholder="name@fpt.edu.vn"
             />
-            {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
-          </div>
+          </AuthField>
 
-          <div>
-            <div className="mb-1 flex items-center justify-between">
-              <label htmlFor="login-password" className="block text-sm font-medium text-gray-700">Password</label>
-              <Link to="/forgot-password" className="text-xs font-semibold text-orange-600 hover:text-orange-700">
+          <AuthField
+            label="Password"
+            htmlFor="login-password"
+            error={errors.password?.message}
+            aside={
+              <Link viewTransition to="/forgot-password" className={`text-xs ${authTextLinkClass}`}>
                 Forgot password?
               </Link>
-            </div>
+            }
+          >
             <input
               id="login-password"
               type="password"
               autoComplete="current-password"
               {...register('password')}
-              className="block w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 sm:text-sm transition-all"
+              className={authInputClass}
               placeholder="••••••••"
             />
-            {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
-          </div>
+          </AuthField>
 
-          <button
-            type="submit"
-            disabled={isLoginLoading}
-            className="flex w-full justify-center rounded-lg bg-orange-600 py-2.5 px-4 text-sm font-medium text-white shadow-sm hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:bg-orange-400 transition-all"
-          >
+          <button type="submit" disabled={isLoginLoading} className={authPrimaryButtonClass}>
             {isLoginLoading ? 'Processing...' : 'Sign in'}
           </button>
         </form>
-
-        <p className="text-center text-sm text-gray-600">
-          New student?{' '}
-          <Link to="/register" className="font-semibold text-orange-600 hover:text-orange-700">
-            Create an account
-          </Link>
-        </p>
       </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 }

@@ -13,6 +13,14 @@ import { databaseService } from '../services/database.service';
 import { buildCsv, csvFilename, downloadCsv } from '../../../shared/lib/csv';
 import { defaultMonthRange } from '../../../shared/lib/months';
 
+/**
+ * Fills the space under the summary bar. On wide screens both columns share the viewport height and long lists
+ * scroll inside their cards; on narrow screens the stacked cards scroll inside this area only.
+ */
+const DASHBOARD_GRID_CLASS =
+  'grid gap-4 overflow-y-auto overscroll-contain xl:grid-cols-[minmax(0,1fr)_340px] xl:grid-rows-[minmax(0,1fr)] ' +
+  '2xl:grid-cols-[minmax(0,1fr)_360px]';
+
 export default function AdminDashboard() {
   const { data, isLoading, isError, refetch } = useDashboardAccounts();
   const assignmentQuery = useAssignmentSummary();
@@ -97,32 +105,35 @@ export default function AdminDashboard() {
       />
 
       {isError && (
-        <div className="flex items-center justify-between rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
+        <div className="flex items-center justify-between rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-[13px] text-red-600">
           Could not load account totals.
           <button type="button" onClick={() => refetch()} className="font-semibold hover:underline">Retry</button>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <NewStudentsChart
-            startMonth={monthRange.start} endMonth={monthRange.end} majorId={majorId}
-            rangeError={rangeError} chartData={chartData} isLoading={studentsQuery.isLoading}
-            isError={studentsQuery.isError}
-            onStartMonthChange={(month) => setMonthRange((r) => ({ ...r, start: month }))}
-            onEndMonthChange={(month) => setMonthRange((r) => ({ ...r, end: month }))}
-            onMajorIdChange={setMajorId} onRetry={() => studentsQuery.refetch()}
-          />
+      <div className="admin-fill">
+        <div className={DASHBOARD_GRID_CLASS}>
+          <div className="flex min-w-0 flex-col gap-4 xl:min-h-0">
+            <NewStudentsChart
+              className="xl:min-h-[17rem] xl:flex-[3]"
+              startMonth={monthRange.start} endMonth={monthRange.end} majorId={majorId}
+              rangeError={rangeError} chartData={chartData} isLoading={studentsQuery.isLoading}
+              isError={studentsQuery.isError}
+              onStartMonthChange={(month) => setMonthRange((r) => ({ ...r, start: month }))}
+              onEndMonthChange={(month) => setMonthRange((r) => ({ ...r, end: month }))}
+              onMajorIdChange={setMajorId} onRetry={() => studentsQuery.refetch()}
+            />
+            <MajorCoverageCard assignment={assignment} className="max-h-[22rem] xl:max-h-none xl:min-h-[10rem] xl:flex-[2]" />
+          </div>
+          <div className="flex min-w-0 flex-col gap-4 xl:min-h-0">
+            <DashboardNeedsAttention
+              className="shrink-0"
+              assignment={assignment} advisors={advisors} pendingReports={pendingReports}
+              draftRules={rulesSummary?.draft ?? 0} appointments={appointments}
+            />
+            <AdvisorCapacityCard assignment={assignment} advisors={advisors} className="xl:min-h-[10rem] xl:flex-1" />
+          </div>
         </div>
-        <DashboardNeedsAttention
-          assignment={assignment} advisors={advisors} pendingReports={pendingReports}
-          draftRules={rulesSummary?.draft ?? 0} appointments={appointments}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <MajorCoverageCard assignment={assignment} />
-        <AdvisorCapacityCard assignment={assignment} advisors={advisors} />
       </div>
     </div>
   );

@@ -34,7 +34,7 @@ export const useAssignmentSummary = () =>
   useQuery({ queryKey: [...KEY, 'summary'], queryFn: assignmentService.getSummary });
 
 export const useAssignedStudents = (
-  params: PageParams & { advisorId?: string; cohortId?: string; majorCode?: string },
+  params: PageParams & { advisorId?: string; cohortId?: string; cohort?: string; majorCode?: string },
   enabled = true,
 ) =>
   useQuery({
@@ -44,7 +44,7 @@ export const useAssignedStudents = (
     placeholderData: keepPreviousData,
   });
 
-export const useUnassignedStudents = (params: PageParams & { cohortId?: string; hasPendingRequest?: boolean }) =>
+export const useUnassignedStudents = (params: PageParams & { cohortId?: string; cohort?: string; hasPendingRequest?: boolean }) =>
   useQuery({
     queryKey: [...KEY, 'unassigned', params],
     queryFn: () => assignmentService.getUnassigned(params),

@@ -38,17 +38,17 @@ export function RuleFormHeader({
   onClose: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
+    <div className="flex items-center justify-between gap-4 border-b border-line-soft bg-white px-6 py-4">
       <div className="flex items-center gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand ring-1 ring-brand/25">
           <ShieldCheck className="size-4.5" />
         </span>
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-[15px] font-semibold text-gray-900">{title}</h2>
+            <h2 className="text-[15px] font-semibold text-ink-primary">{title}</h2>
             {initial ? <RuleStatusBadge status={initial.status} /> : isCreate ? <RuleStatusBadge status="DRAFT" /> : null}
           </div>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-ink-muted">
             {isCreate
               ? 'New rules start as DRAFT — publish from the rules table to enforce.'
               : readOnly
@@ -57,7 +57,7 @@ export function RuleFormHeader({
           </p>
         </div>
       </div>
-      <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700">
+      <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-ink-subtle transition-colors hover:bg-line-soft hover:text-ink-secondary">
         <X className="size-4" />
       </button>
     </div>
@@ -80,7 +80,7 @@ export function RuleIdentitySection({
   return (
     <>
       {activeReadOnly && !isView && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-relaxed text-emerald-800">
+        <div className="flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs leading-relaxed text-emerald-800">
           <Lock className="mt-0.5 size-4 shrink-0" />
           <p>
             <span className="font-semibold">This rule is ACTIVE and read-only.</span> Archive it before editing, or inspect its configuration below.
@@ -105,7 +105,7 @@ export function RuleIdentitySection({
                   <option key={p} value={p}>{POLICY_LABELS[p] ?? p}</option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
             </div>
           </RuleFormField>
         </div>

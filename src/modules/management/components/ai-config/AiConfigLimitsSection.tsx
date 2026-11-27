@@ -46,7 +46,7 @@ export function AiConfigLimitsSection({
               disabled={disabled}
               onChange={(e) => setValue('temperature', Number(e.target.value), { shouldValidate: true })}
               aria-label="Temperature slider"
-              className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-gray-200 accent-[#F26F21] disabled:cursor-not-allowed disabled:opacity-60"
+              className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-line accent-brand disabled:cursor-not-allowed disabled:opacity-60"
             />
             <input
               id="ai-temperature"
@@ -66,7 +66,7 @@ export function AiConfigLimitsSection({
           {errors.temperature?.message ? (
             <p className="mt-1.5 text-[11px] font-semibold text-red-600">{errors.temperature.message}</p>
           ) : (
-            <p className="mt-1 text-[11px] text-gray-400">0 = precise, 2 = creative. 0–0.5 for advising.</p>
+            <p className="mt-1 text-[11px] text-ink-subtle">0 = precise, 2 = creative. 0–0.5 for advising.</p>
           )}
         </div>
         <AiStepperField
@@ -152,7 +152,7 @@ export function AiConfigLimitsSection({
             className={cn(aiNoSpinClass, 'bg-white')}
           />
         </AiFormField>
-        <div className="rounded-xl bg-orange-50/70 px-4 py-3 text-[11px] leading-relaxed text-[#7c2d12] ring-1 ring-orange-100 sm:mt-[26px] sm:self-start">
+        <div className="rounded-lg bg-brand-soft/70 px-4 py-3 text-[11px] leading-relaxed text-brand-ink ring-1 ring-brand/30 sm:mt-[26px] sm:self-start">
           {purpose === 'EMBEDDING'
             ? 'Embedding configs ignore the prompt, temperature and fallback — they only build the vector index.'
             : 'Limits apply per request. Daily limit caps cost across the whole feature.'}

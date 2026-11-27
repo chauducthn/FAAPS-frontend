@@ -30,7 +30,7 @@ interface Props {
 
 const STATUS_STYLE: Record<string, string> = {
   ACTIVE: 'text-emerald-700',
-  INACTIVE: 'text-gray-500',
+  INACTIVE: 'text-ink-muted',
   DRAFT: 'text-amber-700',
 };
 
@@ -91,7 +91,7 @@ export default function RuleTable({
             type="button"
             onClick={() => onView(row.original)}
             title={`View ${row.original.ruleName}`}
-            className="block max-w-[280px] truncate text-left text-[13px] font-bold text-[#151c27] transition-colors hover:text-[#F37021]"
+            className="block max-w-[280px] truncate text-left text-[13px] font-bold text-ink-primary transition-colors hover:text-brand"
           >
             {row.original.ruleName}
           </button>
@@ -101,8 +101,8 @@ export default function RuleTable({
         accessorKey: 'policyType',
         header: 'Policy type',
         cell: ({ row }) => (
-          <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-gray-700">
-            <ShieldCheck className="size-3.5 text-[#F37021]" aria-hidden />
+          <span className="inline-flex items-center gap-1.5 font-mono text-xs font-semibold text-ink-secondary">
+            <ShieldCheck className="size-3.5 text-brand" aria-hidden />
             {row.original.policyType}
           </span>
         ),
@@ -117,12 +117,12 @@ export default function RuleTable({
             <div className="flex min-w-0 flex-col gap-0.5">
               <code
                 title={JSON.stringify(row.original.condition, null, 2)}
-                className="block max-w-[240px] truncate font-mono text-xs font-medium text-[#9A3412]"
+                className="block max-w-[240px] truncate font-mono text-xs font-medium text-brand-ink"
               >
                 {summarizeCondition(row.original.condition)}
               </code>
               {grade && (
-                <span className="text-xs font-semibold tabular-nums text-[#C2410C]">
+                <span className="text-xs font-semibold tabular-nums text-brand-ink">
                   Grade {grade}
                 </span>
               )}
@@ -173,8 +173,8 @@ export default function RuleTable({
   return (
     <div className="relative h-full">
       {isFetching && !isLoading && (
-        <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden rounded-full bg-orange-100">
-          <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-[#F37021]" />
+        <div className="absolute inset-x-0 top-0 z-10 h-0.5 overflow-hidden rounded-full bg-brand-soft-strong">
+          <div className="h-full w-1/3 animate-[slide_1s_ease-in-out_infinite] rounded-full bg-brand" />
         </div>
       )}
       <DataTable

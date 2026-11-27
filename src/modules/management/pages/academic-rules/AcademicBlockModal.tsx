@@ -14,7 +14,7 @@ const BLOCK_TYPES: { value: AcademicBlockType; label: string }[] = [
 ];
 
 const inputCls =
-  'mt-1 h-9.5 w-full rounded-lg border border-gray-200 bg-white px-3 text-[13px] text-gray-900 focus:border-[#F26F21] focus:outline-none';
+  'mt-1 h-9.5 w-full rounded-lg border border-line bg-white px-3 text-[13px] text-ink-primary focus:border-brand focus:outline-none';
 
 interface Props {
   open: boolean;
@@ -69,11 +69,11 @@ export function AcademicBlockModal({ open, editing, saving, onClose, onSubmit }:
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-semibold text-gray-700">Block Code</label>
+            <label className="block text-xs font-semibold text-ink-secondary">Block Code</label>
             <input required value={code} onChange={(e) => setCode(e.target.value)} placeholder="e.g. BLOCK_10W" className={inputCls} />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700">Block Type</label>
+            <label className="block text-xs font-semibold text-ink-secondary">Block Type</label>
             <select value={blockType} onChange={(e) => setBlockType(e.target.value as AcademicBlockType)} className={inputCls}>
               {BLOCK_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
@@ -81,44 +81,44 @@ export function AcademicBlockModal({ open, editing, saving, onClose, onSubmit }:
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700">Display Name</label>
+          <label className="block text-xs font-semibold text-ink-secondary">Display Name</label>
           <input required value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Block 10W (Main Term)" className={inputCls} />
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-700">Weeks</label>
+            <label className="block text-xs font-semibold text-ink-secondary">Weeks</label>
             <input type="number" min={1} max={30} value={durationWeeks} onChange={(e) => setDurationWeeks(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700">Max Courses</label>
+            <label className="block text-xs font-semibold text-ink-secondary">Max Courses</label>
             <input type="number" min={1} max={15} value={maxCourses} onChange={(e) => setMaxCourses(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700">Max Credits</label>
+            <label className="block text-xs font-semibold text-ink-secondary">Max Credits</label>
             <input type="number" min={0} max={36} value={maxCredits} onChange={(e) => setMaxCredits(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-700">Order</label>
+            <label className="block text-xs font-semibold text-ink-secondary">Order</label>
             <input type="number" min={0} max={99} value={sortOrder} onChange={(e) => setSortOrder(e.target.value)} className={inputCls} />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-700">Description</label>
+          <label className="block text-xs font-semibold text-ink-secondary">Description</label>
           <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Usage notes for students & AI roadmap" className={inputCls} />
         </div>
 
-        <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-gray-700">
-          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="size-4 accent-[#F26F21]" />
+        <label className="inline-flex cursor-pointer items-center gap-2 text-xs font-semibold text-ink-secondary">
+          <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} className="size-4 accent-brand" />
           Active block
         </label>
 
-        <div className="flex justify-end gap-2 border-t border-gray-100 pt-3">
-          <button type="button" onClick={onClose} className="h-9 rounded-lg border border-gray-200 px-4 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+        <div className="flex justify-end gap-2 border-t border-line-soft pt-3">
+          <button type="button" onClick={onClose} className="h-9 rounded-lg border border-line px-4 text-xs font-semibold text-ink-secondary hover:bg-surface-hover">
             Cancel
           </button>
-          <button type="submit" disabled={saving} className="h-9 rounded-lg bg-[#F26F21] px-4 text-xs font-semibold text-white hover:bg-[#e05f14] disabled:opacity-50">
+          <button type="submit" disabled={saving} className="h-9 rounded-lg bg-brand px-4 text-xs font-semibold text-white hover:bg-brand-hover disabled:opacity-50">
             {saving ? 'Saving…' : editing ? 'Save changes' : 'Create block'}
           </button>
         </div>

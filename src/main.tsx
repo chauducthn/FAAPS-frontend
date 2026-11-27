@@ -15,7 +15,7 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <IconContext.Provider value={{ weight: "duotone" }}>
+    <IconContext.Provider value={{ weight: "light" }}>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <QueryClientProvider client={queryClient}>
           <AuthProvider>

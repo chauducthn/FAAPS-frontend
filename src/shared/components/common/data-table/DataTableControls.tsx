@@ -40,10 +40,10 @@ export function Checkbox({
       disabled={disabled}
       aria-label={label}
       className={cn(
-        'size-4 shrink-0 rounded border-gray-300 accent-[var(--brand)]',
+        'size-4 shrink-0 rounded-sm border-line accent-brand',
         disabled
-          ? 'cursor-not-allowed border-gray-200 bg-gray-100'
-          : 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-ring)]',
+          ? 'cursor-not-allowed border-line bg-line-soft'
+          : 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
         className,
       )}
     />
@@ -59,7 +59,7 @@ export function Checkbox({
         role="tooltip"
         className={cn(
           'pointer-events-none absolute bottom-full left-1/2 z-20 mb-1.5 w-48 -translate-x-1/2',
-          'rounded-lg bg-gray-900 px-2.5 py-1.5 text-left text-[11px] font-medium leading-snug',
+          'rounded-lg bg-ink-primary px-2.5 py-1.5 text-left text-[11px] font-medium leading-snug',
           'text-white opacity-0 shadow-lg transition-opacity duration-150',
           'group-hover:opacity-100 group-focus-within:opacity-100',
         )}
@@ -73,7 +73,7 @@ export function Checkbox({
 export function SortIcon({ sorted }: { sorted: false | 'asc' | 'desc' }) {
   if (sorted === 'asc') return <ArrowUp className="size-3.5 text-[var(--brand)]" aria-hidden />;
   if (sorted === 'desc') return <ArrowDown className="size-3.5 text-[var(--brand)]" aria-hidden />;
-  return <ChevronsUpDown className="size-3.5 text-slate-400" aria-hidden />;
+  return <ChevronsUpDown className="size-3.5 text-ink-subtle" aria-hidden />;
 }
 
 /**
@@ -107,7 +107,7 @@ export function PageJumpInput({
   };
 
   return (
-    <label className="flex items-center gap-2 text-[13px] text-slate-500">
+    <label className="flex items-center gap-2 text-xs text-ink-subtle">
       Go to
       <input
         type="number"
@@ -124,8 +124,8 @@ export function PageJumpInput({
         }}
         aria-label="Go to page"
         className={cn(
-          'h-8 w-16 rounded-md border border-slate-200 bg-white px-2 text-center text-[13px] font-semibold text-[var(--ink-primary)]',
-          'tabular-nums outline-none focus:border-[var(--brand)] focus:ring-1 focus:ring-[var(--brand-ring)]',
+          'h-8 w-14 rounded-md border border-line bg-white px-2 text-center text-[13px] font-medium text-ink-primary',
+          'tabular-nums outline-none focus:border-brand focus:ring-2 focus:ring-brand/15',
           '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
         )}
       />

@@ -1,6 +1,6 @@
 import type { SortingState } from '@tanstack/react-table';
 import { isAllowedCredits } from '../../utils/importChecks';
-import type { CourseFilterParams, CourseImportPreview } from '../../../academic/types/course';
+import type { CourseFilterParams, CourseImportPreview, CreateCourseDto, UpdateCourseDto } from '../../../academic/types/course';
 import {
   CREDIT_OPTIONS_MESSAGE,
   type CreateCourseFormValues,
@@ -25,8 +25,10 @@ export function withCreditLimit(preview: CourseImportPreview): CourseImportPrevi
 }
 
 /** Form values to the request body. The syllabus texts are not sent, so editing keeps what is stored. */
-export function toCourseBody(values: CreateCourseFormValues, isCreate: boolean) {
-  const body = {
+export function toCourseBody(values: CreateCourseFormValues, isCreate: true): CreateCourseDto;
+export function toCourseBody(values: CreateCourseFormValues, isCreate: false): UpdateCourseDto;
+export function toCourseBody(values: CreateCourseFormValues, isCreate: boolean): CreateCourseDto | UpdateCourseDto {
+  const base = {
     code: values.code,
     name: values.name,
     credits: values.credits,
@@ -34,15 +36,21 @@ export function toCourseBody(values: CreateCourseFormValues, isCreate: boolean) 
     status: values.status,
     materialLink: values.materialLink ? values.materialLink : null,
   };
-  if (!isCreate) return body;
-  return {
-    ...body,
+  if (!isCreate) {
+    return { ...base, workloadLevel: values.workloadLevel ?? 'AUTO' };
+  }
+  const createBody: CreateCourseDto = {
+    ...base,
+    ...(values.workloadLevel && values.workloadLevel !== 'AUTO'
+      ? { workloadLevel: values.workloadLevel }
+      : {}),
     prerequisites: (values.prerequisiteIds ?? []).map((id, i) => ({
       prerequisiteCourseId: id,
       groupNo: i + 1,
       type: 'PREREQUISITE' as const,
     })),
   };
+  return createBody;
 }
 
 const COURSE_SORT_FIELDS = new Set([

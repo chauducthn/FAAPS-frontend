@@ -133,21 +133,21 @@ export default function CurriculumFormModal({ open, noun, initial, isSubmitting,
   return (
     <Modal open={open} onClose={() => !busy && onClose()} title={`${isCreate ? 'Create' : 'Edit'} ${noun.toLowerCase()}`} className="max-w-2xl">
       <form noValidate onSubmit={submit} className="flex min-h-0 flex-col">
-        <div className="flex items-center justify-between gap-4 border-b border-gray-100 bg-white px-6 py-4">
+        <div className="flex items-center justify-between gap-4 border-b border-line-soft bg-white px-6 py-4">
           <div className="flex items-center gap-3">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-[#F26F21] ring-1 ring-orange-200/70">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand ring-1 ring-brand/25">
               <GraduationCap className="size-4.5" />
             </span>
             <div>
-              <h2 className="text-[15px] font-semibold text-gray-900">
+              <h2 className="text-[15px] font-semibold text-ink-primary">
                 {isCreate ? `Create ${noun.toLowerCase()}` : `Edit ${noun.toLowerCase()}`}
               </h2>
-              <p className="text-[13px] text-gray-500">
+              <p className="text-[13px] text-ink-muted">
                 Configure major, cohort intake, and effective semester range.
               </p>
             </div>
           </div>
-          <button type="button" disabled={busy} onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700 disabled:opacity-40">
+          <button type="button" disabled={busy} onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-ink-subtle transition-colors hover:bg-line-soft hover:text-ink-secondary disabled:opacity-40">
             <X className="size-4" />
           </button>
         </div>
@@ -172,15 +172,15 @@ export default function CurriculumFormModal({ open, noun, initial, isSubmitting,
           onManualNameEdit={() => { nameTouchedRef.current = true; }}
         />
 
-        <div className="flex items-center justify-end gap-2.5 border-t border-gray-100 bg-gray-50/70 px-6 py-3.5">
-          <button type="button" disabled={busy} onClick={onClose} className="h-9 rounded-lg border border-gray-200 bg-white px-4 text-[13px] font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50">
+        <div className="flex items-center justify-end gap-2.5 border-t border-line-soft bg-surface-page/70 px-6 py-3.5">
+          <button type="button" disabled={busy} onClick={onClose} className="h-9 rounded-lg border border-line bg-white px-4 text-[13px] font-medium text-ink-secondary transition-colors hover:bg-surface-hover disabled:opacity-50">
             Cancel
           </button>
           <button
             type="submit"
             disabled={!canSubmit}
             title={!canSubmit ? 'Fill in Major, Cohort, Name, Start semester and End semester to continue' : undefined}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-[#F26F21] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-55"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-[13px] font-semibold text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-55"
           >
             {busy && <Loader2 className="size-4 animate-spin" />}
             {busy ? 'Saving…' : isCreate ? `Create ${noun.toLowerCase()}` : 'Save changes'}

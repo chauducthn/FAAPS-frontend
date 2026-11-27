@@ -37,7 +37,7 @@ export function DataTableBody<TData extends RowData>({
             {Array.from({ length: columnCount }).map((__, cellIndex) => (
               <TableCell key={`skeleton-${rowIndex}-${cellIndex}`}>
                 <div
-                  className="h-3.5 animate-pulse rounded bg-[var(--line-soft)]"
+                  className="h-3.5 animate-pulse rounded-sm bg-line-soft"
                   style={{ width: `${45 + ((rowIndex + cellIndex) % 3) * 18}%` }}
                 />
               </TableCell>
@@ -80,7 +80,7 @@ export function DataTableBody<TData extends RowData>({
           <TableRow
             key={row.id}
             selected={isSelected}
-            className={cn(isSelected && 'hover:bg-[var(--brand-soft)]')}
+            className={cn(isSelected && 'hover:!bg-brand-soft')}
           >
             {row.getAllCells().map((cell) => {
               if (cell.column.id === SELECT_COLUMN_ID) {

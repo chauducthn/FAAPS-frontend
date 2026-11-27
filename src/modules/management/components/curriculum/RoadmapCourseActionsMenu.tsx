@@ -68,7 +68,7 @@ export function RoadmapCourseActionsMenu({ course, semesterCount, onMove, onRemo
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={toggle}
-        className="flex size-6 items-center justify-center rounded-lg bg-white/95 text-gray-400 shadow-xs ring-1 ring-slate-200 transition-all hover:scale-105 hover:text-[#C2410C] hover:ring-orange-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#F26F21]/40"
+        className="flex size-6 items-center justify-center rounded-lg bg-white/95 text-ink-subtle shadow-xs ring-1 ring-line transition-all hover:scale-105 hover:text-brand-ink hover:ring-brand/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
       >
         <MoreHorizontal className="size-3.5" />
       </button>
@@ -79,15 +79,15 @@ export function RoadmapCourseActionsMenu({ course, semesterCount, onMove, onRemo
             ref={menuRef}
             role="menu"
             style={{ position: 'fixed', top: pos.top, left: pos.left }}
-            className="z-[60] max-h-80 w-54 overflow-y-auto rounded-xl border border-slate-200 bg-white p-1.5 shadow-[0_16px_40px_rgba(16,24,40,0.18)]"
+            className="z-[60] max-h-80 w-54 overflow-y-auto rounded-lg border border-line bg-white p-1.5 shadow-[0_16px_40px_rgba(16,24,40,0.18)]"
           >
-            <p className="flex items-center gap-2 rounded-lg bg-orange-50 px-3 py-2 text-xs font-bold text-gray-900">
-              <span className="rounded bg-gray-900 px-1.5 py-0.5 font-mono text-[10px] text-white">{course.code}</span>
+            <p className="flex items-center gap-2 rounded-lg bg-brand-soft px-3 py-2 text-xs font-bold text-ink-primary">
+              <span className="rounded bg-ink-primary px-1.5 py-0.5 font-mono text-[10px] text-surface-page">{course.code}</span>
               <span className="truncate">{course.credits} cr · Sem {course.semesterNumber}</span>
             </p>
             {onMove && (
               <>
-                <p className="px-3 pb-1 pt-2 text-[10px] font-extrabold uppercase tracking-[0.06em] text-slate-400">
+                <p className="px-3 pb-1 pt-2 text-[10px] font-extrabold uppercase tracking-[0.06em] text-ink-subtle">
                   Move to semester
                 </p>
                 <div className="grid grid-cols-3 gap-1 px-1.5 pb-1">
@@ -105,8 +105,8 @@ export function RoadmapCourseActionsMenu({ course, semesterCount, onMove, onRemo
                       className={cn(
                         'rounded-lg px-2 py-1.5 text-center text-xs font-bold tabular-nums transition-colors',
                         number === course.semesterNumber
-                          ? 'cursor-default bg-[#F26F21] text-white'
-                          : 'bg-slate-50 text-gray-700 hover:bg-orange-100 hover:text-[#9a3412]',
+                          ? 'cursor-default bg-brand text-white'
+                          : 'bg-surface-page text-ink-secondary hover:bg-brand-soft-strong hover:text-brand-ink',
                       )}
                     >
                       {number}
@@ -117,7 +117,7 @@ export function RoadmapCourseActionsMenu({ course, semesterCount, onMove, onRemo
             )}
             {onRemove && (
               <>
-                {onMove && <div className="my-1 border-t border-slate-100" />}
+                {onMove && <div className="my-1 border-t border-line-soft" />}
                 <button
                   type="button"
                   role="menuitem"

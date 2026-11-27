@@ -11,6 +11,7 @@ interface Props {
   statusFilter: string;
   isExpandedEmpty: boolean;
   isOver: boolean;
+  allowDrag?: boolean;
   draggingCourse: EffectiveCurriculumCourse | null;
   eligibility: EligibilityResult | null;
   transcriptByCode: Map<string, TranscriptRow>;
@@ -26,6 +27,7 @@ export function CurriculumBlockSection({
   statusFilter,
   isExpandedEmpty,
   isOver,
+  allowDrag = true,
   draggingCourse,
   eligibility,
   transcriptByCode,
@@ -58,7 +60,7 @@ export function CurriculumBlockSection({
   const showExpandedForDrag = isOver && canDrop;
 
   if (visible.length === 0) {
-    if (statusFilter !== 'ALL' || !sec.emptyHint) return null;
+    if (!allowDrag || statusFilter !== 'ALL' || !sec.emptyHint) return null;
     if (!isExpandedEmpty && !showExpandedForDrag) {
       return (
         <button
@@ -138,7 +140,7 @@ export function CurriculumBlockSection({
             <div className="flex min-h-[108px] flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#F26F21] bg-orange-50/70 px-4 text-center transition-all duration-200">
               <span className="font-mono text-xs font-bold text-[#C2410C]">Drop {draggingCourse.code} here</span>
               <span className="mt-0.5 text-[11px] font-medium text-[#C2410C]/80">
-                {sec.blockMeta?.shortName} · {sec.blockMeta?.durationWeeks}w
+                {sec.title}
               </span>
             </div>
           )}

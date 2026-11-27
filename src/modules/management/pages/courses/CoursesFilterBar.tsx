@@ -1,6 +1,6 @@
 import { CaretDown as ChevronDown, ArrowCounterClockwise as RotateCcw, MagnifyingGlass as Search, X } from '@phosphor-icons/react';
 import { CREDIT_OPTIONS } from '../../../academic/validations/course.schema';
-import type { CourseCategory } from '../../../academic/types/course';
+import type { CourseCategory, WorkloadLevel } from '../../../academic/types/course';
 
 const selectClass =
   'h-9 w-full appearance-none truncate rounded-lg border border-gray-200 bg-white pl-3 pr-7 text-[13px] font-medium text-gray-700 transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15';
@@ -10,24 +10,28 @@ export function CoursesFilterBar({
   status,
   categoryId,
   credits,
+  workloadLevel,
   categories,
   hasFilters,
   onSearchChange,
   onStatusChange,
   onCategoryChange,
   onCreditsChange,
+  onWorkloadChange,
   onClear,
 }: {
   search: string;
   status: 'ALL' | 'ACTIVE' | 'INACTIVE';
   categoryId: string;
   credits: number | 'ALL';
+  workloadLevel: WorkloadLevel | 'ALL';
   categories: CourseCategory[];
   hasFilters: boolean;
   onSearchChange: (v: string) => void;
   onStatusChange: (v: 'ALL' | 'ACTIVE' | 'INACTIVE') => void;
   onCategoryChange: (v: string) => void;
   onCreditsChange: (v: number | 'ALL') => void;
+  onWorkloadChange: (v: WorkloadLevel | 'ALL') => void;
   onClear: () => void;
 }) {
   return (
@@ -99,6 +103,21 @@ export function CoursesFilterBar({
               {value} credits
             </option>
           ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+      </div>
+
+      <div className="relative w-[calc(50%-0.25rem)] shrink-0 sm:w-[136px]">
+        <select
+          value={workloadLevel}
+          onChange={(e) => onWorkloadChange(e.target.value as WorkloadLevel | 'ALL')}
+          aria-label="Filter by workload"
+          className={selectClass}
+        >
+          <option value="ALL">All workloads</option>
+          <option value="LIGHT">Light</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HEAVY">Heavy</option>
         </select>
         <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
       </div>

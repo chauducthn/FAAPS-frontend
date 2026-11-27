@@ -11,10 +11,10 @@ import {
 
 const controlClass = (hasError?: boolean) =>
   cn(
-    'h-9 w-full rounded-lg border bg-white px-2.5 text-[13px] text-gray-900 placeholder:text-gray-400 shadow-2xs transition-colors focus:outline-none focus:ring-2',
+    'h-9 w-full rounded-lg border bg-white px-2.5 text-[13px] text-ink-primary placeholder:text-ink-subtle shadow-2xs transition-colors focus:outline-none focus:ring-2',
     hasError
       ? 'border-red-300 focus:border-red-500 focus:ring-red-100'
-      : 'border-gray-200 hover:border-gray-300 focus:border-[#F26F21] focus:ring-[#F26F21]/15',
+      : 'border-line hover:border-ink-subtle/50 focus:border-brand focus:ring-brand/15',
   );
 
 interface Props {
@@ -97,23 +97,28 @@ export function SemesterPickerField({ label, draft, semesters, minEndDate, hasEr
   };
 
   return (
-    <div className={cn('space-y-2 rounded-xl border p-2.5', hasError ? 'border-red-200 bg-red-50/30' : 'border-gray-200/80 bg-gray-50/50')}>
+    <div
+      className={cn(
+        'space-y-2 rounded-lg border p-2.5',
+        hasError ? 'border-red-200 bg-red-50/30' : 'border-line/80 bg-surface-page/50',
+      )}
+    >
       <div className="grid grid-cols-[84px_1fr_auto] items-center gap-2">
         <div className="relative">
           <select
             value={draft.term}
             aria-label={`${label} term`}
             onChange={(e) => handleTermChange(e.target.value)}
-            className={cn(controlClass(hasError), 'appearance-none pr-7 font-semibold', !draft.term && 'font-normal text-gray-400')}
+            className={cn(controlClass(hasError), 'appearance-none pr-7 font-semibold', !draft.term && 'font-normal text-ink-subtle')}
           >
             <option value="">Term…</option>
             {TERMS.map((t) => (
-              <option key={t} value={t} className="text-gray-900">
+              <option key={t} value={t} className="text-ink-primary">
                 {t}
               </option>
             ))}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+          <ChevronDown className="pointer-events-none absolute right-2 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
         </div>
 
         <input
@@ -128,7 +133,7 @@ export function SemesterPickerField({ label, draft, semesters, minEndDate, hasEr
         />
 
         {code && (
-          <span className="rounded-md bg-[#FFF4ED] px-2 py-1 font-mono text-xs font-semibold text-[#C2410C]">
+          <span className="rounded-md bg-[#FFF4ED] px-2 py-1 font-mono text-xs font-semibold text-brand-ink">
             {code}
           </span>
         )}
@@ -136,7 +141,7 @@ export function SemesterPickerField({ label, draft, semesters, minEndDate, hasEr
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <span className="mb-0.5 block text-[11px] font-medium text-gray-500">From date</span>
+          <span className="mb-0.5 block text-[11px] font-medium text-ink-muted">From date</span>
           <input
             type="date"
             aria-label={`${label} start date`}
@@ -146,7 +151,7 @@ export function SemesterPickerField({ label, draft, semesters, minEndDate, hasEr
           />
         </div>
         <div>
-          <span className="mb-0.5 block text-[11px] font-medium text-gray-500">To date</span>
+          <span className="mb-0.5 block text-[11px] font-medium text-ink-muted">To date</span>
           <input
             type="date"
             min={minEndDate}

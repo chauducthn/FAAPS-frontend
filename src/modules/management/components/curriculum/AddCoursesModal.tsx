@@ -71,38 +71,38 @@ export default function AddCoursesModal({ open, defaultSemester, placedCourses, 
 
   return (
     <Modal open={open} onClose={onClose} title="Add courses to curriculum" className="max-w-3xl">
-      <div className="flex items-start justify-between gap-4 border-b border-gray-100 bg-[var(--brand-soft)] px-6 py-5">
+      <div className="flex items-start justify-between gap-4 border-b border-line-soft bg-[var(--brand-soft)] px-6 py-5">
         <div className="flex items-start gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[var(--brand)] text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)]">
             <BookPlus className="size-5" />
           </span>
           <div>
-            <h2 className="text-base font-extrabold tracking-tight text-gray-900">Add courses to semester {defaultSemester}</h2>
-            <p className="mt-0.5 flex items-center gap-1 text-xs text-gray-500">
-              <Lock className="size-3 text-gray-400" /> Locked to semester {defaultSemester} — tick courses from the catalogue.
+            <h2 className="text-base font-extrabold tracking-tight text-ink-primary">Add courses to semester {defaultSemester}</h2>
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-muted">
+              <Lock className="size-3 text-ink-subtle" /> Locked to semester {defaultSemester} — tick courses from the catalogue.
             </p>
           </div>
         </div>
-        <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700">
+        <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg p-1.5 text-ink-subtle transition-colors hover:bg-line-soft hover:text-ink-secondary">
           <X className="size-4" />
         </button>
       </div>
 
       <div className="space-y-4 overflow-y-auto px-6 py-5">
-        <div className="grid items-end gap-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-4 sm:grid-cols-[120px_1fr_1fr]">
+        <div className="grid items-end gap-3 rounded-lg border border-line-soft bg-surface-page/60 p-4 sm:grid-cols-[120px_1fr_1fr]">
           <div>
-            <label className="mb-1.5 block text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500">Semester</label>
+            <label className="mb-1.5 block text-[11px] font-extrabold uppercase tracking-[0.06em] text-ink-muted">Semester</label>
             <div
               aria-label="Semester number (locked)"
               title={`Courses will be added to semester ${defaultSemester}`}
-              className="flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-xl border border-orange-200 bg-orange-50 px-3.5 py-2.5 font-mono text-sm font-extrabold tabular-nums text-[#9a3412]"
+              className="flex w-full cursor-not-allowed items-center justify-center gap-1.5 rounded-lg border border-brand/30 bg-brand-soft px-3.5 py-2.5 font-mono text-sm font-extrabold tabular-nums text-brand-ink"
             >
               <Lock className="size-3.5" /> Sem {defaultSemester}
             </div>
           </div>
           <div className="relative">
-            <label className="mb-1.5 block text-[11px] font-extrabold uppercase tracking-[0.06em] text-gray-500">Catalogue</label>
-            <Search className="absolute bottom-3 left-3.5 size-4 text-gray-400" />
+            <label className="mb-1.5 block text-[11px] font-extrabold uppercase tracking-[0.06em] text-ink-muted">Catalogue</label>
+            <Search className="absolute bottom-3 left-3.5 size-4 text-ink-subtle" />
             <input
               value={search}
               onChange={(e) => {
@@ -111,7 +111,7 @@ export default function AddCoursesModal({ open, defaultSemester, placedCourses, 
               }}
               placeholder="Search courses by code or name…"
               aria-label="Search courses"
-              className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-3.5 text-[13px] focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/20"
+              className="w-full rounded-lg border border-line bg-white py-2.5 pl-10 pr-3.5 text-[13px] focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             />
           </div>
         </div>
@@ -132,22 +132,22 @@ export default function AddCoursesModal({ open, defaultSemester, placedCourses, 
         />
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 bg-gray-50/60 px-6 py-4">
-        <span className="inline-flex items-center gap-2 text-xs font-bold text-gray-700" data-testid="pick-summary">
-          <span className={cn('rounded-lg px-2.5 py-1 tabular-nums', selected.size > 0 ? 'bg-[#F26F21] text-white' : 'bg-gray-200 text-gray-500')}>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line-soft bg-surface-page/60 px-6 py-4">
+        <span className="inline-flex items-center gap-2 text-xs font-bold text-ink-secondary" data-testid="pick-summary">
+          <span className={cn('rounded-lg px-2.5 py-1 tabular-nums', selected.size > 0 ? 'bg-brand text-white' : 'bg-line text-ink-muted')}>
             {selected.size}
           </span>
           course{selected.size === 1 ? '' : 's'} · {totalCredits} credits → Sem {defaultSemester}
         </span>
         <div className="flex items-center gap-2.5">
-          <button type="button" onClick={onClose} className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50">
+          <button type="button" onClick={onClose} className="rounded-lg border border-line bg-white px-4 py-2.5 text-xs font-bold text-ink-muted transition-colors hover:bg-surface-hover">
             Cancel
           </button>
           <button
             type="button"
             disabled={selected.size === 0 || isSubmitting}
             onClick={submit}
-            className="inline-flex min-w-44 items-center justify-center gap-2 rounded-xl bg-[#F26F21] px-5 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-w-44 items-center justify-center gap-2 rounded-lg bg-brand px-5 py-2.5 text-xs font-bold text-white shadow-[0_2px_8px_rgba(242,111,33,0.4)] transition-all hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting && <Loader2 className="size-3.5 animate-spin" />}
             {isSubmitting ? 'Adding…' : `Add ${selected.size > 0 ? selected.size : ''} to Sem ${defaultSemester}`}

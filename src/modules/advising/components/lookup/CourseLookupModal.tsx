@@ -1,6 +1,8 @@
 // Course detail modal for AdvisorAcademicLookup.
 
 import { Modal } from '../../../../shared/components/ui/Modal';
+import { CourseWorkloadCard } from '../../../academic/components/CourseWorkloadCard';
+import type { WorkloadLevel } from '../../../academic/types/course';
 import type { LookupCourse } from '../../types/academic-lookup';
 
 const formatCredits = (n: number) => `${n} cr`;
@@ -9,10 +11,14 @@ export function CourseLookupModal({
   course,
   onClose,
   onOpenCourse,
+  onOverrideWorkload,
+  isSavingWorkload = false,
 }: {
   course: LookupCourse | null;
   onClose: () => void;
   onOpenCourse: (code: string) => void;
+  onOverrideWorkload?: (level: WorkloadLevel | 'AUTO') => Promise<unknown>;
+  isSavingWorkload?: boolean;
 }) {
   if (!course) return null;
 
@@ -41,6 +47,11 @@ export function CourseLookupModal({
 
         <div className="min-h-0 flex-1 overflow-auto bg-[#fafbfd] p-5">
           <div className="space-y-4">
+            <CourseWorkloadCard
+              workload={course.workload}
+              onOverride={onOverrideWorkload}
+              isSaving={isSavingWorkload}
+            />
             <div className="rounded-2xl border border-slate-200 bg-white p-5">
               <h3 className="text-sm font-bold text-slate-900">Description</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-700">{course.description}</p>

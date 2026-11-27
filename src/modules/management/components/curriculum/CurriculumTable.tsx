@@ -67,18 +67,18 @@ export default function CurriculumTable(p: Props) {
           type="button"
           onClick={() => toggleSort(key)}
           className={cn(
-            'group inline-flex items-center gap-1 uppercase tracking-inherit transition-colors hover:text-gray-900',
-            dir ? 'text-[#C2410C]' : 'text-inherit',
+            'group inline-flex items-center gap-1 uppercase tracking-inherit transition-colors hover:text-ink-primary',
+            dir ? 'text-brand-ink' : 'text-inherit',
             align === 'center' && 'mx-auto',
           )}
         >
           <span>{label}</span>
           {dir === 'asc' ? (
-            <CaretUp weight="fill" className="size-3 shrink-0 text-[#F26F21]" aria-hidden />
+            <CaretUp weight="fill" className="size-3 shrink-0 text-brand" aria-hidden />
           ) : dir === 'desc' ? (
-            <CaretDown weight="fill" className="size-3 shrink-0 text-[#F26F21]" aria-hidden />
+            <CaretDown weight="fill" className="size-3 shrink-0 text-brand" aria-hidden />
           ) : (
-            <CaretUpDown className="size-3 shrink-0 text-gray-400 opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />
+            <CaretUpDown className="size-3 shrink-0 text-ink-subtle opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />
           )}
         </button>
       </TableHead>
@@ -99,7 +99,7 @@ export default function CurriculumTable(p: Props) {
                   if (node) node.indeterminate = selectedOnPage > 0 && selectedOnPage < data.length;
                 }}
                 onChange={(event) => onSelectPage(event.target.checked)}
-                className="size-4 accent-[#F26F21]"
+                className="size-4 accent-brand"
               />
             </TableHead>
           )}
@@ -154,24 +154,24 @@ export default function CurriculumTable(p: Props) {
                     aria-label={`Select ${item.majorCode} ${item.version}`}
                     checked={selectedIds.has(item.id)}
                     onChange={(event) => onSelect(item.id, event.target.checked)}
-                    className="size-4 accent-[#F26F21]"
+                    className="size-4 accent-brand"
                   />
                 </TableCell>
               )}
               {isCohort ? <CohortCells item={item} onOpen={onOpen} /> : <CurriculumCells item={item} onOpen={onOpen} />}
               <TableCell align="center">
-                <span className="text-[13px] font-semibold tabular-nums text-gray-800">{item.courseCount}</span>
+                <span className="text-[13px] font-semibold tabular-nums text-ink-primary">{item.courseCount}</span>
               </TableCell>
               <TableCell align="center">
-                <span className="font-mono text-[13px] font-semibold tabular-nums text-gray-900">
+                <span className="font-mono text-[13px] font-semibold tabular-nums text-ink-primary">
                   {item.majorTotalCredits && item.majorTotalCredits > 0 ? `${item.totalCredits} / ${item.majorTotalCredits}` : item.totalCredits}
                 </span>
               </TableCell>
               <TableCell><StatusBadge status={item.status} /></TableCell>
               {!isCohort && (
                 <>
-                  <TableCell><span className="font-mono text-[13px] font-medium text-gray-700">{item.effectiveFromSemesterCode}</span></TableCell>
-                  <TableCell><span className={item.effectiveToSemesterCode ? 'font-mono text-[13px] font-medium text-gray-700' : 'text-xs text-gray-400'}>{item.effectiveToSemesterCode ?? '—'}</span></TableCell>
+                  <TableCell><span className="font-mono text-[13px] font-medium text-ink-secondary">{item.effectiveFromSemesterCode}</span></TableCell>
+                  <TableCell><span className={item.effectiveToSemesterCode ? 'font-mono text-[13px] font-medium text-ink-secondary' : 'text-xs text-ink-subtle'}>{item.effectiveToSemesterCode ?? '—'}</span></TableCell>
                 </>
               )}
               <TableCell align="right">

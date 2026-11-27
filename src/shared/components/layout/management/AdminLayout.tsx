@@ -135,6 +135,7 @@ export default function AdminLayout() {
       roleLabel="Admin"
       profilePath="/admin/profile"
       headerExtra={<NotificationBell />}
+      contained
     />
   );
 }

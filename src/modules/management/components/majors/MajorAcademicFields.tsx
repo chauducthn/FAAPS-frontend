@@ -13,7 +13,7 @@ export function MajorAcademicFields({ formData, inputClass, labelClass, onChange
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
       <div>
         <label htmlFor="major-credits" className={labelClass}>
-          Total credits <span className="text-[#F26F21]">*</span>
+          Total credits <span className="text-brand">*</span>
         </label>
         <input
           id="major-credits"
@@ -28,7 +28,7 @@ export function MajorAcademicFields({ formData, inputClass, labelClass, onChange
 
       <div>
         <label htmlFor="major-duration" className={labelClass}>
-          Duration (years) <span className="text-[#F26F21]">*</span>
+          Duration (years) <span className="text-brand">*</span>
         </label>
         <input
           id="major-duration"
@@ -44,7 +44,7 @@ export function MajorAcademicFields({ formData, inputClass, labelClass, onChange
 
       <div>
         <label htmlFor="major-status" className={labelClass}>
-          Status <span className="text-[#F26F21]">*</span>
+          Status <span className="text-brand">*</span>
         </label>
         <div className="relative">
           <select
@@ -58,7 +58,7 @@ export function MajorAcademicFields({ formData, inputClass, labelClass, onChange
             <option value="DRAFT">Draft</option>
             <option value="INACTIVE">Inactive</option>
           </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
         </div>
       </div>
     </div>

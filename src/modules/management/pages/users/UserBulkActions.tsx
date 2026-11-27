@@ -1,9 +1,8 @@
-import { ArrowsLeftRight as ArrowLeftRight, CheckCircle as CheckCircle2, Key as KeyRound, ShieldSlash as ShieldOff, Trash as Trash2 } from '@phosphor-icons/react';
+import { CheckCircle as CheckCircle2, Key as KeyRound, ShieldSlash as ShieldOff, Trash as Trash2 } from '@phosphor-icons/react';
 import type { AdminUserSummary } from '../../types/admin';
 
 interface Props {
   selectedRows: AdminUserSummary[];
-  onSetRole: (rows: AdminUserSummary[]) => void;
   onResetPassword: (rows: AdminUserSummary[]) => void;
   onActivate: (rows: AdminUserSummary[]) => void;
   onSuspend: (rows: AdminUserSummary[]) => void;
@@ -12,7 +11,6 @@ interface Props {
 
 export function UserBulkActions({
   selectedRows,
-  onSetRole,
   onResetPassword,
   onActivate,
   onSuspend,
@@ -22,15 +20,8 @@ export function UserBulkActions({
     <>
       <button
         type="button"
-        onClick={() => onSetRole(selectedRows)}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-800 ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
-      >
-        <ArrowLeftRight className="size-3.5" aria-hidden /> Set role
-      </button>
-      <button
-        type="button"
         onClick={() => onResetPassword(selectedRows)}
-        className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-gray-800 ring-1 ring-gray-200 transition-colors hover:bg-gray-50"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-[13px] font-medium text-ink-primary ring-1 ring-line transition-colors hover:bg-surface-hover"
       >
         <KeyRound className="size-3.5" aria-hidden /> Reset password
       </button>

@@ -84,8 +84,8 @@ export function CohortPickerModal({
   };
 
   const columns: StaticColumn<SummaryCohort>[] = [
-    { key: 'major', header: 'Major', render: (c) => <span className="inline-flex rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-800">{c.majorCode}</span> },
-    { key: 'cohort', header: 'Cohort', render: (c) => <span className="font-semibold text-gray-900">{c.cohort}</span> },
+    { key: 'major', header: 'Major', render: (c) => <span className="inline-flex rounded-md bg-line-soft px-2 py-0.5 text-xs font-semibold text-ink-primary">{c.majorCode}</span> },
+    { key: 'cohort', header: 'Cohort', render: (c) => <span className="font-semibold text-ink-primary">{c.cohort}</span> },
     {
       key: 'pool',
       header: 'Advisor pool',
@@ -107,10 +107,10 @@ export function CohortPickerModal({
         const pct = c.total > 0 ? Math.round((c.assigned / c.total) * 100) : 0;
         return (
           <div className="flex items-center gap-2">
-            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-gray-100">
+            <div className="h-1.5 w-16 overflow-hidden rounded-full bg-line-soft">
               <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
             </div>
-            <span className="text-xs tabular-nums text-gray-600">{c.assigned}/{c.total}</span>
+            <span className="text-xs tabular-nums text-ink-muted">{c.assigned}/{c.total}</span>
           </div>
         );
       },
@@ -125,11 +125,11 @@ export function CohortPickerModal({
         return (
           <div className="flex justify-end gap-1.5">
             {onConfigurePool && (
-              <button type="button" onClick={() => onConfigurePool(c)} aria-label={`Configure advisors for ${c.majorCode} ${c.cohort}`} className="inline-flex h-8 items-center gap-1 rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50">
-                <Settings2 className="size-3.5 text-gray-400" aria-hidden /> Pool
+              <button type="button" onClick={() => onConfigurePool(c)} aria-label={`Configure advisors for ${c.majorCode} ${c.cohort}`} className="inline-flex h-8 items-center gap-1 rounded-lg border border-line bg-white px-2.5 text-xs font-semibold text-ink-secondary hover:bg-surface-hover">
+                <Settings2 className="size-3.5 text-ink-subtle" aria-hidden /> Pool
               </button>
             )}
-            <button type="button" onClick={() => onPick(c)} aria-label={`Auto assign ${c.majorCode} ${c.cohort}`} className={cn('inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors', hasPool ? 'border-orange-200 bg-orange-50/70 text-[#C2410C] hover:border-[#F26F21] hover:bg-[#F26F21] hover:text-white' : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300 hover:bg-gray-100 hover:text-gray-700')}>
+            <button type="button" onClick={() => onPick(c)} aria-label={`Auto assign ${c.majorCode} ${c.cohort}`} className={cn('inline-flex h-8 items-center gap-1.5 rounded-lg border px-2.5 text-xs font-semibold transition-colors', hasPool ? 'border-brand/30 bg-brand-soft/70 text-brand-ink hover:border-brand hover:bg-brand hover:text-white' : 'border-line bg-surface-page text-ink-muted hover:border-ink-subtle/50 hover:bg-line-soft hover:text-ink-secondary')}>
               <WandSparkles className="size-3.5" aria-hidden /> Auto
             </button>
           </div>
@@ -165,11 +165,11 @@ export function CohortPickerModal({
           </>
         )}
         {rows.length === 0 ? (
-          <p className="py-8 text-center text-sm text-gray-500">
+          <p className="py-8 text-center text-sm text-ink-muted">
             {waiting.length === 0 ? 'Every student has an advisor.' : 'No cohorts match your filters.'}
           </p>
         ) : (
-          <div className="max-h-[380px] overflow-y-auto rounded-xl border border-gray-200/80">
+          <div className="max-h-[380px] overflow-y-auto rounded-lg border border-line/80">
             <StaticTable columns={columns} rows={rows} rowKey={(c) => c.cohortId} emptyTitle="Every student has an advisor." />
           </div>
         )}

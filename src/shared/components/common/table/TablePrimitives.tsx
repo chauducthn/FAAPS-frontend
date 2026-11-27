@@ -31,10 +31,10 @@ export function TableShell({
         className={cn(
           'w-full border-collapse text-left',
           minWidth && 'min-w-[720px]',
-          '[&_tbody_tr]:border-b [&_tbody_tr]:border-gray-100 dark:[&_tbody_tr]:border-[#211f1d]',
-          '[&_tbody_tr]:transition-colors [&_tbody_tr]:hover:bg-gray-50/80 dark:[&_tbody_tr]:hover:bg-[#22201e]',
-          '[&_thead_tr]:border-b [&_thead_tr]:border-gray-200/80 [&_thead_tr]:bg-gray-50/95 dark:[&_thead_tr]:border-[#2a2725] dark:[&_thead_tr]:bg-[#151413]',
-          stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10 [&_thead_th]:bg-gray-50/95 dark:[&_thead_th]:bg-[#151413]',
+          '[&_tbody_tr]:border-b [&_tbody_tr]:border-line-soft [&_tbody_tr]:transition-colors',
+          '[&_tbody_tr:hover]:bg-surface-hover',
+          '[&_thead_tr]:border-b [&_thead_tr]:border-line [&_thead_tr]:bg-surface-page',
+          stickyHeader && '[&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-10 [&_thead_th]:bg-surface-page',
         )}
         style={minWidth ? { minWidth } : undefined}
       >
@@ -59,7 +59,7 @@ export function TableHead({
     <th
       scope="col"
       className={cn(
-        'whitespace-nowrap px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-gray-500',
+        'whitespace-nowrap px-4 py-2.5 text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-subtle',
         align === 'center' && 'text-center',
         align === 'right' && 'text-right',
         className,
@@ -72,7 +72,7 @@ export function TableHead({
 }
 
 export function TableBody({ children, className }: { children: ReactNode; className?: string }) {
-  return <tbody className={cn('text-[13px] leading-5 text-gray-700', className)}>{children}</tbody>;
+  return <tbody className={cn('text-[13px] leading-5 text-ink-secondary', className)}>{children}</tbody>;
 }
 
 export function TableRow({
@@ -86,7 +86,7 @@ export function TableRow({
   className?: string;
 } & React.HTMLAttributes<HTMLTableRowElement>) {
   return (
-    <tr className={cn(selected && 'bg-[var(--brand-soft)]', className)} {...rest}>{children}</tr>
+    <tr className={cn(selected && 'bg-brand-soft/70', className)} {...rest}>{children}</tr>
   );
 }
 
@@ -103,7 +103,7 @@ export function TableCell({
   return (
     <td
       className={cn(
-        'px-4 py-2.5 align-middle text-[13px] leading-5 text-gray-700',
+        'px-4 py-3 align-middle text-[13px] leading-5 text-ink-secondary',
         align === 'center' && 'text-center',
         align === 'right' && 'text-right tabular-nums',
         className,
@@ -132,11 +132,11 @@ export function TableEmpty({
       <td colSpan={colSpan} className="px-4 py-14 text-center">
         <div className="flex flex-col items-center justify-center gap-2">
           {icon ? (
-            <span className="flex size-11 items-center justify-center rounded-xl bg-[var(--line-soft)] text-[var(--ink-subtle)]">
+            <span className="flex size-10 items-center justify-center rounded-md bg-line-soft text-ink-subtle">
               {icon}
             </span>
           ) : null}
-          <p className="text-sm font-semibold text-[var(--ink-primary)]">{title}</p>
+          <p className="text-sm font-semibold text-ink-primary">{title}</p>
           {description ? (
             <p className="text-[13px] text-[var(--ink-muted)]">{description}</p>
           ) : null}

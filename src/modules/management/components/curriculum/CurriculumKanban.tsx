@@ -43,20 +43,20 @@ export default function CurriculumKanban({
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-gray-200/80 bg-white px-6 py-16 text-center">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-red-50 text-red-500">
+      <div className="flex flex-col items-center gap-3 rounded-lg border border-line/80 bg-white px-6 py-16 text-center">
+        <span className="flex size-12 items-center justify-center rounded-lg bg-red-50 text-red-500">
           <CircleAlert className="size-6" />
         </span>
         <div>
-          <p className="text-sm font-bold text-gray-900">Could not load the courses of this curriculum</p>
-          <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-gray-500">
+          <p className="text-sm font-bold text-ink-primary">Could not load the courses of this curriculum</p>
+          <p className="mx-auto mt-1 max-w-sm text-xs leading-relaxed text-ink-muted">
             The roadmap failed to load. Your curriculum header above is intact — retry to reload the course columns.
           </p>
         </div>
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-gray-900 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-gray-700"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-ink-primary px-4 py-2 text-xs font-bold text-surface-page transition-colors hover:bg-ink-secondary"
         >
           <RotateCcw className="size-3.5" /> Retry loading courses
         </button>
@@ -66,13 +66,13 @@ export default function CurriculumKanban({
 
   if (isEmpty) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-gray-300 bg-white px-6 py-16 text-center">
-        <span className="flex size-12 items-center justify-center rounded-2xl bg-[#fff7ed] text-[#F26F21]">
+      <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-line bg-white px-6 py-16 text-center">
+        <span className="flex size-12 items-center justify-center rounded-lg bg-brand-soft text-brand">
           <Layers className="size-6" />
         </span>
         <div>
-          <p className="text-sm font-bold text-gray-900">This roadmap is empty</p>
-          <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-gray-500">
+          <p className="text-sm font-bold text-ink-primary">This roadmap is empty</p>
+          <p className="mx-auto mt-1 max-w-md text-xs leading-relaxed text-ink-muted">
             Add courses to semesters to build the study plan, or import a spreadsheet to fill several semesters at once.
           </p>
         </div>
@@ -80,11 +80,11 @@ export default function CurriculumKanban({
           <button
             type="button"
             onClick={() => onAdd(1)}
-            className="rounded-xl bg-[#F26F21] px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-[#e05f14]"
+            className="rounded-lg bg-brand px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-hover"
           >
             Add the first course
           </button>
-          <label className="cursor-pointer rounded-xl border border-gray-200 px-4 py-2 text-xs font-bold text-gray-600 transition-colors hover:bg-gray-50">
+          <label className="cursor-pointer rounded-lg border border-line px-4 py-2 text-xs font-bold text-ink-muted transition-colors hover:bg-surface-hover">
             Import XLSX instead
             <input
               type="file"
@@ -99,7 +99,7 @@ export default function CurriculumKanban({
           <button
             type="button"
             onClick={onDownloadExample}
-            className="rounded-xl px-3 py-2 text-xs font-bold text-[#C2410C] underline-offset-2 hover:underline"
+            className="rounded-lg px-3 py-2 text-xs font-bold text-brand-ink underline-offset-2 hover:underline"
           >
             Example sheet
           </button>
@@ -124,10 +124,10 @@ function DetailBoardSkeleton() {
   return (
     <div className="flex gap-4 overflow-hidden" aria-label="Loading courses">
       {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="w-[280px] shrink-0 space-y-2.5 rounded-2xl border border-gray-200/80 bg-white p-3">
-          <div className="h-8 animate-pulse rounded-xl bg-orange-50" style={{ animationDelay: `${i * 70}ms` }} />
+        <div key={i} className="w-[280px] shrink-0 space-y-2.5 rounded-lg border border-line/80 bg-white p-3">
+          <div className="h-8 animate-pulse rounded-lg bg-brand-soft" style={{ animationDelay: `${i * 70}ms` }} />
           {[0, 1, 2].map((j) => (
-            <div key={j} className="h-20 animate-pulse rounded-xl bg-gray-100" style={{ animationDelay: `${(i * 3 + j) * 60}ms` }} />
+            <div key={j} className="h-20 animate-pulse rounded-lg bg-line-soft" style={{ animationDelay: `${(i * 3 + j) * 60}ms` }} />
           ))}
         </div>
       ))}

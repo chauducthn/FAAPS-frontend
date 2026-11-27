@@ -54,19 +54,20 @@ export function DataTableHeader<TData extends RowData>({
                     type="button"
                     onClick={header.column.getToggleSortingHandler()}
                     className={cn(
-                      'group inline-flex items-center gap-1 font-inherit uppercase tracking-inherit transition-colors hover:text-gray-900',
-                      sorted ? 'text-[#C2410C]' : 'text-inherit',
+                      'group inline-flex items-center gap-1 ' +
+                        'font-inherit uppercase tracking-inherit transition-colors hover:text-ink-primary',
+                      sorted ? 'text-brand-ink' : 'text-inherit',
                       align === 'right' && 'ml-auto flex-row-reverse',
                       align === 'center' && 'mx-auto',
                     )}
                   >
                     <span>{label}</span>
                     {sorted === 'asc' ? (
-                      <CaretUp weight="fill" className="size-3 shrink-0 text-[#F26F21]" aria-hidden />
+                      <CaretUp weight="fill" className="size-3 shrink-0 text-brand" aria-hidden />
                     ) : sorted === 'desc' ? (
-                      <CaretDown weight="fill" className="size-3 shrink-0 text-[#F26F21]" aria-hidden />
+                      <CaretDown weight="fill" className="size-3 shrink-0 text-brand" aria-hidden />
                     ) : (
-                      <CaretUpDown className="size-3 shrink-0 text-gray-400 opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />
+                      <CaretUpDown className="size-3 shrink-0 text-ink-subtle opacity-60 transition-opacity group-hover:opacity-100" aria-hidden />
                     )}
                   </button>
                 ) : (

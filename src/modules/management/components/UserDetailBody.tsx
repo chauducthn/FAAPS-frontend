@@ -1,6 +1,11 @@
 import type { AdminUserDetail } from '../types/admin';
+import { StatusBadge } from './StatusBadge';
 import { formatUserDate, UserDetailField, UserDetailSection } from './UserDetailBits';
 
+/**
+ * Facts that are not already in the header (name, email, identifier, role and status live there).
+ * Sized to fit the dialog without scrolling.
+ */
 export function UserDetailBody({
   user,
   isStudent,
@@ -18,42 +23,33 @@ export function UserDetailBody({
       : (user.curriculumName ?? user.curriculumCode);
 
   return (
-    <div className="min-h-0 flex-1 space-y-5 overflow-y-auto bg-white px-6 py-5">
-      <UserDetailSection title="Account">
-        <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-          <UserDetailField label="Full name" value={user.fullName} />
-          <UserDetailField label="Identifier" value={user.userId} mono />
-          <UserDetailField label="Email" value={user.email} />
-          <UserDetailField label="Account status" value={user.status} />
-        </div>
-      </UserDetailSection>
-
+    <div className="space-y-5 px-6 py-5">
       {isStudent ? (
-        <UserDetailSection title="Academic record" bordered>
-          <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-            <UserDetailField label="Major" value={majorDisplay} />
-            <UserDetailField label="Cohort" value={user.curriculumCode} mono />
-            <UserDetailField label="Curriculum" value={curriculumDisplay} />
-            <UserDetailField label="Academic status" value={user.academicStatus} />
-            <UserDetailField label="Enrollment semester" value={user.enrollmentSemesterCode} mono />
-            <UserDetailField label="Current semester" value={user.currentSemester} />
-            <UserDetailField label="Expected graduation" value={user.expectedGraduationSemesterCode} mono />
-          </div>
+        <UserDetailSection title="Academic record">
+          <UserDetailField label="Major" value={majorDisplay} />
+          <UserDetailField label="Curriculum" value={curriculumDisplay} />
+          <UserDetailField label="Cohort" value={user.curriculumCode} mono />
+          <UserDetailField
+            label="Academic status"
+            value={user.academicStatus ? <StatusBadge status={user.academicStatus} /> : null}
+          />
+          <UserDetailField
+            label="Current semester"
+            value={user.currentSemester != null ? `Semester ${user.currentSemester}` : null}
+          />
+          <UserDetailField label="Enrollment semester" value={user.enrollmentSemesterCode} mono />
+          <UserDetailField label="Expected graduation" value={user.expectedGraduationSemesterCode} mono />
         </UserDetailSection>
       ) : (
-        <UserDetailSection title="Role details" bordered>
-          <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-            <UserDetailField label="Role" value="Academic Advisor" />
-            <UserDetailField label="Academic record" value="Not applicable" />
-          </div>
+        <UserDetailSection title="Role">
+          <UserDetailField label="Role" value="Academic advisor" />
+          <UserDetailField label="Academic record" value="Not applicable" />
         </UserDetailSection>
       )}
 
-      <UserDetailSection title="Activity" bordered>
-        <div className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
-          <UserDetailField label="Created" value={formatUserDate(user.createdAt)} />
-          <UserDetailField label="Last updated" value={formatUserDate(user.updatedAt)} />
-        </div>
+      <UserDetailSection title="Activity">
+        <UserDetailField label="Created" value={formatUserDate(user.createdAt)} />
+        <UserDetailField label="Last updated" value={formatUserDate(user.updatedAt)} />
       </UserDetailSection>
     </div>
   );

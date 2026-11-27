@@ -3,7 +3,7 @@ import { cn } from '@/shared/lib/utils';
 import type { SmartBatchAssignResult } from '../types/admin';
 
 export type PoolFilter = 'all' | 'ready' | 'missing';
-const SELECT_CLS = 'h-9 appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-8 text-xs font-medium text-gray-700 focus:border-[#F26F21] focus:outline-none';
+const SELECT_CLS = 'h-9 appearance-none rounded-lg border border-line bg-white pl-3 pr-8 text-xs font-medium text-ink-secondary focus:border-brand focus:outline-none';
 
 export function CohortPickerFilters({
   search, majorFilter, cohortFilter, poolFilter, majors, cohortVersions,
@@ -17,8 +17,8 @@ export function CohortPickerFilters({
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="relative min-w-[180px] flex-1">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
-        <input value={search} onChange={(e) => onSearch(e.target.value)} placeholder="Search major or cohort (e.g. SE K19)…" className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-8 pr-3 text-xs text-gray-800 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
+        <input value={search} onChange={(e) => onSearch(e.target.value)} placeholder="Search major or cohort (e.g. SE K19)…" className="h-9 w-full rounded-lg border border-line bg-white pl-8 pr-3 text-xs text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none" />
       </div>
       {majors.length > 1 && (
         <div className="relative">
@@ -26,7 +26,7 @@ export function CohortPickerFilters({
             <option value="">All majors ({majors.length})</option>
             {majors.map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
         </div>
       )}
       {cohortVersions.length > 1 && (
@@ -35,12 +35,12 @@ export function CohortPickerFilters({
             <option value="">All cohorts</option>
             {cohortVersions.map((v) => <option key={v} value={v}>{v}</option>)}
           </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
         </div>
       )}
-      <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 text-xs font-semibold">
+      <div className="inline-flex rounded-lg border border-line bg-surface-page p-0.5 text-xs font-semibold">
         {([['all', 'All'], ['ready', 'Ready'], ['missing', 'Not set']] as const).map(([key, label]) => (
-          <button key={key} type="button" onClick={() => onPoolFilter(key)} className={cn('rounded-md px-2.5 py-1 transition-colors', poolFilter === key ? 'bg-white text-[#C2410C] shadow-2xs' : 'text-gray-600 hover:text-gray-900')}>
+          <button key={key} type="button" onClick={() => onPoolFilter(key)} className={cn('rounded-md px-2.5 py-1 transition-colors', poolFilter === key ? 'bg-white text-brand-ink shadow-2xs' : 'text-ink-muted hover:text-ink-primary')}>
             {label}
           </button>
         ))}
@@ -82,28 +82,28 @@ export function CohortPickerSmartBar({
   const scopeLabel = filteredCount < waitingCount ? `filtered (${filteredCount})` : `all (${waitingCount})`;
 
   return (
-    <div className="space-y-2.5 rounded-xl border border-orange-200/70 bg-orange-50/55 p-3.5">
+    <div className="space-y-2.5 rounded-lg border border-brand/25 bg-brand-soft/55 p-3.5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-700">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-secondary">
           <span>
-            <strong className="text-gray-900 tabular-nums">{unassignedTotal.toLocaleString()}</strong> unassigned
+            <strong className="text-ink-primary tabular-nums">{unassignedTotal.toLocaleString()}</strong> unassigned
           </span>
           <span>
             <strong className="text-emerald-700 tabular-nums">{readyCount}</strong> ready ·{' '}
             <strong className="text-amber-700 tabular-nums">{missingPoolCount}</strong> missing pool
           </span>
           <span>
-            <strong className="text-indigo-700 tabular-nums">{idleAdvisorCount}</strong> available idle advisor
+            <strong className="text-ink-secondary tabular-nums">{idleAdvisorCount}</strong> available idle advisor
             {idleAdvisorCount === 1 ? '' : 's'}
           </span>
         </div>
 
-        <label className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-gray-700">
+        <label className="flex cursor-pointer items-center gap-1.5 text-xs font-medium text-ink-secondary">
           <input
             type="checkbox"
             checked={allowOverLimit}
             onChange={(e) => onToggleOverLimit(e.target.checked)}
-            className="size-3.5 accent-[#F26F21]"
+            className="size-3.5 accent-brand"
           />
           Allow exceeding max advisees
         </label>
@@ -114,7 +114,7 @@ export function CohortPickerSmartBar({
           type="button"
           disabled={isPending || filteredCount === 0 || (idleAdvisorCount === 0 && readyCount === 0)}
           onClick={onRunSmartSetupAndAssign}
-          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#F26F21] px-3 text-xs font-semibold text-white transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-brand px-3 text-xs font-semibold text-white transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-45"
         >
           {isPending ? <Loader2 className="size-3.5 animate-spin" /> : <Sparkles className="size-3.5" />}
           {idleAdvisorCount > 0 && missingPoolCount > 0
@@ -127,9 +127,9 @@ export function CohortPickerSmartBar({
             type="button"
             disabled={isPending}
             onClick={onRunReadyOnly}
-            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-45"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-xs font-semibold text-ink-secondary transition-colors hover:bg-surface-hover disabled:opacity-45"
           >
-            <WandSparkles className="size-3.5 text-[#F26F21]" />
+            <WandSparkles className="size-3.5 text-brand" />
             Assign ready only ({readyCount})
           </button>
         )}

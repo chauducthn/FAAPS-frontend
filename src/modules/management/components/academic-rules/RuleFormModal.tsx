@@ -137,16 +137,16 @@ export default function RuleFormModal({ open, mode, initial, isLoading, onClose,
         <RuleFormHeader title={title} isCreate={isCreate} readOnly={readOnly} initial={initial} onClose={onClose} />
         <RuleFormStepNav step={step} onJumpStep={(target) => void handleJumpStep(target)} />
 
-        <div className="min-h-[280px] max-h-[60vh] overflow-y-auto bg-gray-50/40 px-6 py-5 text-[13px]">
+        <div className="min-h-[280px] max-h-[60vh] overflow-y-auto bg-surface-page/40 px-6 py-5 text-[13px]">
           {step === 1 && (
             <RuleIdentitySection activeReadOnly={activeReadOnly} isView={isView} disabled={disabled} register={register} errors={errors} />
           )}
           {step === 2 && (
             <RuleFormSection step={2} title="Trigger condition" hint="Configure thresholds — the rule expression builds automatically.">
               <RuleConditionFields policyType={policyType as AcademicRuleType} cond={cond} set={set} errors={condErrors} readOnly={disabled} />
-              <div className="flex items-start gap-2.5 rounded-lg border border-orange-200/80 bg-orange-50/60 px-3.5 py-2.5">
-                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#C2410C]" aria-hidden />
-                <p className="text-xs leading-relaxed text-[#7C2D12]">
+              <div className="flex items-start gap-2.5 rounded-lg border border-brand/25 bg-brand-soft/60 px-3.5 py-2.5">
+                <ShieldCheck className="mt-0.5 size-4 shrink-0 text-brand-ink" aria-hidden />
+                <p className="text-xs leading-relaxed text-brand-ink">
                   <span className="font-semibold">Rule summary: </span>{summary}
                 </p>
               </div>

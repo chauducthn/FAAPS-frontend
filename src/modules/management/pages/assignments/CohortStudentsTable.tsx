@@ -6,7 +6,7 @@ import { StaticTable, type StaticColumn } from '../../../../shared/components/co
 import { backState } from '../../../../shared/lib/backLink';
 
 const actionBtn =
-  'inline-flex h-8 items-center rounded-lg border border-gray-200 bg-white px-2.5 text-xs font-semibold text-gray-700 transition-colors hover:bg-gray-50 hover:text-gray-900';
+  'inline-flex h-8 items-center rounded-lg border border-line bg-white px-2.5 text-xs font-semibold text-ink-secondary transition-colors hover:bg-surface-hover hover:text-ink-primary';
 
 const formatDate = (value: string) =>
   new Date(`${value}T00:00:00`).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
@@ -35,7 +35,7 @@ export function CohortStudentsTable(props: {
       header: 'Student ID',
       sortValue: (row) => row.studentCode,
       render: (row) => (
-        <span className="font-mono text-[13px] font-medium text-gray-700">
+        <span className="font-mono text-[13px] font-medium text-ink-secondary">
           {row.studentCode}
         </span>
       ),
@@ -47,7 +47,7 @@ export function CohortStudentsTable(props: {
       render: (row) => (
         <div className="flex min-w-0 items-center gap-2.5">
           <UserInitials name={row.fullName} />
-          <span className="truncate text-sm font-semibold text-gray-900">{row.fullName}</span>
+          <span className="truncate text-sm font-semibold text-ink-primary">{row.fullName}</span>
         </div>
       ),
     },
@@ -56,7 +56,7 @@ export function CohortStudentsTable(props: {
       header: 'Current advisor',
       sortValue: (row) => row.advisorName ?? '',
       render: (row) => (
-        <span className={row.advisorName ? 'text-sm text-gray-800' : 'text-xs text-gray-400'}>
+        <span className={row.advisorName ? 'text-sm text-ink-primary' : 'text-xs text-ink-subtle'}>
           {row.advisorName ?? 'No advisor assigned'}
         </span>
       ),
@@ -66,7 +66,7 @@ export function CohortStudentsTable(props: {
       header: 'Assigned',
       sortValue: (row) => row.assignedDate ?? '',
       render: (row) => (
-        <span className="text-xs text-gray-500">{row.assignedDate ? formatDate(row.assignedDate) : '—'}</span>
+        <span className="text-xs text-ink-muted">{row.assignedDate ? formatDate(row.assignedDate) : '—'}</span>
       ),
     },
     {
@@ -79,7 +79,7 @@ export function CohortStudentsTable(props: {
             Requested
           </span>
         ) : (
-          <span className="text-xs text-gray-400">—</span>
+          <span className="text-xs text-ink-subtle">—</span>
         ),
     },
     {
@@ -111,9 +111,9 @@ export function CohortStudentsTable(props: {
   return (
     <div>
       {selected.size > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-orange-200/80 bg-orange-50/70 px-4 py-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2.5 border-b border-brand/25 bg-brand-soft/70 px-4 py-2.5">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-[#F26F21] px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
+            <span className="rounded-md bg-brand px-2 py-0.5 text-xs font-semibold tabular-nums text-white">
               {selected.size} student{selected.size === 1 ? '' : 's'} selected
             </span>
             {onSelectAll && total > selected.size && (
@@ -121,7 +121,7 @@ export function CohortStudentsTable(props: {
                 type="button"
                 disabled={selectingAll}
                 onClick={onSelectAll}
-                className="rounded-md border border-orange-200 bg-white px-2 py-1 text-xs font-semibold text-[#C2410C] transition-colors hover:bg-orange-100/70 disabled:opacity-50"
+                className="rounded-md border border-brand/30 bg-white px-2 py-1 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-soft-strong/70 disabled:opacity-50"
               >
                 {selectingAll ? 'Selecting…' : `Select all ${total}`}
               </button>
@@ -129,7 +129,7 @@ export function CohortStudentsTable(props: {
             <button
               type="button"
               onClick={onClearSelection}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-600 hover:bg-orange-100/80 hover:text-gray-900"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ink-muted hover:bg-brand-soft-strong/80 hover:text-ink-primary"
             >
               <X className="size-3.5" aria-hidden /> Clear
             </button>
@@ -138,7 +138,7 @@ export function CohortStudentsTable(props: {
             <button
               type="button"
               onClick={onAssignSelected}
-              className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#e05f14]"
+              className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand-hover"
             >
               Assign / reassign
             </button>

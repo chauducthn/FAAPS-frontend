@@ -39,11 +39,11 @@ export const assignmentService = {
   getSummary: async (): Promise<AssignmentSummary> => (await apiClient.get<AssignmentSummary>(`${BASE}/summary`)).data,
 
   getAssigned: async (
-    params: PageParams & { advisorId?: string; cohortId?: string; majorCode?: string },
+    params: PageParams & { advisorId?: string; cohortId?: string; cohort?: string; majorCode?: string },
   ): Promise<AdminPage<AssignmentStudent>> =>
     (await apiClient.get<AdminPage<AssignmentStudent>>(`${BASE}/assigned`, { params })).data,
 
-  getUnassigned: async (params: PageParams & { cohortId?: string; hasPendingRequest?: boolean }): Promise<AdminPage<UnassignedStudent>> =>
+  getUnassigned: async (params: PageParams & { cohortId?: string; cohort?: string; hasPendingRequest?: boolean }): Promise<AdminPage<UnassignedStudent>> =>
     (await apiClient.get<AdminPage<UnassignedStudent>>(`${BASE}/unassigned`, { params })).data,
 
   /** All students of one cohort (assigned and unassigned), paged and searchable. */

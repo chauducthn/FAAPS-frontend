@@ -1,4 +1,6 @@
 import { apiClient } from '../../../shared/lib/apiClient';
+import { getCsrfHeaders } from '../../../shared/lib/csrf';
+import type { CourseWorkload, WorkloadLevel } from '../../academic/types/course';
 import type { LookupCourse, LookupCurriculum } from '../types/academic-lookup';
 
 /**
@@ -26,5 +28,17 @@ export const academicLookupService = {
   getCurricula: async (): Promise<LookupCurriculum[]> => {
     const { data } = await apiClient.get<LookupCurriculum[]>('/advisor/academic/curriculums');
     return data ?? [];
+  },
+
+  updateCourseWorkload: async (
+    id: string,
+    workloadLevel: WorkloadLevel | 'AUTO' | null,
+  ): Promise<CourseWorkload> => {
+    const { data } = await apiClient.put<CourseWorkload>(
+      `/advisor/academic/courses/${id}/workload`,
+      { workloadLevel: workloadLevel === 'AUTO' ? null : workloadLevel },
+      { headers: await getCsrfHeaders() },
+    );
+    return data;
   },
 };

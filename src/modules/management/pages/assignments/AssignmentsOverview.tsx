@@ -55,7 +55,7 @@ export default function AssignmentsOverview() {
       />
 
       {(s.summary.data?.missingAcademicProfile ?? 0) > 0 && (
-        <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-2.5 text-xs text-amber-900">
+        <div className="flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50/80 px-4 py-2.5 text-xs text-amber-900">
           <AlertCircle className="mt-0.5 size-4 shrink-0 text-amber-600" aria-hidden />
           <span>
             {s.summary.data?.missingAcademicProfile} student account(s) have no academic profile yet, so they do not appear in a cohort or assignment list. Complete their details in{' '}
@@ -65,13 +65,13 @@ export default function AssignmentsOverview() {
       )}
 
       {s.summary.isError && !s.summary.data && (
-        <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-medium text-red-700">
+        <div className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-xs font-medium text-red-700">
           Could not load the summary.
           <button type="button" onClick={() => s.summary.refetch()} className="font-semibold underline">Retry</button>
         </div>
       )}
 
-      <section className="overflow-hidden rounded-xl border border-gray-200/80 bg-white shadow-2xs">
+      <section className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-2xs">
         <AssignmentsFilterBar
           tab={s.tab} search={s.search} advisorFilter={s.advisorFilter} majorFilter={s.majorFilter}
           cohortFilter={s.cohortFilter} pendingOnly={s.pendingOnly} advisors={s.advisors.data ?? []}

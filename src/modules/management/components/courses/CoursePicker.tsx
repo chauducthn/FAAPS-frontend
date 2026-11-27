@@ -3,9 +3,9 @@ import { useCoursesQuery } from '../../../academic/hooks/queries/useCoursesQuery
 import { cn } from '@/shared/lib/utils';
 
 export const courseRelationInputClass =
-  'h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-900 transition-colors focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-60';
+  'h-9 w-full rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-primary transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-line-soft disabled:opacity-60';
 export const courseRelationLabelClass =
-  'mb-1.5 block text-xs font-medium text-gray-700';
+  'mb-1.5 block text-xs font-medium text-ink-secondary';
 
 /** Dropdown course picker backed by the active course pool. */
 export function CoursePicker({
@@ -22,12 +22,12 @@ export function CoursePicker({
 
   if (value) {
     return (
-      <div className="flex h-9 items-center justify-between gap-2 rounded-lg border border-orange-200 bg-orange-50/60 px-3">
+      <div className="flex h-9 items-center justify-between gap-2 rounded-lg border border-brand/30 bg-brand-soft/60 px-3">
         <span className="truncate text-[13px]">
-          <span className="font-mono text-xs font-bold text-[#C2410C]">{value.code}</span>
-          <span className="ml-1.5 font-medium text-gray-700">— {value.name}</span>
+          <span className="font-mono text-xs font-bold text-brand-ink">{value.code}</span>
+          <span className="ml-1.5 font-medium text-ink-secondary">— {value.name}</span>
         </span>
-        <button type="button" onClick={() => onChange(null)} aria-label="Clear course" className="shrink-0 rounded-md p-1 text-gray-400 hover:bg-white hover:text-gray-700">
+        <button type="button" onClick={() => onChange(null)} aria-label="Clear course" className="shrink-0 rounded-md p-1 text-ink-subtle hover:bg-white hover:text-ink-secondary">
           <X className="size-3.5" />
         </button>
       </div>
@@ -59,7 +59,7 @@ export function CoursePicker({
           </option>
         ))}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-gray-400" />
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle" />
     </div>
   );
 }

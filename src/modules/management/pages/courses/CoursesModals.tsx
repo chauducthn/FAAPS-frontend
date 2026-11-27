@@ -8,6 +8,7 @@ import type {
   CourseImportPreview,
   CourseStatus,
   CourseSummary,
+  WorkloadLevel,
   AddCourseRelationDto,
   UpdateCourseRelationDto,
 } from '../../../academic/types/course';
@@ -28,6 +29,7 @@ export function CoursesModals({
   isSubmittingRelation,
   onCloseViewing,
   onNavigateViewing,
+  onOverrideWorkload,
   onAddRelation,
   onUpdateRelation,
   onRemoveRelation,
@@ -69,6 +71,7 @@ export function CoursesModals({
   isSubmittingRelation: boolean;
   onCloseViewing: () => void;
   onNavigateViewing: (id: string) => void;
+  onOverrideWorkload?: (level: WorkloadLevel | 'AUTO') => Promise<unknown>;
   onAddRelation: (rel: AddCourseRelationDto) => Promise<unknown>;
   onUpdateRelation: (relationId: string, body: UpdateCourseRelationDto) => Promise<unknown>;
   onRemoveRelation: (relationId: string) => Promise<unknown>;
@@ -116,6 +119,7 @@ export function CoursesModals({
         isSubmitting={isSubmittingRelation}
         onClose={onCloseViewing}
         onNavigate={onNavigateViewing}
+        onOverrideWorkload={onOverrideWorkload}
         onAddRelation={onAddRelation}
         onUpdateRelation={onUpdateRelation}
         onRemoveRelation={onRemoveRelation}

@@ -139,8 +139,8 @@ export function AutoAssignModal({
           />
         )}
         {previewMutation.isPending && !done && (
-          <p className="flex items-center gap-2 text-xs text-gray-500">
-            <Loader2 className="size-3.5 animate-spin text-[#F26F21]" />
+          <p className="flex items-center gap-2 text-xs text-ink-muted">
+            <Loader2 className="size-3.5 animate-spin text-brand" />
             Calculating optimal distribution…
           </p>
         )}
@@ -149,8 +149,8 @@ export function AutoAssignModal({
         )}
         {!done && response && response.assigned > 0 && (
           <div>
-            <label className="mb-1.5 block text-xs font-medium text-gray-700">
-              Note <span className="font-normal text-gray-400">(optional)</span>
+            <label className="mb-1.5 block text-xs font-medium text-ink-secondary">
+              Note <span className="font-normal text-ink-subtle">(optional)</span>
             </label>
             <textarea
               value={notes}

@@ -1,4 +1,4 @@
-import type { BlockPlacement, CurriculumCourse } from '../../../academic/services/studentAcademicService';
+import type { BlockPlacement, CurriculumCourse, TranscriptRow } from '../../../academic/services/studentAcademicService';
 import type { AcademicBlockConfigView, AcademicBlockItem } from '../../../management/services/academic-block.service';
 
 export type BlockTone = 'prep' | 'main' | 'ojt' | 'cap' | 'orient' | 'fast';
@@ -18,6 +18,8 @@ export interface RegularBlockMeta {
 export interface EffectiveCurriculumCourse extends CurriculumCourse {
   defaultSemesterNumber: number;
   placement?: BlockPlacement;
+  /** Actual calendar semester code from transcript (e.g. SP2026), for display only. */
+  takenSemesterCode?: string;
 }
 
 export interface EligibilityResult {
@@ -75,10 +77,14 @@ export function applyPlacementsToCourses(
   rawCourses: CurriculumCourse[],
   placements: BlockPlacement[] | undefined,
   prepPartsPerSemester = 2,
+  transcriptByCode?: Map<string, TranscriptRow>,
 ): { courses: EffectiveCurriculumCourse[]; prepCount: number } {
   const perPrep = Math.max(1, prepPartsPerSemester);
   const byCode = new Map<string, BlockPlacement>();
-  for (const p of placements ?? []) byCode.set(p.courseCode.trim().toUpperCase(), p);
+  for (const p of placements ?? []) {
+    if (p.semesterNumber === 99 || p.planMode === 'DRAFT' || p.planMode === 'EXCLUDED') continue;
+    byCode.set(p.courseCode.trim().toUpperCase(), p);
+  }
 
   const isPe = (c: CurriculumCourse) =>
     (c.groupName ?? '').toLowerCase() === 'physical education' || /^(VOV|COV)\d+|^PHE_/i.test(c.code.trim());
@@ -102,7 +108,6 @@ export function applyPlacementsToCourses(
     maxPlacedPrep,
   );
 
-  // Assign deterministic effective semester numbers (-1 = Prep 1, -2 = Prep 2, 1..9 = Sem 1..9)
   const autoSemByCode = new Map<string, number>();
   english.forEach((c, idx) => autoSemByCode.set(c.code.trim().toUpperCase(), -(Math.floor(idx / perPrep) + 1)));
   foundation.forEach((c) => autoSemByCode.set(c.code.trim().toUpperCase(), -1));
@@ -115,11 +120,14 @@ export function applyPlacementsToCourses(
     const upper = c.code.trim().toUpperCase();
     const p = byCode.get(upper);
     const defaultEffSem = autoSemByCode.get(upper) ?? c.semesterNumber;
+    const tSemCode = transcriptByCode?.get(upper)?.semesterCode?.trim().toUpperCase();
+
     return {
       ...c,
       defaultSemesterNumber: defaultEffSem,
       semesterNumber: p ? p.semesterNumber : defaultEffSem,
       placement: p,
+      takenSemesterCode: tSemCode || undefined,
     };
   });
   return { courses, prepCount };
@@ -131,45 +139,38 @@ export function checkBlockEligibility(
   targetSem: number,
   currentCoursesInBlock: CurriculumCourse[],
   isFailed: boolean,
+  isPassed = false,
+  minPlannableSem?: number,
 ): EligibilityResult {
   const code = course.code.trim().toUpperCase();
-  const suggestedMode: BlockPlacement['planMode'] = isFailed && (targetBlock.blockType === 'INTENSIVE' || targetSem !== course.defaultSemesterNumber)
-    ? 'RETAKE'
-    : targetSem > course.defaultSemesterNumber
-      ? 'DEFERRED'
-      : targetSem < course.defaultSemesterNumber
-        ? 'EARLY'
-        : 'CUSTOM';
+  const isDraft = targetSem === 99;
+  const suggestedMode: BlockPlacement['planMode'] = isDraft
+    ? 'DRAFT'
+    : isFailed && (targetBlock.blockType === 'INTENSIVE' || targetSem !== course.defaultSemesterNumber)
+      ? 'RETAKE'
+      : targetSem > course.defaultSemesterNumber
+        ? 'DEFERRED'
+        : targetSem < course.defaultSemesterNumber
+          ? 'EARLY'
+          : 'CUSTOM';
 
-  if (OJT_RE.test(code)) {
-    return { eligible: false, reason: `${course.code} is a 15-week OJT internship and cannot be placed in ${targetBlock.shortName}.`, suggestedMode };
+  if (isPassed) return { eligible: false, reason: `${course.code} is already passed and cannot be rescheduled.`, suggestedMode };
+  if (minPlannableSem != null && minPlannableSem >= 1 && targetSem < minPlannableSem) {
+    const label = targetSem < 0 ? `Prep ${-targetSem}` : targetSem === 0 ? 'Prep' : `Sem ${targetSem}`;
+    return { eligible: false, reason: `Cannot schedule into ${label} — semesters before Sem ${minPlannableSem} are already in the past.`, suggestedMode };
   }
-  if (ENGLISH_PREP_RE.test(code)) {
-    return { eligible: false, reason: `${course.code} is an English Prep level and belongs to Sem 0 Prep Term (7w).`, suggestedMode };
-  }
-  if (ORIENT_RE.test(code)) {
-    return { eligible: false, reason: `${course.code} is fixed in Sem 0 Orientation (2w).`, suggestedMode };
-  }
-  if (targetSem <= 0 && !isPrepEligibleCourse(course)) {
-    return { eligible: false, reason: 'Major courses can only be scheduled from Sem 1 onward.', suggestedMode };
-  }
-  if (CAPSTONE_RE.test(code) && targetBlock.blockType !== 'MAIN') {
-    return { eligible: false, reason: `${course.code} (Capstone/Graduation) requires a full Main block (Block 10W).`, suggestedMode };
-  }
+  if (OJT_RE.test(code)) return { eligible: false, reason: `${course.code} is a 15-week OJT internship and cannot be placed in ${targetBlock.shortName}.`, suggestedMode };
+  if (ENGLISH_PREP_RE.test(code)) return { eligible: false, reason: `${course.code} is an English Prep level and belongs to Sem 0 Prep Term (7w).`, suggestedMode };
+  if (ORIENT_RE.test(code)) return { eligible: false, reason: `${course.code} is fixed in Sem 0 Orientation (2w).`, suggestedMode };
+  if (targetSem <= 0 && !isPrepEligibleCourse(course)) return { eligible: false, reason: 'Major courses can only be scheduled from Sem 1 onward.', suggestedMode };
+  if (CAPSTONE_RE.test(code) && targetBlock.blockType !== 'MAIN') return { eligible: false, reason: `${course.code} (Capstone/Graduation) requires a full Main block (Block 10W).`, suggestedMode };
 
   const others = currentCoursesInBlock.filter((c) => c.code.trim().toUpperCase() !== code);
-  if (others.length >= targetBlock.maxCourses) {
-    return { eligible: false, reason: `${targetBlock.shortName} is full (max ${targetBlock.maxCourses} courses).`, suggestedMode };
-  }
+  if (others.length >= targetBlock.maxCourses) return { eligible: false, reason: `${targetBlock.shortName} is full (max ${targetBlock.maxCourses} courses).`, suggestedMode };
   const usedCredits = others.reduce((s, c) => s + c.credits, 0);
   if (targetBlock.maxCredits > 0 && usedCredits + course.credits > targetBlock.maxCredits) {
-    return {
-      eligible: false,
-      reason: `Exceeds ${targetBlock.shortName} credit limit (${usedCredits + course.credits}/${targetBlock.maxCredits} cr).`,
-      suggestedMode,
-    };
+    return { eligible: false, reason: `Exceeds ${targetBlock.shortName} credit limit (${usedCredits + course.credits}/${targetBlock.maxCredits} cr).`, suggestedMode };
   }
-
   return { eligible: true, suggestedMode };
 }
 

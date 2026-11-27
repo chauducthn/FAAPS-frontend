@@ -8,6 +8,7 @@ const idRef = z.string().min(1, 'Select a valid option');
 /** The only credit values a course can have (chosen from a list, never typed). */
 export const CREDIT_OPTIONS = [0, 1, 2, 3, 4, 6, 9, 10, 12] as const;
 export const CREDIT_OPTIONS_MESSAGE = 'Credits must be 0, 1, 2, 3, 4, 6, 9, 10 or 12';
+export const WORKLOAD_OVERRIDE_OPTIONS = ['AUTO', 'LIGHT', 'MEDIUM', 'HEAVY'] as const;
 
 const CODE_PART =
   '(?:[\\p{Lu}\\d][\\p{L}]{2}\\d{2}[\\dx][\\p{Ll}]?(?:[_-][\\p{L}0-9.*]+)*\\*?|[\\p{Lu}\\d][\\p{L}]{1,5}\\d{0,2}(?:[_-][\\p{L}0-9.*]+)*(?:\\*\\.?\\d+(?:\\.\\d+)?)?\\*?)';
@@ -27,6 +28,7 @@ export const createCourseSchema = z.object({
     .refine((v) => (CREDIT_OPTIONS as readonly number[]).includes(v), CREDIT_OPTIONS_MESSAGE),
   categoryId: z.string().min(1, 'Select a category'),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+  workloadLevel: z.enum(WORKLOAD_OVERRIDE_OPTIONS).optional(),
   /** Link to the course materials (slides, syllabus PDF, drive folder). Optional. */
   materialLink: z
     .string()

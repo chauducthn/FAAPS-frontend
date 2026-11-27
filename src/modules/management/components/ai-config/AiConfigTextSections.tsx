@@ -86,12 +86,12 @@ export function AiConfigPromptAndStatus({ disabled, approvalActive, register, se
             onClick={() => setValue('isActive', !approvalActive)}
             className="flex items-center gap-2.5 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <span className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', approvalActive ? 'bg-[#F26F21]' : 'bg-gray-300')}>
+            <span className={cn('relative h-6 w-11 shrink-0 rounded-full transition-colors', approvalActive ? 'bg-brand' : 'bg-ink-subtle/40')}>
               <span className={cn('absolute top-0.5 size-5 rounded-full bg-white shadow transition-all', approvalActive ? 'left-[22px]' : 'left-0.5')} />
             </span>
-            <span className="text-xs font-bold text-gray-700">{approvalActive ? 'Active' : 'Inactive'}</span>
+            <span className="text-xs font-bold text-ink-secondary">{approvalActive ? 'Active' : 'Inactive'}</span>
           </button>
-          <p className="text-[11px] text-gray-400">
+          <p className="text-[11px] text-ink-subtle">
             {approvalActive ? 'Serves subsequent requests.' : 'Kept as draft, no live traffic.'}
           </p>
         </div>
@@ -116,10 +116,10 @@ export function AiConfigSecretSection({
   disabled: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-4">
+    <div className="rounded-lg border border-line bg-surface-page/70 p-4">
       <div className="flex items-center justify-between gap-2">
-        <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800">
-          <KeyRound className="size-3.5 text-[#F26F21]" />
+        <label className="flex items-center gap-1.5 text-xs font-bold text-ink-primary">
+          <KeyRound className="size-3.5 text-brand" />
           {provider === 'OPENROUTER' ? 'OpenRouter API Key' : 'Google AI Studio API Key'} (write-only)
         </label>
         {initial?.hasApiKey && (
@@ -136,7 +136,7 @@ export function AiConfigSecretSection({
           disabled={disabled}
           placeholder={provider === 'OPENROUTER' ? 'sk-or-v1-… (leave blank to keep existing or use ENV)' : 'AIza… (leave blank to keep existing or use ENV)'}
           aria-label="Provider API key"
-          className="mt-2 h-9 w-full rounded-lg border border-gray-200 bg-white px-3 font-mono text-xs text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+          className="mt-2 h-9 w-full rounded-lg border border-line bg-white px-3 font-mono text-xs text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
         />
       )}
     </div>

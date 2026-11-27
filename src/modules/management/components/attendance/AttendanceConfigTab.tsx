@@ -57,21 +57,21 @@ export function AttendanceConfigTab() {
     <div className="flex flex-col gap-4">
       <DefaultRuleCard rule={defaultRule.data} />
 
-      <section aria-labelledby="course-rules" className="overflow-hidden rounded-2xl border border-gray-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-3.5">
+      <section aria-labelledby="course-rules" className="overflow-hidden rounded-lg border border-line/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.05)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line-soft px-5 py-3.5">
           <div>
-            <h2 id="course-rules" className="text-sm font-bold text-gray-900">
+            <h2 id="course-rules" className="text-sm font-bold text-ink-primary">
               Course conditions
             </h2>
-            <p className="mt-0.5 text-xs text-gray-500">
+            <p className="mt-0.5 text-xs text-ink-muted">
               {byCourse.size === 1 ? '1 course has its own condition.' : `${byCourse.size} courses have their own condition.`} Edit a course to change it.
             </p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 bg-gray-50/50 px-4 py-3 lg:flex-nowrap">
+        <div className="flex flex-wrap items-center gap-2 border-b border-line-soft bg-surface-page/50 px-4 py-3 lg:flex-nowrap">
           <div className="relative min-w-0 flex-1 basis-full lg:basis-auto">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" aria-hidden />
+            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden />
             <input
               value={search}
               onChange={(e) => {
@@ -80,7 +80,7 @@ export function AttendanceConfigTab() {
               }}
               placeholder="Search by course code or name..."
               aria-label="Search courses"
-              className="h-9 w-full rounded-lg border border-gray-200 bg-white pl-9 pr-7 text-[13px] text-gray-900 placeholder:text-gray-400 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15"
+              className="h-9 w-full rounded-lg border border-line bg-white pl-9 pr-7 text-[13px] text-ink-primary placeholder:text-ink-subtle focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15"
             />
             {search && (
               <button
@@ -90,13 +90,13 @@ export function AttendanceConfigTab() {
                   setPage(0);
                 }}
                 aria-label="Clear search"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-gray-400 hover:text-gray-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-ink-subtle hover:text-ink-muted"
               >
                 <X className="size-3.5" />
               </button>
             )}
           </div>
-          <label className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-700 hover:border-gray-300">
+          <label className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-secondary hover:border-ink-subtle/50">
             <input
               type="checkbox"
               checked={customOnly}
@@ -104,7 +104,7 @@ export function AttendanceConfigTab() {
                 setCustomOnly(e.target.checked);
                 setPage(0);
               }}
-              className="size-4 accent-[#F26F21]"
+              className="size-4 accent-brand"
             />
             Custom only
           </label>
@@ -116,7 +116,7 @@ export function AttendanceConfigTab() {
               setCustomOnly(false);
               setPage(0);
             }}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-[13px] font-medium text-gray-600 transition-colors hover:border-[#F26F21] hover:text-[#C2410C] disabled:cursor-default disabled:opacity-40 disabled:hover:border-gray-200 disabled:hover:text-gray-600"
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-line bg-white px-3 text-[13px] font-medium text-ink-muted transition-colors hover:border-brand hover:text-brand-ink disabled:cursor-default disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-muted"
           >
             <RotateCcw className="size-3.5" /> Reset
           </button>

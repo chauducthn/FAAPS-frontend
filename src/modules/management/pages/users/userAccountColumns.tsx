@@ -1,9 +1,9 @@
 import { GraduationCap, User as UserRound } from '@phosphor-icons/react';
 import type { SortingState } from '@tanstack/react-table';
+import { cn } from '@/shared/lib/utils';
 import { StatusBadge } from '../../components/StatusBadge';
 import { UserInitials } from '../../components/UserInitials';
 import { UserRowMenu } from '../../components/UserRowMenu';
-import { backState } from '../../../../shared/lib/backLink';
 import type { DataTableColumnDef } from '../../../../shared/components/common/DataTable';
 import type { AdminUserRole, AdminUserStatus, AdminUserSummary, UserSort } from '../../types/admin';
 
@@ -14,6 +14,17 @@ export const USER_ROLE_LABEL: Record<AdminUserRole, string> = {
   STUDENT: 'Student',
   ADVISOR: 'Advisor',
 };
+
+const ROLE_CHIP = 'inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[11px] font-medium';
+
+/** Short academic codes (major, cohort) in a quiet monospace; a dash when missing. */
+function CodeCell({ value }: { value?: string | null }) {
+  return value ? (
+    <span className="font-mono text-[12.5px] text-ink-secondary">{value}</span>
+  ) : (
+    <span className="text-ink-subtle">—</span>
+  );
+}
 
 const USER_SORT_FIELDS = new Set(['fullName', 'userId', 'email', 'role', 'major', 'cohort', 'status', 'createdAt']);
 
@@ -28,7 +39,6 @@ export function createUserAccountColumns(handlers: {
   onView: (id: string) => void;
   onRole: (user: AdminUserSummary) => void;
   onResetPassword: (user: AdminUserSummary) => void;
-  onAssignments: (path: string, state: ReturnType<typeof backState>) => void;
   onToggle: (user: AdminUserSummary) => void;
   onDelete: (user: AdminUserSummary) => void;
 }): DataTableColumnDef<AdminUserSummary>[] {
@@ -39,7 +49,7 @@ export function createUserAccountColumns(handlers: {
       cell: ({ row }) => (
         <div className="flex max-w-[220px] min-w-0 items-center gap-2.5">
           <UserInitials name={row.original.fullName} avatarUrl={row.original.avatarUrl} />
-          <span title={row.original.fullName} className="truncate font-semibold text-gray-900">
+          <span title={row.original.fullName} className="truncate font-medium text-ink-primary">
             {row.original.fullName}
           </span>
         </div>
@@ -51,7 +61,7 @@ export function createUserAccountColumns(handlers: {
       cell: ({ row }) => (
         <span
           title={row.original.userId}
-          className="inline-block max-w-[220px] truncate align-middle font-mono text-[13px] text-gray-700"
+          className="inline-block max-w-[220px] truncate align-middle font-mono text-[12.5px] text-ink-secondary"
         >
           {row.original.userId}
         </span>
@@ -61,7 +71,7 @@ export function createUserAccountColumns(handlers: {
       accessorKey: 'email',
       header: 'Email',
       cell: ({ row }) => (
-        <span title={row.original.email} className="block max-w-[230px] truncate text-[#555f6f]">
+        <span title={row.original.email} className="block max-w-[230px] truncate text-ink-muted">
           {row.original.email}
         </span>
       ),
@@ -71,12 +81,12 @@ export function createUserAccountColumns(handlers: {
       header: 'Role',
       cell: ({ row }) =>
         row.original.role === 'STUDENT' ? (
-          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#C2410C]">
+          <span className={cn(ROLE_CHIP, 'bg-brand-soft text-brand-ink')}>
             <GraduationCap className="size-3.5" aria-hidden />
             Student
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-indigo-700">
+          <span className={cn(ROLE_CHIP, 'bg-line-soft text-ink-secondary')}>
             <UserRound className="size-3.5" aria-hidden />
             Advisor
           </span>
@@ -86,13 +96,13 @@ export function createUserAccountColumns(handlers: {
       id: 'major',
       header: 'Major',
       accessorFn: (user) => user.majorCode ?? '',
-      cell: ({ row }) => <span className="text-[#555f6f]">{row.original.majorCode || '—'}</span>,
+      cell: ({ row }) => <CodeCell value={row.original.majorCode} />,
     },
     {
       id: 'cohort',
       header: 'Cohort',
       accessorFn: (user) => user.cohort ?? '',
-      cell: ({ row }) => <span className="text-[#555f6f]">{row.original.cohort || '—'}</span>,
+      cell: ({ row }) => <CodeCell value={row.original.cohort} />,
     },
     {
       accessorKey: 'status',
@@ -114,17 +124,6 @@ export function createUserAccountColumns(handlers: {
               onView={() => handlers.onView(user.id)}
               onRole={() => handlers.onRole(user)}
               onResetPassword={() => handlers.onResetPassword(user)}
-              onAssignments={() =>
-                handlers.onAssignments(
-                  user.role === 'ADVISOR'
-                    ? `/admin/assignments/advisors/${user.id}`
-                    : `/admin/assignments/students/${user.id}/history`,
-                  backState(
-                    `/admin/users?role=${user.role}`,
-                    `User Accounts · ${USER_ROLE_LABEL[user.role]} filter`,
-                  ),
-                )
-              }
               onToggle={() => handlers.onToggle(user)}
               onDelete={() => handlers.onDelete(user)}
             />

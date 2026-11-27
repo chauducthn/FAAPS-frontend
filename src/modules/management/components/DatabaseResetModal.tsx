@@ -31,17 +31,17 @@ export function DatabaseResetModal({
     <Modal open={open} onClose={() => !isPending && onClose()} title="Confirm database reset" className="max-w-md">
       <div className="space-y-4 p-5">
         <div className="flex items-start gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 ring-1 ring-red-200/70">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-50 text-red-600 ring-1 ring-red-200/70">
             <AlertTriangle className="size-4.5" />
           </span>
           <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-gray-900">{heading}</h3>
+            <h3 className="text-sm font-semibold text-ink-primary">{heading}</h3>
             {isAll ? (
-              <p className="mt-1 text-xs text-gray-600">
-                Deletes all data except <span className="font-mono font-medium text-gray-900">{preservedAdminEmail ?? 'your admin account'}</span>, roles &amp; categories.
+              <p className="mt-1 text-xs text-ink-muted">
+                Deletes all data except <span className="font-mono font-medium text-ink-primary">{preservedAdminEmail ?? 'your admin account'}</span>, roles &amp; categories.
               </p>
             ) : (
-              <p className="mt-1 text-xs text-gray-600">
+              <p className="mt-1 text-xs text-ink-muted">
                 Clears {target.rowCount.toLocaleString()} rows across {target.tables.length} tables. {target.preserves}
               </p>
             )}
@@ -49,7 +49,7 @@ export function DatabaseResetModal({
         </div>
 
         <div>
-          <label htmlFor="confirm-reset-input" className="mb-1.5 block text-xs font-medium text-gray-700">
+          <label htmlFor="confirm-reset-input" className="mb-1.5 block text-xs font-medium text-ink-secondary">
             Type <span className="font-mono font-bold text-red-600">RESET</span> to confirm
           </label>
           <input
@@ -58,7 +58,7 @@ export function DatabaseResetModal({
             value={confirmText}
             onChange={(e) => onConfirmTextChange(e.target.value)}
             placeholder="RESET"
-            className="h-9 w-full rounded-lg border border-gray-200 px-3 font-mono text-xs uppercase focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100"
+            className="h-9 w-full rounded-lg border border-line px-3 font-mono text-xs uppercase focus:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-100"
           />
         </div>
 
@@ -67,7 +67,7 @@ export function DatabaseResetModal({
             type="button"
             disabled={isPending}
             onClick={onClose}
-            className="h-9 rounded-lg border border-gray-200 bg-white px-3.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+            className="h-9 rounded-lg border border-line bg-white px-3.5 text-xs font-medium text-ink-secondary hover:bg-surface-hover disabled:opacity-50"
           >
             Cancel
           </button>

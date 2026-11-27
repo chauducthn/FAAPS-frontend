@@ -52,7 +52,7 @@ export function CourseAddRelationForm({
   };
 
   return (
-    <div className="mb-3 rounded-2xl border border-gray-200 bg-gray-50/60 p-3.5">
+    <div className="mb-3 rounded-lg border border-line bg-surface-page/60 p-3.5">
       <div className="grid grid-cols-2 items-end gap-3 sm:grid-cols-12">
         <div className="sm:col-span-3">
           <label className={courseRelationLabelClass}>Type</label>
@@ -108,7 +108,7 @@ export function CourseAddRelationForm({
           type="button"
           disabled={!canAdd}
           onClick={submit}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-[#F26F21] px-3.5 py-2 text-xs font-bold text-white shadow-[0_1px_2px_rgba(242,111,33,0.4)] transition-colors hover:bg-[#e05f14] disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-xs font-bold text-white shadow-[0_1px_2px_rgba(242,111,33,0.4)] transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? <Loader2 className="size-3.5 animate-spin" /> : <Plus className="size-3.5" />}
           {isSubmitting ? 'Adding…' : 'Add relation'}

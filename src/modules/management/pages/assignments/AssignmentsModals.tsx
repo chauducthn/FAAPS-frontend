@@ -159,9 +159,7 @@ export function AssignmentsModals({
       <UnassignAdvisorModal students={unassignStudents} onClose={onCloseUnassignStudents} />
       <Modal open={!!historyStudent} onClose={onCloseHistory} title="Assignment history" className="max-w-4xl">
         {historyStudent && (
-          <div className="p-4">
-            <StudentHistoryPanel student={historyStudent} onBack={onCloseHistory} />
-          </div>
+          <StudentHistoryPanel student={historyStudent} onBack={onCloseHistory} inModal />
         )}
       </Modal>
       <AdvisoryLimitModal target={limitTarget} onClose={onCloseLimit} />

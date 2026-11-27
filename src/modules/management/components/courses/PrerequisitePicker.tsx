@@ -43,7 +43,7 @@ export default function PrerequisitePicker({ value, onChange, excludeCode }: Pro
           aria-label="Select prerequisite course"
           disabled={poolQuery.isLoading || available.length === 0}
           onChange={(e) => handleSelect(e.target.value)}
-          className="h-10 w-full appearance-none rounded-lg border border-gray-200 bg-white pl-3 pr-9 text-[13px] text-gray-700 shadow-2xs transition-colors hover:border-gray-300 focus:border-[#F26F21] focus:outline-none focus:ring-2 focus:ring-[#F26F21]/15 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
+          className="h-10 w-full appearance-none rounded-lg border border-line bg-white pl-3 pr-9 text-[13px] text-ink-secondary shadow-2xs transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-surface-page disabled:text-ink-subtle"
         >
           <option value="">
             {poolQuery.isLoading
@@ -53,12 +53,12 @@ export default function PrerequisitePicker({ value, onChange, excludeCode }: Pro
                 : 'Select a course from course pool…'}
           </option>
           {available.map((c) => (
-            <option key={c.id} value={c.id} className="text-gray-900">
+            <option key={c.id} value={c.id} className="text-ink-primary">
               {c.code} — {c.name}
             </option>
           ))}
         </select>
-        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
       </div>
 
       {selected.length > 0 && (
@@ -66,7 +66,7 @@ export default function PrerequisitePicker({ value, onChange, excludeCode }: Pro
           {selected.map((c) => (
             <li
               key={c.id}
-              className="inline-flex items-center gap-1 rounded-lg bg-orange-50 py-1 pl-2.5 pr-1 text-xs font-semibold text-[#9a3412] ring-1 ring-orange-200"
+              className="inline-flex items-center gap-1 rounded-lg bg-brand-soft py-1 pl-2.5 pr-1 text-xs font-semibold text-brand-ink ring-1 ring-brand/30"
             >
               <span className="font-mono font-bold">{c.code}</span>
               <span className="max-w-[180px] truncate font-medium">{c.name}</span>
@@ -74,7 +74,7 @@ export default function PrerequisitePicker({ value, onChange, excludeCode }: Pro
                 type="button"
                 onClick={() => remove(c.id)}
                 aria-label={`Remove ${c.code}`}
-                className="rounded p-0.5 hover:bg-orange-100"
+                className="rounded p-0.5 hover:bg-brand-soft-strong"
               >
                 <X className="size-3" />
               </button>

@@ -4,7 +4,7 @@ import type { AiReportStatus } from '../types/admin';
 const STYLES: Record<AiReportStatus, string> = {
   PENDING: 'text-red-600',
   RESOLVED: 'text-emerald-700',
-  DISMISSED: 'text-gray-500',
+  DISMISSED: 'text-ink-muted',
 };
 
 export function ReportStatusBadge({ status }: { status: AiReportStatus }) {

@@ -13,6 +13,8 @@ import type {
   UpdateCourseRelationDto,
   CourseCategory,
   CourseImportPreview,
+  CourseWorkload,
+  WorkloadLevel,
 } from '../../academic/types/course';
 
 interface BackendCoursePage {
@@ -60,6 +62,8 @@ const toCourseSummary = (course: BackendCourseDetail | CourseDetail): CourseSumm
   categoryName: course.categoryName,
   specialization: (course as CourseDetail).specialization ?? null,
   status: course.status,
+  materialLink: course.materialLink ?? null,
+  workload: course.workload ?? null,
   prerequisiteCount: 'prerequisites' in course
     ? course.prerequisites.length
     : course.prerequisiteCount,
@@ -104,6 +108,15 @@ export const courseService = {
       body,
     );
     return toCourseSummary(data);
+  },
+
+  updateWorkload: async (id: string, workloadLevel: WorkloadLevel | 'AUTO' | null): Promise<CourseWorkload> => {
+    const { data } = await apiClient.put<CourseWorkload>(
+      `/admin/courses/${id}/workload`,
+      { workloadLevel: workloadLevel === 'AUTO' ? null : workloadLevel },
+      { headers: await getCsrfHeaders() },
+    );
+    return data;
   },
 
   remove: async (id: string): Promise<void> => {

@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { ArrowRight, CheckCircle as CheckCircle2 } from '@phosphor-icons/react';
+import { ArrowRight, CheckCircle } from '@phosphor-icons/react';
 import { CTAButton } from '@/shared/components/common/CTAButton';
 import { useAuth } from '@/modules/auth/stores/useAuth';
 import type { RoleCode } from '@/modules/auth/types/auth';
+import { cn } from '@/shared/lib/utils';
+import { RolePreview } from './RolePreview';
+import { SectionHeading } from './SectionHeading';
 import { ROLE_SHOWCASES } from './content';
 
 export function RoleShowcase() {
@@ -11,28 +14,23 @@ export function RoleShowcase() {
   const isAuthenticated = useAuth((s) => s.isAuthenticated);
 
   const active = ROLE_SHOWCASES.find((r) => r.id === activeRole) ?? ROLE_SHOWCASES[0];
-  const ctaTarget = isAuthenticated && user?.role === active.id ? active.portalPath : '/login';
-  const ctaText =
-    isAuthenticated && user?.role === active.id ? `Open ${active.label} Portal` : active.ctaLabel;
+  const ownsActivePortal = isAuthenticated && user?.role === active.id;
+  const ctaTarget = ownsActivePortal ? active.portalPath : '/login';
+  const ctaText = ownsActivePortal ? `Open ${active.label} Portal` : active.ctaLabel;
 
   return (
-    <section id="roles" className="scroll-mt-16 border-y border-line bg-surface-page">
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-wider text-brand">Built for Every Role</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight text-ink-primary sm:text-3xl">
-            Three dedicated portals, one shared academic truth
-          </h2>
-          <p className="mt-3 text-base text-ink-muted">
-            Switch between roles below to explore how Students, Advisors, and Administrators collaborate on FAAPS.
-          </p>
-        </div>
+    <section id="roles" className="scroll-mt-24 bg-white">
+      <div className="mx-auto max-w-6xl px-4 py-24 sm:px-6 sm:py-32">
+        <SectionHeading
+          eyebrow="Built for Every Role"
+          title="Three dedicated portals, one shared academic truth"
+          description="Switch between roles below to explore how Students, Advisors, and Administrators collaborate on FAAPS."
+        />
 
-        {/* Role tab buttons */}
         <div
           role="tablist"
           aria-label="FAAPS user roles"
-          className="mx-auto mt-8 flex max-w-xl flex-wrap justify-center gap-2 rounded-xl border border-line bg-white p-1.5"
+          className="mx-auto mt-10 flex w-fit max-w-full flex-wrap justify-center gap-1 rounded-lg border border-line bg-surface-page p-1"
         >
           {ROLE_SHOWCASES.map(({ id, label, icon: Icon }) => {
             const isSelected = id === active.id;
@@ -45,91 +43,56 @@ export function RoleShowcase() {
                 aria-selected={isSelected}
                 aria-controls={`role-panel-${id}`}
                 onClick={() => setActiveRole(id)}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors ${
+                className={cn(
+                  'flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-all sm:px-5',
                   isSelected
-                    ? 'bg-brand text-white shadow-sm'
-                    : 'text-ink-muted hover:bg-surface-hover hover:text-ink-primary'
-                }`}
+                    ? 'bg-white text-ink-primary shadow-[0_2px_8px_-2px_rgb(0_0_0/0.15)] ring-1 ring-line'
+                    : 'text-ink-muted hover:text-ink-primary',
+                )}
               >
-                <Icon className="size-4 shrink-0" aria-hidden />
+                <Icon className={cn('size-4 shrink-0', isSelected && 'text-brand')} aria-hidden />
                 <span>{label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Active role panel */}
         <div
+          key={active.id}
           role="tabpanel"
           id={`role-panel-${active.id}`}
           aria-labelledby={`role-tab-${active.id}`}
-          className="mt-8 grid items-stretch gap-6 rounded-2xl border border-line bg-white p-6 shadow-sm sm:p-8 lg:grid-cols-12"
+          className="mt-12 grid animate-in items-center gap-10 fade-in duration-500 lg:grid-cols-12 lg:gap-14"
         >
-          <div className="flex flex-col justify-between lg:col-span-6">
-            <div>
-              <span className="inline-block rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand-ink">
-                {active.label} Workspace
-              </span>
-              <h3 className="mt-4 text-xl font-bold text-ink-primary sm:text-2xl">{active.tagline}</h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-ink-muted sm:text-base">{active.summary}</p>
+          <div className="lg:col-span-5">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand">{active.label} Workspace</p>
+            <h3 className="mt-3 text-2xl font-semibold leading-tight tracking-[-0.02em] text-ink-primary sm:text-3xl">
+              {active.tagline}
+            </h3>
+            <p className="mt-4 text-[15px] leading-relaxed text-ink-muted">{active.summary}</p>
 
-              <ul className="mt-6 space-y-3">
-                {active.capabilities.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm text-ink-secondary">
-                    <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul className="mt-7 space-y-3.5">
+              {active.capabilities.map((item) => (
+                <li key={item} className="flex items-start gap-3 text-sm leading-relaxed text-ink-secondary">
+                  <CheckCircle className="mt-0.5 size-[18px] shrink-0 text-brand" weight="fill" aria-hidden />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
 
-            <div className="mt-8">
-              <CTAButton to={ctaTarget} size="md">
-                {ctaText}
-                <ArrowRight className="size-4" aria-hidden />
-              </CTAButton>
-            </div>
+            <CTAButton to={ctaTarget} size="md" className="group mt-9 rounded-md">
+              {ctaText}
+              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" aria-hidden />
+            </CTAButton>
           </div>
 
-          {/* Mini portal preview */}
-          <div className="flex flex-col justify-between rounded-xl border border-line bg-surface-sunken p-5 lg:col-span-6">
-            <div>
-              <div className="flex items-center justify-between gap-2 border-b border-line pb-3.5">
-                <p className="text-sm font-semibold text-ink-primary">{active.previewTitle}</p>
-                <span className="rounded-md bg-brand-soft px-2.5 py-0.5 text-xs font-semibold text-brand-ink">
-                  {active.previewBadge}
-                </span>
-              </div>
-
-              <div className="mt-4 grid grid-cols-3 gap-2.5">
-                {active.previewMetrics.map((metric) => (
-                  <div
-                    key={metric.label}
-                    className="rounded-lg border border-line-soft bg-white p-3 text-center"
-                  >
-                    <p className="text-[11px] text-ink-muted">{metric.label}</p>
-                    <p className="mt-1 text-sm font-bold text-ink-primary">{metric.value}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-4 space-y-2.5">
-                {active.previewItems.map((item) => (
-                  <div
-                    key={item.title}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-line-soft bg-white px-3.5 py-3"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-ink-primary">{item.title}</p>
-                      <p className="truncate text-xs text-ink-muted">{item.meta}</p>
-                    </div>
-                    <span className="shrink-0 rounded-full bg-surface-page px-2.5 py-1 text-xs font-medium text-ink-secondary">
-                      {item.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="lg:col-span-7">
+            <RolePreview
+              previewTitle={active.previewTitle}
+              previewBadge={active.previewBadge}
+              previewMetrics={active.previewMetrics}
+              previewItems={active.previewItems}
+            />
           </div>
         </div>
       </div>

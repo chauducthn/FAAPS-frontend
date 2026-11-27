@@ -42,21 +42,21 @@ export default function RoadmapCourseCard({ course, semesterCount, onMove, onRem
       }}
       onDragEnd={() => setDragging(false)}
       className={cn(
-        'group relative cursor-grab rounded-xl border bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-all duration-200',
+        'group relative cursor-grab rounded-lg border bg-white p-3 shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-all duration-200',
         'hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(16,24,40,0.12)] focus-within:-translate-y-0.5 focus-within:shadow-[0_8px_20px_rgba(16,24,40,0.12)]',
         'active:cursor-grabbing',
-        dragging && 'rotate-2 scale-[1.03] border-[#F26F21] opacity-70 shadow-[0_12px_28px_rgba(242,111,33,0.35)] ring-2 ring-[#F26F21]/40',
+        dragging && 'rotate-2 scale-[1.03] border-brand opacity-70 shadow-[0_12px_28px_rgba(242,111,33,0.35)] ring-2 ring-brand/40',
         !dragging && isMilestone
-          ? 'border-dashed border-[#F26F21]/70 bg-[var(--brand-soft)] hover:border-[#F26F21]'
-          : !dragging && 'border-slate-200 hover:border-orange-300',
+          ? 'border-dashed border-brand/70 bg-[var(--brand-soft)] hover:border-brand'
+          : !dragging && 'border-line hover:border-brand/30',
       )}
     >
       <GripVertical
         aria-hidden="true"
-        className="absolute left-1 top-1/2 size-3.5 -translate-y-1/2 text-slate-300 opacity-0 transition-opacity group-hover:opacity-100"
+        className="absolute left-1 top-1/2 size-3.5 -translate-y-1/2 text-ink-subtle opacity-0 transition-opacity group-hover:opacity-100"
       />
       <div className="flex items-start justify-between gap-2 pl-2">
-        <span className="rounded-md bg-gray-900 px-1.5 py-0.5 font-mono text-[12px] font-bold tracking-tight text-white">
+        <span className="rounded-md bg-ink-primary px-1.5 py-0.5 font-mono text-[12px] font-bold tracking-tight text-surface-page">
           {course.code}
         </span>
         <div className="flex shrink-0 items-center gap-1.5">
@@ -65,7 +65,7 @@ export default function RoadmapCourseCard({ course, semesterCount, onMove, onRem
               {course.milestone.badge}
             </span>
           )}
-          <span className="rounded-md bg-orange-50 px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums text-[#9a3412] ring-1 ring-orange-200">
+          <span className="rounded-md bg-brand-soft px-1.5 py-0.5 text-[10px] font-extrabold tabular-nums text-brand-ink ring-1 ring-brand/30">
             {course.credits} cr
           </span>
           <span
@@ -78,26 +78,26 @@ export default function RoadmapCourseCard({ course, semesterCount, onMove, onRem
         </div>
       </div>
 
-      <h4 className="mt-2 truncate pl-2 text-[13px] font-bold text-gray-900" title={course.name}>
+      <h4 className="mt-2 truncate pl-2 text-[13px] font-bold text-ink-primary" title={course.name}>
         <button
           type="button"
           onClick={openDetail}
           title={`View detail of ${course.code}`}
-          className="truncate text-left transition-colors hover:text-[#C2410C] hover:underline"
+          className="truncate text-left transition-colors hover:text-brand-ink hover:underline"
         >
           {course.name}
         </button>
       </h4>
 
       {course.categoryLabel && (
-        <p className="mt-0.5 truncate pl-2 text-[11px] font-medium text-gray-400">{course.categoryLabel}</p>
+        <p className="mt-0.5 truncate pl-2 text-[11px] font-medium text-ink-subtle">{course.categoryLabel}</p>
       )}
 
       {course.specialization && (
         <p className="mt-1.5 pl-2">
           <span
             title={`Specialization: ${course.specialization}`}
-            className="inline-block max-w-full truncate rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-extrabold text-violet-800 ring-1 ring-violet-200"
+            className="inline-block max-w-full truncate rounded-full bg-line-soft px-2 py-0.5 text-[10px] font-extrabold text-ink-secondary ring-1 ring-line"
           >
             {course.specialization}
           </span>
@@ -105,18 +105,18 @@ export default function RoadmapCourseCard({ course, semesterCount, onMove, onRem
       )}
 
       {isMilestone && course.milestone?.description && (
-        <p className="mt-1.5 rounded-lg bg-white/70 px-2 py-1.5 text-[11px] leading-relaxed text-[#7C2D12]">{course.milestone.description}</p>
+        <p className="mt-1.5 rounded-lg bg-white/70 px-2 py-1.5 text-[11px] leading-relaxed text-brand-ink">{course.milestone.description}</p>
       )}
 
       {isMilestone && course.milestone?.requirement && (
-        <p className="mt-1.5 pl-2 text-[11px] font-bold text-[#C2410C]">{course.milestone.requirement}</p>
+        <p className="mt-1.5 pl-2 text-[11px] font-bold text-brand-ink">{course.milestone.requirement}</p>
       )}
 
       {course.prerequisites.length > 0 && (
         <p
           className={cn(
             'mt-1.5 flex items-center gap-1 pl-2 text-[10px] font-medium',
-            isMilestone ? 'text-[#8A5A3C]' : 'text-gray-500',
+            isMilestone ? 'text-[#8A5A3C]' : 'text-ink-muted',
           )}
         >
           <Star className="size-3 shrink-0 fill-amber-400 text-amber-400" />
@@ -130,7 +130,7 @@ export default function RoadmapCourseCard({ course, semesterCount, onMove, onRem
                     type="button"
                     onClick={() => onViewCourse(p.courseId as string)}
                     title={`View detail of ${p.code}`}
-                    className="font-bold transition-colors hover:text-[#C2410C] hover:underline"
+                    className="font-bold transition-colors hover:text-brand-ink hover:underline"
                   >
                     {p.code}
                   </button>

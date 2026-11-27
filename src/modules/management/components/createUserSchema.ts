@@ -62,11 +62,12 @@ export const emptyCreateUserValues = (role: AdminUserRole): CreateUserValues => 
 });
 
 const fieldBase =
-  'h-10 w-full rounded-lg border bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400 shadow-2xs transition-colors focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-60';
+  'h-9 w-full rounded-md border bg-white px-3 text-sm text-ink-primary placeholder:text-ink-subtle transition-colors ' +
+  'focus:outline-none focus:ring-2 disabled:cursor-not-allowed disabled:bg-surface-page disabled:opacity-60';
 
 export const userFieldClass = (invalid?: boolean) =>
   invalid
     ? `${fieldBase} border-red-300 bg-red-50/40 focus:border-red-400 focus:ring-red-200`
-    : `${fieldBase} border-gray-200 hover:border-gray-300 focus:border-[#F26F21] focus:ring-[#F26F21]/15`;
+    : `${fieldBase} border-line hover:border-ink-subtle/50 focus:border-brand focus:ring-brand/15`;
 
-export const userLabelClass = 'mb-1.5 block text-[13px] font-medium text-gray-700';
+export const userLabelClass = 'mb-1.5 block text-[13px] font-medium text-ink-secondary';

@@ -39,7 +39,7 @@ export function RuleRestrictionSection({ restr, disabled, errors, setR }: Props)
           />
         ))}
       </div>
-      <div className="grid gap-4 border-t border-gray-100 pt-3.5 sm:grid-cols-2">
+      <div className="grid gap-4 border-t border-line-soft pt-3.5 sm:grid-cols-2">
         <RuleFormField label="Cap credits next semester" error={errors.maxCreditsNextSemester} hint="Leave empty for no cap.">
           <input
             type="number"
