@@ -2,7 +2,8 @@
 // Quản lý lịch hẹn — hero cam FPT + stat cards + view switcher (Calendar / List)
 // + List view (Upcoming / History tabs, DataTable) + WeeklyCalendar được bảo tồn 100%.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import {
   CalendarDays,
   ChevronLeft,
@@ -16,6 +17,7 @@ import {
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 import { DataTable, type DataTableColumnDef } from '../../../shared/components/common/DataTable';
 import { AppointmentActionModal } from '../../appointment/components/AppointmentActionModal';
+import { AdvisorScheduleModal } from '../../appointment/components/AdvisorScheduleModal';
 import { AvailabilityEditor } from '../../appointment/components/AvailabilityEditor';
 import { WeeklyCalendar, shiftWeek, weekLabel } from '../../appointment/components/WeeklyCalendar';
 import { BookingStatusBadge } from '../../appointment/components/AppointmentBits';
@@ -26,6 +28,10 @@ import {
 } from '../../appointment/hooks/queries/useAppointmentQueries';
 import { formatIsoDay, formatIsoTime, toDateKey, weekDays } from '../../../shared/lib/appointmentDate';
 import type { AdvisorAppointment } from '../../appointment/types/appointment';
+import { advisorService } from '../services/advisorService';
+import { advisingRequestIdFromParams } from '../utils/appointmentLink';
+import { apiMessage } from '../../../shared/lib/apiMessage';
+import { toast } from 'sonner';
 import { cn } from '@/shared/lib/utils';
 
 type ViewMode = 'calendar' | 'list';
@@ -49,6 +55,58 @@ export default function AdvisorAppointments() {
   const [weekAnchor, setWeekAnchor] = useState(() => new Date());
   const [selected, setSelected] = useState<AdvisorAppointment | null>(null);
   const [showAvailability, setShowAvailability] = useState(false);
+
+  /**
+   * Deep-link từ ticket tư vấn: `/advisor/appointments?advisingRequestId=<id>`.
+   *
+   * Mở form đặt lịch với sẵn `advisingRequestId` ⇒ lịch hẹn mới gắn đúng
+   * ticket đó. Cần `studentId` nên phải tra ticket trước.
+   */
+  const [searchParams, setSearchParams] = useSearchParams();
+  const linkedRequestId = advisingRequestIdFromParams(searchParams);
+  const [scheduleContext, setScheduleContext] = useState<{
+    studentId: string;
+    studentName: string | null;
+    advisingRequestId: string;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!linkedRequestId) return;
+    let cancelled = false;
+
+    advisorService
+      .getRequestDetail(linkedRequestId)
+      .then((detail) => {
+        if (cancelled) return;
+        const studentId = detail.request?.studentId;
+        if (!studentId) return;
+        setScheduleContext({
+          studentId,
+          studentName: detail.request.studentName ?? null,
+          advisingRequestId: linkedRequestId,
+        });
+      })
+      .catch((error) => {
+        if (!cancelled) toast.error(apiMessage(error));
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [linkedRequestId]);
+
+  // Đóng form ⇒ xoá query param để không mở lại khi reload trang.
+  const closeSchedule = () => {
+    setScheduleContext(null);
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('advisingRequestId');
+        return next;
+      },
+      { replace: true },
+    );
+  };
 
   // List-view state
   const [tab, setTab] = useState<ListTab>('upcoming');
@@ -430,6 +488,15 @@ export default function AdvisorAppointments() {
       </section>
 
       <AppointmentActionModal appointment={selected} onClose={() => setSelected(null)} />
+
+      {/* Đặt lịch từ deep-link của ticket tư vấn. */}
+      <AdvisorScheduleModal
+        open={scheduleContext !== null}
+        studentId={scheduleContext?.studentId ?? null}
+        studentName={scheduleContext?.studentName ?? null}
+        advisingRequestId={scheduleContext?.advisingRequestId ?? null}
+        onClose={closeSchedule}
+      />
     </div>
   );
 }

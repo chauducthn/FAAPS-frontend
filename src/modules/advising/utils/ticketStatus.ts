@@ -18,6 +18,7 @@ const TICKET_STATUS_LABELS: Record<AdvisingRequestStatus, string> = {
   PENDING: 'Waiting for an advisor',
   IN_PROGRESS: 'In Progress',
   RESOLVED: 'Resolved',
+  REJECTED: 'Rejected',
   CANCELLED: 'Cancelled',
 };
 

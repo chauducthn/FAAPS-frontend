@@ -133,12 +133,12 @@ export function StudentsAtRiskWidget() {
           </p>
         </div>
 
-        {/* CTA sang trang danh sách SV — luôn hiện để biết đường đi, kể cả khi rỗng. */}
+        {/* Trang "My Students" đã bị gỡ khỏi menu ⇒ CTA trỏ sang hàng đợi ticket. */}
         <Link
-          to="/advisor/students"
+          to="/advisor/advising-requests"
           className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#F26F21]/40 hover:text-[#F26F21]"
         >
-          View Details
+          View Requests
           <ArrowRight className="size-4" aria-hidden />
         </Link>
       </div>

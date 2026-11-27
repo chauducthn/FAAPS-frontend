@@ -1,11 +1,12 @@
 // src/modules/advising/components/AdvisorRequestDetailModal.tsx
 // Detail view of one advising TICKET, from the Advisor's side.
 //
-// The system is a TICKET queue (helpdesk), NOT a 1-1 chat with an assigned advisor:
+// Mô hình SHARED MULTI-ADVISOR (không còn gán cứng 1 SV - 1 Advisor):
 //   • PENDING     → visible to every advisor; "Claim Request" takes it.
-//   • IN_PROGRESS → an advisor owns it. The owner can reply + "Resolve Request".
-//                  Other advisors are read-only.
-//   • RESOLVED    → closed, read-only.
+//   • IN_PROGRESS → nhiều cố vấn có thể CÙNG trả lời 1 thread ⇒ không read-only,
+//                   không khóa, không báo 409.
+//   • RESOLVED    → đã đóng.
+//   • REJECTED    → cố vấn đã TỪ CHỐI (bắt buộc có resolutionSummary).
 //
 // API used:
 //   GET   /api/advisor/advising-requests/{id}
@@ -14,14 +15,16 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CircleCheckBig, Hand, Lock, Send, X } from 'lucide-react';
+import { Ban, CalendarPlus, CircleCheckBig, Hand, Send, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Modal } from '@/shared/components/ui/Modal';
 import { apiMessage } from '../../../shared/lib/apiMessage';
 import { cn } from '@/shared/lib/utils';
 import { advisorService } from '../services/advisorService';
 import { RequestStatusBadge } from './RequestStatusBadge';
+import { Student360Button } from './Student360Button';
 import { formatStamp, initialsOf, typeLabelOf } from './chat/format';
+import { AdvisorScheduleModal } from '../../appointment/components/AdvisorScheduleModal';
 import { useAuth } from '../../auth/stores/useAuth';
 import type { AdvisingRequest } from '../types/advising';
 
@@ -38,6 +41,7 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
   const currentUserId = useAuth((state) => state.user?.id);
   const threadRef = useRef<HTMLDivElement | null>(null);
   const resolveInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const rejectInputRef = useRef<HTMLTextAreaElement | null>(null);
 
   const [reply, setReply] = useState('');
   const [replyError, setReplyError] = useState('');
@@ -47,6 +51,11 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
   const [showResolve, setShowResolve] = useState(false);
   const [resolving, setResolving] = useState(false);
   const [claiming, setClaiming] = useState(false);
+  // Mô hình Shared Multi-Advisor: có thể TỪ CHỐI (REJECTED) yêu cầu.
+  const [showReject, setShowReject] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  /** Mở form đặt lịch hẹn (gửi kèm `advisingRequestId` của ticket này). */
+  const [showSchedule, setShowSchedule] = useState(false);
 
   const requestId = request?.id ?? null;
 
@@ -63,6 +72,7 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
     setSummary('');
     setSummaryError('');
     setShowResolve(false);
+    setShowReject(false);
   }, [requestId]);
 
   // Keep the thread pinned to the newest message.
@@ -80,20 +90,36 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
     return () => cancelAnimationFrame(raf);
   }, [showResolve]);
 
+  // Opening the "Reject Request" popup ⇒ focus the reason input straight away.
+  useEffect(() => {
+    if (!showReject) return;
+    const el = rejectInputRef.current;
+    if (!el) return;
+    const raf = requestAnimationFrame(() => el.focus());
+    return () => cancelAnimationFrame(raf);
+  }, [showReject]);
+
   // Live data from the API wins over the prop (after a claim / resolve).
   const live = detail.data?.request ?? request;
   const status = live?.status ?? 'PENDING';
   const messages = detail.data?.messages ?? [];
 
-  /** Is this ticket owned by the advisor who is signed in? */
+  /**
+   * Cố vấn đang đăng nhập có đang phụ trách / từng tham gia ticket này không.
+   *
+   * Mô hình Shared Multi-Advisor: đây KHÔNG còn là điều kiện để được trả lời —
+   * mọi cố vấn đều có thể cùng nhảy vào 1 thread. Chỉ dùng để hiển thị nhãn
+   * "You are handling this request" và để quyết định ai hiện nút Resolve/Reject.
+   */
   const isMine = useMemo(() => {
     if (!live) return false;
+    if (live.participatedByMe === true) return true;
     if (!live.advisorId || !currentUserId) return false;
     return live.advisorId === currentUserId;
   }, [live, currentUserId]);
 
   const isPending = status === 'PENDING';
-  const isClosed = status === 'RESOLVED' || status === 'CANCELLED';
+  const isClosed = status === 'RESOLVED' || status === 'REJECTED' || status === 'CANCELLED';
 
   const refresh = () =>
     queryClient.invalidateQueries({ queryKey: ['advisor'] });
@@ -163,6 +189,39 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
     }
   };
 
+  /**
+   * TỪ CHỐI yêu cầu — PATCH status = 'REJECTED' kèm `resolutionSummary`.
+   *
+   * KHÔNG dùng workaround cũ (gửi CANCELLED): BE chỉ nhận
+   * IN_PROGRESS | RESOLVED | REJECTED | CANCELLED cho advisor, và 'REJECTED' là
+   * trạng thái đúng ngữ nghĩa (SV hủy thì dùng CANCELLED).
+   * `resolutionSummary` là BẮT BUỘC — BE trả 400 nếu thiếu.
+   */
+  const reject = async () => {
+    if (!requestId) return;
+    const text = summary.trim();
+    if (!text) {
+      setSummaryError('A reason is required before rejecting the request.');
+      return;
+    }
+    setRejecting(true);
+    try {
+      await advisorService.updateRequestStatus(requestId, {
+        status: 'REJECTED',
+        resolutionSummary: text,
+      });
+      toast.success('Request rejected', { description: 'The student has been notified.' });
+      setSummary('');
+      setSummaryError('');
+      setShowReject(false);
+      await refresh();
+    } catch (error) {
+      toast.error(apiMessage(error));
+    } finally {
+      setRejecting(false);
+    }
+  };
+
   return (
     <Modal
       open={!!request}
@@ -217,7 +276,10 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
                 </div>
               </div>
 
-              {/* Who owns this ticket right now? */}
+              {/*
+                Mô hình Shared Multi-Advisor: KHÔNG khóa ticket. Nhiều cố vấn có
+                thể cùng trả lời 1 thread ⇒ không còn trạng thái "read only".
+              */}
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 {isPending ? (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-50 px-3 py-1 text-xs font-bold text-orange-800 ring-1 ring-inset ring-orange-200">
@@ -231,10 +293,38 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700 ring-1 ring-inset ring-slate-200">
-                    <Lock className="size-3.5" aria-hidden />
                     {live?.advisorName
-                      ? `Being handled by ${live.advisorName} — read only`
-                      : 'Being handled by another advisor — read only'}
+                      ? `Being handled by ${live.advisorName} — you can join in`
+                      : 'Being handled by another advisor — you can join in'}
+                  </span>
+                )}
+              </div>
+
+              {/*
+                Hành động liên quan tới sinh viên + lịch hẹn:
+                  • "View Student Profile" ⇒ mở Student360Modal (hồ sơ 360).
+                  • "Schedule Appointment"  ⇒ mở form đặt lịch, gửi kèm
+                    `advisingRequestId` để lịch hẹn gắn với ticket này.
+              */}
+              <div className="mt-3 flex flex-wrap items-center gap-2.5">
+                <Student360Button
+                  studentId={live?.studentId}
+                  studentName={live?.studentName}
+                  className="h-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSchedule(true)}
+                  disabled={!live?.studentId}
+                  className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#F26F21]/40 hover:text-[#F26F21] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <CalendarPlus className="size-4" aria-hidden />
+                  Schedule Appointment
+                </button>
+                {live?.linkedAppointmentId && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800 ring-1 ring-inset ring-emerald-200">
+                    <CircleCheckBig className="size-3.5" aria-hidden />
+                    An appointment is already linked to this request
                   </span>
                 )}
               </div>
@@ -253,10 +343,24 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
             placeholder like "Your advisor is now processing this request.").
           */}
           {isClosed && live?.resolutionSummary && (
-            <p className="mt-3 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3.5 text-sm font-medium leading-relaxed text-emerald-950">
-              <CircleCheckBig className="mt-0.5 size-4 shrink-0" aria-hidden />
+            <p
+              className={cn(
+                'mt-3 flex items-start gap-2 rounded-xl border px-4 py-3.5 text-sm font-medium leading-relaxed',
+                // Yêu cầu bị TỪ CHỐI ⇒ nền đỏ; đóng bình thường ⇒ nền xanh.
+                status === 'REJECTED'
+                  ? 'border-red-200 bg-red-50 text-red-950'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-950',
+              )}
+            >
+              {status === 'REJECTED' ? (
+                <Ban className="mt-0.5 size-4 shrink-0" aria-hidden />
+              ) : (
+                <CircleCheckBig className="mt-0.5 size-4 shrink-0" aria-hidden />
+              )}
               <span>
-                <span className="font-extrabold">Resolution: </span>
+                <span className="font-extrabold">
+                  {status === 'REJECTED' ? 'Rejected: ' : 'Resolution: '}
+                </span>
                 {live.resolutionSummary}
               </span>
             </p>
@@ -341,20 +445,42 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
           </div>
         ) : isClosed ? (
           <div className="border-t border-slate-200 bg-white p-5 sm:px-6">
-            <p className="flex items-center gap-2 rounded-xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-600 ring-1 ring-inset ring-slate-200">
-              <Lock className="size-4 shrink-0" aria-hidden />
-              This request is closed — no further replies.
-            </p>
-          </div>
-        ) : !isMine ? (
-          <div className="border-t border-slate-200 bg-white p-5 sm:px-6">
-            <p className="flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 ring-1 ring-inset ring-amber-200">
-              <Lock className="size-4 shrink-0" aria-hidden />
-              This request is being handled by {live?.advisorName ?? 'another advisor'} — you can only view it.
+            <p
+              className={cn(
+                'flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ring-1 ring-inset',
+                status === 'REJECTED'
+                  ? 'bg-red-50 text-red-900 ring-red-200'
+                  : 'bg-slate-50 text-slate-600 ring-slate-200',
+              )}
+            >
+              {status === 'REJECTED' ? (
+                <Ban className="size-4 shrink-0" aria-hidden />
+              ) : (
+                <CircleCheckBig className="size-4 shrink-0" aria-hidden />
+              )}
+              {status === 'REJECTED'
+                ? 'This request was rejected — no further replies.'
+                : 'This request is closed — no further replies.'}
             </p>
           </div>
         ) : (
           <>
+            {/*
+              Shared Multi-Advisor: KHÔNG còn nhánh read-only cho cố vấn khác.
+              Mọi cố vấn đều trả lời được; chỉ người đang phụ trách mới thấy
+              nút Resolve / Reject.
+            */}
+            {!isMine && (
+              <div className="border-t border-slate-200 bg-white px-5 pt-5 sm:px-6">
+                <p className="flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900 ring-1 ring-inset ring-amber-200">
+                  <CircleCheckBig className="size-4 shrink-0" aria-hidden />
+                  {live?.advisorName
+                    ? `${live.advisorName} is handling this request — you can reply here too.`
+                    : 'Another advisor is handling this request — you can reply here too.'}
+                </p>
+              </div>
+            )}
+
             {/* Reply composer — action bar pinned at the bottom of the modal */}
             <div className="border-t border-slate-200 bg-white p-5 sm:px-6">
               <label htmlFor="advisor-reply" className="text-[11px] font-bold uppercase tracking-wide text-slate-600">
@@ -375,23 +501,54 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
               />
               {replyError && <p className="mt-1 text-[12px] font-semibold text-red-600">{replyError}</p>}
 
-              {/* Action bar: Resolve button (Outline Danger) + Send button (FPT orange) */}
+              {/* Action bar: Reject (đỏ) + Resolve (xanh) + Send (cam FPT) */}
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowResolve((v) => !v)}
-                  aria-expanded={showResolve}
-                  aria-controls="advisor-resolve-panel"
-                  className={cn(
-                    'inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-xl border px-5 text-sm font-extrabold shadow-sm transition-colors',
-                    showResolve
-                      ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
-                      : 'border-green-300 bg-white text-green-600 hover:border-green-400 hover:bg-green-50',
+                <div className="flex flex-wrap items-center gap-2.5">
+                  {/*
+                    Nút Reject chỉ hiện với cố vấn đang phụ trách ticket.
+                    Bấm vào sẽ mở panel bắt buộc nhập `resolutionSummary`.
+                  */}
+                  {isMine && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowReject((v) => !v);
+                        setShowResolve(false);
+                        setSummaryError('');
+                      }}
+                      aria-expanded={showReject}
+                      aria-controls="advisor-reject-panel"
+                      className={cn(
+                        'inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-xl border px-5 text-sm font-extrabold shadow-sm transition-colors',
+                        showReject
+                          ? 'border-red-600 bg-red-600 text-white hover:bg-red-700'
+                          : 'border-red-300 bg-white text-red-600 hover:border-red-400 hover:bg-red-50',
+                      )}
+                    >
+                      <Ban className="size-4" aria-hidden />
+                      Reject Request
+                    </button>
                   )}
-                >
-                  <CircleCheckBig className="size-4" aria-hidden />
-                  Resolve Request
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowResolve((v) => !v);
+                      setShowReject(false);
+                      setSummaryError('');
+                    }}
+                    aria-expanded={showResolve}
+                    aria-controls="advisor-resolve-panel"
+                    className={cn(
+                      'inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-xl border px-5 text-sm font-extrabold shadow-sm transition-colors',
+                      showResolve
+                        ? 'border-green-500 bg-green-500 text-white hover:bg-green-600'
+                        : 'border-green-300 bg-white text-green-600 hover:border-green-400 hover:bg-green-50',
+                    )}
+                  >
+                    <CircleCheckBig className="size-4" aria-hidden />
+                    Resolve Request
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={send}
@@ -454,9 +611,74 @@ export function AdvisorRequestDetailModal({ request, onClose }: Props) {
                 </div>
               </div>
             )}
+
+            {/*
+              Popup cho "Reject Request".
+              BẮT BUỘC nhập `resolutionSummary` — BE trả 400 nếu thiếu. API được
+              gọi với `status: 'REJECTED'` (KHÔNG dùng workaround CANCELLED).
+            */}
+            {showReject && (
+              <div
+                id="advisor-reject-panel"
+                className="border-t border-red-200 bg-red-50/60 p-5 sm:px-6"
+              >
+                <label htmlFor="advisor-reject-summary" className="block text-sm font-bold text-[#1A1A1A]">
+                  Reason for rejection{' '}
+                  <span className="font-medium text-slate-600">
+                    (required — shared with the student)
+                  </span>
+                </label>
+                <textarea
+                  id="advisor-reject-summary"
+                  ref={rejectInputRef}
+                  rows={3}
+                  maxLength={MAX_MESSAGE}
+                  value={summary}
+                  onChange={(e) => {
+                    setSummary(e.target.value);
+                    setSummaryError('');
+                  }}
+                  aria-invalid={!!summaryError}
+                  placeholder="Explain why this request cannot be handled as asked..."
+                  className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm font-medium text-slate-900 outline-none transition-colors placeholder:font-normal placeholder:text-slate-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/25 aria-[invalid=true]:border-red-400"
+                />
+                {summaryError && <p className="mt-1 text-[12px] font-semibold text-red-600">{summaryError}</p>}
+                <div className="mt-3 flex flex-wrap items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => setShowReject(false)}
+                    disabled={rejecting}
+                    className="inline-flex h-11 cursor-pointer items-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={reject}
+                    disabled={rejecting || !summary.trim()}
+                    className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-xl bg-red-600 px-6 text-sm font-extrabold text-white shadow-sm transition-colors hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Ban className="size-4" aria-hidden />
+                    {rejecting ? 'Rejecting…' : 'Confirm Rejection'}
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
       </div>
+
+      {/* Đặt lịch hẹn từ ticket ⇒ gửi kèm `advisingRequestId` của ticket hiện tại. */}
+      <AdvisorScheduleModal
+        open={showSchedule}
+        studentId={live?.studentId ?? null}
+        studentName={live?.studentName ?? null}
+        advisingRequestId={live?.id ?? null}
+        onClose={() => setShowSchedule(false)}
+        onScheduled={() => {
+          void refresh();
+        }}
+      />
     </Modal>
   );
 }

@@ -30,7 +30,7 @@ export const useCreateAdvisingRequest = () => {
  * Ticket system (helpdesk) — there is no 1-1 "Accept/Reject":
  *   IN_PROGRESS = "Claim request" — pulls the ticket out of the shared queue.
  *   RESOLVED    = "Resolve request" — the advisor finished handling it.
- *   CANCELLED   = rejected.
+ *   REJECTED    = "Reject request" — the advisor refuses the request (needs a summary).
  */
 export const useUpdateAdvisingRequestStatus = () => {
   const queryClient = useQueryClient();
@@ -41,7 +41,8 @@ export const useUpdateAdvisingRequestStatus = () => {
     onSuccess: (_data, variables) => {
       const { status } = variables.body;
       if (status === 'RESOLVED') toast.success('Request closed');
-      else if (status === 'CANCELLED') toast.success('Request rejected');
+      else if (status === 'REJECTED') toast.success('Request rejected');
+      else if (status === 'CANCELLED') toast.success('Request cancelled');
       else toast.success('Request claimed');
       queryClient.invalidateQueries({ queryKey: ADVISOR_QUERY_KEYS.all });
     },

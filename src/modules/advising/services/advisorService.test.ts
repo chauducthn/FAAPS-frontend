@@ -60,6 +60,19 @@ describe('advisorService — ticket status transitions', () => {
     const [, body] = vi.mocked(apiClient.patch).mock.calls[0];
     expect(body).not.toHaveProperty('resolutionSummary');
   });
+
+  it('rejects a ticket with status REJECTED + the required resolutionSummary', async () => {
+    await advisorService.updateRequestStatus('t1', {
+      status: 'REJECTED',
+      resolutionSummary: 'This needs the academic office.',
+    });
+
+    const [, body] = vi.mocked(apiClient.patch).mock.calls[0];
+    expect(body).toEqual({
+      status: 'REJECTED',
+      resolutionSummary: 'This needs the academic office.',
+    });
+  });
 });
 
 describe('advisorService — ticket list filters', () => {
@@ -70,31 +83,24 @@ describe('advisorService — ticket list filters', () => {
     });
   });
 
-  it('does NOT send an advisorId filter for the PENDING tab (shared queue)', async () => {
+  it('defaults to scope=ALL (shared queue) when no scope is given', async () => {
     await advisorService.getAdvisingRequests({ status: 'PENDING' });
 
     const [, config] = vi.mocked(apiClient.get).mock.calls[0];
-    expect(config?.params).toBeUndefined();
+    expect(config?.params).toEqual({ scope: 'ALL' });
   });
 
-  it('does NOT send an advisorId filter for the RESOLVED tab', async () => {
-    await advisorService.getAdvisingRequests({ status: 'RESOLVED' });
+  it('sends scope=MINE for the "My Handled" filter', async () => {
+    await advisorService.getAdvisingRequests({ status: 'IN_PROGRESS', scope: 'MINE' });
 
     const [, config] = vi.mocked(apiClient.get).mock.calls[0];
-    expect(config?.params).toBeUndefined();
+    expect(config?.params).toEqual({ scope: 'MINE' });
   });
 
-  it('sends the advisorId filter for the IN_PROGRESS tab', async () => {
-    await advisorService.getAdvisingRequests({ status: 'IN_PROGRESS', advisorId: 'advisor-1' });
+  it('never sends the removed advisorId filter (Shared Multi-Advisor)', async () => {
+    await advisorService.getAdvisingRequests({ status: 'IN_PROGRESS' });
 
     const [, config] = vi.mocked(apiClient.get).mock.calls[0];
-    expect(config?.params).toEqual({ advisorId: 'advisor-1' });
-  });
-
-  it('ignores an advisorId that is passed for a non-IN_PROGRESS tab', async () => {
-    await advisorService.getAdvisingRequests({ status: 'PENDING', advisorId: 'advisor-1' });
-
-    const [, config] = vi.mocked(apiClient.get).mock.calls[0];
-    expect(config?.params).toBeUndefined();
+    expect(config?.params).not.toHaveProperty('advisorId');
   });
 });

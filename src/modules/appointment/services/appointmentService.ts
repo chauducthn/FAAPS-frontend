@@ -3,6 +3,7 @@ import { apiClient } from '../../../shared/lib/apiClient';
 import { getCsrfHeaders } from '../../../shared/lib/csrf';
 import type {
   AdvisorAppointment,
+  AdvisorScheduleAppointmentDto,
   AvailabilitySlot,
   AvailableSlot,
   BookAppointmentDto,
@@ -10,6 +11,7 @@ import type {
   ConfigureAvailabilityDto,
   UpdateAppointmentStatusDto,
 } from '../types/appointment';
+import type { AdvisorOption } from '../types/advisorOption';
 
 const post = async <T>(url: string, body: unknown): Promise<T> =>
   (await apiClient.post<T>(url, body, { headers: await getCsrfHeaders() })).data;
@@ -37,9 +39,36 @@ export const appointmentService = {
     return data ?? [];
   },
 
+  /**
+   * Student only: the advisors that can be booked.
+   *
+   * BE đã sort ưu tiên cố vấn cùng Major Group lên đầu ⇒ FE chỉ cần đọc thứ
+   * tự đó và gắn badge "Recommended · Same Major Group".
+   */
+  getBookableAdvisors: async (): Promise<AdvisorOption[]> => {
+    const { data } = await apiClient.get<AdvisorOption[] | { data: AdvisorOption[] }>(
+      '/student/appointments/advisors',
+    );
+    if (Array.isArray(data)) return data;
+    return data?.data ?? [];
+  },
+
   /** Student only: book one slot. */
   bookAppointment: async (body: BookAppointmentDto): Promise<BookedAppointment> => {
     return post<BookedAppointment>('/student/appointments', body);
+  },
+
+  /**
+   * Advisor only: schedule a session for a student (usually from an advising ticket).
+   *
+   * Body mirrors `BookAppointmentDto` plus the target `studentId`:
+   *   • `advisingRequestId` — ticket gốc; BE ghi vào
+   *     `advising_sessions.advising_request_id` ⇒ ticket sẽ trả về
+   *     `linkedAppointmentId` và hiển thị "Lịch hẹn đã được đặt".
+   *   • `startTime` — ISO-8601 bắt đầu ca (30 phút).
+   */
+  scheduleAppointmentForStudent: async (body: AdvisorScheduleAppointmentDto): Promise<BookedAppointment> => {
+    return post<BookedAppointment>('/advisor/appointments', body);
   },
 
   /** Advisor only: accept or reject a pending appointment. */

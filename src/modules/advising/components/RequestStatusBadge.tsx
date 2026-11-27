@@ -1,6 +1,6 @@
 // src/modules/advising/components/RequestStatusBadge.tsx
 // Ticket status badge for advising requests — shared by the Student and Advisor portals.
-// PENDING → yellow, IN_PROGRESS → blue, RESOLVED → green, CANCELLED → slate.
+// PENDING → yellow, IN_PROGRESS → blue, RESOLVED → green, REJECTED → red, CANCELLED → slate.
 
 import { cn } from '@/shared/lib/utils';
 import type { AdvisingRequestStatus } from '@/modules/advising/types/advising';
@@ -17,6 +17,10 @@ const STYLES: Record<AdvisingRequestStatus, { label: string; className: string }
   RESOLVED: {
     label: 'Resolved',
     className: 'bg-emerald-100 text-emerald-800 ring-emerald-300',
+  },
+  REJECTED: {
+    label: 'Rejected',
+    className: 'bg-red-100 text-red-800 ring-red-300',
   },
   CANCELLED: {
     label: 'Cancelled',

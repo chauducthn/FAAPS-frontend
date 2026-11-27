@@ -44,7 +44,6 @@ const AdvisorAppointments = lazy(() => import('../modules/advising/pages/Advisor
 const AdvisorPortal = lazy(() => import('../modules/advising/pages/AdvisorPortal'));
 const AdvisorAdvisingRequests = lazy(() => import('../modules/advising/pages/AdvisorAdvisingRequests'));
 const AdvisorStudyPlans = lazy(() => import('../modules/advising/pages/AdvisorStudyPlans'));
-const AdvisorStudents = lazy(() => import('../modules/advising/pages/AdvisorStudents'));
 const AdvisorAcademicLookup = lazy(() => import('../modules/advising/pages/AdvisorAcademicLookup'));
 const AdvisorReports = lazy(() => import('../modules/advising/pages/AdvisorReports'));
 const AdvisorProfile = lazy(() => import('../modules/advising/pages/AdvisorProfile'));
@@ -134,7 +133,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/advisor', element: suspense(<AdvisorPortal />) },
           { path: '/advisor/advising-requests', element: suspense(<AdvisorAdvisingRequests />) },
-          { path: '/advisor/students', element: suspense(<AdvisorStudents />) },
+          // Trang "My Students" đã bị gỡ theo mô hình Shared Multi-Advisor.
           { path: '/advisor/appointments', element: suspense(<AdvisorAppointments />) },
           // Advising Requests giờ là hệ thống TICKET: danh sách + chat + đóng yêu cầu
           // đều nằm trong cùng 1 trang ⇒ trang "Conversations" cũ đã sáp nhập.

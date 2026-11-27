@@ -111,11 +111,12 @@ function initialsOf(name: string | null | undefined): string {
     .join('');
 }
 
-/** Status badge tone per state (Yellow / Blue / Green). */
+/** Status badge tone per state (Yellow / Blue / Green / Red). */
 const STATUS_TONES: Record<AdvisingRequestStatus, string> = {
   PENDING: 'bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-300',
   IN_PROGRESS: 'bg-blue-100 text-blue-800 ring-1 ring-inset ring-blue-300',
   RESOLVED: 'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-300',
+  REJECTED: 'bg-red-100 text-red-800 ring-1 ring-inset ring-red-300',
   CANCELLED: 'bg-slate-100 text-slate-600 ring-1 ring-inset ring-slate-300',
 };
 
@@ -123,6 +124,7 @@ const STATUS_LABELS: Record<AdvisingRequestStatus, string> = {
   PENDING: 'Pending',
   IN_PROGRESS: 'In Progress',
   RESOLVED: 'Resolved',
+  REJECTED: 'Rejected',
   CANCELLED: 'Cancelled',
 };
 
@@ -146,7 +148,10 @@ export default function StudentAdvisingRequests() {
     await queryClient.invalidateQueries({ queryKey: ['student', 'advising-requests'] });
   };
 
-  /** Group tickets by state. CANCELLED (cancelled by the student) lands in "Resolved". */
+  /**
+   * Group tickets by state. CANCELLED (cancelled by the student) and REJECTED
+   * (refused by an advisor) both land in "Resolved" — they are closed tickets.
+   */
   const grouped = useMemo(() => {
     const buckets: Record<ColumnKey, AdvisingRequest[]> = {
       PENDING: [],

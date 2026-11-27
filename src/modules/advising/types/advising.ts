@@ -12,20 +12,38 @@ export type AdvisingRequestType =
   | 'OTHER';
 
 /**
- * advising_requests.status — hệ thống TICKET (helpdesk), KHÔNG phải chat 1-1 được assign.
+ * advising_requests.status — hệ thống TICKET (helpdesk) với mô hình SHARED
+ * MULTI-ADVISOR: một ticket có thể có nhiều cố vấn cùng tham gia trả lời.
  *
  *   PENDING     : SV đã ném đơn vào hàng đợi, chưa có cố vấn nào nhận.
  *   IN_PROGRESS : đã có cố vấn nhận xử lý (advisor_id được set).
  *   RESOLVED    : cố vấn đã xử lý xong và đóng đơn.
+ *   REJECTED    : cố vấn TỪ CHỐI yêu cầu (kèm resolution_summary bắt buộc).
  *   CANCELLED   : SV hủy đơn.
  */
-export type AdvisingRequestStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED';
+export type AdvisingRequestStatus =
+  | 'PENDING'
+  | 'IN_PROGRESS'
+  | 'RESOLVED'
+  | 'REJECTED'
+  | 'CANCELLED';
 
 /**
  * Trạng thái advisor được chuyển ticket sang.
- * IN_PROGRESS = "Nhận xử lý" (claim), RESOLVED = "Đóng yêu cầu", CANCELLED = từ chối.
+ *
+ * IN_PROGRESS = "Nhận xử lý" (claim) · RESOLVED = "Đóng yêu cầu" ·
+ * REJECTED = "Từ chối yêu cầu" (bắt buộc có resolutionSummary).
  */
-export type AdvisingRequestDecision = 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED';
+export type AdvisingRequestDecision = 'IN_PROGRESS' | 'RESOLVED' | 'REJECTED' | 'CANCELLED';
+
+/**
+ * Phạm vi lọc danh sách ticket (BE: `GET /advisor/advising-requests?scope=`).
+ *
+ *   ALL  : toàn bộ ticket trong hàng đợi chung (mọi cố vấn đều thấy).
+ *   MINE : chỉ ticket mà cố vấn đang đăng nhập đang phụ trách HOẶC từng tham gia
+ *          (đã từng gửi tin nhắn trong thread đó).
+ */
+export type AdvisingRequestScope = 'ALL' | 'MINE';
 
 /** students.academic_status */
 export type AcademicStatus =
@@ -163,8 +181,39 @@ export interface AdvisingRequest {
   advisorId: string | null;
   /** Tên cố vấn đang giữ ticket (null khi ticket còn PENDING). */
   advisorName: string | null;
+  /** majors.code — mã ngành của sinh viên. */
+  studentMajorCode?: string | null;
+  /** majors.name — tên ngành của sinh viên. */
+  studentMajorName?: string | null;
+  /** major_groups.id — nhóm ngành của sinh viên. */
+  studentMajorGroupId?: string | null;
+  /** major_groups.code — MÃ NHÓM NGÀNH của sinh viên (vd "BIT", "BBA"). */
+  studentMajorGroupCode?: string | null;
+  /** major_groups.name — tên nhóm ngành của sinh viên. */
+  studentMajorGroupName?: string | null;
+  /**
+   * BE tính sẵn: sinh viên có cùng nhóm ngành với cố vấn đang đăng nhập hay không.
+   * Dùng để hiển thị badge "Same Major Group" trong danh sách ticket.
+   */
+  sameMajorGroup?: boolean;
+  /**
+   * Cố vấn đang đăng nhập có đang phụ trách / từng tham gia ticket này hay không.
+   * BE suy ra từ `advisor_id` + các message do cố vấn đó gửi trong thread.
+   */
+  participatedByMe?: boolean;
   /** study_plans.id — plan mà request nói về (nullable) */
   studyPlanId: string | null;
+  /**
+   * advising_sessions.id — lịch hẹn đã được tạo TỪ ticket này (nullable).
+   *
+   * BE tự suy ra bằng:
+   *   (SELECT ses.id FROM advising_sessions ses
+   *     WHERE ses.advising_request_id = r.id ORDER BY ses.created_at DESC LIMIT 1)
+   *
+   * Có giá trị ⇒ ticket đã được nối với 1 lịch hẹn ⇒ hiển thị card
+   * "Appointment booked" thay vì nút "Book Appointment".
+   */
+  linkedAppointmentId?: string | null;
   requestType: AdvisingRequestType;
   title: string;
   description: string | null;
@@ -224,13 +273,16 @@ export interface CreateAdvisingRequestDto {
 
 /** Body of PATCH /advisor/advising-requests/{id}/status */
 export interface UpdateAdvisingRequestStatusDto {
-  /** IN_PROGRESS = "Claim request", RESOLVED = "Resolve request". */
+  /**
+   * IN_PROGRESS = "Claim request" · RESOLVED = "Resolve request" ·
+   * REJECTED = "Reject request" (từ chối — BẮT BUỘC kèm resolutionSummary).
+   */
   status: AdvisingRequestDecision;
   /**
    * advising_requests.resolution_summary — text.
    *
-   * ONLY sent when the request is being CLOSED (status = RESOLVED). A claim
-   * (IN_PROGRESS) must send `{ status: 'IN_PROGRESS' }` and nothing else.
+   * BẮT BUỘC khi status = 'RESOLVED' hoặc status = 'REJECTED' — BE trả 400
+   * nếu thiếu. Claim (IN_PROGRESS) tuyệt đối không gửi field này.
    */
   resolutionSummary?: string;
 }

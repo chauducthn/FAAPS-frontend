@@ -33,6 +33,25 @@ const REASON_STYLES: Record<RiskReason, { label: string; chip: string }> = {
   FAILED_COURSES: { label: 'Failed courses', chip: 'bg-red-100 text-red-900 ring-red-300' },
 };
 
+/**
+ * Badge trạng thái tư vấn, dựa trên cờ BE trả về:
+ *   • `hasOpenAppointment` → SV đã có lịch hẹn còn mở ⇒ "Appointment scheduled".
+ *   • `hasOpenRequest`    → SV đang có yêu cầu tư vấn mở ⇒ "In advising".
+ *
+ * Thứ tự ưu tiên: có lịch hẹn thì hiện "Appointment scheduled" (đã hành động
+ * rõ ràng hơn), nếu không mới hiện "In advising".
+ */
+const STATUS_STYLES = {
+  appointment: {
+    label: 'Appointment scheduled',
+    chip: 'bg-emerald-50 text-emerald-800 ring-emerald-200',
+  },
+  advising: {
+    label: 'In advising',
+    chip: 'bg-sky-50 text-sky-800 ring-sky-200',
+  },
+} as const;
+
 function initialsOf(name: string | null | undefined) {
   return (name ?? '')
     .split(' ')
@@ -70,6 +89,15 @@ function AtRiskCard({
 }) {
   const [pending, setPending] = useState(false);
   const level = LEVEL_STYLES[student.riskLevel] ?? LEVEL_STYLES.LOW;
+
+  /**
+   * Trạng thái tư vấn hiện tại của SV — BE trả cờ trong `GET /advisor/at-risk-students`.
+   */
+  const statusBadge = student.hasOpenAppointment
+    ? STATUS_STYLES.appointment
+    : student.hasOpenRequest
+      ? STATUS_STYLES.advising
+      : null;
 
   // Mở Student 360 Modal — báo trạng thái đang tải ngay trên nút.
   const handleView = async () => {
@@ -129,6 +157,16 @@ function AtRiskCard({
         {student.currentGpa != null && (
           <span className="inline-flex h-6 items-center rounded-full bg-slate-100 px-2.5 text-xs font-bold tabular-nums text-slate-700">
             GPA {student.currentGpa.toFixed(2)}
+          </span>
+        )}
+        {statusBadge && (
+          <span
+            className={cn(
+              'inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-bold ring-1 ring-inset',
+              statusBadge.chip,
+            )}
+          >
+            {statusBadge.label}
           </span>
         )}
       </div>

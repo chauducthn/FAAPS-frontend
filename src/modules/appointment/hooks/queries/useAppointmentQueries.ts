@@ -7,6 +7,7 @@ export const APPOINTMENT_QUERY_KEYS = {
   all: ['appointments'] as const,
   availableSlots: (date: string, advisorId?: string) =>
     [...APPOINTMENT_QUERY_KEYS.all, 'available-slots', date, advisorId ?? null] as const,
+  bookableAdvisors: () => [...APPOINTMENT_QUERY_KEYS.all, 'bookable-advisors'] as const,
   advisorWeek: (from: string, to: string, advisorId?: string) =>
     [...APPOINTMENT_QUERY_KEYS.all, 'advisor-week', from, to, advisorId ?? null] as const,
   advisorAll: (advisorId?: string) =>
@@ -41,6 +42,19 @@ export const useAvailableSlots = (date: string | null, advisorId?: string) =>
     queryFn: () => appointmentService.getAvailableSlots(date as string, advisorId),
     enabled: !!date,
     staleTime: 1000 * 30,
+  });
+
+/**
+ * Danh sách cố vấn sinh viên có thể đặt lịch.
+ *
+ * BE đã sort ưu tiên cố vấn cùng Major Group lên đầu ⇒ FE giữ nguyên thứ tự
+ * và chỉ gắn badge "Recommended · Same Major Group" cho các cố vấn đó.
+ */
+export const useBookableAdvisors = () =>
+  useQuery({
+    queryKey: APPOINTMENT_QUERY_KEYS.bookableAdvisors(),
+    queryFn: appointmentService.getBookableAdvisors,
+    staleTime: 1000 * 60,
   });
 
 /**

@@ -50,9 +50,9 @@ describe('AdvisorSidebar', () => {
 
     // "Academic Search" đã bị ẩn vì BE chưa có endpoint /advisor/academic/*.
     // "Advising Conversations" đã sáp nhập vào "Advising Requests" (hệ thống ticket).
+    // "My Students" đã bị gỡ theo mô hình Shared Multi-Advisor.
     expect(links).toEqual([
       'Overview',
-      'My Students',
       'My Profile',
       'Advising Requests',
       'Study Plan Reviews',
@@ -86,11 +86,11 @@ describe('AdvisorSidebar', () => {
   });
 
   it('keeps Overview inactive on a sub-route', () => {
-    renderSidebar('/advisor/students');
+    renderSidebar('/advisor/profile');
     const nav = screen.getByRole('navigation', { name: /portal navigation/i });
 
     const active = nav.querySelector('a[aria-current="page"]');
-    expect(active?.textContent).toContain('My Students');
+    expect(active?.textContent).toContain('My Profile');
 
     // Overview dùng `end` nên không được sáng ở sub-route.
     const overview = Array.from(nav.querySelectorAll('a')).find((a) =>

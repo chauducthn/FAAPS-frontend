@@ -117,11 +117,12 @@ export default function AdvisorProfile() {
               </p>
             </div>
           </div>
+          {/* Trang "My Students" đã bị gỡ khỏi menu ⇒ CTA trỏ sang hàng đợi ticket. */}
           <Link
-            to="/advisor/students"
+            to="/advisor/advising-requests"
             className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-white px-5 text-sm font-extrabold text-[#c2410c] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-all hover:bg-orange-50 active:scale-[0.98]"
           >
-            My Students <ArrowRight className="size-4" aria-hidden />
+            Advising Requests <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>
       </div>
