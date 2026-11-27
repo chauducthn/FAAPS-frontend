@@ -7,6 +7,8 @@
 
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link } from 'react-router';
+import { CalendarCheck2, CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/shared/lib/utils';
 import { Modal } from '@/shared/components/ui/Modal';
@@ -14,6 +16,7 @@ import { apiMessage } from '../../../shared/lib/apiMessage';
 import { ConfirmDialog } from '../../management/components/ConfirmDialog';
 import { RequestStatusBadge } from '../../advising/components/RequestStatusBadge';
 import { ticketStatusLine } from '../../advising/utils/ticketStatus';
+import { STUDENT_APPOINTMENTS_PATH, studentBookingLink } from '../../advising/utils/appointmentLink';
 import type { AdvisingRequestStatus } from '../../advising/types/advising';
 import { studentService } from '../services/studentService';
 import { useAuth } from '../../auth/stores/useAuth';
@@ -29,7 +32,9 @@ const formatDateTime = (iso: string) =>
     hour12: false,
   });
 
-const isClosed = (status: string) => status === 'RESOLVED' || status === 'CANCELLED';
+/** Ticket đã đóng ⇒ không mở form đặt lịch hẹn nữa. */
+const isClosed = (status: string) =>
+  status === 'RESOLVED' || status === 'REJECTED' || status === 'CANCELLED';
 
 export function AdvisingRequestDetailModal({ id, onClose }: { id: string | null; onClose: () => void }) {
   const queryClient = useQueryClient();
@@ -97,6 +102,19 @@ export function AdvisingRequestDetailModal({ id, onClose }: { id: string | null;
   /** The chat box only opens once an advisor has claimed the ticket (IN_PROGRESS). */
   const canChat = status === 'IN_PROGRESS';
 
+  /**
+   * Lịch hẹn đã được tạo TỪ ticket này (BE trả về `linkedAppointmentId`).
+   * Có giá trị ⇒ hiển thị card "Lịch hẹn đã được đặt" thay vì nút "Book Appointment".
+   */
+  const linkedAppointmentId = data?.request.linkedAppointmentId ?? null;
+  const hasLinkedAppointment = Boolean(linkedAppointmentId);
+  /** URL để đặt lịch gắn với ticket hiện tại. */
+  const bookingLink = studentBookingLink(data?.request.id ?? null);
+  /**
+   * Ticket đã đóng (RESOLVED / REJECTED / CANCELLED) thì không nên mở form đặt lịch nữa.
+   */
+  const canBookAppointment = !hasLinkedAppointment && !isClosed(status) && Boolean(bookingLink);
+
   return (
     <>
       <Modal open={!!id} onClose={close} title="Advising Request Detail" className="max-w-[640px]">
@@ -134,6 +152,54 @@ export function AdvisingRequestDetailModal({ id, onClose }: { id: string | null;
                   <p className="mt-1 whitespace-pre-wrap break-words rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
                     {data.request.resolutionSummary}
                   </p>
+                </section>
+              )}
+
+              {/*
+                Nối ticket ↔ lịch hẹn.
+
+                • Đã có `linkedAppointmentId` ⇒ BE đã tạo lịch hẹn từ ticket này ⇒
+                  hiện card "Lịch hẹn đã được đặt" + link sang trang Appointments.
+                • Chưa có ⇒ hiện nút "Book Appointment" điều hướng tới
+                  /student/appointments?advisingRequestId=<ticketId> để lịch hẹn
+                  mới gắn đúng ticket này.
+              */}
+              {hasLinkedAppointment && (
+                <section
+                  role="status"
+                  className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3.5"
+                >
+                  <p className="flex items-center gap-2 text-sm font-semibold text-emerald-900">
+                    <CalendarCheck2 className="size-4 shrink-0" aria-hidden />
+                    Lịch hẹn đã được đặt
+                  </p>
+                  <p className="mt-1 text-[13px] text-emerald-800">
+                    Buổi tư vấn cho yêu cầu này đã được đặt lịch. Bạn có thể xem hoặc
+                    đổi lịch trong trang Appointments.
+                  </p>
+                  <Link
+                    to={STUDENT_APPOINTMENTS_PATH}
+                    className="mt-2 inline-flex items-center gap-1.5 text-[13px] font-bold text-emerald-800 underline hover:text-emerald-900"
+                  >
+                    Go to Appointments
+                  </Link>
+                </section>
+              )}
+
+              {canBookAppointment && bookingLink && (
+                <section className="rounded-lg border border-[#e5e7eb] bg-white px-4 py-3.5 ring-1 ring-inset ring-[#f1f5f9]">
+                  <p className="text-sm font-semibold text-[#151c27]">Need a face-to-face session?</p>
+                  <p className="mt-1 text-[13px] text-[#555f6f]">
+                    Book an appointment for this request — it will be linked to the ticket
+                    so your advisor sees the same context.
+                  </p>
+                  <Link
+                    to={bookingLink}
+                    className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-3.5 py-2 text-[13px] font-bold text-white transition-colors hover:bg-[#e05f14]"
+                  >
+                    <CalendarPlus className="size-4" aria-hidden />
+                    Book Appointment
+                  </Link>
                 </section>
               )}
 

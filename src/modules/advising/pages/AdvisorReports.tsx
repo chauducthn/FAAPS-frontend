@@ -11,9 +11,7 @@
 //   GET /advisor/reports/status-distribution -> { ACTIVE: 10, PROBATION: 2, ... }
 
 import { useMemo } from 'react';
-import { Link } from 'react-router';
 import {
-  ArrowRight,
   CalendarCheck,
   CircleCheckBig,
   Download,
@@ -209,12 +207,6 @@ export default function AdvisorReports() {
               <Download className="size-4" aria-hidden />
               Export CSV
             </button>
-            <Link
-              to="/advisor/students"
-              className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl bg-white px-5 text-sm font-extrabold text-[#c2410c] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-all hover:bg-orange-50 hover:shadow-[0_6px_20px_rgba(0,0,0,0.22)] active:scale-[0.98]"
-            >
-              View students <ArrowRight className="size-4" aria-hidden />
-            </Link>
           </div>
         </div>
       </div>

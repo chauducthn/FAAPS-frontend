@@ -13,6 +13,12 @@ interface DateSelectorProps {
   onChange: (value: string) => void;
   /** How many days ahead can be booked (total horizon). */
   days?: number;
+  /**
+   * Cố vấn đang chọn — để số slot trống hiển thị đúng theo cố vấn đó.
+   *
+   * Bỏ trống ⇒ BE fallback về cố vấn được phân công của sinh viên.
+   */
+  advisorId?: string | null;
 }
 
 const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -36,7 +42,7 @@ function relativeLabel(selected: Date, today: Date): string {
  * - Each day shows how many free slots it has (green = plenty, amber = few left, gray = full).
  * - Quick actions: Today / Tomorrow / Next available day, so users don't have to hunt manually.
  */
-export function DateSelector({ value, onChange, days = 28 }: DateSelectorProps) {
+export function DateSelector({ value, onChange, days = 28, advisorId }: DateSelectorProps) {
   const today = useMemo(() => startOfDay(new Date()), []);
   const todayKey = toDateKey(today);
   const maxDate = useMemo(() => addDays(today, days - 1), [today, days]);
@@ -74,8 +80,8 @@ export function DateSelector({ value, onChange, days = 28 }: DateSelectorProps) 
       const key = toDateKey(day);
       const outOfRange = key < todayKey || key > maxKey;
       return {
-        queryKey: APPOINTMENT_QUERY_KEYS.availableSlots(key),
-        queryFn: () => appointmentService.getAvailableSlots(key),
+        queryKey: APPOINTMENT_QUERY_KEYS.availableSlots(key, advisorId ?? undefined),
+        queryFn: () => appointmentService.getAvailableSlots(key, advisorId ?? undefined),
         enabled: !outOfRange,
         staleTime: 1000 * 30,
       };
@@ -121,7 +127,7 @@ export function DateSelector({ value, onChange, days = 28 }: DateSelectorProps) 
         const day = addDays(today, i);
         const key = toDateKey(day);
         const cached = queryClient.getQueryData<{ length: number } | unknown[]>(
-          APPOINTMENT_QUERY_KEYS.availableSlots(key),
+          APPOINTMENT_QUERY_KEYS.availableSlots(key, advisorId ?? undefined),
         );
         if (Array.isArray(cached)) {
           if (cached.length > 0) {
@@ -139,8 +145,8 @@ export function DateSelector({ value, onChange, days = 28 }: DateSelectorProps) 
           }
           continue;
         }
-        const slots = await appointmentService.getAvailableSlots(key);
-        queryClient.setQueryData(APPOINTMENT_QUERY_KEYS.availableSlots(key), slots);
+        const slots = await appointmentService.getAvailableSlots(key, advisorId ?? undefined);
+        queryClient.setQueryData(APPOINTMENT_QUERY_KEYS.availableSlots(key, advisorId ?? undefined), slots);
         if (slots.length > 0) {
           jumpTo(key);
           return;

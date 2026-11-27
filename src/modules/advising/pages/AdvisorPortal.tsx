@@ -151,6 +151,10 @@ export default function AdvisorPortal() {
     }
   };
 
+  // Mở Student 360 Modal từ card sinh viên (thay cho link sang /advisor/students
+  // vì trang "My Students" đã bị gỡ khỏi hệ thống điều hướng).
+  const openStudentDetail = (studentId: string) => openRiskDetail(studentId);
+
   return (
     <div className="w-full space-y-6 pb-4">
       {/* ── Hero: điểm nhấn đầu trang — cam FPT đậm, nút trắng nổi rõ là clickable ── */}
@@ -218,7 +222,7 @@ export default function AdvisorPortal() {
       {/* ── Quick links = clickable: viền, bóng, hover nâng nhẹ + mũi tên cam ── */}
       <div className="grid gap-5 sm:grid-cols-3">
         {[
-          { to: '/advisor/students', icon: UsersRound, title: 'My Students', desc: `${totalStudents} assigned · ${atRisk.length} at risk` },
+          { to: '/advisor/advising-requests', icon: Inbox, title: 'Advising Requests', desc: 'Shared queue — pick one to help' },
           { to: '/advisor/appointments', icon: CalendarDays, title: 'Appointments', desc: 'Calendar & list views' },
           { to: '/advisor/academic-lookup', icon: BookOpen, title: 'Academic Search', desc: 'Curricula & courses' },
         ].map((l) => (
@@ -293,13 +297,6 @@ export default function AdvisorPortal() {
               {totalStudents} students · {atRisk.length} need attention
             </p>
           </div>
-          {/* Secondary — không tranh Primary với nút Accept */}
-          <Link
-            to="/advisor/students"
-            className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#F26F21]/40 hover:text-[#F26F21]"
-          >
-            Open My Students <ArrowRight className="size-4" aria-hidden />
-          </Link>
         </div>
 
         {/* Legend thuật ngữ học vụ — chữ 14px */}
@@ -376,7 +373,12 @@ export default function AdvisorPortal() {
                     key={s.id}
                     className="rounded-2xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md"
                   >
-                    <Link to="/advisor/students" className="flex items-center gap-3 rounded-xl p-1">
+                    {/* Trang "My Students" đã bị gỡ ⇒ mở Student 360 Modal thay thế. */}
+                    <button
+                      type="button"
+                      onClick={() => openStudentDetail(s.id)}
+                      className="flex w-full cursor-pointer items-center gap-3 rounded-xl p-1 text-left"
+                    >
                       <span
                         aria-hidden
                         className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#F26F21] to-[#ff9a4d] text-sm font-extrabold text-white shadow-sm"
@@ -394,7 +396,7 @@ export default function AdvisorPortal() {
                       <span className={cn('text-lg font-bold tabular-nums', gpaColor)}>
                         {s.currentGpa != null ? s.currentGpa.toFixed(2) : '—'}
                       </span>
-                    </Link>
+                    </button>
                     <div className="mt-3 flex items-center justify-between gap-2 px-1">
                       <span
                         className={cn(

@@ -2,7 +2,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { advisorService } from '../../services/advisorService';
 import { useAuth } from '@/modules/auth/stores/useAuth';
-import type { AcademicStatus, AdvisingRequestStatus } from '../../types/advising';
+import type { AcademicStatus, AdvisingRequestScope, AdvisingRequestStatus } from '../../types/advising';
 
 export const ADVISOR_QUERY_KEYS = {
   all: ['advisor'] as const,
@@ -13,7 +13,7 @@ export const ADVISOR_QUERY_KEYS = {
     ['advisor', 'notifications', 'list', params] as const,
   students: (params: { search?: string; status?: AcademicStatus | 'ALL'; page: number; size: number }) =>
     ['advisor', 'students', params] as const,
-  advisingRequests: (params: { status?: AdvisingRequestStatus; search?: string; advisorId?: string | null }) =>
+  advisingRequests: (params: { status?: AdvisingRequestStatus; search?: string; scope?: AdvisingRequestScope }) =>
     ['advisor', 'advising-requests', params] as const,
 };
 
@@ -64,16 +64,17 @@ export const useAdviseeStudents = (params: {
 /**
  * Danh sách ticket yêu cầu tư vấn.
  *
- * Hệ thống TICKET (helpdesk): API trả về mảng thô — lọc theo status/search ở
- * client, phân trang do client đảm nhiệm.
+ * Hệ thống TICKET (helpdesk) với mô hình SHARED MULTI-ADVISOR: API trả về mảng
+ * thô — lọc theo status/search ở client, phân trang do client đảm nhiệm.
  *
- * `advisorId` CHỈ được truyền cho tab IN_PROGRESS (lọc ticket của chính mình).
- * Tab PENDING không truyền filter nào ⇒ mọi cố vấn đều thấy hàng đợi chung.
+ * `scope`:
+ *   • 'ALL'  (mặc định) → toàn bộ hàng đợi chung, mọi cố vấn đều thấy.
+ *   • 'MINE' → chỉ ticket mình đang phụ trách HOẶC từng tham gia trả lời.
  */
 export const useAdvisorAdvisingRequests = (params: {
   status?: AdvisingRequestStatus;
   search?: string;
-  advisorId?: string | null;
+  scope?: AdvisingRequestScope;
 }) =>
   useQuery({
     queryKey: ADVISOR_QUERY_KEYS.advisingRequests(params),

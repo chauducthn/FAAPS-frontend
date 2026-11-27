@@ -14,6 +14,7 @@
 const APPOINTMENT_RESULT_UPDATE_ENABLED = false;
 
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router';
 import {
   CalendarDays,
   CheckCircle2,
@@ -31,6 +32,7 @@ import { useUpdateAppointmentStatusMutation, useCancelAppointmentMutation } from
 import type { AdvisorAppointment } from '../types/appointment';
 import { cn } from '@/shared/lib/utils';
 import { useAdvisorAppointmentDetail } from '../hooks/queries/useAppointmentQueries';
+import { Student360Button } from '../../advising/components/Student360Button';
 
 interface AppointmentActionModalProps {
   appointment: AdvisorAppointment | null;
@@ -197,6 +199,40 @@ export function AppointmentActionModal({ appointment, onClose }: AppointmentActi
                 <strong>30 min</strong>
               </p>
             </div>
+
+            {/* Xem hồ sơ sinh viên 360 — cùng nguồn dữ liệu với Student360Modal. */}
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white p-4">
+              <div className="min-w-0">
+                <h3 className="text-sm font-bold text-[#151c27]">Student profile</h3>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Transcript, progress, advising history and graduation status.
+                </p>
+              </div>
+              <Student360Button
+                studentId={shown.studentId}
+                studentName={shown.studentName}
+                label="View Student Profile"
+              />
+            </div>
+
+            {/*
+              Lịch hẹn này được tạo TỪ 1 ticket tư vấn (`advisingRequestId`) ⇒
+              cho cố vấn link ngược về ticket để đọc đúng ngữ cảnh.
+            */}
+            {shown.advisingRequestId && (
+              <div className="rounded-2xl border border-slate-100 bg-white p-4">
+                <h3 className="text-sm font-bold text-[#151c27]">Linked advising request</h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  This appointment was booked from an advising request.
+                </p>
+                <Link
+                  to={`/advisor/advising-requests?id=${encodeURIComponent(shown.advisingRequestId)}`}
+                  className="mt-2 inline-flex items-center gap-1.5 text-sm font-bold text-[#F26F21] hover:underline"
+                >
+                  Open the advising request
+                </Link>
+              </div>
+            )}
 
             <div className="rounded-2xl border border-slate-100 bg-white p-4">
               <h3 className="text-sm font-bold text-[#151c27]">Lý do đặt lịch</h3>

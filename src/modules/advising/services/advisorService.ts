@@ -36,8 +36,9 @@ export interface GraduationCheck {
 /**
  * Lọc danh sách ticket theo status và từ khoá (client-side).
  *
- * `status` = 'RESOLVED' gộp cả RESOLVED (đã đóng) và CANCELLED (SV hủy).
- * Không có filter theo advisor ở đây — xem `filterByOwner` trong RequestListTable.
+ * `status` = 'RESOLVED' gộp cả RESOLVED (đã đóng), REJECTED (cố vấn từ chối)
+ * và CANCELLED (SV hủy).
+ * Không có filter theo advisor ở đây — xem `scope` trong RequestListTable.
  */
 const filterRequests = (
   requests: AdvisingRequest[],
@@ -46,7 +47,12 @@ const filterRequests = (
   const keyword = params.search?.trim().toLowerCase();
   return requests.filter((request) => {
     if (params.status === 'RESOLVED') {
-      if (request.status !== 'RESOLVED' && request.status !== 'CANCELLED') return false;
+      if (
+        request.status !== 'RESOLVED' &&
+        request.status !== 'REJECTED' &&
+        request.status !== 'CANCELLED'
+      )
+        return false;
     } else if (params.status && request.status !== params.status) {
       return false;
     }
@@ -57,6 +63,30 @@ const filterRequests = (
       (request.studentCode ?? '').toLowerCase().includes(keyword)
     );
   });
+};
+
+/**
+ * Phạm vi lọc danh sách ticket.
+ *
+ * Mô hình Shared Multi-Advisor: KHÔNG còn gán cứng 1 SV - 1 Advisor, nên BE đã
+ * bỏ tham số `advisorId` và thay bằng `scope`:
+ *   ALL  : toàn bộ ticket trong hàng đợi chung.
+ *   MINE : ticket cố vấn đang đăng nhập đang phụ trách HOẶC từng tham gia.
+ */
+export type AdvisingRequestScopeParam = 'ALL' | 'MINE';
+
+/**
+ * BE có thể trả về:
+ *   • `AdvisingRequestDetail` = `{ request, messages }` (endpoint PATCH status mới)
+ *   • `AdvisingRequest` trực tiếp (endpoint cũ)
+ * ⇒ chuẩn hoá về cùng một shape `AdvisingRequest` để phía UI dùng nhất quán.
+ */
+const unwrapRequest = (
+  data: AdvisingRequestDetail | AdvisingRequest | null | undefined,
+): AdvisingRequest => {
+  if (!data) throw new Error('The API returned an empty response.');
+  if ('request' in data && data.request) return data.request;
+  return data as AdvisingRequest;
 };
 
 export const advisorService = {
@@ -131,27 +161,21 @@ export const advisorService = {
    * API trả về mảng thô `AdvisingRequest[]` — lọc status/từ khoá và phân trang
    * đều do client đảm nhiệm nên không gửi tham số phân trang lên URL.
    *
-   * QUAN TRỌNG (hệ thống ticket):
-   *   • KHÔNG bao giờ gửi `advisorId` cho tab "Chờ xử lý" (PENDING) — mọi cố vấn
-   *     đều phải thấy toàn bộ ticket đang chờ trong hàng đợi.
-   *   • `advisorId` chỉ được truyền khi lọc "Đang xử lý" (IN_PROGRESS) và chỉ
-   *     với mục đích xem ticket của chính mình.
+   * Mô hình SHARED MULTI-ADVISOR: không còn gán cứng 1 SV - 1 Advisor, nên:
+   *   • KHÔNG gửi `advisorId` nữa (BE đã bỏ tham số này).
+   *   • `scope` = 'ALL'  → toàn bộ hàng đợi chung (mặc định).
+   *   • `scope` = 'MINE' → chỉ ticket mình đang phụ trách HOẶC từng tham gia.
    */
   getAdvisingRequests: async (
     params: {
       status?: AdvisingRequestStatus;
       search?: string;
-      /** Chỉ dùng cho tab IN_PROGRESS — lọc theo cố vấn đang giữ ticket. */
-      advisorId?: string | null;
+      /** 'ALL' (mặc định) | 'MINE' — BE tự lọc theo advisor_id + lịch sử tham gia. */
+      scope?: AdvisingRequestScopeParam;
     } = {},
   ): Promise<AdvisingRequest[]> => {
-    // PENDING / RESOLVED: không gửi bất kỳ filter cố vấn nào — cố vấn nào cũng
-    // phải thấy ticket trong hàng đợi chung.
-    const advisorId =
-      params.status === 'IN_PROGRESS' && params.advisorId ? params.advisorId : undefined;
-
     const { data } = await apiClient.get<AdvisingRequest[]>('/advisor/advising-requests', {
-      params: advisorId ? { advisorId } : undefined,
+      params: { scope: params.scope ?? 'ALL' },
     });
     // Lọc phía client: API trả về toàn bộ danh sách.
     return filterRequests(data ?? [], params);
@@ -171,9 +195,10 @@ export const advisorService = {
  * Ticket system (không phải chat 1-1 được assign):
  *   PENDING     → IN_PROGRESS : cố vấn bấm "Claim request" (nhận xử lý).
  *   IN_PROGRESS → RESOLVED    : cố vấn xử lý xong, bấm "Resolve request" (đóng yêu cầu).
+ *   IN_PROGRESS → REJECTED    : cố vấn bấm "Reject request" (từ chối yêu cầu).
  *
- * `resolutionSummary` CHỈ được gửi khi đóng yêu cầu (RESOLVED). Thao tác claim
- * gửi đúng `{ status: 'IN_PROGRESS' }` — không có field nào khác.
+ * `resolutionSummary` BẮT BUỘC khi status = 'RESOLVED' hoặc 'REJECTED' — BE trả
+ * 400 nếu thiếu. Claim (IN_PROGRESS) tuyệt đối không gửi field này.
  */
 updateRequestStatus: async (
   id: string,
@@ -187,12 +212,12 @@ updateRequestStatus: async (
     if (summary) payload.resolutionSummary = summary;
     else delete payload.resolutionSummary;
   }
-  const { data } = await apiClient.patch<AdvisingRequest>(
+  const { data } = await apiClient.patch<AdvisingRequestDetail | AdvisingRequest>(
     `/advisor/advising-requests/${id}/status`,
     payload,
     { headers: await getCsrfHeaders() },
   );
-  return data;
+  return unwrapRequest(data);
 },
 
   /**
@@ -203,12 +228,12 @@ updateRequestStatus: async (
    * dùng cho bước đóng yêu cầu, không phải lúc nhận xử lý).
    */
   claimRequest: async (id: string): Promise<AdvisingRequest> => {
-    const { data } = await apiClient.patch<AdvisingRequest>(
+    const { data } = await apiClient.patch<AdvisingRequestDetail | AdvisingRequest>(
       `/advisor/advising-requests/${id}/status`,
       { status: 'IN_PROGRESS' },
       { headers: await getCsrfHeaders() },
     );
-    return data;
+    return unwrapRequest(data);
   },
 
   /** Gửi tin nhắn trong 1 ticket: `POST /advisor/advising-requests/{id}/messages`. */

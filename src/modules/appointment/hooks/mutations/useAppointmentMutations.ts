@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { appointmentService } from '../../services/appointmentService';
 import { apiErrorMessage } from '../../../../shared/lib/apiError';
 import type {
+  AdvisorScheduleAppointmentDto,
   BookAppointmentDto,
   ConfigureAvailabilityDto,
   UpdateAppointmentStatusDto,
@@ -35,6 +36,31 @@ export const useBookAppointmentMutation = () => {
     },
     onError: (error) => {
       toast.error(apiErrorMessage(error, 'Could not book the appointment.'));
+    },
+  });
+};
+
+/**
+ * Advisor tự đặt lịch hẹn cho sinh viên (thường là từ 1 ticket tư vấn).
+ *
+ * `advisingRequestId` được gửi kèm để BE ghi vào
+ * `advising_sessions.advising_request_id` ⇒ ticket gốc sẽ hiện
+ * "Lịch hẹn đã được đặt".
+ */
+export const useScheduleAppointmentMutation = () => {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: AdvisorScheduleAppointmentDto) =>
+      appointmentService.scheduleAppointmentForStudent(body),
+    onSuccess: () => {
+      toast.success('Appointment scheduled', {
+        description: 'The student has been notified.',
+      });
+      invalidateAppointments(qc);
+    },
+    onError: (error) => {
+      toast.error(apiErrorMessage(error, 'Could not schedule the appointment.'));
     },
   });
 };

@@ -47,6 +47,39 @@ export interface BookAppointmentDto {
   /** ISO-8601 start of the chosen slot. */
   startTime: string;
   reason: string;
+  /**
+   * advising_requests.id — ticket gốc để lịch hẹn được "link" với yêu cầu tư vấn.
+   *
+   * BE ghi vào `advising_sessions.advising_request_id` ⇒ ticket đó sẽ trả về
+   * `linkedAppointmentId` và hiển thị card "Lịch hẹn đã được đặt".
+   */
+  advisingRequestId?: string;
+}
+
+/**
+ * Body của POST /advisor/appointments (cố vấn tự đặt lịch cho sinh viên).
+ *
+ * Dùng khi cố vấn bấm "Schedule Appointment" trong 1 ticket tư vấn ⇒ lịch hẹn
+ * được gắn với ticket đó qua `advisingRequestId`.
+ */
+export interface AdvisorScheduleAppointmentDto {
+  /** students.user_id — sinh viên sẽ tham gia buổi tư vấn. */
+  studentId: string;
+  /** ISO-8601 start of the chosen slot. */
+  startTime: string;
+  /** Lý do / nội dung buổi tư vấn (lưu vào `advising_sessions.agenda`). */
+  reason: string;
+  /** advising_requests.id — ticket gốc (optional). */
+  advisingRequestId?: string;
+  /**
+   * `advisor_availability` của cố vấn đang đăng nhập — BE dùng để tính slot rảnh
+   * và ghi `advisor_id` vào `advising_sessions`.
+   */
+  advisorId?: string;
+  /** Alias của `startTime` — BE có thể dùng tên khác cho thời gian bắt đầu. */
+  scheduledAt?: string;
+  /** Alias của `reason` — BE có thể dùng tên khác cho nội dung buổi tư vấn. */
+  agenda?: string;
 }
 
 /** Body of PUT /advisor/appointments/{id}/status. */
@@ -64,6 +97,8 @@ export interface AdvisorAppointment {
   studentId: string;
   studentName: string;
   studentCode: string | null;
+  /** advising_requests.id — ticket gốc của lịch hẹn (null nếu không từ ticket nào). */
+  advisingRequestId?: string | null;
   /** ISO-8601 start of the session. */
   startTime: string;
   /** ISO-8601 end of the session. */
@@ -85,6 +120,8 @@ export interface BookedAppointment {
   studentCode: string | null;
   advisorId: string;
   advisorName: string;
+  /** advising_requests.id — ticket gốc của lịch hẹn (null nếu không từ ticket nào). */
+  advisingRequestId?: string | null;
   /** ISO-8601 start of the session. */
   startTime: string;
   /** ISO-8601 end of the session. */

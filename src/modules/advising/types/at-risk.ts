@@ -36,6 +36,18 @@ export interface AtRiskStudent {
   totalCreditsEarned: number;
   /** Thời điểm BE chấm cảnh báo — ISO-8601. */
   detectedAt: string | null;
+  /**
+   * SV đang có 1 lịch hẹn còn mở (PENDING / ACCEPTED / SCHEDULED / IN_PROGRESS).
+   *
+   * BE trả cờ này để FE hiển thị badge "Appointment scheduled" (Đã đặt lịch).
+   */
+  hasOpenAppointment?: boolean;
+  /**
+   * SV đang có 1 yêu cầu tư vấn còn mở (PENDING / IN_PROGRESS).
+   *
+   * BE trả cờ này để FE hiển thị badge "In advising" (Đang tư vấn).
+   */
+  hasOpenRequest?: boolean;
 }
 
 /** Response của `GET /advisor/at-risk-students`. */
