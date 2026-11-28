@@ -1,9 +1,6 @@
 import type { ReactNode } from 'react';
 import { X, type Icon as LucideIcon } from '@phosphor-icons/react';
 
-export const assignmentSelectClass =
-  'h-10 w-full appearance-none rounded-lg border border-line bg-white pl-3 pr-9 text-sm text-ink-primary shadow-2xs transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15 disabled:cursor-not-allowed disabled:bg-surface-page disabled:opacity-60';
-
 export const assignmentTextareaClass =
   'w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink-primary placeholder:text-ink-subtle shadow-2xs transition-colors hover:border-ink-subtle/50 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/15';
 

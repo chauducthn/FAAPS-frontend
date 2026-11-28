@@ -7,13 +7,6 @@ export const majorService = {
   getMajors: async (params?: MajorFilterParams): Promise<PaginatedData<Major>> => {
     const response = await apiClient.get<ApiResponse<PaginatedData<Major>> | PaginatedData<Major>>('/admin/majors/paged', { params });
 
-    const defaultPaginatedData: PaginatedData<Major> = {
-      items: [],
-      page: 0,
-      pageSize: params?.size ?? 20,
-      totalItems: 0,
-      totalPages: 0,
-    };
 
     // Backend trả `Page` trần (items/page/size/totalElements/totalPages); bản deploy
     // cũ bọc trong `ApiResponse`. Đọc cả hai để không vỡ khi contract đổi vỏ.

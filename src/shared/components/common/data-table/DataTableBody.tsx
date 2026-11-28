@@ -5,7 +5,7 @@ import { Tray as Inbox, MagnifyingGlassMinus as SearchX } from '@phosphor-icons/
 import { cn } from '@/shared/lib/utils';
 import { TableBody, TableCell, TableEmpty, TableRow } from '../table/TablePrimitives';
 import { Checkbox } from './DataTableControls';
-import { ALIGN_CLASS, SELECT_COLUMN_ID, type Alignment, type dataTableFeatures } from './features';
+import { SELECT_COLUMN_ID, type Alignment, type dataTableFeatures } from './features';
 
 interface DataTableBodyProps<TData extends RowData> {
  rows: Row<typeof dataTableFeatures, TData>[];

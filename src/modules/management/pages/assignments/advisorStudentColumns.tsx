@@ -2,7 +2,7 @@
 
 import { Link } from 'react-router';
 import { backState } from '../../../../shared/lib/backLink';
-import { StaticTable, type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
+import { type StaticColumn } from '../../../../shared/components/common/table/StaticTable';
 import { cn } from '@/shared/lib/utils';
 import type { AdvisorStudentRow } from './AdvisorStudentsSection';
 

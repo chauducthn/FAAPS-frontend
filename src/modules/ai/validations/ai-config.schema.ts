@@ -3,7 +3,6 @@ import { z } from 'zod';
 
 // Mock catalogue dùng id đọc được (ai-cfg-chat...) nên chấp nhận mọi id non-empty,
 // không ép UUID như backend (backend tự sinh và validate UUID thật).
-const idRef = z.string().min(1, 'Select a valid option');
 
 const numMsg = (label: string) => ({
   error: `${label} must be a number — letters are not allowed`,
@@ -55,24 +54,5 @@ export const createAiConfigSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-export const updateAiConfigSchema = createAiConfigSchema.partial();
-
-export const aiSecretSchema = z.object({
-  apiKey: z
-    .string()
-    .min(8, 'API key looks too short')
-    .max(500, 'API key is too long'),
-});
-
 export type CreateAiConfigFormValues = z.infer<typeof createAiConfigSchema>;
-export type UpdateAiConfigFormValues = z.infer<typeof updateAiConfigSchema>;
-export type AiSecretFormValues = z.infer<typeof aiSecretSchema>;
 
-export const performanceFilterSchema = z.object({
-  configId: idRef.optional(),
-  purpose: z.enum(['CHAT', 'EMBEDDING', 'OCR', 'ALL']).optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-});
-
-export type PerformanceFilterFormValues = z.infer<typeof performanceFilterSchema>;

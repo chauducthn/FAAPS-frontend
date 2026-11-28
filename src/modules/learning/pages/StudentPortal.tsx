@@ -7,6 +7,7 @@ import {
 } from '@phosphor-icons/react';
 import { useAuth } from '../../auth/stores/useAuth';
 import { useIdentityProfile } from '@/shared/hooks/useIdentityProfile';
+import { useOpenProfile } from '@/shared/components/layout/portal/profileDrawerContext';
 import {
   useMyAdvisingRequests,
   useMyAdvisor,
@@ -21,6 +22,7 @@ import { UpcomingAppointmentCard } from '../components/UpcomingAppointmentCard';
 
 export default function StudentPortal() {
   const user = useAuth((s) => s.user);
+  const openProfile = useOpenProfile();
   const profileQuery = useMyProfile();
   const advisorQuery = useMyAdvisor();
   const progressQuery = useMyProgress();
@@ -79,9 +81,13 @@ export default function StudentPortal() {
           className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-2.5 text-xs text-amber-900"
         >
           <span>Choose your major &amp; curriculum in My Profile to unlock your progress and study plan.</span>
-          <Link to="/student/profile" className="rounded-lg bg-[#F26F21] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#e05f14]">
+          <button
+            type="button"
+            onClick={openProfile}
+            className="rounded-md bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-hover"
+          >
             Go to Profile
-          </Link>
+          </button>
         </div>
       )}
 

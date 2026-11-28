@@ -1,4 +1,3 @@
-import type { CurriculumCourse } from '../../../academic/services/studentAcademicService';
 import type { AcademicBlockConfigView } from '../../../management/services/academic-block.service';
 import {
   getActiveRegularBlocks,

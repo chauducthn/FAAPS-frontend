@@ -3,7 +3,7 @@ import { List as Menu } from '@phosphor-icons/react';
 import { Logo } from '@/shared/components/common/Logo';
 import { ThemeToggle } from '@/shared/components/common/ThemeToggle';
 import { cn } from '@/shared/lib/utils';
-import { ProfileMenu } from './ProfileMenu';
+import { HeaderAccount } from './HeaderAccount';
 import type { PortalNavItem } from './PortalSidebar';
 
 const HEADER_CLASS =
@@ -13,9 +13,12 @@ const HEADER_CLASS =
 /** Holds the logo (about 89px wide) plus a 32px gap to the title while the sidebar is collapsed; desktop only. */
 const LOGO_SLOT_CLASS = 'hidden shrink-0 lg:block motion-safe:transition-[width] motion-safe:duration-200';
 
+/** The theme toggle matches the borderless icon buttons of the header. */
+const THEME_TOGGLE_CLASS =
+  'rounded-md border-transparent bg-transparent text-ink-muted hover:bg-line-soft hover:text-ink-primary';
+
 interface PortalHeaderProps {
   roleLabel: string;
-  profilePath: string;
   activeItem?: PortalNavItem;
   headerExtra?: React.ReactNode;
   homePath: string;
@@ -23,17 +26,18 @@ interface PortalHeaderProps {
   showLogo: boolean;
   logoRef: Ref<HTMLDivElement>;
   onOpenMenu: () => void;
+  onOpenProfile: () => void;
 }
 
 export function PortalHeader({
   roleLabel,
-  profilePath,
   activeItem,
   headerExtra,
   homePath,
   showLogo,
   logoRef,
   onOpenMenu,
+  onOpenProfile,
 }: PortalHeaderProps) {
   return (
     <header className={HEADER_CLASS}>
@@ -71,10 +75,11 @@ export function PortalHeader({
         </div>
       </div>
 
-      <div className="relative flex shrink-0 items-center gap-2 sm:gap-3">
-        <ThemeToggle className="rounded-md" />
+      <div className="relative flex shrink-0 items-center gap-1 sm:gap-1.5">
+        <ThemeToggle className={THEME_TOGGLE_CLASS} />
         {headerExtra}
-        <ProfileMenu roleLabel={roleLabel} profilePath={profilePath} />
+        <span className="mx-1.5 h-6 w-px bg-line" aria-hidden />
+        <HeaderAccount roleLabel={roleLabel} onOpenProfile={onOpenProfile} />
       </div>
     </header>
   );

@@ -4,9 +4,9 @@ React, TypeScript, Vite, and Tailwind CSS frontend for FAAPS.
 
 ## Local development
 
-```powershell
-pnpm install
-pnpm dev
+```bash
+npm install
+npm run dev
 ```
 
 Start the Spring Boot backend with RDS and Google OAuth configured, then open `http://localhost:5173`. Vite proxies `/api` and `/oauth2` to the backend on port 8080. The Google OAuth redirect URI registered with Google must be `http://localhost:8080/login/oauth2/code/google`.

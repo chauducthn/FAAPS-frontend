@@ -29,9 +29,6 @@ export const FPT_ACADEMIC_GROUPS: Record<string, string> = {
   A: 'Arts & Languages',
 };
 
-/** `ADV001` — three digits after the `ADV` prefix. */
-export const ADVISOR_CODE_PATTERN = /^ADV\d{3}$/;
-
 /** Vietnamese mobile numbers: 10 digits, starting with 03, 05, 07, 08 or 09. */
 export const PHONE_PATTERN = /^(0[35789])\d{8}$/;
 
@@ -46,11 +43,7 @@ export const PHONE_ERROR_MESSAGE =
 export const STUDENT_ID_ERROR_MESSAGE =
   'Enter a valid FPTU Student ID: campus (Q, D, H, S, C), group (E, S, A), cohort 01–22 and 4 digits (e.g. SE182965).';
 
-export const ADVISOR_CODE_ERROR_MESSAGE =
-  'Enter a valid Advisor Code: ADV followed by three digits (for example ADV001).';
-
 export const STUDENT_ID_PLACEHOLDER = 'SE182965';
-export const ADVISOR_CODE_PLACEHOLDER = 'ADV001';
 
 /** The mail domain a role is expected to use. */
 export const roleEmailDomain = (role: AccountRole): string =>
@@ -79,10 +72,6 @@ export const emailRoleErrorMessage = (role: AccountRole): string =>
   role === 'STUDENT'
     ? `Student accounts must use an @${FPT_DOMAIN} email address.`
     : `Advisor accounts must use an @${FE_DOMAIN} email address.`;
-
-/** The generic message shown when the address is not on an FPT domain at all. */
-export const emailDomainErrorMessage =
-  `Enter an email address on @${FPT_DOMAIN} or @${FE_DOMAIN}.`;
 
 /**
  * Identity carried by an FPTU Student ID.

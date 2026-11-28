@@ -158,10 +158,3 @@ export function saveSemesterPlan(semesterId: string, courseIds: string[]) {
   return studentAcademicService.saveStudyPlan({ semesterId, planType: 'REGULAR', courseIds });
 }
 
-export function validateSavedPlan(id: string) {
-  return studentAcademicService.validateStudyPlan(id);
-}
-
-export function submitSavedPlan(id: string) {
-  return studentAcademicService.submitStudyPlan(id);
-}

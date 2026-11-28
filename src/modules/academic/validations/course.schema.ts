@@ -2,8 +2,6 @@
 import { z } from 'zod';
 
 // Any 36-character hex id: the backend generates and validates the actual UUIDs.
-// Mock catalogue uses readable ids (cat-01, course-se101), so accept any non-empty id.
-const idRef = z.string().min(1, 'Select a valid option');
 
 /** The only credit values a course can have (chosen from a list, never typed). */
 export const CREDIT_OPTIONS = [0, 1, 2, 3, 4, 6, 9, 10, 12] as const;
@@ -40,26 +38,4 @@ export const createCourseSchema = z.object({
   prerequisiteIds: z.array(z.string().min(1)).optional(),
 });
 
-export const updateCourseSchema = createCourseSchema.partial();
-
-export const addCourseRelationSchema = z.object({
-  kind: z.enum(['PREREQUISITE', 'REPLACEMENT']),
-  groupNo: z.number().int().min(1).max(20),
-  otherCourseId: idRef,
-  minimumScore: z
-    .number()
-    .min(0)
-    .max(10)
-    .nullable()
-    .optional(),
-});
-
-export const updateCourseRelationSchema = z.object({
-  groupNo: z.number().int().min(1).max(20).optional(),
-  minimumScore: z.number().min(0).max(10).nullable().optional(),
-});
-
 export type CreateCourseFormValues = z.infer<typeof createCourseSchema>;
-export type UpdateCourseFormValues = z.infer<typeof updateCourseSchema>;
-export type AddCourseRelationFormValues = z.infer<typeof addCourseRelationSchema>;
-export type UpdateCourseRelationFormValues = z.infer<typeof updateCourseRelationSchema>;

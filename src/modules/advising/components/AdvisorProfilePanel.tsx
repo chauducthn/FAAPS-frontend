@@ -1,18 +1,21 @@
 import { Link } from 'react-router';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowRight } from '@phosphor-icons/react';
 import { ChangePasswordCard } from '@/shared/components/profile/ChangePasswordCard';
 import { PersonalInfoForm } from '@/shared/components/profile/PersonalInfoForm';
 import { ProfileHero } from '@/shared/components/profile/ProfileHero';
+import { InlineAlert } from '@/shared/components/ui/InlineAlert';
+import { toolbarButtonClass } from '@/shared/components/ui/MenuParts';
 import { useIdentityProfile } from '@/shared/hooks/useIdentityProfile';
 import { useProfileSave } from '@/shared/hooks/useProfileSave';
 import { useAuth } from '../../auth/stores/useAuth';
-import { AdvisorWorkloadCard } from '../components/AdvisorWorkloadCard';
 import { advisorService } from '../services/advisorService';
-import { useQuery } from '@tanstack/react-query';
+import { AdvisorWorkloadCard } from './AdvisorWorkloadCard';
 
 const ADVISOR_PROFILE_KEY = ['advisor', 'profile'] as const;
 
-export default function AdvisorProfile() {
+/** The advisor's own profile: identity, advising load, editable details and password. Used by the header drawer. */
+export function AdvisorProfilePanel() {
   const user = useAuth((state) => state.user);
   const identityQuery = useIdentityProfile();
   const roleQuery = useQuery({
@@ -30,7 +33,7 @@ export default function AdvisorProfile() {
   const role = roleQuery.data;
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-6 pb-4">
+    <div className="flex flex-col gap-3">
       <ProfileHero
         fullName={identity?.fullName ?? user?.fullName}
         subtitle={identity?.email ?? user?.email ?? 'Academic Advisor'}
@@ -38,47 +41,48 @@ export default function AdvisorProfile() {
         avatarUrl={identity?.avatarUrl ?? user?.avatarUrl}
         isLoading={identityQuery.isLoading}
         action={
-          <Link
-            to="/advisor/students"
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50/70 px-3.5 text-[13px] font-semibold
-              text-[#C2410C] transition-colors hover:bg-orange-100"
-          >
-            My Students <ArrowRight className="size-4" aria-hidden />
+          <Link to="/advisor/students" className={toolbarButtonClass()}>
+            My Students <ArrowRight className="size-4 text-ink-subtle" aria-hidden />
           </Link>
         }
       />
 
       {identityQuery.isError || roleQuery.isError ? (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-4 text-sm text-red-800">
+        <InlineAlert tone="error" role="alert">
           Could not load your profile.{' '}
-          <button type="button" onClick={() => { identityQuery.refetch(); roleQuery.refetch(); }} className="font-bold underline">
+          <button
+            type="button"
+            onClick={() => {
+              identityQuery.refetch();
+              roleQuery.refetch();
+            }}
+            className="font-semibold underline underline-offset-2"
+          >
             Retry
           </button>
-        </div>
+        </InlineAlert>
       ) : identityQuery.isLoading || !identity || !role ? (
-        <div className="grid gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
-          <div className="h-72 animate-pulse rounded-2xl bg-white shadow-sm" />
-          <div className="h-72 animate-pulse rounded-2xl bg-white shadow-sm" />
+        <div className="flex flex-col gap-3">
+          <div className="h-40 animate-pulse rounded-lg border border-line bg-white" />
+          <div className="h-60 animate-pulse rounded-lg border border-line bg-white" />
         </div>
       ) : (
-        <div className="grid items-start gap-5 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <>
           <AdvisorWorkloadCard profile={role} />
-          <div className="space-y-5">
-            <PersonalInfoForm
-              email={identity.email}
-              dateOfBirth={identity.dateOfBirth}
-              showSpecialization
-              initialValues={{
-                fullName: identity.fullName,
-                phone: identity.phone ?? '',
-                specialization: role.specialization ?? '',
-              }}
-              isSaving={save.isPending}
-              onSave={(values) => save.mutate(values)}
-            />
-            <ChangePasswordCard authProvider={identity.authProvider} />
-          </div>
-        </div>
+          <PersonalInfoForm
+            email={identity.email}
+            dateOfBirth={identity.dateOfBirth}
+            showSpecialization
+            initialValues={{
+              fullName: identity.fullName,
+              phone: identity.phone ?? '',
+              specialization: role.specialization ?? '',
+            }}
+            isSaving={save.isPending}
+            onSave={(values) => save.mutate(values)}
+          />
+          <ChangePasswordCard authProvider={identity.authProvider} />
+        </>
       )}
     </div>
   );

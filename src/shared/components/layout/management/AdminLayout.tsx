@@ -15,6 +15,7 @@ import {
 } from '@phosphor-icons/react';
 import PortalLayout, { type PortalNavSection } from '../portal/PortalLayout';
 import { NotificationBell } from './NotificationBell';
+import { AdminProfilePanel } from '../../../../modules/management/components/AdminProfilePanel';
 
 export const ADMIN_NAV_SECTIONS: PortalNavSection[] = [
   {
@@ -133,9 +134,9 @@ export default function AdminLayout() {
       navSections={ADMIN_NAV_SECTIONS}
       homePath="/admin"
       roleLabel="Admin"
-      profilePath="/admin/profile"
       headerExtra={<NotificationBell />}
       contained
+      profilePanel={<AdminProfilePanel />}
     />
   );
 }

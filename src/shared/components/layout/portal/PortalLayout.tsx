@@ -1,10 +1,12 @@
-import { Suspense, useMemo, useState } from 'react';
-import { Outlet, useLocation } from 'react-router';
+import { Suspense, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router';
 import { SidebarSimple as PanelLeftClose, SidebarSimple as PanelLeftOpen, X } from '@phosphor-icons/react';
 import { Logo } from '@/shared/components/common/Logo';
 import { cn } from '@/shared/lib/utils';
 import { ForceChangePasswordModal } from '@/modules/auth/components/ForceChangePasswordModal';
 import { PortalHeader } from './PortalHeader';
+import { ProfileDrawer } from './ProfileDrawer';
+import { ProfileDrawerContext, wantsProfileOpen } from './profileDrawerContext';
 import { PortalSidebar, type PortalNavItem, type PortalNavSection } from './PortalSidebar';
 import { usePortalLogoFlip } from './usePortalLogoFlip';
 
@@ -43,27 +45,39 @@ interface PortalLayoutProps {
   navSections: PortalNavSection[];
   homePath: string;
   roleLabel: string;
-  profilePath?: string;
   headerExtra?: React.ReactNode;
   /**
    * Keep the shell exactly one viewport tall and scroll inside the page area only.
    * Pages mark their working region with `.admin-fill` to make it take the remaining height.
    */
   contained?: boolean;
+  /** The signed-in user's profile, shown in a right-hand drawer opened from the header. */
+  profilePanel: ReactNode;
 }
 
 export default function PortalLayout({
   navSections,
   homePath,
   roleLabel,
-  profilePath,
   headerExtra,
   contained = false,
+  profilePanel,
 }: PortalLayoutProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const openProfile = useCallback(() => setProfileOpen(true), []);
+  const closeProfile = useCallback(() => setProfileOpen(false), []);
   const [collapsed, setCollapsed] = useState<boolean>(readCollapsedState);
-  const { pathname } = useLocation();
-  const resolvedProfilePath = profilePath ?? `${homePath}/profile`;
+  const location = useLocation();
+  const { pathname } = location;
+  const navigate = useNavigate();
+
+  // The old profile URLs redirect here with a flag: open the drawer once, then drop the flag from history.
+  useEffect(() => {
+    if (!wantsProfileOpen(location.state)) return;
+    setProfileOpen(true);
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null });
+  }, [location.state, location.pathname, location.search, navigate]);
   const activeItem = useMemo(() => findActiveNavItem(navSections, pathname), [navSections, pathname]);
 
   const { logoRef, capture: captureLogo } = usePortalLogoFlip(collapsed);
@@ -114,13 +128,13 @@ export default function PortalLayout({
       <div className={cn('flex min-w-0 flex-1 flex-col', contained && 'min-h-0')}>
         <PortalHeader
           roleLabel={roleLabel}
-          profilePath={resolvedProfilePath}
           activeItem={activeItem}
           headerExtra={headerExtra}
           homePath={homePath}
           showLogo={collapsed}
           logoRef={logoRef}
           onOpenMenu={() => setMenuOpen(true)}
+          onOpenProfile={openProfile}
         />
 
         {menuOpen && (
@@ -154,11 +168,16 @@ export default function PortalLayout({
             contained && 'flex min-h-0 flex-col overflow-y-auto overscroll-contain',
           )}
         >
-          <Suspense fallback={<p className="text-sm text-ink-subtle">Loading page...</p>}>
-            <Outlet />
-          </Suspense>
+          <ProfileDrawerContext.Provider value={openProfile}>
+            <Suspense fallback={<p className="text-sm text-ink-subtle">Loading page...</p>}>
+              <Outlet />
+            </Suspense>
+          </ProfileDrawerContext.Provider>
         </main>
       </div>
+      <ProfileDrawer open={profileOpen} onClose={closeProfile}>
+        {profilePanel}
+      </ProfileDrawer>
       <ForceChangePasswordModal />
     </div>
   );

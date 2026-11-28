@@ -43,12 +43,6 @@ export const phoneSchema = z
   .min(1, 'Enter your phone number')
   .regex(PHONE_PATTERN, PHONE_MESSAGE);
 
-/** For screens where a phone number may be left empty but, when given, must be a valid one. */
-export const optionalPhoneSchema = z
-  .string()
-  .trim()
-  .refine((value) => value === '' || PHONE_PATTERN.test(value), PHONE_MESSAGE);
-
 export const passwordSchema = z
   .string()
   .min(8, 'Use at least 8 characters')

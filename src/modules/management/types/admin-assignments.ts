@@ -6,11 +6,6 @@ export interface AssignmentAdvisor {
   activeStudents: number;
 }
 
-export interface AssignmentCohort {
-  cohort: string;
-  students: number;
-}
-
 export interface AssignmentStudent {
   id: string;
   studentCode: string;
@@ -54,12 +49,6 @@ export interface AssignmentHistoryRecord {
   notes: string | null;
   endDate: string | null;
   status: string;
-}
-
-export interface AutoAssignPreview {
-  cohort: string;
-  unassignedStudents: number;
-  allocation: Record<string, number>;
 }
 
 export interface AutoAssignResult {

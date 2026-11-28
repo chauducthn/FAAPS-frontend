@@ -8,8 +8,6 @@
 
 export type AiProvider = 'GEMINI' | 'OPENROUTER' | 'OTHER';
 export type AiPurpose = 'CHAT' | 'EMBEDDING' | 'OCR';
-export type AiFeature = 'CHAT' | 'EMBEDDING' | 'OCR' | 'RECOMMENDATION' | 'SUMMARIZATION';
-export type AiUsageStatus = 'SUCCESS' | 'TIMEOUT' | 'ERROR' | 'RATE_LIMITED' | 'FALLBACK';
 
 export interface AiConfig {
   id: string;

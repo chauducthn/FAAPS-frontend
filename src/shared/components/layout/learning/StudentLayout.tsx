@@ -5,6 +5,7 @@
 import PortalLayout from '@/shared/components/layout/portal/PortalLayout';
 import { STUDENT_NAV_SECTIONS } from './StudentSidebar';
 import { StudentHeaderExtra } from './StudentHeader';
+import { StudentProfilePanel } from '@/modules/learning/components/StudentProfilePanel';
 
 export default function StudentLayout() {
   return (
@@ -13,6 +14,7 @@ export default function StudentLayout() {
       homePath="/student"
       roleLabel="Student"
       headerExtra={<StudentHeaderExtra />}
+      profilePanel={<StudentProfilePanel />}
     />
   );
 }

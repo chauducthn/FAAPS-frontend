@@ -29,7 +29,7 @@ const unwrap = <T>(response: ApiResponse<T>, message: string): T => {
  * Backend trả về `Page` trần cho endpoint list. Một số bản deploy bọc trong
  * `ApiResponse`, nên đọc cả hai để không vỡ khi contract đổi vỏ.
  */
-const toPage = <T>(payload: unknown): CurriculumPage => {
+const toPage = (payload: unknown): CurriculumPage => {
   const raw = payload as Partial<CurriculumPage> & { data?: Partial<CurriculumPage> };
   const source = raw?.items ? raw : (raw?.data ?? raw);
   const items = source?.items ?? [];

@@ -1,5 +1,4 @@
 import { useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
 import { GraduationCap } from '@phosphor-icons/react';
 import { toast } from 'sonner';
 import { CurriculumCardHeader } from './curriculum/CurriculumCardHeader';
@@ -10,6 +9,10 @@ import { CurriculumTermBar } from './curriculum/CurriculumTermBar';
 import type { EffectiveCurriculumCourse } from './curriculum/curriculumBlockRules';
 import { DRAFT_SEM, DRAFT_TAB_ID } from './curriculum/curriculumDraftHelpers';
 import { useCurriculumWorkspaceData } from './curriculum/useCurriculumWorkspaceData';
+import { useOpenProfile } from '@/shared/components/layout/portal/profileDrawerContext';
+
+const PROFILE_BUTTON_CLASS =
+  'inline-flex h-9 items-center gap-1.5 rounded-md bg-brand px-4 text-xs font-semibold text-white hover:bg-brand-hover';
 
 export function StudentCurriculumCoursesCard({
   topRightSlot,
@@ -23,6 +26,7 @@ export function StudentCurriculumCoursesCard({
   onSwitchRightPanel?: (mode: 'info' | 'pool' | 'setup') => void;
 } = {}) {
   const d = useCurriculumWorkspaceData(rightPanelMode);
+  const openProfile = useOpenProfile();
   const [draggingCourse, setDraggingCourse] = useState<EffectiveCurriculumCourse | null>(null);
   const [dragOverSem, setDragOverSem] = useState<number | null>(null);
 
@@ -133,7 +137,7 @@ export function StudentCurriculumCoursesCard({
             <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
               <span className="flex size-11 items-center justify-center rounded-xl bg-orange-50 text-[#F26F21]"><GraduationCap className="size-5" /></span>
               <p className="text-sm font-bold text-gray-900">No curriculum assigned yet</p>
-              <Link to="/student/profile" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 text-xs font-bold text-white hover:bg-[#e05f14]">Go to My Profile</Link>
+              <button type="button" onClick={openProfile} className={PROFILE_BUTTON_CLASS}>Go to My Profile</button>
             </div>
           ) : (
             <>

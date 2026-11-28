@@ -48,19 +48,6 @@ export interface AdminUserDetail {
   avatarUrl?: string | null;
 }
 
-export interface UserEditOption {
-  id: string;
-  code: string;
-  name: string;
-  majorId: string | null;
-}
-
-export interface UserEditOptions {
-  majors: UserEditOption[];
-  curricula: UserEditOption[];
-  semesters: UserEditOption[];
-}
-
 export type UserSort =
   | 'createdAt,desc'
   | 'createdAt,asc'

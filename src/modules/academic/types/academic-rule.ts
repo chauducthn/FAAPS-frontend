@@ -83,6 +83,3 @@ export interface ToggleAcademicRuleStatusDto {
   isActive: boolean;
 }
 
-export interface UpdateAcademicRuleStatusDto {
-  status: AcademicRuleStatus;
-}

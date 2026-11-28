@@ -14,8 +14,8 @@ import LandingPage from '../modules/landing/pages';
 import AdminLayout from '../shared/components/layout/management/AdminLayout';
 import StudentLayout from '../shared/components/layout/learning/StudentLayout';
 import AdvisorLayout from '../shared/components/layout/advising/AdvisorLayout';
+import { OPEN_PROFILE_STATE } from '../shared/components/layout/portal/profileDrawerContext';
 const AdminDashboard = lazy(() => import('../modules/management/pages/Dashboard'));
-const AdminProfile = lazy(() => import('../modules/management/pages/AdminProfile'));
 const AdvisingReports = lazy(() => import('../modules/management/pages/AdvisingReports'));
 const UserAccounts = lazy(() => import('../modules/management/pages/UserAccounts'));
 const Appointments = lazy(() => import('../modules/management/pages/Appointments'));
@@ -38,7 +38,6 @@ const StudentPortal = lazy(() => import('../modules/learning/pages/StudentPortal
 const StudentAdvisingRequests = lazy(() => import('../modules/learning/pages/AdvisingRequests'));
 const StudentAiChat = lazy(() => import('../modules/learning/pages/AiChat'));
 const StudentAiRoadmap = lazy(() => import('../modules/learning/pages/AiRoadmap'));
-const StudentProfile = lazy(() => import('../modules/learning/pages/StudentProfile'));
 const StudentTranscript = lazy(() => import('../modules/learning/pages/StudentTranscript'));
 const StudentCurriculum = lazy(() => import('../modules/learning/pages/StudentCurriculum'));
 const StudentCurriculumGoals = lazy(() => import('../modules/learning/pages/StudentCurriculumGoals'));
@@ -52,7 +51,6 @@ const AdvisorStudyPlans = lazy(() => import('../modules/advising/pages/AdvisorSt
 const AdvisorStudents = lazy(() => import('../modules/advising/pages/AdvisorStudents'));
 const AdvisorAcademicLookup = lazy(() => import('../modules/advising/pages/AdvisorAcademicLookup'));
 const AdvisorReports = lazy(() => import('../modules/advising/pages/AdvisorReports'));
-const AdvisorProfile = lazy(() => import('../modules/advising/pages/AdvisorProfile'));
 const AdvisorNotifications = lazy(() => import('../modules/advising/pages/AdvisorNotifications'));
 
 /** Bọc mọi route lazy bằng Suspense + skeleton để không nháy màn trắng khi tải chunk. */
@@ -80,7 +78,7 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { path: '/admin', element: suspense(<AdminDashboard />) },
-          { path: '/admin/profile', element: suspense(<AdminProfile />) },
+          { path: '/admin/profile', element: <Navigate to="/admin" replace state={OPEN_PROFILE_STATE} /> },
           { path: '/admin/users', element: suspense(<UserAccounts />) },
           { path: '/admin/majors', element: suspense(<CohortsPage />) },
           { path: '/admin/cohorts', element: <Navigate to="/admin/majors?tab=cohorts" replace /> },
@@ -121,7 +119,7 @@ export const router = createBrowserRouter([
               { path: '/student/ai-roadmap', element: suspense(<StudentAiRoadmap />) },
               { path: '/student/advising-requests', element: suspense(<StudentAdvisingRequests />) },
               { path: '/student/appointments', element: suspense(<StudentBookAppointment />) },
-              { path: '/student/profile', element: suspense(<StudentProfile />) },
+              { path: '/student/profile', element: <Navigate to="/student" replace state={OPEN_PROFILE_STATE} /> },
               { path: '/student/transcript', element: suspense(<StudentTranscript />) },
               { path: '/student/curriculum', element: suspense(<StudentCurriculum />) },
               { path: '/student/study-journey', element: suspense(<StudentCurriculumGoals />) },
@@ -154,7 +152,7 @@ export const router = createBrowserRouter([
           { path: '/advisor/study-plans', element: suspense(<AdvisorStudyPlans />) },
           { path: '/advisor/academic-lookup', element: suspense(<AdvisorAcademicLookup />) },
           { path: '/advisor/reports', element: suspense(<AdvisorReports />) },
-          { path: '/advisor/profile', element: suspense(<AdvisorProfile />) },
+          { path: '/advisor/profile', element: <Navigate to="/advisor" replace state={OPEN_PROFILE_STATE} /> },
           { path: '/advisor/notifications', element: suspense(<AdvisorNotifications />) },
         ],
       },

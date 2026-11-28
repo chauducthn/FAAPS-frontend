@@ -36,10 +36,6 @@ export const weekDays = (date: Date): Date[] => {
 /** "yyyy-MM-dd" keys of the week containing `date`. */
 export const weekDateKeys = (date: Date): string[] => weekDays(date).map(toDateKey);
 
-/** "HH:mm" of a Date. */
-export const toTimeValue = (date: Date): string =>
-  `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-
 /** ISO-8601 local date-time ("2026-10-25T09:00:00") — the format the booking endpoint expects. */
 export const toIsoLocal = (date: Date): string => {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -82,8 +78,3 @@ export const formatColumnDay = (date: Date): string =>
 /** True when the date is today (local). */
 export const isToday = (date: Date): boolean => toDateKey(date) === toDateKey(new Date());
 
-/** "2026-10-25" -> "Mon" ... "Sun" (ISO weekday number). */
-export const ISO_WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
-
-/** ISO weekday number (1 = Monday) of a Date. */
-export const isoWeekday = (date: Date): number => (date.getDay() === 0 ? 7 : date.getDay());

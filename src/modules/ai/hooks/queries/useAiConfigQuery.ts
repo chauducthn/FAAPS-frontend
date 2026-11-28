@@ -22,13 +22,6 @@ export const useAiConfigsQuery = (params?: AiConfigFilterParams) =>
     placeholderData: keepPreviousData,
   });
 
-export const useAiConfig = (id: string | null) =>
-  useQuery({
-    queryKey: AI_CONFIG_QUERY_KEYS.detail(id ?? ''),
-    queryFn: () => aiConfigService.getById(id as string),
-    enabled: !!id,
-  });
-
 export const useAiPresetsQuery = () =>
   useQuery({
     queryKey: AI_CONFIG_QUERY_KEYS.presets(),

@@ -16,3 +16,5 @@ skills/tokencrusher/
 .github/copilot-instructions.md
 AGENTS.md
 CLAUDE.md
+# TypeScript incremental build cache
+*.tsbuildinfo

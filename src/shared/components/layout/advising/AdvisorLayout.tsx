@@ -4,6 +4,7 @@
 import PortalLayout from '@/shared/components/layout/portal/PortalLayout';
 import { ADVISOR_NAV_SECTIONS } from './AdvisorSidebar';
 import { AdvisorHeaderExtra } from './AdvisorHeader';
+import { AdvisorProfilePanel } from '@/modules/advising/components/AdvisorProfilePanel';
 
 export default function AdvisorLayout() {
   return (
@@ -12,6 +13,7 @@ export default function AdvisorLayout() {
       homePath="/advisor"
       roleLabel="Advisor"
       headerExtra={<AdvisorHeaderExtra />}
+      profilePanel={<AdvisorProfilePanel />}
     />
   );
 }

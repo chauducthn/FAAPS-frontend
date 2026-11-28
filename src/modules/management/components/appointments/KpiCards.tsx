@@ -18,8 +18,6 @@ export interface KpiMetric {
   delta?: MetricDelta | null;
 }
 
-export type KpiDeltas = Partial<Record<'total' | AppointmentStatus, MetricDelta>>;
-
 export function KpiCard({
   metric,
   active,

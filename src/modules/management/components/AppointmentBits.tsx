@@ -67,14 +67,6 @@ export const STATUS_META: Record<AppointmentStatus, StatusMeta> = {
   },
 };
 
-export const APPOINTMENT_STATUS_LABEL: Record<AppointmentStatus, string> = {
-  SCHEDULED: 'Scheduled',
-  IN_PROGRESS: 'In progress',
-  COMPLETED: 'Completed',
-  CANCELLED: 'Cancelled',
-  NO_SHOW: 'No-show',
-};
-
 /** The status order used by the filter dropdown and the KPI cards. */
 export const APPOINTMENT_STATUSES = Object.keys(STATUS_META) as AppointmentStatus[];
 

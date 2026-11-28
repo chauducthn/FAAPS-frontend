@@ -13,8 +13,6 @@ export interface PaginatedData<T> {
   totalPages: number;
 }
 
-export type PaginatedResponse<T> = ApiResponse<PaginatedData<T>>;
-
 export interface ApiErrorResponse {
   success: boolean;
   code: string;

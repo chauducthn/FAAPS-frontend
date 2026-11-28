@@ -1,6 +1,6 @@
 // src/components/appointments/WeeklyCalendar.tsx
 import { useMemo } from 'react';
-import { addDays, formatColumnDay, formatIsoTime, isToday, toDateKey, weekDays } from '../../../shared/lib/appointmentDate';
+import { addDays, formatIsoTime, isToday, toDateKey, weekDays } from '../../../shared/lib/appointmentDate';
 import { BookingStatusBadge } from './AppointmentBits';
 import type { AdvisorAppointment } from '../types/appointment';
 import { cn } from '@/shared/lib/utils';

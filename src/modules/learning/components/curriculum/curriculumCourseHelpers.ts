@@ -4,7 +4,7 @@ import type {
   TranscriptRow,
 } from '../../../academic/services/studentAcademicService';
 import type { CourseDetail as AdminCourseDetail } from '../../../academic/types/course';
-import { adaptStudentCourseDetail } from '../courses/studentCourseColumns';
+import { adaptStudentCourseDetail } from '../courses/studentCourseDetailAdapter';
 import type { EffectiveCurriculumCourse } from './curriculumBlockRules';
 
 export type CourseStatusKind = 'PASSED' | 'IN_PROGRESS' | 'FAILED' | 'NOT_TAKEN';
@@ -28,7 +28,6 @@ export interface TermTab {
   allPassed: boolean;
 }
 
-const ENGLISH_PREP_RE = /^(PEN|TRS|LUK)\d+/i;
 const PREP_LEVEL_RE = /^(?:PEN|TRS|LUK)([1-6])\d*$/i;
 
 function englishAliasesFor(code: string): string[] {

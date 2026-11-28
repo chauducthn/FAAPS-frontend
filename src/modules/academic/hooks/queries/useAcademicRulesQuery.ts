@@ -17,9 +17,3 @@ export const useAcademicRulesQuery = (params?: AcademicRuleFilterParams) =>
     placeholderData: keepPreviousData,
   });
 
-export const useAcademicRule = (id: string | null) =>
-  useQuery({
-    queryKey: ACADEMIC_RULE_QUERY_KEYS.detail(id ?? ''),
-    queryFn: () => academicRuleService.getById(id as string),
-    enabled: !!id,
-  });

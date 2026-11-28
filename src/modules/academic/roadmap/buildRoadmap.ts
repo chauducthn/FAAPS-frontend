@@ -5,16 +5,12 @@ import type { CurriculumCourseItem } from '../types/curriculum';
 import type {
   RoadmapCourse,
   RoadmapCourseSource,
-  RoadmapMilestone,
   RoadmapPrerequisite,
   RoadmapSemester,
 } from '../types/roadmap';
 
 /** The board always shows this many columns, even when a curriculum is shorter. */
 export const MIN_SEMESTERS = 9;
-
-/** Semester columns are wide enough for a course card to breathe without truncation. */
-export const SEMESTER_COLUMN_WIDTH = 280;
 
 const isPrerequisite = (value: RoadmapPrerequisite | undefined): value is RoadmapPrerequisite =>
   !!value && value.code.trim().length > 0;
@@ -60,14 +56,3 @@ export function buildRoadmap(
   });
 }
 
-/**
- * Reads the "Prereq >= 70 Credits" style requirement out of a milestone definition.
- * Kept separate so the page can build milestones from an API payload without duplicating parsing.
- */
-export function milestoneFrom(
-  badge: string,
-  description?: string | null,
-  requirement?: string | null,
-): RoadmapMilestone {
-  return { badge, description: description ?? null, requirement: requirement ?? null };
-}
