@@ -97,7 +97,7 @@ export function AppointmentModalFooter({
             className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50"
           >
             <XCircle className="size-4" aria-hidden />
-            Hủy lịch
+            Cancel appointment
           </button>
           <button
             type="button"
@@ -108,7 +108,7 @@ export function AppointmentModalFooter({
             className="inline-flex items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-4 py-2 text-sm font-bold text-purple-700 transition-colors hover:bg-purple-100 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-purple-50"
           >
             <UserX className="size-4" aria-hidden />
-            Vắng mặt
+            No-show
           </button>
           <button
             type="button"
@@ -119,7 +119,7 @@ export function AppointmentModalFooter({
             className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#F26F21]"
           >
             <CheckCircle2 className="size-4" aria-hidden />
-            Hoàn thành
+            Complete
           </button>
         </>
       )}
@@ -131,7 +131,7 @@ export function AppointmentModalFooter({
           disabled={isCancelling}
           className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-50"
         >
-          {isCancelling ? 'Cancelling...' : 'Xác nhận hủy'}
+          {isCancelling ? 'Cancelling...' : 'Confirm cancellation'}
         </button>
       )}
 
@@ -142,7 +142,7 @@ export function AppointmentModalFooter({
           disabled={isUpdating}
           className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
         >
-          {isUpdating ? 'Saving...' : 'Xác nhận vắng mặt'}
+          {isUpdating ? 'Saving...' : 'Confirm no-show'}
         </button>
       )}
 
@@ -154,7 +154,7 @@ export function AppointmentModalFooter({
           className="inline-flex items-center gap-1.5 rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
         >
           <CheckCircle2 className="size-4" aria-hidden />
-          {isUpdating ? 'Saving...' : 'Xác nhận hoàn thành'}
+          {isUpdating ? 'Saving...' : 'Confirm completion'}
         </button>
       )}
 
@@ -167,7 +167,7 @@ export function AppointmentModalFooter({
           aria-disabled={!APPOINTMENT_RESULT_UPDATE_ENABLED}
           className="rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#F26F21]"
         >
-          Sửa tóm tắt
+          Edit summary
         </button>
       )}
 
@@ -178,7 +178,7 @@ export function AppointmentModalFooter({
           disabled={isUpdating}
           className="rounded-lg bg-[#F26F21] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f14] disabled:opacity-50"
         >
-          {isUpdating ? 'Saving...' : 'Lưu tóm tắt'}
+          {isUpdating ? 'Saving...' : 'Save summary'}
         </button>
       )}
     </div>

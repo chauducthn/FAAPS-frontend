@@ -8,6 +8,7 @@ import type { Page } from '../../../shared/types/api';
 import type {
   AdvisorInfo,
   AdvisingRequest,
+  AdvisingRequestDetail,
   CreateAdvisingRequestDto,
   StudentNotification,
   StudentProfile,
@@ -70,17 +71,43 @@ export const studentService = {
     return data;
   },
 
-  /** Các yêu cầu tư vấn của chính sinh viên. */
+  /** The student's own advising requests (the shared ticket queue, filtered to them). */
   getMyAdvisingRequests: async (): Promise<AdvisingRequest[]> => {
     const { data } = await apiClient.get<AdvisingRequest[]>('/student/advising-requests');
     return data ?? [];
   },
 
-  /** Gửi yêu cầu tư vấn mới. */
+  /** Send a new advising request — it lands in the shared queue (PENDING). */
   createAdvisingRequest: async (body: CreateAdvisingRequestDto): Promise<AdvisingRequest> => {
     const { data } = await apiClient.post<AdvisingRequest>('/student/advising-requests', body, {
       headers: await getCsrfHeaders(),
     });
+    return data;
+  },
+
+  /** Detail of one of the student's tickets + all messages. */
+  getAdvisingRequestDetail: async (id: string): Promise<AdvisingRequestDetail> => {
+    const { data } = await apiClient.get<AdvisingRequestDetail>(`/student/advising-requests/${id}`);
+    return data;
+  },
+
+  /** Reply to the advisor holding the ticket (only allowed while IN_PROGRESS). */
+  sendAdvisingReply: async (id: string, content: string): Promise<AdvisingRequestDetail> => {
+    const { data } = await apiClient.post<AdvisingRequestDetail>(
+      `/student/advising-requests/${id}/messages`,
+      { content },
+      { headers: await getCsrfHeaders() },
+    );
+    return data;
+  },
+
+  /** Cancel own ticket (student closes it before it is resolved). */
+  cancelAdvisingRequest: async (id: string): Promise<AdvisingRequestDetail> => {
+    const { data } = await apiClient.patch<AdvisingRequestDetail>(
+      `/student/advising-requests/${id}/cancel`,
+      null,
+      { headers: await getCsrfHeaders() },
+    );
     return data;
   },
 };

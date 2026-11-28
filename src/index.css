@@ -9,6 +9,7 @@
 @import "./styles/landing-motion.css";
 @import "./styles/page-transitions.css";
 @import "./styles/contained-layout.css";
+@import "./styles/interaction-cursor.css";
 
 @custom-variant dark (&:is(.dark *));
 

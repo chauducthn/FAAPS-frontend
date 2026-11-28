@@ -41,8 +41,8 @@ export function AdvisorProfilePanel() {
         avatarUrl={identity?.avatarUrl ?? user?.avatarUrl}
         isLoading={identityQuery.isLoading}
         action={
-          <Link to="/advisor/students" className={toolbarButtonClass()}>
-            My Students <ArrowRight className="size-4 text-ink-subtle" aria-hidden />
+          <Link to="/advisor/advising-requests" className={toolbarButtonClass()}>
+            Advising Requests <ArrowRight className="size-4 text-ink-subtle" aria-hidden />
           </Link>
         }
       />

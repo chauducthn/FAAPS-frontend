@@ -46,14 +46,12 @@ const StudentLearningPlan = lazy(() => import('../modules/learning/pages/Student
 const AdvisorAppointments = lazy(() => import('../modules/advising/pages/AdvisorAppointments'));
 const AdvisorPortal = lazy(() => import('../modules/advising/pages/AdvisorPortal'));
 const AdvisorAdvisingRequests = lazy(() => import('../modules/advising/pages/AdvisorAdvisingRequests'));
-const AdvisorConversationWorkspace = lazy(() => import('../modules/advising/pages/AdvisorConversationWorkspace'));
 const AdvisorStudyPlans = lazy(() => import('../modules/advising/pages/AdvisorStudyPlans'));
-const AdvisorStudents = lazy(() => import('../modules/advising/pages/AdvisorStudents'));
 const AdvisorAcademicLookup = lazy(() => import('../modules/advising/pages/AdvisorAcademicLookup'));
 const AdvisorReports = lazy(() => import('../modules/advising/pages/AdvisorReports'));
 const AdvisorNotifications = lazy(() => import('../modules/advising/pages/AdvisorNotifications'));
 
-/** Bọc mọi route lazy bằng Suspense + skeleton để không nháy màn trắng khi tải chunk. */
+/** Wraps every lazy route in Suspense with a skeleton so loading a chunk never flashes a blank screen. */
 const suspense = (element: React.ReactNode) => (
   <Suspense fallback={<PageSkeleton />}>{element}</Suspense>
 );
@@ -146,9 +144,11 @@ export const router = createBrowserRouter([
         children: [
           { path: '/advisor', element: suspense(<AdvisorPortal />) },
           { path: '/advisor/advising-requests', element: suspense(<AdvisorAdvisingRequests />) },
-          { path: '/advisor/students', element: suspense(<AdvisorStudents />) },
           { path: '/advisor/appointments', element: suspense(<AdvisorAppointments />) },
-          { path: '/advisor/conversations', element: suspense(<AdvisorConversationWorkspace />) },
+          // My Students was retired with the shared multi-advisor queue.
+          { path: '/advisor/students', element: <Navigate to="/advisor/advising-requests" replace /> },
+          // Advising Requests is a ticket queue (list, chat and closing in one page), so Conversations redirects there.
+          { path: '/advisor/conversations', element: <Navigate to="/advisor/advising-requests" replace /> },
           { path: '/advisor/study-plans', element: suspense(<AdvisorStudyPlans />) },
           { path: '/advisor/academic-lookup', element: suspense(<AdvisorAcademicLookup />) },
           { path: '/advisor/reports', element: suspense(<AdvisorReports />) },

@@ -20,7 +20,7 @@ export function AtRiskStudentsWidget({ onViewDetail }: AtRiskStudentsWidgetProps
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900">
           <AlertTriangle className="size-5 text-[#F26F21]" aria-hidden />
-          Sinh viên có nguy cơ
+          At-risk students
         </h2>
         {!isLoading && !isError && total > 0 && (
           <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-[#F26F21] px-2.5 text-xs font-extrabold tabular-nums text-white">
@@ -34,15 +34,15 @@ export function AtRiskStudentsWidget({ onViewDetail }: AtRiskStudentsWidgetProps
           <RiskSkeleton />
         ) : isError ? (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-sm font-medium text-red-800">
-            Không thể tải danh sách sinh viên có nguy cơ.{' '}
+            Unable to load the at-risk student list.{' '}
             <button type="button" onClick={() => void refetch()} className="h-11 font-bold underline">
-              Thử lại
+              Retry
             </button>
           </div>
         ) : students.length === 0 ? (
           <p className="flex items-center justify-center gap-2 rounded-xl bg-slate-50 px-4 py-8 text-center text-sm font-medium text-slate-600">
             <CheckCircle2 className="size-4 text-emerald-600" aria-hidden />
-            Không có sinh viên nào bị cảnh báo
+            No students are currently flagged
           </p>
         ) : (
           <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

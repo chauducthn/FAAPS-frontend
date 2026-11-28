@@ -1,0 +1,27 @@
+/* Every interactive element shows the pointer; the browser default arrow hides that it can be clicked. */
+@layer base {
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  a[href],
+  summary,
+  label[for],
+  select:not(:disabled),
+  input[type='checkbox']:not(:disabled),
+  input[type='radio']:not(:disabled),
+  [data-slot='checkbox'],
+  [data-slot='radio-group'],
+  [data-slot='dropdown-menu-item'],
+  [data-slot='select-trigger'],
+  [role='option'],
+  [role='menuitem'],
+  [role='tab'],
+  [role='switch'] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled='true'],
+  :disabled {
+    cursor: not-allowed;
+  }
+}

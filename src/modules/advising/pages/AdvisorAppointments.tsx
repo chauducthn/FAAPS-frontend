@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import type { PaginationState, SortingState } from '@tanstack/react-table';
 import { DataTable } from '../../../shared/components/common/DataTable';
 import { AppointmentActionModal } from '../../appointment/components/AppointmentActionModal';
+import { AdvisorScheduleModal } from '../../appointment/components/AdvisorScheduleModal';
 import { AvailabilityEditor } from '../../appointment/components/AvailabilityEditor';
 import { WeeklyCalendar } from '../../appointment/components/WeeklyCalendar';
 import {
@@ -22,6 +23,7 @@ import {
   type AppointmentsListTab,
   type AppointmentsViewMode,
 } from '../components/appointments/AdvisorAppointmentsToolbar';
+import { useRequestScheduleDeepLink } from '../hooks/useRequestScheduleDeepLink';
 
 const ACTIVE_STATUSES: AdvisorAppointment['status'][] = ['PENDING', 'ACCEPTED'];
 const HISTORY_STATUSES: AdvisorAppointment['status'][] = ['COMPLETED', 'NO_SHOW', 'CANCELLED', 'REJECTED'];
@@ -31,6 +33,7 @@ export default function AdvisorAppointments() {
   const [weekAnchor, setWeekAnchor] = useState(() => new Date());
   const [selected, setSelected] = useState<AdvisorAppointment | null>(null);
   const [showAvailability, setShowAvailability] = useState(false);
+  const schedule = useRequestScheduleDeepLink();
 
   const [tab, setTab] = useState<AppointmentsListTab>('upcoming');
   const [search, setSearch] = useState('');
@@ -166,6 +169,13 @@ export default function AdvisorAppointments() {
       </section>
 
       <AppointmentActionModal appointment={selected} onClose={() => setSelected(null)} />
+      <AdvisorScheduleModal
+        open={schedule.context !== null}
+        studentId={schedule.context?.studentId ?? null}
+        studentName={schedule.context?.studentName ?? null}
+        advisingRequestId={schedule.context?.advisingRequestId ?? null}
+        onClose={schedule.close}
+      />
     </div>
   );
 }

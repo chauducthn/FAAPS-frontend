@@ -12,10 +12,16 @@ const LEVEL_STYLES: Record<RiskLevel, { pill: string; bar: string; label: string
 };
 
 const REASON_STYLES: Record<RiskReason, { label: string; chip: string }> = {
-  LOW_GPA: { label: 'GPA thấp', chip: 'bg-orange-100 text-orange-900 ring-orange-300' },
-  HIGH_ABSENCE: { label: 'Vắng nhiều', chip: 'bg-purple-100 text-purple-900 ring-purple-300' },
-  FAILED_COURSES: { label: 'Nợ môn', chip: 'bg-red-100 text-red-900 ring-red-300' },
+  LOW_GPA: { label: 'Low GPA', chip: 'bg-orange-100 text-orange-900 ring-orange-300' },
+  HIGH_ABSENCE: { label: 'High absence', chip: 'bg-purple-100 text-purple-900 ring-purple-300' },
+  FAILED_COURSES: { label: 'Failed courses', chip: 'bg-red-100 text-red-900 ring-red-300' },
 };
+
+/** Advising status badge: an open appointment outranks an open request. */
+const STATUS_STYLES = {
+  appointment: { label: 'Appointment scheduled', chip: 'bg-emerald-50 text-emerald-800 ring-emerald-200' },
+  advising: { label: 'In advising', chip: 'bg-sky-50 text-sky-800 ring-sky-200' },
+} as const;
 
 function initialsOf(name: string | null | undefined) {
   return (name ?? '')
@@ -54,6 +60,11 @@ export function AtRiskCard({
 }) {
   const [pending, setPending] = useState(false);
   const level = LEVEL_STYLES[student.riskLevel] ?? LEVEL_STYLES.LOW;
+  const statusBadge = student.hasOpenAppointment
+    ? STATUS_STYLES.appointment
+    : student.hasOpenRequest
+      ? STATUS_STYLES.advising
+      : null;
 
   const handleView = async () => {
     setPending(true);
@@ -123,6 +134,16 @@ export function AtRiskCard({
             GPA {student.currentGpa.toFixed(2)}
           </span>
         )}
+        {statusBadge && (
+          <span
+            className={cn(
+              'inline-flex h-6 items-center gap-1 rounded-full px-2.5 text-xs font-bold ring-1 ring-inset',
+              statusBadge.chip,
+            )}
+          >
+            {statusBadge.label}
+          </span>
+        )}
       </div>
 
       {student.reasonDetails && (
@@ -140,7 +161,7 @@ export function AtRiskCard({
           'text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#F26F21]/40 hover:text-[#F26F21] disabled:opacity-60',
         )}
       >
-        {pending ? 'Đang tải...' : 'Xem chi tiết'}
+        {pending ? 'Loading...' : 'View details'}
         {!pending && <ArrowRight className="size-4" aria-hidden />}
       </button>
     </li>

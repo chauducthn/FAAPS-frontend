@@ -16,9 +16,11 @@ interface DateSelectorProps {
   onChange: (value: string) => void;
   /** How many days ahead can be booked (total horizon). */
   days?: number;
+  /** The chosen advisor, so free-slot counts match them. Empty falls back to the student's assigned advisor. */
+  advisorId?: string | null;
 }
 
-export function DateSelector({ value, onChange, days = 28 }: DateSelectorProps) {
+export function DateSelector({ value, onChange, days = 28, advisorId }: DateSelectorProps) {
   const today = useMemo(() => startOfDay(new Date()), []);
   const todayKey = toDateKey(today);
   const maxDate = useMemo(() => addDays(today, days - 1), [today, days]);
@@ -53,8 +55,8 @@ export function DateSelector({ value, onChange, days = 28 }: DateSelectorProps) 
       const key = toDateKey(day);
       const outOfRange = key < todayKey || key > maxKey;
       return {
-        queryKey: APPOINTMENT_QUERY_KEYS.availableSlots(key),
-        queryFn: () => appointmentService.getAvailableSlots(key),
+        queryKey: APPOINTMENT_QUERY_KEYS.availableSlots(key, advisorId ?? undefined),
+        queryFn: () => appointmentService.getAvailableSlots(key, advisorId ?? undefined),
         enabled: !outOfRange,
         staleTime: 1000 * 30,
       };
@@ -88,7 +90,7 @@ export function DateSelector({ value, onChange, days = 28 }: DateSelectorProps) 
       const startDiff = Math.max(0, Math.round((startOfDay(selected).getTime() - today.getTime()) / DAY_MS));
       for (let i = startDiff; i < days; i++) {
         const key = toDateKey(addDays(today, i));
-        const cached = queryClient.getQueryData<unknown[]>(APPOINTMENT_QUERY_KEYS.availableSlots(key));
+        const cached = queryClient.getQueryData<unknown[]>(APPOINTMENT_QUERY_KEYS.availableSlots(key, advisorId ?? undefined));
         if (Array.isArray(cached)) {
           if (cached.length > 0) {
             jumpTo(key);
@@ -105,8 +107,8 @@ export function DateSelector({ value, onChange, days = 28 }: DateSelectorProps) 
           }
           continue;
         }
-        const slots = await appointmentService.getAvailableSlots(key);
-        queryClient.setQueryData(APPOINTMENT_QUERY_KEYS.availableSlots(key), slots);
+        const slots = await appointmentService.getAvailableSlots(key, advisorId ?? undefined);
+        queryClient.setQueryData(APPOINTMENT_QUERY_KEYS.availableSlots(key, advisorId ?? undefined), slots);
         if (slots.length > 0) {
           jumpTo(key);
           return;

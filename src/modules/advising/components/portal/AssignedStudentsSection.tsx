@@ -1,7 +1,6 @@
 // Assigned students overview section with academic term tooltips for AdvisorPortal.
 
-import { Link } from 'react-router';
-import { ArrowRight, Question as HelpCircle, Warning as TriangleAlert } from '@phosphor-icons/react';
+import { Question as HelpCircle, Warning as TriangleAlert } from '@phosphor-icons/react';
 import { cn } from '@/shared/lib/utils';
 import type { AcademicStatus, AdviseeStudent } from '../../types/advising';
 
@@ -52,6 +51,8 @@ interface AssignedStudentsSectionProps {
   isLoading: boolean;
   isError: boolean;
   onRetry: () => void;
+  /** Opens the Student 360 modal for a card. */
+  onOpenStudent: (studentId: string) => void;
   requiredCreditsFor: (student: AdviseeStudent) => number | null | undefined;
   defaultRequiredCredits: number;
 }
@@ -63,6 +64,7 @@ export function AssignedStudentsSection({
   isLoading,
   isError,
   onRetry,
+  onOpenStudent,
   requiredCreditsFor,
   defaultRequiredCredits,
 }: AssignedStudentsSectionProps) {
@@ -74,38 +76,32 @@ export function AssignedStudentsSection({
             Assigned Students
             <TermTip
               term="Cohort"
-              tip="Cohort = khóa/lứa nhập học của sinh viên (ví dụ K17, K18). Sinh viên cùng cohort học cùng chương trình đào tạo."
+              tip="Cohort = the intake/entry group of students (e.g. K17, K18). Students in the same cohort follow the same study programme."
             />
           </h2>
           <p className="mt-1.5 text-sm font-medium text-slate-600">
             {totalStudents} students · {atRiskCount} need attention
           </p>
         </div>
-        <Link
-          to="/advisor/students"
-          className="inline-flex h-11 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 shadow-sm transition-colors hover:border-[#F26F21]/40 hover:text-[#F26F21]"
-        >
-          Open My Students <ArrowRight className="size-4" aria-hidden />
-        </Link>
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-xl bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-700 ring-1 ring-inset ring-slate-200">
         <span className="font-bold text-slate-900">Academic terms:</span>
         <span className="inline-flex items-center gap-1">
           GPA
-          <TermTip term="GPA" tip="Grade Point Average — điểm trung bình tích lũy thang 10. >= 8 Giỏi, 6.5–8 Khá, 5–6.5 Trung bình, < 5 Nguy cơ probation." />
+          <TermTip term="GPA" tip="Grade Point Average — cumulative average on a 10-point scale. >= 8 Excellent, 6.5–8 Good, 5–6.5 Average, < 5 At risk of probation." />
         </span>
         <span className="inline-flex items-center gap-1">
           Probation
-          <TermTip term="Probation" tip="Cảnh báo học vụ — sinh viên có GPA thấp hoặc nợ tín chỉ, cần gặp advisor sớm để lập kế hoạch cải thiện." />
+          <TermTip term="Probation" tip="Academic warning — the student has a low GPA or outstanding credits, and should meet an advisor early to build an improvement plan." />
         </span>
         <span className="inline-flex items-center gap-1">
           OJT
-          <TermTip term="OJT" tip="On-the-Job Training — kỳ thực tập tại doanh nghiệp, thường ở năm 3. Sinh viên cần đủ tín chỉ và GPA tối thiểu." />
+          <TermTip term="OJT" tip="On-the-Job Training — the internship period at a company, usually in year 3. Students need enough credits and a minimum GPA." />
         </span>
         <span className="inline-flex items-center gap-1">
           Credits
-          <TermTip term="Credits" tip="Tín chỉ tích lũy / tổng tín chỉ yêu cầu tốt nghiệp của chương trình đào tạo. Thanh tiến trình bên dưới mỗi thẻ cho biết % hoàn thành." />
+          <TermTip term="Credits" tip="Accumulated credits / total credits required to graduate from the study programme. The bar under each card shows the completion percentage." />
         </span>
       </div>
 
@@ -150,7 +146,11 @@ export function AssignedStudentsSection({
                 s.currentGpa === null ? 'text-slate-600' : s.currentGpa >= 8 ? 'text-emerald-700' : s.currentGpa >= 6.5 ? 'text-orange-900' : s.currentGpa >= 5 ? 'text-amber-800' : 'text-red-700';
               return (
                 <li key={s.id} className="rounded-2xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md">
-                  <Link to="/advisor/students" className="flex items-center gap-3 rounded-xl p-1">
+                  <button
+                    type="button"
+                    onClick={() => onOpenStudent(s.id)}
+                    className="flex w-full items-center gap-3 rounded-xl p-1 text-left"
+                  >
                     <span aria-hidden className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--brand)] text-sm font-extrabold text-white shadow-sm">
                       {initialsOf(s.fullName)}
                     </span>
@@ -163,13 +163,13 @@ export function AssignedStudentsSection({
                     <span className={cn('text-lg font-bold tabular-nums', gpaColor)}>
                       {s.currentGpa != null ? s.currentGpa.toFixed(2) : '—'}
                     </span>
-                  </Link>
+                  </button>
                   <div className="mt-3 flex items-center justify-between gap-2 px-1">
                     <span className={cn('inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-sm font-bold ring-1 ring-inset', style.pill)}>
                       <span className={cn('size-1.5 rounded-full', style.dot)} aria-hidden />
                       {style.label}
                       {(s.academicStatus === 'PROBATION' || s.academicStatus === 'SUSPENDED') && (
-                        <TermTip term={style.label} tip="Sinh viên đang bị cảnh báo/đình chỉ học vụ — ưu tiên liên hệ và lập kế hoạch hỗ trợ." />
+                        <TermTip term={style.label} tip="The student is on academic probation or suspension — prioritise contacting them and building a support plan." />
                       )}
                     </span>
                     <span className="text-sm font-semibold tabular-nums text-slate-600">

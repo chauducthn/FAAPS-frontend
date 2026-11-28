@@ -12,6 +12,7 @@ import {
   useMarkAdvisorNotificationRead,
   useMarkAllAdvisorNotificationsRead,
 } from '../hooks/mutations/useAdvisingMutations';
+import { advisorRequestLink, ticketIdFromActionUrl } from '../utils/ticketLink';
 import type { StudentNotification } from '../types/advising';
 import { NotificationBellDropdown } from './NotificationBellDropdown';
 
@@ -56,7 +57,10 @@ export function AdvisorNotificationBell() {
   const select = (item: StudentNotification) => {
     if (!item.isRead) markRead.mutate(item.id);
     setOpen(false);
-    if (item.actionUrl?.startsWith('/advisor')) navigate(item.actionUrl);
+    if (!item.actionUrl?.startsWith('/advisor')) return;
+
+    const ticketId = ticketIdFromActionUrl(item.actionUrl);
+    navigate(ticketId ? advisorRequestLink(ticketId) : item.actionUrl);
   };
 
   return (
@@ -68,7 +72,7 @@ export function AdvisorNotificationBell() {
         aria-expanded={open}
         aria-haspopup="dialog"
         title="Notifications"
-        className="relative rounded-xl p-2 text-[#6B7280] transition-colors hover:bg-[#f7f8fa] hover:text-[#1A1A1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021]/40"
+        className="relative cursor-pointer rounded-xl p-2 text-[#6B7280] transition-colors hover:bg-[#f7f8fa] hover:text-[#1A1A1A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021]/40"
       >
         <Bell className="size-5" aria-hidden />
         {unread > 0 && (

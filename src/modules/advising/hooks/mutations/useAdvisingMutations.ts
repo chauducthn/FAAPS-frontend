@@ -8,33 +8,7 @@ import { STUDENT_QUERY_KEYS } from '../../../learning/hooks/queries/useStudentQu
 import { ADVISOR_QUERY_KEYS } from '../queries/useAdvisorQueries';
 import type { UpdateAdvisingRequestStatusDto } from '../../types/advising';
 
-/**
- * Advisor chuyển trạng thái yêu cầu.
- * RESOLVED = Chấp nhận, IN_PROGRESS + resolutionSummary = Từ chối, IN_PROGRESS = Tiếp nhận xử lý.
- */
-export const useUpdateAdvisingRequestStatus = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: UpdateAdvisingRequestStatusDto }) =>
-      advisorService.updateRequestStatus(id, body),
-    onSuccess: (_data, variables) => {
-      const { status, resolutionSummary } = variables.body;
-      if (status === 'RESOLVED') toast.success('Request accepted');
-      else if (status === 'CANCELLED') toast.success('Request rejected');
-      // Từ chối cũng dùng IN_PROGRESS nhưng kèm resolutionSummary (lý do từ chối).
-      else if (status === 'IN_PROGRESS' && resolutionSummary?.trim())
-        toast.success('Request rejected', { description: 'The student has been notified.' });
-      else toast.success('Request is now in progress');
-      queryClient.invalidateQueries({ queryKey: ADVISOR_QUERY_KEYS.all });
-    },
-    onError: (error) => {
-      toast.error(apiErrorMessage(error, 'Unable to update the request.'));
-    },
-  });
-};
-
-/** Đánh dấu 1 thông báo của sinh viên đã đọc. */
+/** Marks one of the student's notifications as read. */
 export const useMarkStudentNotificationRead = () => {
   const queryClient = useQueryClient();
 

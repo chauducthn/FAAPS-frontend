@@ -1,130 +1,101 @@
-// Advising request list table with status tabs, search filtering, and row actions.
+// Advisor ticket queue: status tabs, scope filter, the shared ticket table and the chat modal.
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { cn } from '@/shared/lib/utils';
+import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { Pagination } from '../../management/components/Pagination';
 import { TableBody, TableHead, TableShell } from '../../../shared/components/common/table/TablePrimitives';
-import { RequestActionModal } from './RequestActionModal';
+import { apiMessage } from '../../../shared/lib/apiMessage';
+import { AdvisorRequestDetailModal } from './AdvisorRequestDetailModal';
 import { RequestTableRow } from './RequestListRow';
+import { RequestListToolbar, type RequestTabKey } from './RequestListToolbar';
 import { RequestTableState } from './RequestTableState';
 import { useAdvisorAdvisingRequests } from '../hooks/queries/useAdvisorQueries';
-import { useUpdateAdvisingRequestStatus } from '../hooks/mutations/useAdvisingMutations';
-import type { AdvisingRequest, AdvisingRequestStatus } from '../types/advising';
+import { useRequestDeepLink } from '../hooks/useRequestDeepLink';
+import { advisorService } from '../services/advisorService';
+import type { AdvisingRequest, AdvisingRequestScope } from '../types/advising';
 
 const PAGE_SIZE = 10;
+const CLOSED = new Set(['RESOLVED', 'REJECTED', 'CANCELLED']);
+const COLUMNS = ['Student', 'Type', 'Title', 'Submitted', 'Status', 'Major Group', 'Handled by'];
 
-type TabKey = AdvisingRequestStatus | 'ALL';
+function matchesTab(request: AdvisingRequest, tab: RequestTabKey) {
+  return tab === 'RESOLVED' ? CLOSED.has(request.status) : request.status === tab;
+}
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: 'PENDING', label: 'Pending' },
-  { key: 'IN_PROGRESS', label: 'In progress' },
-  { key: 'RESOLVED', label: 'Resolved' },
-  { key: 'ALL', label: 'All' },
-];
+function matchesKeyword(request: AdvisingRequest, keyword: string) {
+  if (!keyword) return true;
+  return (
+    request.title?.toLowerCase().includes(keyword) ||
+    request.studentName?.toLowerCase().includes(keyword) ||
+    (request.studentCode ?? '').toLowerCase().includes(keyword)
+  );
+}
 
 export function RequestListTable({ search = '' }: { search?: string }) {
-  const [tab, setTab] = useState<TabKey>('PENDING');
+  const [tab, setTab] = useState<RequestTabKey>('PENDING');
+  const [scope, setScope] = useState<AdvisingRequestScope>('ALL');
   const [page, setPage] = useState(0);
-  const [active, setActive] = useState<{ request: AdvisingRequest; decision: 'accept' | 'reject' } | null>(null);
-  const [processingId, setProcessingId] = useState<string | null>(null);
-  const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement | null>(null);
-  const updateStatus = useUpdateAdvisingRequestStatus();
+  const [active, setActive] = useState<AdvisingRequest | null>(null);
+  const [claimingId, setClaimingId] = useState<string | null>(null);
+  useRequestDeepLink(setActive);
 
   const { data, isLoading, isError, refetch } = useAdvisorAdvisingRequests({
-    status: tab === 'ALL' ? undefined : tab,
+    status: tab,
     search: search || undefined,
+    scope,
   });
 
-  useEffect(() => {
-    if (!menuOpenId) return;
-    const onDown = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpenId(null);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpenId(null);
-    };
-    document.addEventListener('mousedown', onDown);
-    document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('mousedown', onDown);
-      document.removeEventListener('keydown', onKey);
-    };
-  }, [menuOpenId]);
-
+  // The backend filters too; filtering again keeps the view right if it ignores a parameter.
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
-    return (data ?? []).filter((request) => {
-      if (tab === 'RESOLVED') {
-        if (request.status !== 'RESOLVED' && request.status !== 'CANCELLED') return false;
-      } else if (tab !== 'ALL' && request.status !== tab) {
-        return false;
-      }
-      if (!keyword) return true;
-      return (
-        request.title?.toLowerCase().includes(keyword) ||
-        request.studentName?.toLowerCase().includes(keyword) ||
-        (request.studentCode ?? '').toLowerCase().includes(keyword)
-      );
-    });
-  }, [data, tab, search]);
+    return (data ?? []).filter(
+      (r) => matchesTab(r, tab) && (scope !== 'MINE' || r.participatedByMe) && matchesKeyword(r, keyword),
+    );
+  }, [data, tab, search, scope]);
 
-  const total = filtered.length;
   const rows = filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
 
-  const switchTab = (key: TabKey) => {
-    setTab(key);
-    setPage(0);
-  };
-
-  const handleInProgress = async (request: AdvisingRequest) => {
-    if (processingId) return;
-    setMenuOpenId(null);
-    setProcessingId(request.id);
+  /** Claiming does not lock the ticket: other advisors can still reply in the thread. */
+  const claim = async (request: AdvisingRequest) => {
+    if (claimingId) return;
+    setClaimingId(request.id);
     try {
-      await updateStatus.mutateAsync({ id: request.id, body: { status: 'IN_PROGRESS' } });
-    } catch {
-      // Error feedback is handled by the mutation hook.
+      await advisorService.claimRequest(request.id);
+      toast.success('Request claimed', { description: 'You can now chat with the student.' });
+      await refetch();
+      setActive({ ...request, status: 'IN_PROGRESS' });
+    } catch (error) {
+      toast.error(apiMessage(error));
     } finally {
-      setProcessingId(null);
+      setClaimingId(null);
     }
   };
 
   return (
     <>
       <div>
-        <div role="tablist" aria-label="Request status" className="flex flex-wrap items-center gap-3">
-          {TABS.map((t) => {
-            const activeTab = tab === t.key;
-            return (
-              <button
-                key={t.key}
-                type="button"
-                role="tab"
-                aria-selected={activeTab}
-                onClick={() => switchTab(t.key)}
-                className={cn(
-                  'inline-flex h-11 items-center gap-1.5 rounded-full px-5 text-sm font-bold ring-1 ring-inset transition-all',
-                  activeTab
-                    ? 'bg-[#F26F21] text-white ring-[#F26F21] shadow-sm'
-                    : 'bg-white text-slate-700 ring-slate-200 hover:border-[#F26F21]/40 hover:bg-[#fff7f0] hover:text-slate-900',
-                )}
-              >
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
+        <RequestListToolbar
+          tab={tab}
+          scope={scope}
+          onTab={(next) => {
+            setTab(next);
+            setPage(0);
+          }}
+          onScope={(next) => {
+            setScope(next);
+            setPage(0);
+          }}
+        />
 
         <div className="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
           <TableShell>
             <thead>
               <tr>
-                <TableHead className="whitespace-nowrap">Student</TableHead>
-                <TableHead className="whitespace-nowrap">Type</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead className="whitespace-nowrap">Submitted</TableHead>
-                <TableHead className="whitespace-nowrap">Status</TableHead>
+                {COLUMNS.map((label) => (
+                  <TableHead key={label} className={label === 'Title' ? undefined : 'whitespace-nowrap'}>
+                    {label}
+                  </TableHead>
+                ))}
                 <TableHead align="right" className="whitespace-nowrap">
                   Actions
                 </TableHead>
@@ -133,7 +104,7 @@ export function RequestListTable({ search = '' }: { search?: string }) {
             <TableBody>
               {isLoading || (isError && !data) || rows.length === 0 ? (
                 <RequestTableState
-                  cols={6}
+                  cols={COLUMNS.length + 1}
                   loading={isLoading}
                   error={isError && !data}
                   empty={search ? 'No requests match your search.' : 'No requests found.'}
@@ -145,16 +116,9 @@ export function RequestListTable({ search = '' }: { search?: string }) {
                   <RequestTableRow
                     key={r.id}
                     request={r}
-                    busy={processingId === r.id}
-                    menuOpen={menuOpenId === r.id}
-                    menuRef={menuRef}
-                    onToggleMenu={() => setMenuOpenId(menuOpenId === r.id ? null : r.id)}
-                    onAccept={() => setActive({ request: r, decision: 'accept' })}
-                    onInProgress={() => handleInProgress(r)}
-                    onReject={() => {
-                      setMenuOpenId(null);
-                      setActive({ request: r, decision: 'reject' });
-                    }}
+                    claiming={claimingId === r.id}
+                    onClaim={() => void claim(r)}
+                    onOpen={() => setActive(r)}
                   />
                 ))
               )}
@@ -163,15 +127,11 @@ export function RequestListTable({ search = '' }: { search?: string }) {
         </div>
 
         <div className="mt-5">
-          <Pagination page={page} pageSize={PAGE_SIZE} total={total} noun="requests" onChange={setPage} bare />
+          <Pagination page={page} pageSize={PAGE_SIZE} total={filtered.length} noun="requests" onChange={setPage} bare />
         </div>
       </div>
 
-      <RequestActionModal
-        request={active?.request ?? null}
-        decision={active?.decision ?? 'accept'}
-        onClose={() => setActive(null)}
-      />
+      <AdvisorRequestDetailModal request={active} onClose={() => setActive(null)} />
     </>
   );
 }

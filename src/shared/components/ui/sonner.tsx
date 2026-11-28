@@ -69,7 +69,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       visibleToasts={4}
       closeButton={true}
       richColors={false}
-      expand={true}
+      // `expand` fades the stacked toasts; keeping it off leaves every toast readable.
+      expand={false}
       gap={10}
       icons={{
         success: (

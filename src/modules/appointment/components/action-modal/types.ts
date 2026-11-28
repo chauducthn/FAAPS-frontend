@@ -8,7 +8,7 @@ import type { AdvisorAppointment } from '../../types/appointment';
 
 export const APPOINTMENT_RESULT_UPDATE_ENABLED = false;
 
-export const FEATURE_PENDING_TOOLTIP = 'Tính năng đang cập nhật';
+export const FEATURE_PENDING_TOOLTIP = 'This feature is being updated';
 
 export interface AppointmentActionModalProps {
   appointment: AdvisorAppointment | null;

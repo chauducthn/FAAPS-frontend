@@ -1,6 +1,6 @@
 // src/pages/advising/AdvisorAdvisingRequests.tsx
-// Trang "Yêu cầu tư vấn" — đồng bộ Overview mới:
-// Hero cam đậm + nút trắng + 4 KPI trắng viền top-bar + section trắng p-6 sm:p-8.
+// The Advisor "Advising Requests" page — matches the new Overview design:
+// solid orange hero + white button + 4 white KPI cards with a top bar + white section.
 
 import { useMemo, useState } from 'react';
 import { ArrowRight, CheckCircle as CircleCheckBig, ClipboardText as ClipboardList, Hourglass, Tray as Inbox, MagnifyingGlass as Search, UsersThree as UsersRound } from '@phosphor-icons/react';
@@ -11,6 +11,7 @@ import { cn } from '@/shared/lib/utils';
 
 export default function AdvisorAdvisingRequests() {
   const [search, setSearch] = useState('');
+  // No `advisorId` filter → every advisor sees the whole shared queue.
   const { data } = useAdvisorAdvisingRequests({});
 
   const stats = useMemo(() => {
@@ -19,15 +20,15 @@ export default function AdvisorAdvisingRequests() {
       total: all.length,
       pending: all.filter((r) => r.status === 'PENDING').length,
       inProgress: all.filter((r) => r.status === 'IN_PROGRESS').length,
-      // "Resolved" gộp cả request đã chấp nhận và đã từ chối — cùng khớp với tab Resolved.
+      // "Resolved" covers both finished (RESOLVED) and cancelled (CANCELLED) tickets.
       resolved: all.filter((r) => r.status === 'RESOLVED' || r.status === 'CANCELLED').length,
     };
   }, [data]);
 
   const kpis = [
     { label: 'Total', value: String(stats.total), sub: 'all requests', icon: UsersRound, iconBox: 'bg-slate-900 text-white shadow-[0_6px_16px_-6px_rgba(15,23,42,0.5)]', topBar: 'bg-slate-900' },
-    { label: 'Pending', value: String(stats.pending), sub: 'needs response', icon: Inbox, iconBox: 'bg-[#F26F21] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.6)]', topBar: 'bg-[#F26F21]' },
-    { label: 'In progress', value: String(stats.inProgress), sub: 'being handled', icon: Hourglass, iconBox: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200', topBar: 'bg-slate-300' },
+    { label: 'Pending', value: String(stats.pending), sub: 'in the queue', icon: Inbox, iconBox: 'bg-[#F26F21] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.6)]', topBar: 'bg-[#F26F21]' },
+    { label: 'In progress', value: String(stats.inProgress), sub: 'claimed by an advisor', icon: Hourglass, iconBox: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200', topBar: 'bg-slate-300' },
     { label: 'Resolved', value: String(stats.resolved), sub: 'completed', icon: CircleCheckBig, iconBox: 'bg-emerald-600 text-white shadow-[0_6px_16px_-6px_rgba(5,150,105,0.5)]', topBar: 'bg-emerald-600' },
   ];
 
@@ -46,13 +47,13 @@ export default function AdvisorAdvisingRequests() {
             </h1>
             <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-white/95">
               {stats.pending > 0
-                ? `${stats.pending} pending request${stats.pending === 1 ? '' : 's'} need your response.`
-                : 'No pending requests right now. Nice work!'}
+                ? `${stats.pending} request${stats.pending === 1 ? '' : 's'} waiting in the queue — claim one to start replying to the student.`
+                : 'The queue is empty. No requests are waiting!'}
             </p>
           </div>
           <Link
             to="/advisor"
-            className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-white px-5 text-sm font-extrabold text-[#c2410c] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-all hover:bg-orange-50 active:scale-[0.98]"
+            className="inline-flex h-11 cursor-pointer shrink-0 items-center justify-center gap-1.5 rounded-xl bg-white px-5 text-sm font-extrabold text-[#c2410c] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-all hover:bg-orange-50 active:scale-[0.98]"
           >
             Back to Overview <ArrowRight className="size-4" aria-hidden />
           </Link>
@@ -98,7 +99,7 @@ export default function AdvisorAdvisingRequests() {
             <button
               type="button"
               onClick={() => setSearch('')}
-              className="inline-flex h-11 items-center rounded-xl px-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100"
+              className="inline-flex h-11 cursor-pointer items-center rounded-xl px-4 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-100"
             >
               Clear search
             </button>

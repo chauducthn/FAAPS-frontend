@@ -1,6 +1,6 @@
-// src/components/advising/RequestStatusBadge.tsx
-// Badge trạng thái yêu cầu tư vấn — dùng chung cho Student Portal và Advisor Portal.
-// PENDING → cam, IN_PROGRESS → xanh dương, RESOLVED → xanh lá, CANCELLED → đỏ.
+// src/modules/advising/components/RequestStatusBadge.tsx
+// Ticket status badge for advising requests — shared by the Student and Advisor portals.
+// PENDING → yellow, IN_PROGRESS → blue, RESOLVED → green, REJECTED → red, CANCELLED → slate.
 
 import { cn } from '@/shared/lib/utils';
 import type { AdvisingRequestStatus } from '@/modules/advising/types/advising';
@@ -8,19 +8,23 @@ import type { AdvisingRequestStatus } from '@/modules/advising/types/advising';
 const STYLES: Record<AdvisingRequestStatus, { label: string; className: string }> = {
   PENDING: {
     label: 'Pending',
-    className: 'bg-orange-200 text-orange-950 ring-orange-400',
+    className: 'bg-amber-100 text-amber-800 ring-amber-300',
   },
   IN_PROGRESS: {
-    label: 'In progress',
-    className: 'bg-blue-200 text-blue-950 ring-blue-400',
+    label: 'In Progress',
+    className: 'bg-blue-100 text-blue-800 ring-blue-300',
   },
   RESOLVED: {
     label: 'Resolved',
-    className: 'bg-emerald-200 text-emerald-950 ring-emerald-400',
+    className: 'bg-emerald-100 text-emerald-800 ring-emerald-300',
+  },
+  REJECTED: {
+    label: 'Rejected',
+    className: 'bg-red-100 text-red-800 ring-red-300',
   },
   CANCELLED: {
-    label: 'Rejected',
-    className: 'bg-red-200 text-red-950 ring-red-400',
+    label: 'Cancelled',
+    className: 'bg-slate-100 text-slate-600 ring-slate-300',
   },
 };
 
@@ -31,7 +35,7 @@ export function RequestStatusBadge({
 }: {
   status: AdvisingRequestStatus;
   className?: string;
-  /** The advisor portal calls CANCELLED "Rejected"; the student portal passes "Cancelled". */
+  /** Override for CANCELLED — e.g. "Rejected" on the advisor side. */
   cancelledLabel?: string;
 }) {
   const style = STYLES[status] ?? STYLES.PENDING;
@@ -40,7 +44,7 @@ export function RequestStatusBadge({
   return (
     <span
       className={cn(
-        'inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ring-1 ring-inset',
+        'inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-[11px] font-bold ring-1 ring-inset',
         style.className,
         className,
       )}

@@ -4,6 +4,7 @@ export type {
   AcademicStatus,
   AdviseeStudent,
   AdvisingRequestDecision,
+  AdvisingRequestScope,
   AdvisingRequestStatus,
   AdvisingRequestType,
   AdvisorInfo,
@@ -13,7 +14,9 @@ export type {
 } from './advisingEntities';
 
 export type {
+  AdvisingMessage,
   AdvisingRequest,
+  AdvisingRequestDetail,
   CreateAdvisingRequestDto,
   StudentNotification,
   UpdateAdvisingRequestStatusDto,

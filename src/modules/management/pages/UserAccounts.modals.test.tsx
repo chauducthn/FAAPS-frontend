@@ -183,7 +183,7 @@ describe('UserAccounts modals', () => {
 
       // The result dialog opens with the warning and the new password.
       const result = await screen.findByRole('dialog', { name: /password reset results/i });
-      expect(within(result).getByText('Lưu ngay kẻo mất')).toBeInTheDocument();
+      expect(within(result).getByText('Save these now — they are shown only once')).toBeInTheDocument();
       expect(resetUserPassword).toHaveBeenCalledWith('u1');
 
       await user.click(within(result).getByRole('button', { name: /show/i }));
@@ -210,7 +210,7 @@ describe('UserAccounts modals', () => {
       await user.click(confirm);
 
       const result = await screen.findByRole('dialog', { name: /password reset results/i });
-      expect(within(result).getByText('Lưu ngay kẻo mất')).toBeInTheDocument();
+      expect(within(result).getByText('Save these now — they are shown only once')).toBeInTheDocument();
 
       // The backdrop is the dim layer behind the dialog.
       const backdrop = document.querySelector('div.fixed.inset-0 > div.absolute');
@@ -218,7 +218,7 @@ describe('UserAccounts modals', () => {
       await user.click(backdrop!);
 
       expect(
-        within(screen.getByRole('dialog', { name: /password reset results/i })).getByText('Lưu ngay kẻo mất'),
+        within(screen.getByRole('dialog', { name: /password reset results/i })).getByText('Save these now — they are shown only once'),
       ).toBeInTheDocument();
     });
   });

@@ -38,7 +38,7 @@ export default function RoadmapBoard({ semesters, onAdd, onMove, onRemove, onDro
 
         <ul className="flex flex-wrap items-center gap-x-4 gap-y-2" aria-label="Roadmap legend">
           <LegendItem tone="core" label="Foundation" />
-          <LegendItem tone="specialization" label="Chuyên ngành hẹp" />
+          <LegendItem tone="specialization" label="Specialisation" />
           <LegendItem tone="prerequisite" label="Has prerequisites" />
         </ul>
       </div>

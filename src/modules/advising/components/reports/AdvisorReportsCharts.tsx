@@ -54,7 +54,7 @@ export function AdvisorReportsCharts({
           ) : trendFailed ? (
             <ChartError message={apiMessage(trendError)} onRetry={onRetryTrend} />
           ) : (semesters?.length ?? 0) === 0 ? (
-            <ChartEmpty message="Chưa có dữ liệu điểm học kỳ cho các sinh viên bạn phụ trách." />
+            <ChartEmpty message="There is no GPA data for your assigned students yet." />
           ) : (
             <GpaTrendChart semesters={semesters!} />
           )}
@@ -82,7 +82,7 @@ export function AdvisorReportsCharts({
           ) : distFailed ? (
             <ChartError message={apiMessage(distError)} onRetry={onRetryDist} />
           ) : slices.length === 0 ? (
-            <ChartEmpty message="Chưa có sinh viên nào được phân công để thống kê trạng thái học vụ." />
+            <ChartEmpty message="No student has been assigned yet, so there is no academic status data to summarise." />
           ) : (
             <StatusPieChart slices={slices} />
           )}

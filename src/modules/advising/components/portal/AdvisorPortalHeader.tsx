@@ -59,15 +59,15 @@ export function AdvisorPortalHeader({
     {
       label: 'Pending',
       value: pendingLoading ? '–' : String(pendingTotal ?? '–'),
-      sub: 'needs response',
+      sub: 'in the queue',
       icon: Inbox,
       iconBox: 'bg-[#F26F21] text-white shadow-[0_6px_16px_-6px_rgba(242,111,33,0.6)]',
       topBar: 'bg-[#F26F21]',
     },
     {
-      label: 'In Progress',
+      label: 'In progress',
       value: inProgressLoading ? '–' : String(inProgressTotal ?? '–'),
-      sub: 'being handled',
+      sub: 'claimed by an advisor',
       icon: Hourglass,
       iconBox: 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200',
       topBar: 'bg-slate-300',
@@ -95,15 +95,15 @@ export function AdvisorPortalHeader({
             </h1>
             <p className="mt-2 max-w-xl text-sm font-medium leading-relaxed text-white/95">
               {pendingCount > 0
-                ? `${pendingCount} pending request${pendingCount === 1 ? '' : 's'} need your response today.`
-                : 'No pending requests right now. Nice work!'}
+                ? `${pendingCount} request${pendingCount === 1 ? '' : 's'} waiting in the queue — claim one to start replying to the student.`
+                : 'The queue is empty. No requests are waiting!'}
             </p>
           </div>
           <Link
             to="/advisor/advising-requests"
             className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-white px-5 text-sm font-extrabold text-[#c2410c] shadow-[0_4px_14px_rgba(0,0,0,0.18)] transition-all hover:bg-orange-50 hover:shadow-[0_6px_20px_rgba(0,0,0,0.22)] active:scale-[0.98]"
           >
-            Review requests <ArrowRight className="size-4" aria-hidden />
+            View requests <ArrowRight className="size-4" aria-hidden />
           </Link>
         </div>
       </div>
@@ -133,9 +133,9 @@ export function AdvisorPortalHeader({
   );
 }
 
-export function AdvisorQuickLinks({ totalStudents, atRiskCount }: { totalStudents: number; atRiskCount: number }) {
+export function AdvisorQuickLinks() {
   const links = [
-    { to: '/advisor/students', icon: UsersRound, title: 'My Students', desc: `${totalStudents} assigned · ${atRiskCount} at risk` },
+    { to: '/advisor/advising-requests', icon: Inbox, title: 'Advising Requests', desc: 'Shared queue — pick one to help' },
     { to: '/advisor/appointments', icon: CalendarDays, title: 'Appointments', desc: 'Calendar & list views' },
     { to: '/advisor/academic-lookup', icon: BookOpen, title: 'Academic Search', desc: 'Curricula & courses' },
   ];

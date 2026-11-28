@@ -87,8 +87,8 @@ export function ResetPasswordResultModal({ open, results, onClose }: Props) {
       />
 
       <ModalBody className="flex flex-col gap-4">
-        <InlineAlert tone="error" title="Lưu ngay kẻo mất">
-          Mật khẩu chỉ hiển thị đúng một lần. Copy hoặc tải CSV xuống ngay — đóng cửa sổ này là mất vĩnh viễn.
+        <InlineAlert tone="error" title="Save these now — they are shown only once">
+          Each password is displayed exactly once. Copy or download the CSV now — closing this dialog loses them permanently.
         </InlineAlert>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -122,9 +122,9 @@ export function ResetPasswordResultModal({ open, results, onClose }: Props) {
         )}
       </ModalBody>
 
-      <ModalFooter start={<p className="text-xs text-ink-muted">Đóng cửa sổ này là mất vĩnh viễn các mật khẩu này.</p>}>
+      <ModalFooter start={<p className="text-xs text-ink-muted">Closing this dialog permanently discards these passwords.</p>}>
         <button type="button" onClick={onClose} className={modalButtonClass('secondary')}>
-          Đóng lại
+          Close
         </button>
         <button type="button" onClick={exportCsv} className={modalButtonClass('secondary')}>
           <Download className="size-4" aria-hidden />

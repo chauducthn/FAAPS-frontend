@@ -10,6 +10,7 @@ import {
   useMarkAdvisorNotificationRead,
   useMarkAllAdvisorNotificationsRead,
 } from '../hooks/mutations/useAdvisingMutations';
+import { advisorRequestLink, ticketIdFromActionUrl } from '../utils/ticketLink';
 import type { StudentNotification } from '../types/advising';
 import { AdvisorNotificationList } from '../components/AdvisorNotificationList';
 
@@ -34,7 +35,10 @@ export default function AdvisorNotifications() {
 
   const handleOpen = (item: StudentNotification) => {
     if (!item.isRead) markRead.mutate(item.id);
-    if (item.actionUrl?.startsWith('/advisor')) navigate(item.actionUrl);
+    if (!item.actionUrl?.startsWith('/advisor')) return;
+
+    const ticketId = ticketIdFromActionUrl(item.actionUrl);
+    navigate(ticketId ? advisorRequestLink(ticketId) : item.actionUrl);
   };
 
   return (
@@ -43,7 +47,7 @@ export default function AdvisorNotifications() {
         <div className="flex items-center gap-3">
           <Link
             to="/advisor"
-            className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
+            className="inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A]"
             aria-label="Back to overview"
           >
             <ArrowLeft className="size-4" aria-hidden />
@@ -89,7 +93,7 @@ export default function AdvisorNotifications() {
             type="button"
             onClick={() => markAll.mutate()}
             disabled={markAll.isPending || total === 0}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-[13px] font-semibold text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A] disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl border border-[#E5E7EB] bg-white px-3 py-2 text-[13px] font-semibold text-[#6B7280] transition-colors hover:bg-[#FAFAFA] hover:text-[#1A1A1A] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <CheckCheck className="size-4" aria-hidden />
             Mark all as read

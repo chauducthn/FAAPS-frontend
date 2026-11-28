@@ -13,8 +13,6 @@ import {
   ClipboardText as ClipboardCheck,
   Tray as Inbox,
   SquaresFour as LayoutDashboard,
-  ChatCircleText as MessageSquareText,
-  UsersThree as UsersRound,
 } from '@phosphor-icons/react';
 import {
   PortalSidebar,
@@ -35,12 +33,6 @@ const NAV_SECTIONS: PortalNavSection[] = [
         end: true,
         description: 'Monitor advisee progress, pending requests, and upcoming sessions.',
       },
-      {
-        label: 'My Students',
-        to: '/advisor/students',
-        icon: UsersRound,
-        description: 'View and manage your assigned students and academic risk alerts.',
-      },
     ],
   },
   {
@@ -51,12 +43,6 @@ const NAV_SECTIONS: PortalNavSection[] = [
         to: '/advisor/advising-requests',
         icon: Inbox,
         description: 'Review and respond to incoming academic advising requests.',
-      },
-      {
-        label: 'Advising Conversations',
-        to: '/advisor/conversations',
-        icon: MessageSquareText,
-        description: 'Message students and follow up on ongoing advising threads.',
       },
       {
         label: 'Study Plan Reviews',

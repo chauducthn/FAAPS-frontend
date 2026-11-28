@@ -69,14 +69,14 @@ export default function AdvisorPortal() {
 
       <AtRiskStudentsWidget onViewDetail={openRiskDetail} />
 
-      <AdvisorQuickLinks totalStudents={totalStudents} atRiskCount={atRisk.length} />
+      <AdvisorQuickLinks />
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-lg font-bold tracking-tight text-slate-900">Advising Requests</h2>
             <p className="mt-1.5 text-sm font-medium leading-relaxed text-slate-600">
-              One primary action per row — extras live under More.
+              Every advisor sees the requests in the shared queue — claim the ones you want to help with.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -111,6 +111,7 @@ export default function AdvisorPortal() {
         isLoading={studentsQuery.isLoading}
         isError={studentsQuery.isError}
         onRetry={() => studentsQuery.refetch()}
+        onOpenStudent={openRiskDetail}
         requiredCreditsFor={requiredCreditsFor}
         defaultRequiredCredits={defaultRequiredCredits}
       />

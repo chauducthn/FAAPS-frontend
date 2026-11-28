@@ -1,6 +1,6 @@
 // src/shared/components/layout/advising/AdvisorSidebar.test.tsx
-// Xác minh sidebar Advisor được nhóm đúng như Admin: có label phân khu,
-// thứ tự mục, icon đi kèm và trạng thái active giữ màu cam FPT.
+// Checks the Advisor sidebar is grouped like the Admin one: section labels,
+// item order, an icon per item and the brand-orange active state.
 
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { render, screen, within } from '@testing-library/react';
@@ -38,7 +38,7 @@ describe('AdvisorSidebar', () => {
     renderSidebar('/advisor');
     const nav = screen.getByRole('navigation', { name: /portal navigation/i });
 
-    // Phân khu "RESOURCES" đã bị ẩn vì BE chưa có endpoint /advisor/academic/*.
+    // The "RESOURCES" section is hidden until the backend exposes /advisor/academic/*.
     const labels = Array.from(nav.querySelectorAll('p')).map((p) => p.textContent);
     expect(labels).toEqual(['WORKSPACE', 'ADVISING', 'APPOINTMENTS', 'INSIGHTS']);
   });
@@ -48,13 +48,11 @@ describe('AdvisorSidebar', () => {
     const nav = screen.getByRole('navigation', { name: /portal navigation/i });
     const links = Array.from(nav.querySelectorAll('a')).map((a) => a.textContent?.trim());
 
-    // "Academic Search" đã bị ẩn vì BE chưa có endpoint /advisor/academic/*.
-    // "My Profile" chỉ nằm trong menu avatar, không có trong sidebar.
+    // "Academic Search" is hidden until the backend exposes /advisor/academic/*.
+    // My Profile opens from the header avatar; My Students and Conversations were folded into the ticket queue.
     expect(links).toEqual([
       'Overview',
-      'My Students',
       'Advising Requests',
-      'Advising Conversations',
       'Study Plan Reviews',
       'Appointments',
       'Notifications',
@@ -87,13 +85,13 @@ describe('AdvisorSidebar', () => {
   });
 
   it('keeps Overview inactive on a sub-route', () => {
-    renderSidebar('/advisor/students');
+    renderSidebar('/advisor/study-plans/plan-1');
     const nav = screen.getByRole('navigation', { name: /portal navigation/i });
 
     const active = nav.querySelector('a[aria-current="page"]');
-    expect(active?.textContent).toContain('My Students');
+    expect(active?.textContent).toContain('Study Plan Reviews');
 
-    // Overview dùng `end` nên không được sáng ở sub-route.
+    // Overview uses `end`, so it stays inactive on a sub-route.
     const overview = Array.from(nav.querySelectorAll('a')).find((a) =>
       a.textContent?.trim() === 'Overview',
     );

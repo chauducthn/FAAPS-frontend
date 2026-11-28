@@ -8,11 +8,18 @@ export type AdvisingRequestType =
   | 'GRADUATION_CHECK'
   | 'OTHER';
 
-/** advising_requests.status */
-export type AdvisingRequestStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED';
+/**
+ * advising_requests.status in the shared multi-advisor ticket queue.
+ * PENDING: waiting in the queue. IN_PROGRESS: an advisor claimed it. RESOLVED: closed by an advisor.
+ * REJECTED: declined by an advisor (summary required). CANCELLED: withdrawn by the student.
+ */
+export type AdvisingRequestStatus = 'PENDING' | 'IN_PROGRESS' | 'RESOLVED' | 'REJECTED' | 'CANCELLED';
 
-/** Advisor decision statuses for advising requests. */
-export type AdvisingRequestDecision = 'IN_PROGRESS' | 'RESOLVED' | 'CANCELLED';
+/** Statuses an advisor can move a ticket to; RESOLVED and REJECTED require a resolution summary. */
+export type AdvisingRequestDecision = 'IN_PROGRESS' | 'RESOLVED' | 'REJECTED' | 'CANCELLED';
+
+/** Ticket list scope: ALL is the shared queue, MINE is tickets the advisor holds or has replied in. */
+export type AdvisingRequestScope = 'ALL' | 'MINE';
 
 /** students.academic_status */
 export type AcademicStatus =

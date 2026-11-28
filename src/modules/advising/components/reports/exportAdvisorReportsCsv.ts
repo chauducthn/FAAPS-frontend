@@ -10,7 +10,7 @@ export function exportAdvisorReportsCsv(
   semesters: SemesterGpaPoint[] | undefined,
 ) {
   if (!overview) {
-    toast.error('Chưa có dữ liệu tổng quan để xuất.');
+    toast.error('There is no overview data to export yet.');
     return;
   }
   const csv = buildCsv([
@@ -61,5 +61,5 @@ export function exportAdvisorReportsCsv(
       : []),
   ]);
   downloadCsv(csv, csvFilename('advisor-reports'));
-  toast.success('Đã xuất báo cáo CSV.');
+  toast.success('CSV report exported.');
 }
