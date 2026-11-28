@@ -8,7 +8,7 @@ import {
   emailRoleErrorMessage,
   hasAllowedEmailDomain,
 } from '../utils/accountRules';
-import type { AdminUserRole } from '../types/admin';
+import type { AdminUserRole, AdminUserSummary } from '../types/admin';
 
 export const createUserSchema = z
   .object({
@@ -22,6 +22,8 @@ export const createUserSchema = z
     expectedGraduationSemesterId: z.string(),
     currentSemester: z.string(),
     maxAdvisees: z.string(),
+    /** Advisors only: the Major Group they are responsible for. */
+    majorGroupId: z.string(),
   })
   .superRefine((v, ctx) => {
     const fail = (path: keyof typeof v, message: string) => ctx.addIssue({ code: 'custom', path: [path], message });
@@ -59,7 +61,20 @@ export const emptyCreateUserValues = (role: AdminUserRole): CreateUserValues => 
   expectedGraduationSemesterId: '',
   currentSemester: '',
   maxAdvisees: '',
+  majorGroupId: '',
 });
+
+/** Form values for editing an existing account, or an empty form for a new one. */
+export const createUserFormValues = (user: AdminUserSummary | null | undefined, defaultRole: AdminUserRole) =>
+  user
+    ? {
+        ...emptyCreateUserValues(user.role),
+        fullName: user.fullName,
+        email: user.email,
+        studentCode: user.role === 'STUDENT' ? user.userId : '',
+        majorGroupId: user.role === 'ADVISOR' ? (user.majorGroupId ?? '') : '',
+      }
+    : emptyCreateUserValues(defaultRole);
 
 const fieldBase =
   'h-9 w-full rounded-md border bg-white px-3 text-sm text-ink-primary placeholder:text-ink-subtle transition-colors ' +

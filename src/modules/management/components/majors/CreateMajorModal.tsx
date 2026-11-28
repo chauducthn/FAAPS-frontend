@@ -6,6 +6,7 @@ import { cn } from '@/shared/lib/utils';
 import type { CreateMajorDto } from '../../../academic/types/major';
 import { MajorAcademicFields } from './MajorAcademicFields';
 import { MajorCodeCreator } from './MajorCodeCreator';
+import { MajorGroupSelect } from '../MajorGroupSelect';
 
 interface CreateMajorModalProps {
   isOpen: boolean;
@@ -19,7 +20,7 @@ interface CreateMajorModalProps {
 const MAJOR_CODE_PATTERN = /^[A-Z][A-Z0-9]{1,5}$/;
 
 const EMPTY: CreateMajorDto = {
-  code: '', name: '', description: '', totalCredits: 144, durationYears: 3.5, cohort: '', status: 'ACTIVE',
+  code: '', name: '', description: '', totalCredits: 144, durationYears: 3.5, cohort: '', status: 'ACTIVE', majorGroupId: '',
 };
 
 const fieldClass = (invalid?: boolean) =>
@@ -43,7 +44,7 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
 
   useEffect(() => {
     if (!isOpen) return;
-    setFormData(initialData ?? EMPTY);
+    setFormData(initialData ? { ...initialData, majorGroupId: initialData.majorGroupId ?? '' } : EMPTY);
     setCreatingCode(false);
     setCustomCodes([]);
   }, [isOpen, initialData]);
@@ -64,6 +65,7 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
       name: formData.name.trim(),
       cohort: initialData?.cohort ?? '',
       description: initialData?.description ?? '',
+      majorGroupId: formData.majorGroupId || null,
     });
   };
 
@@ -128,6 +130,22 @@ export default function CreateMajorModal({ isOpen, onClose, onSubmit, initialDat
                 className={fieldClass(false)}
                 required
               />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="major-group" className={labelClass}>
+              Major group
+            </label>
+            <div className="relative">
+              <MajorGroupSelect
+                id="major-group"
+                enabled={isOpen}
+                value={formData.majorGroupId ?? ''}
+                onChange={(e) => set('majorGroupId', e.target.value)}
+                className={cn(fieldClass(false), 'appearance-none pr-9', !formData.majorGroupId && 'text-ink-subtle')}
+              />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
             </div>
           </div>
 

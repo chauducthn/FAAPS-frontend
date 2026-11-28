@@ -1,14 +1,13 @@
 // Create or edit a Student / Advisor account from the admin User Accounts page.
 import { useEffect, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Modal } from '../../../shared/components/ui/Modal';
 import { InlineAlert } from '../../../shared/components/ui/InlineAlert';
 import { apiErrorMessage } from '../../../shared/lib/apiError';
-import { useCurriculumsQuery, useSemesterOptions } from '../../academic/hooks/queries/useCurriculumsQuery';
-import { curriculumService } from '../services/curriculum.service';
+import { useSemesterOptions } from '../../academic/hooks/queries/useCurriculumsQuery';
 import { useMajorOptions } from '../hooks/queries/useAdminDashboard';
+import { useAllActiveCurriculums } from '../hooks/queries/useAllActiveCurriculums';
 import { adminService } from '../services/adminService';
 import {
   emailMatchesRole,
@@ -17,7 +16,7 @@ import {
   sortSemesters,
 } from '../utils/accountRules';
 import type { AdminUserRole, AdminUserSummary } from '../types/admin';
-import { createUserSchema, emptyCreateUserValues, type CreateUserValues } from './createUserSchema';
+import { createUserFormValues, createUserSchema, emptyCreateUserValues, type CreateUserValues } from './createUserSchema';
 import { CreateUserProfileSection } from './CreateUserProfileSection';
 import { CreateUserAccountSection, CreateUserModalFooter, CreateUserModalHeader } from './CreateUserAccountSection';
 import { useStudentPlacement } from './useStudentPlacement';
@@ -32,21 +31,7 @@ interface Props {
 
 export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }: Props) {
   const isEdit = !!user;
-  const curriculums = useCurriculumsQuery('curriculum', { status: 'ACTIVE', page: 0, size: 100 });
-  const totalPages = curriculums.data?.totalPages ?? 1;
-  const extraCurriculums = useQuery({
-    queryKey: ['admin', 'curriculums', 'active-rest', totalPages],
-    enabled: open && totalPages > 1,
-    staleTime: 60_000,
-    queryFn: async () => {
-      const rest = await Promise.all(
-        Array.from({ length: totalPages - 1 }, (_, i) =>
-          curriculumService.list({ status: 'ACTIVE', page: i + 1, size: 100 }),
-        ),
-      );
-      return rest.flatMap((p) => p.items ?? []);
-    },
-  });
+  const curriculumList = useAllActiveCurriculums(open);
   const semesters = useSemesterOptions(open);
   const majors = useMajorOptions();
 
@@ -60,11 +45,7 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
 
   useEffect(() => {
     if (!open) return;
-    reset(
-      user
-        ? { ...emptyCreateUserValues(user.role), role: user.role, fullName: user.fullName, email: user.email, studentCode: user.role === 'STUDENT' ? user.userId : '' }
-        : emptyCreateUserValues(defaultRole),
-    );
+    reset(createUserFormValues(user, defaultRole));
   }, [open, defaultRole, user, reset]);
 
   const role = watch('role');
@@ -73,11 +54,8 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
   const email = watch('email');
   const enrollmentSemesterId = watch('enrollmentSemesterId');
   const expectedGraduationSemesterId = watch('expectedGraduationSemesterId');
+  const majorGroupId = watch('majorGroupId');
 
-  const curriculumList = useMemo(
-    () => [...(curriculums.data?.items ?? []), ...(extraCurriculums.data ?? [])],
-    [curriculums.data, extraCurriculums.data],
-  );
   const semesterList = useMemo(() => sortSemesters(semesters.data ?? []), [semesters.data]);
   const majorList = majors.data ?? [];
 
@@ -107,7 +85,11 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
     }
     try {
       if (isEdit && user) {
-        await adminService.changeUserRole(user.id, { role: v.role, studentCode: isStudent ? v.studentCode.toUpperCase() : undefined });
+        await adminService.changeUserRole(user.id, {
+          role: v.role,
+          studentCode: isStudent ? v.studentCode.toUpperCase() : undefined,
+          majorGroupId: isStudent ? undefined : v.majorGroupId || undefined,
+        });
       } else {
         await adminService.createUser({
           role: v.role,
@@ -122,7 +104,11 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
                 expectedGraduationSemesterId: v.expectedGraduationSemesterId || undefined,
                 currentSemester: Number(v.currentSemester),
               }
-            : { maxAdvisees: Number(v.maxAdvisees), curriculumVersionId: v.curriculumId || undefined }),
+            : {
+                maxAdvisees: Number(v.maxAdvisees),
+                curriculumVersionId: v.curriculumId || undefined,
+                majorGroupId: v.majorGroupId || undefined,
+              }),
         });
       }
       onCreated(v.fullName.trim());
@@ -135,6 +121,7 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
     setValue('role', next, { shouldValidate: true });
     if (next === 'STUDENT') {
       setValue('maxAdvisees', '');
+      setValue('majorGroupId', '');
     } else {
       setValue('studentCode', '');
       setValue('curriculumId', '');
@@ -174,6 +161,9 @@ export function CreateUserModal({ open, defaultRole, user, onClose, onCreated }:
               graduationOptions={placement.graduationOptions}
               identity={placement.identity}
               graduationConflict={placement.graduationConflict}
+              formOpen={open}
+              majorGroupId={majorGroupId}
+              onMajorGroupChange={(id) => setValue('majorGroupId', id, { shouldDirty: true })}
             />
           </div>
           {errors.root?.message && (

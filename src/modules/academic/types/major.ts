@@ -9,6 +9,10 @@ export interface Major {
   durationYears: number;
   status: MajorStatus;
   cohort: string;
+  /** Major Group (khối ngành) the major belongs to. */
+  majorGroupId?: string | null;
+  majorGroupCode?: string | null;
+  majorGroupName?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -32,6 +36,7 @@ export interface CreateMajorDto {
   durationYears: number;
   cohort: string;
   status: MajorStatus;
+  majorGroupId?: string | null;
 }
 
 export interface UpdateMajorDto extends Partial<CreateMajorDto> {}

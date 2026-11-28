@@ -7,6 +7,8 @@ import type {
   AdminUserRole,
   AdminUserStatus,
   AdminUserSummary,
+  ChangeUserRoleBody,
+  CreateUserBody,
   AiReportDetail,
   AiReportSummary,
   CohortLite,
@@ -90,19 +92,7 @@ export const adminService = {
     return data;
   },
 
-  createUser: async (body: {
-    role: AdminUserRole;
-    email: string;
-    fullName: string;
-    phone?: string;
-    studentCode?: string;
-    advisorCode?: string;
-    curriculumVersionId?: string;
-    enrollmentSemesterId?: string;
-    expectedGraduationSemesterId?: string;
-    currentSemester?: number;
-    maxAdvisees?: number;
-  }): Promise<AdminUserDetail> => {
+  createUser: async (body: CreateUserBody): Promise<AdminUserDetail> => {
     const { data } = await apiClient.post<AdminUserDetail>('/admin/users', body, {
       headers: await getCsrfHeaders(),
     });
@@ -118,14 +108,7 @@ export const adminService = {
     return data;
   },
 
-  changeUserRole: async (id: string, body: {
-    role: AdminUserRole;
-    email?: string;
-    studentCode?: string;
-    curriculumVersionId?: string;
-    enrollmentSemesterId?: string;
-    maxAdvisees?: number;
-  }): Promise<AdminUserDetail> => {
+  changeUserRole: async (id: string, body: ChangeUserRoleBody): Promise<AdminUserDetail> => {
     const { data } = await apiClient.patch<AdminUserDetail>(`/admin/users/${id}/role`, body, {
       headers: await getCsrfHeaders(),
     });

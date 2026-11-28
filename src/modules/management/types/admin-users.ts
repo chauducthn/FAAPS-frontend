@@ -22,6 +22,8 @@ export interface AdminUserSummary {
   majorCode?: string | null;
   cohort?: string | null;
   avatarUrl?: string | null;
+  /** Advisors only: the Major Group they are responsible for. */
+  majorGroupId?: string | null;
 }
 
 export interface AdminUserDetail {
@@ -91,4 +93,33 @@ export interface PasswordResetEntry {
 /** The body of a password reset response. */
 export interface PasswordResetResponse {
   resetResults: PasswordResetEntry[];
+}
+
+/** Body of POST /admin/users. */
+export interface CreateUserBody {
+  role: AdminUserRole;
+  email: string;
+  fullName: string;
+  phone?: string;
+  studentCode?: string;
+  advisorCode?: string;
+  curriculumVersionId?: string;
+  enrollmentSemesterId?: string;
+  expectedGraduationSemesterId?: string;
+  currentSemester?: number;
+  maxAdvisees?: number;
+  /** Advisors: the Major Group they are responsible for. */
+  majorGroupId?: string;
+}
+
+/** Body of PATCH /admin/users/{id}/role. */
+export interface ChangeUserRoleBody {
+  role: AdminUserRole;
+  email?: string;
+  studentCode?: string;
+  curriculumVersionId?: string;
+  enrollmentSemesterId?: string;
+  maxAdvisees?: number;
+  /** Advisors: the Major Group they are responsible for. */
+  majorGroupId?: string;
 }

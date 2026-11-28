@@ -1,4 +1,4 @@
-import { BookOpen, GraduationCap, Hash, Star, Wallet } from '@phosphor-icons/react';
+import { BookOpen, GraduationCap, Hash, Stack as Layers, Star, Wallet } from '@phosphor-icons/react';
 import { ChangePasswordCard } from '@/shared/components/profile/ChangePasswordCard';
 import { PersonalInfoForm } from '@/shared/components/profile/PersonalInfoForm';
 import { ProfileCard, ProfileMetaRow, profileMetaListClass } from '@/shared/components/profile/ProfileCard';
@@ -8,6 +8,7 @@ import { useIdentityProfile } from '@/shared/hooks/useIdentityProfile';
 import { useProfileSave } from '@/shared/hooks/useProfileSave';
 import { useAuth } from '../../auth/stores/useAuth';
 import { useMyProfile } from '../hooks/queries/useStudentQueries';
+import { majorGroupLabel } from '../../academic/services/majorGroupService';
 
 const STATUS_LABEL: Record<string, string> = {
   ACTIVE: 'Active',
@@ -61,6 +62,9 @@ export function StudentProfilePanel() {
             <dl className={profileMetaListClass}>
               <ProfileMetaRow icon={<Hash aria-hidden />} label="Student ID">
                 <span className="font-mono">{data.studentCode || '—'}</span>
+              </ProfileMetaRow>
+              <ProfileMetaRow icon={<Layers aria-hidden />} label="Major group">
+                {majorGroupLabel(data.majorGroupCode, data.majorGroupName) ?? 'Not assigned yet'}
               </ProfileMetaRow>
               <ProfileMetaRow icon={<GraduationCap aria-hidden />} label="Major & cohort">
                 {data.majorCode ? `${data.majorCode}${data.cohort ? ` · ${data.cohort}` : ''}` : 'Not set'}

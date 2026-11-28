@@ -43,6 +43,7 @@ export function MajorsDialogs(p: Props) {
                 durationYears: p.editingMajor.durationYears,
                 cohort: p.editingMajor.cohort,
                 status: p.editingMajor.status,
+                majorGroupId: p.editingMajor.majorGroupId ?? null,
               }
             : undefined
         }

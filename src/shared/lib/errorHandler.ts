@@ -4,7 +4,8 @@ import { toast } from 'sonner';
 import { ApiErrorResponse } from '../types/api';
 import { SESSION_EXPIRED_URL } from './authErrors';
 
-const SUPPRESSED_PATHS = ['/auth/me', '/auth/csrf'];
+// '/major-groups': the Major Group dropdowns say themselves when the list cannot be loaded.
+const SUPPRESSED_PATHS = ['/auth/me', '/auth/csrf', '/major-groups'];
 
 // Cooldown so the same error doesn't spam as a stack of identical toasts
 // when several requests fail back-to-back (e.g. parallel queries on a 5xx).

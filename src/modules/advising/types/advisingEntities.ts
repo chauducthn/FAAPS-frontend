@@ -59,6 +59,10 @@ export interface StudentProfile {
   currentGpa: number | null;
   totalCreditsEarned: number;
   academicStatus: AcademicStatus;
+  /** Major Group of the student's major, derived by the backend. */
+  majorGroupId?: string | null;
+  majorGroupCode?: string | null;
+  majorGroupName?: string | null;
 }
 
 /** Primary advisor assigned to the current student. */

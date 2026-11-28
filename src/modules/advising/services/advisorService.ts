@@ -8,7 +8,14 @@ import type { AcademicStudentProfile, Progress, TranscriptRow } from '../../acad
 import { advisorTicketApi } from './advisorTicketApi';
 
 export type AdvisorStudentDetail = { profile: AcademicStudentProfile; progress: Progress; transcript: TranscriptRow[] };
-export type AdvisorProfile = { id: string; fullName: string; email: string; phone: string | null; specialization: string | null; maxAdvisees: number; activeAdvisees: number; status: string; assignmentStartDate: string | null };
+export type AdvisorProfile = {
+  id: string; advisorCode?: string | null; fullName: string; email: string; phone: string | null; specialization: string | null;
+  /** Major Group the advisor is responsible for; set by the Admin, read-only here. */
+  majorGroupId?: string | null; majorGroupCode?: string | null; majorGroupName?: string | null;
+  status: string;
+  /** Fields of the old fixed 1-1 advisor assignment; no longer shown in My Profile. */
+  maxAdvisees?: number; activeAdvisees?: number; assignmentStartDate?: string | null;
+};
 
 /**
  * Kết quả kiểm tra điều kiện tốt nghiệp — `GET /advisor/students/{studentId}/graduation-check`.

@@ -6,6 +6,7 @@ import type { AdminUserRole } from '../types/admin';
 import type { StudentIdentity } from '../utils/accountRules';
 import { userFieldClass, type CreateUserValues } from './createUserSchema';
 import { UserFormField, UserFormSection } from './UserFormPrimitives';
+import { MajorGroupSelect } from './MajorGroupSelect';
 
 export { UserFormField, UserFormSection };
 
@@ -26,6 +27,10 @@ interface ProfileProps {
   graduationOptions: { id: string; code: string }[];
   identity: StudentIdentity | null;
   graduationConflict: boolean;
+  /** Advisors only: the Major Group select is controlled, its options load after the form is filled. */
+  formOpen: boolean;
+  majorGroupId: string;
+  onMajorGroupChange: (id: string) => void;
 }
 
 type SelectProps = SelectHTMLAttributes<HTMLSelectElement> & { invalid?: boolean; children: ReactNode };
@@ -46,7 +51,7 @@ function Select({ invalid = false, className, children, ...rest }: SelectProps) 
 export function CreateUserProfileSection({
   role, register, errors, selectedMajor, selectedCohort, majorOptions, cohortOptions,
   onMajorChange, onCohortChange, curriculumList, semesterList, graduationOptions,
-  identity, graduationConflict,
+  identity, graduationConflict, formOpen, majorGroupId, onMajorGroupChange,
 }: ProfileProps) {
   const isStudent = role === 'STUDENT';
   const majorCohort = (
@@ -80,6 +85,18 @@ export function CreateUserProfileSection({
   if (!isStudent) {
     return (
       <UserFormSection title="Advising" className={PANEL_CLASS}>
+        <UserFormField label="Major group" error={errors.majorGroupId?.message}>
+          <div className="relative">
+            <MajorGroupSelect
+              enabled={formOpen}
+              value={majorGroupId}
+              onChange={(e) => onMajorGroupChange(e.target.value)}
+              className={cn(userFieldClass(!!errors.majorGroupId), 'appearance-none pr-9')}
+              aria-label="Major group"
+            />
+            <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" />
+          </div>
+        </UserFormField>
         <UserFormField label="Max advisees" required error={errors.maxAdvisees?.message}>
           <input
             type="number"

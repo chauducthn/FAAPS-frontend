@@ -10,7 +10,7 @@ import { useIdentityProfile } from '@/shared/hooks/useIdentityProfile';
 import { useProfileSave } from '@/shared/hooks/useProfileSave';
 import { useAuth } from '../../auth/stores/useAuth';
 import { advisorService } from '../services/advisorService';
-import { AdvisorWorkloadCard } from './AdvisorWorkloadCard';
+import { AdvisorRoleCard } from './AdvisorRoleCard';
 
 const ADVISOR_PROFILE_KEY = ['advisor', 'profile'] as const;
 
@@ -68,7 +68,7 @@ export function AdvisorProfilePanel() {
         </div>
       ) : (
         <>
-          <AdvisorWorkloadCard profile={role} />
+          <AdvisorRoleCard profile={role} />
           <PersonalInfoForm
             email={identity.email}
             dateOfBirth={identity.dateOfBirth}
